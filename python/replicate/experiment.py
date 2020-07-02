@@ -16,9 +16,12 @@ class Experiment(object):
         self.project_dir = project_dir
         self.params = params
         self.id = random_hash()
-    
+
     def save(self):
-        self.storage.put(self.get_path() + "replicate-metadata.json", json.dumps(self.get_metadata(), indent=2))
+        self.storage.put(
+            self.get_path() + "replicate-metadata.json",
+            json.dumps(self.get_metadata(), indent=2),
+        )
 
     def commit(self, metrics):
         commit = Commit(self, self.project_dir, metrics)
@@ -33,7 +36,6 @@ class Experiment(object):
 
     def get_path(self):
         return "experiments/{}/".format(self.id)
-
 
 
 def init(params=None):

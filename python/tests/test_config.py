@@ -10,5 +10,7 @@ class TestConfig(unittest.TestCase):
             validate_and_set_defaults({"invalid": "key"})
             validate_and_set_defaults({"storage": 1234})
             validate_and_set_defaults({"storage": "s3://foobar", "something": "else"})
-        
-        self.assertEqual(validate_and_set_defaults({}), {"storage": ".replicate/storage/"})
+
+        self.assertEqual(
+            validate_and_set_defaults({}), {"storage": ".replicate/storage/"}
+        )

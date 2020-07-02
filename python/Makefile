@@ -1,0 +1,6 @@
+
+
+.PHONY: format
+format:
+	black .
+
