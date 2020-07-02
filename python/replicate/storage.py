@@ -39,7 +39,11 @@ class DiskStorage(object):
         """
         Save directory to path
         """
-        for current_directory, _, files in os.walk(dir_to_store):
+        ignore = [".replicate", ".git"]
+
+        for current_directory, dirs, files in os.walk(dir_to_store, topdown=True):
+            dirs[:] = [d for d in dirs if d not in ignore]
+
             for filename in files:
                 with open(os.path.join(current_directory, filename), 'rb') as fh:
                     data = fh.read()
