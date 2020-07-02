@@ -13,4 +13,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/replicate/replicate",
     packages=setuptools.find_packages(),
+    # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
+    # and break in weird ways?
+    install_requires=[
+        "pyyaml==5.3.1",
+    ],
 )
