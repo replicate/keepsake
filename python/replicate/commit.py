@@ -22,7 +22,7 @@ class Commit(object):
             "id": self.id,
             "experiment": self.experiment.get_metadata(),
             "metrics": self.metrics,
-        }))
+        }, indent=2))
 
     def get_path(self):
         return "commits/{}/".format(self.id)
