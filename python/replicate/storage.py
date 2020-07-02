@@ -27,7 +27,11 @@ class DiskStorage(object):
         """
         full_path = os.path.join(self.root, path)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
-        with open(full_path, "w") as fh:
+
+        mode = "w"
+        if isinstance(data, bytes):
+            mode = "wb"
+        with open(full_path, mode) as fh:
             fh.write(data)
 
     # this can live in parent Storage class when that exists
@@ -37,7 +41,7 @@ class DiskStorage(object):
         """
         for current_directory, _, files in os.walk(dir_to_store):
             for filename in files:
-                with open(os.path.join(current_directory, filename)) as fh:
+                with open(os.path.join(current_directory, filename), 'rb') as fh:
                     data = fh.read()
                 # Strip local path
                 relative_path = os.path.join(os.path.relpath(current_directory, dir_to_store), filename)
