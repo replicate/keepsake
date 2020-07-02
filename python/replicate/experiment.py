@@ -15,7 +15,7 @@ class Experiment(object):
         self.id = random_hash()
     
     def save(self):
-        self.storage.put(self.get_path() + "replicate-metadata.json", json.dumps(self.get_metadata()))
+        self.storage.put(self.get_path() + "replicate-metadata.json", json.dumps(self.get_metadata(), indent=2))
 
     def commit(self, metrics):
         commit = Commit(self, self.workdir, metrics)
