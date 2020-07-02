@@ -18,6 +18,7 @@ def temp_workdir(f):
                 return f(*args, **kwargs)
         finally:
             os.chdir(orig_cwd)
+
     return wrapper
 
 
@@ -27,11 +28,14 @@ class TestExperiment(unittest.TestCase):
         experiment = replicate.init(params={"learning_rate": 0.002})
 
         self.assertEqual(len(experiment.id), 64)
-        with open(".replicate/storage/experiments/{}/replicate-metadata.json".format(experiment.id)) as fh:
+        with open(
+            ".replicate/storage/experiments/{}/replicate-metadata.json".format(
+                experiment.id
+            )
+        ) as fh:
             metadata = json.load(fh)
         self.assertEqual(metadata["id"], experiment.id)
         self.assertEqual(metadata["params"], {"learning_rate": 0.002})
-
 
     @temp_workdir
     def test_commit(self):
@@ -42,7 +46,9 @@ class TestExperiment(unittest.TestCase):
         commit = experiment.commit({"validation_loss": 0.123})
 
         self.assertEqual(len(commit.id), 64)
-        with open(".replicate/storage/commits/{}/replicate-metadata.json".format(commit.id)) as fh:
+        with open(
+            ".replicate/storage/commits/{}/replicate-metadata.json".format(commit.id)
+        ) as fh:
             metadata = json.load(fh)
         self.assertEqual(metadata["id"], commit.id)
         self.assertEqual(metadata["metrics"], {"validation_loss": 0.123})

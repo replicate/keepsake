@@ -7,4 +7,3 @@ print("Starting experiment " + experiment.id)
 
 for epoch in range(10):
     experiment.commit(metrics={"epoch": epoch})
-

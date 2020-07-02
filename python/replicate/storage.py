@@ -1,6 +1,9 @@
 import os
 
-class DoesNotExistError(Exception): pass
+
+class DoesNotExistError(Exception):
+    pass
+
 
 class DiskStorage(object):
     """
@@ -34,7 +37,7 @@ class DiskStorage(object):
         with open(full_path, mode) as fh:
             fh.write(data)
 
-    # this can live in parent Storage class when that exists
+    #  this can live in parent Storage class when that exists
     def put_directory(self, path, dir_to_store):
         """
         Save directory to path
@@ -45,10 +48,12 @@ class DiskStorage(object):
             dirs[:] = [d for d in dirs if d not in ignore]
 
             for filename in files:
-                with open(os.path.join(current_directory, filename), 'rb') as fh:
+                with open(os.path.join(current_directory, filename), "rb") as fh:
                     data = fh.read()
                 # Strip local path
-                relative_path = os.path.join(os.path.relpath(current_directory, dir_to_store), filename)
+                relative_path = os.path.join(
+                    os.path.relpath(current_directory, dir_to_store), filename
+                )
                 # Then, make it relative to path we want to store it in storage
                 self.put(os.path.join(path, relative_path), data)
 
@@ -73,4 +78,3 @@ class DiskStorage(object):
             os.unlink(full_path)
         except FileNotFoundError:
             raise DoesNotExistError("No such path: '{}'".format(full_path))
-

@@ -1,2 +1,3 @@
 .replicate
 .vscode/.ropeproject
+.mypy_cache
