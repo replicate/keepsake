@@ -1,3 +1,9 @@
 .replicate
 .vscode/.ropeproject
 .mypy_cache
+*.egg-info/
+__pycache__/
+
+# scratch notebook
+python/Untitled.ipynb
+python/.ipynb_checkpoints
