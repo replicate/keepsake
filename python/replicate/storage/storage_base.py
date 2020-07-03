@@ -1,6 +1,12 @@
+import sys
+import os
 from abc import ABCMeta, abstractmethod
 from typing import AnyStr, Generator, Dict
-from typing_extensions import TypedDict
+
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
 

@@ -1,58 +1,51 @@
-import functools
 import json
 import os
 import tempfile
-import unittest
+import pytest  # type: ignore
 
 import replicate
-from replicate.storage import DiskStorage
 
 
-def temp_workdir(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        orig_cwd = os.getcwd()
-        try:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                os.chdir(tmpdir)
-                return f(*args, **kwargs)
-        finally:
-            os.chdir(orig_cwd)
-
-    return wrapper
+@pytest.fixture
+def temp_workdir():
+    orig_cwd = os.getcwd()
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            yield
+    finally:
+        os.chdir(orig_cwd)
 
 
-class TestExperiment(unittest.TestCase):
-    @temp_workdir
-    def test_init(self):
-        experiment = replicate.init(params={"learning_rate": 0.002})
+def test_init(temp_workdir):
+    experiment = replicate.init(params={"learning_rate": 0.002})
 
-        self.assertEqual(len(experiment.id), 64)
-        with open(
-            ".replicate/storage/experiments/{}/replicate-metadata.json".format(
-                experiment.id
-            )
-        ) as fh:
-            metadata = json.load(fh)
-        self.assertEqual(metadata["id"], experiment.id)
-        self.assertEqual(metadata["params"], {"learning_rate": 0.002})
+    assert len(experiment.id) == 64
+    with open(
+        ".replicate/storage/experiments/{}/replicate-metadata.json".format(
+            experiment.id
+        )
+    ) as fh:
+        metadata = json.load(fh)
+    assert metadata["id"] == experiment.id
+    assert metadata["params"] == {"learning_rate": 0.002}
 
-    @temp_workdir
-    def test_commit(self):
-        with open("train.py", "w") as fh:
-            fh.write("print(1 + 1)")
 
-        experiment = replicate.init(params={"learning_rate": 0.002})
-        commit = experiment.commit({"validation_loss": 0.123})
+def test_commit(temp_workdir):
+    with open("train.py", "w") as fh:
+        fh.write("print(1 + 1)")
 
-        self.assertEqual(len(commit.id), 64)
-        with open(
-            ".replicate/storage/commits/{}/replicate-metadata.json".format(commit.id)
-        ) as fh:
-            metadata = json.load(fh)
-        self.assertEqual(metadata["id"], commit.id)
-        self.assertEqual(metadata["metrics"], {"validation_loss": 0.123})
-        self.assertEqual(metadata["experiment"]["id"], experiment.id)
+    experiment = replicate.init(params={"learning_rate": 0.002})
+    commit = experiment.commit({"validation_loss": 0.123})
 
-        with open(".replicate/storage/commits/{}/train.py".format(commit.id)) as fh:
-            self.assertEqual(fh.read(), "print(1 + 1)")
+    assert len(commit.id) == 64
+    with open(
+        ".replicate/storage/commits/{}/replicate-metadata.json".format(commit.id)
+    ) as fh:
+        metadata = json.load(fh)
+    assert metadata["id"] == commit.id
+    assert metadata["metrics"] == {"validation_loss": 0.123}
+    assert metadata["experiment"]["id"] == experiment.id
+
+    with open(".replicate/storage/commits/{}/train.py".format(commit.id)) as fh:
+        assert fh.read() == "print(1 + 1)"

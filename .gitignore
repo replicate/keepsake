@@ -3,6 +3,7 @@
 .mypy_cache
 *.egg-info/
 __pycache__/
+.tox
 
 # scratch notebook
 python/Untitled.ipynb

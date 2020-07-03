@@ -4,16 +4,7 @@ from .storage_base import Storage
 from .disk_storage import DiskStorage
 from .s3_storage import S3Storage
 
-
-class DoesNotExistError(Exception):
-    pass
-
-
-class UnknownStorageBackend(Exception):
-    def __init__(self, scheme):
-        super(self, UnknownStorageBackend).__init__(
-            "Unknown storage backend: {}".format(scheme)
-        )
+from ..exceptions import UnknownStorageBackend
 
 
 def storage_for_url(url: str) -> Storage:
@@ -24,7 +15,9 @@ def storage_for_url(url: str) -> Storage:
 
     scheme, path = match.groups()
 
-    if scheme == "s3://":
+    if scheme == "s3":
         return S3Storage(bucket=path)
+    if scheme == "file":
+        return DiskStorage(root=path)
     else:
         raise UnknownStorageBackend(scheme)

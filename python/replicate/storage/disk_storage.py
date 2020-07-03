@@ -1,9 +1,8 @@
 import os
 from typing import AnyStr, Generator
-from typing_extensions import TypedDict
 
 from .storage_base import Storage, ListFileInfo
-from .common import DoesNotExistError
+from ..exceptions import DoesNotExistError
 
 
 class DiskStorage(Storage):

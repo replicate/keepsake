@@ -6,7 +6,7 @@ import boto3
 import mypy_boto3_s3 as s3
 
 from .storage_base import Storage, ListFileInfo
-from .common import DoesNotExistError
+from ..exceptions import DoesNotExistError
 
 
 class S3Storage(Storage):
@@ -71,7 +71,7 @@ class S3Storage(Storage):
                         seen_dirs.add(dir_path)
                         yield {"name": dir_path, "type": "directory"}
                 else:
-                    yield {"name": object_path, "type": "file"}
+                    yield {"name": rel_path, "type": "file"}
 
     def exists(self, path: str) -> bool:
         client = self.get_client()

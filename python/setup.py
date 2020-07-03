@@ -1,3 +1,5 @@
+# type: ignore
+
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -18,6 +20,8 @@ setuptools.setup(
     install_requires=[
         "pyyaml==5.3.1",
         "boto3==1.14.15",
-        "boto3-stubs[essential]==1.14.15.0"
+        "boto3-stubs[essential]==1.14.15.0",
+        "typing-extensions",
+        "moto==1.3.14",
     ],
 )
