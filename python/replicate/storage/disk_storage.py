@@ -1,11 +1,11 @@
 import os
+from typing import AnyStr, Generator
+
+from .storage_base import Storage, ListFileInfo
+from ..exceptions import DoesNotExistError
 
 
-class DoesNotExistError(Exception):
-    pass
-
-
-class DiskStorage(object):
+class DiskStorage(Storage):
     """
     Stores data on local filesystem
     """
@@ -13,18 +13,18 @@ class DiskStorage(object):
     def __init__(self, root):
         self.root = root
 
-    def get(self, path):
+    def get(self, path: str) -> bytes:
         """
         Get data at path
         """
         full_path = os.path.join(self.root, path)
         try:
-            with open(full_path) as fh:
+            with open(full_path, "rb") as fh:
                 return fh.read()
         except FileNotFoundError:
             raise DoesNotExistError("No such path: '{}'".format(full_path))
 
-    def put(self, path, data):
+    def put(self, path: str, data: AnyStr):
         """
         Save data to file at path
         """
@@ -37,27 +37,7 @@ class DiskStorage(object):
         with open(full_path, mode) as fh:
             fh.write(data)
 
-    #  this can live in parent Storage class when that exists
-    def put_directory(self, path, dir_to_store):
-        """
-        Save directory to path
-        """
-        ignore = [".replicate", ".git"]
-
-        for current_directory, dirs, files in os.walk(dir_to_store, topdown=True):
-            dirs[:] = [d for d in dirs if d not in ignore]
-
-            for filename in files:
-                with open(os.path.join(current_directory, filename), "rb") as fh:
-                    data = fh.read()
-                # Strip local path
-                relative_path = os.path.join(
-                    os.path.relpath(current_directory, dir_to_store), filename
-                )
-                # Then, make it relative to path we want to store it in storage
-                self.put(os.path.join(path, relative_path), data)
-
-    def list(self, path):
+    def list(self, path: str) -> Generator[ListFileInfo, None, None]:
         """
         List files at path
         """
@@ -69,7 +49,7 @@ class DiskStorage(object):
             else:
                 yield {"name": filename, "type": "directory"}
 
-    def delete(self, path):
+    def delete(self, path: str):
         """
         Delete single file at path
         """

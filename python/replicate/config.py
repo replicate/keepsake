@@ -1,5 +1,6 @@
 import os
 import yaml
+from typing import List
 
 # TODO (bfirsh): send users to replicate.yaml reference if this is raised!
 class ConfigValidationError(Exception):
@@ -20,7 +21,7 @@ def load_config(project_dir):
 
 
 VALID_KEYS = ["storage"]
-REQUIRED_KEYS = []
+REQUIRED_KEYS: List[str] = []
 DEFAULTS = {"storage": ".replicate/storage/"}
 
 

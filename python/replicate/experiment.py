@@ -6,7 +6,7 @@ from .commit import Commit
 from .config import load_config
 from .hash import random_hash
 from .project import get_project_dir
-from .storage import DiskStorage
+from .storage import storage_for_url
 
 
 class Experiment(object):
@@ -41,7 +41,7 @@ class Experiment(object):
 def init(params=None):
     project_dir = get_project_dir()
     config = load_config(project_dir)
-    storage = DiskStorage(config["storage"])
+    storage = storage_for_url(config["storage"])
     experiment = Experiment(storage, project_dir, params)
     experiment.save()
     return experiment

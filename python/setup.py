@@ -1,3 +1,5 @@
+# type: ignore
+
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -15,5 +17,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
     # and break in weird ways?
-    install_requires=["pyyaml==5.3.1",],
+    install_requires=[
+        "pyyaml==5.3.1",
+        "boto3==1.14.15",
+        "boto3-stubs[essential]==1.14.15.0",
+        "typing-extensions",
+        "moto==1.3.14",
+    ],
 )
