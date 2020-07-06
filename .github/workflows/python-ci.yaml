@@ -1,0 +1,20 @@
+name: Python CI
+
+on:
+  push:
+    paths: python
+    branches:
+    - master
+  pull_request:
+    paths: "python/**"
+
+jobs:
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: "Lint"
+      run: make lint
+    - name: "test"
+      run: make test
