@@ -15,16 +15,20 @@ jobs:
     strategy:
       matrix:
         python: [3.6, 3.7, 3.8]
-    defaults:
-      run:
-        working-directory: python
     steps:
     - uses: actions/checkout@master
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
     - name: Install tox
       run: pip install tox
     - name: "Lint and test"
       run: tox -e py
+      working-directory: python
