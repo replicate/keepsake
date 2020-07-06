@@ -5,6 +5,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+# fmt: off
 setuptools.setup(
     name="replicate",
     version="0.0.1",
@@ -22,6 +23,14 @@ setuptools.setup(
         "boto3==1.14.15",
         "boto3-stubs[essential]==1.14.15.0",
         "typing-extensions",
-        "moto==1.3.14",
     ],
+    extras_require={
+        "test": [
+            "moto==1.3.14",
+            "mypy==0.782",
+            "black==19.10b0",
+            "pytest==5.4.3",
+        ],
+    }
 )
+# fmt: on

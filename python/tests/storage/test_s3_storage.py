@@ -20,14 +20,14 @@ def mock_s3():
 
 def test_put_get(mock_s3):
     storage = S3Storage(bucket=BUCKET_NAME)
-    storage.put("some/file", "nice")
-    assert storage.get("some/file") == b"nice"
+    storage.put("foo/bar.txt", "nice")
+    assert storage.get("foo/bar.txt") == b"nice"
 
 
 def test_get_not_exists(mock_s3):
     storage = S3Storage(bucket=BUCKET_NAME)
     with pytest.raises(DoesNotExistError):
-        assert storage.get("some/file")
+        assert storage.get("foo/bar.txt")
 
 
 def test_exists(mock_s3):
