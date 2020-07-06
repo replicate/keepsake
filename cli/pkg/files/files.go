@@ -4,9 +4,12 @@ import (
 	"os"
 )
 
-func FileExists(filePath string) bool {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return false
+func FileExists(filePath string) (bool, error) {
+	if _, err := os.Stat(filePath); err == nil {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
+		return false, err
 	}
-	return true
 }

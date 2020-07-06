@@ -20,7 +20,11 @@ type UserSettings struct {
 func LoadUserSettings() (*UserSettings, error) {
 	settings := UserSettings{}
 
-	if !files.FileExists(userSettingsPath()) {
+	exists, err := files.FileExists(userSettingsPath())
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
 		return &settings, nil
 	}
 	text, err := ioutil.ReadFile(userSettingsPath())
