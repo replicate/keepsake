@@ -1,0 +1,27 @@
+name: CLI CI
+
+on:
+  push:
+    paths: "cli/**"
+    branches:
+    - master
+  pull_request:
+    paths: "cli/**"
+
+jobs:
+  test:
+    name: "Build & Test"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    - name: "Build"
+      run: make build-all
+    - name: "Test"
+      run: make test
