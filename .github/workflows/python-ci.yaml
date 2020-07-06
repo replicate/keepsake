@@ -12,9 +12,19 @@ jobs:
   test:
     name: "Test"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.6, 3.7, 3.8]
+    defaults:
+      run:
+        working-directory: python
     steps:
     - uses: actions/checkout@master
-    - name: "Lint"
-      run: make lint
-    - name: "test"
-      run: make test
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install tox
+      run: pip install tox
+    - name: "Lint and test"
+      run: tox -e py
