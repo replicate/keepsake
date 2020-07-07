@@ -1,4 +1,5 @@
 package interact
+
 // TODO: move to cli/pkg/console/
 
 import (

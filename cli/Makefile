@@ -62,7 +62,7 @@ race:
 lint:
 	@golint "" 2>/dev/null || (echo "installing golint..." && go get -u golang.org/x/lint/golint &>/dev/null)
 	@golint ./... \
-	| grep -v "should have comment.* or be unexported" \
+	| grep -v "should have comment.* or be unexported"  > /tmp/replicate-cli-lint-errors.txt \
 	|| true
 	@if [[ $$(wc -l /tmp/replicate-cli-lint-errors.txt | cut -f1 -d" ") > 0 ]]; then \
 	    cat /tmp/replicate-cli-lint-errors.txt; \
@@ -110,6 +110,7 @@ cover-profile: vet lint
 strings:
 	find . -name "*.go" | grep -v _test.go | while read f; do echo $$f; grep -onE '"[^"]+"' $$f | grep -v "replicate.ai/cli"; echo; done
 
+# FIXME (bfirsh): get this working again
 .PHONY: docs
 docs:
 	REPLICATE_NO_ANALYTICS=1 go run ./cmd/replicate/main.go generate-docs --docs-folder web/docs
