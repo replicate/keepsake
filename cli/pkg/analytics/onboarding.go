@@ -11,11 +11,9 @@ Welcome!
 
 You're one of the first people to use Replicate. Isn't that exciting?
 
-First -- thank you. We hope Replicate is going to make your life easier. But, it's still kinda janky. Your patience and feedback is what will make this into a really good tool.
+While we're still testing Replicate, we're gathering usage information and crash reports. We only store metadata on what commands you run, not any of your code or model data.
 
-Second -- a favor. While we're still testing it out, we want to gather usage information and crash reports so we can see what's working and what isn't.
-
-We're only storing metadata about what commands you run, not any of your code or model data. At some point we'll make it possible to opt-out of this, but at this early stage we're gathering data from everybody. If this is really not OK, email us at team@replicate.ai and we'll figure something out for you.
+At some point we'll give you a way to opt-out of this, but if this is really not OK, email us at team@replicate.ai and we'll figure something out for you.
 
 Please enter your email, in case we need to ask you any questions about stuff that breaks.
 `
