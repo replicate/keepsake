@@ -4,6 +4,7 @@
 *.egg-info/
 __pycache__/
 .tox
+cli/release
 
 # scratch notebook
 python/Untitled.ipynb

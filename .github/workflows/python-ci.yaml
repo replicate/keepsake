@@ -2,7 +2,7 @@ name: Python CI
 
 on:
   push:
-    paths: python
+    paths: "python/**"
     branches:
     - master
   pull_request:
