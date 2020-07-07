@@ -1,6 +1,7 @@
 package global
 
 var Version = "development" // set in Makefile
+var ConfigFilename = "replicate.yaml"
 var Verbose = false
 var WebURL = "https://beta2.replicate.ai"
 var Color = true

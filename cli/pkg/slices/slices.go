@@ -2,6 +2,7 @@ package slices
 
 import (
 	"reflect"
+	"sort"
 )
 
 // ContainsString checks if a []string slice contains a query string
@@ -30,4 +31,18 @@ func StringSlice(strings interface{}) []string {
 		ret = append(ret, vals.Index(i).String())
 	}
 	return ret
+}
+
+// StringKeys returns the keys from a map[string]interface{} as a sorted []string slice
+func StringKeys(m interface{}) []string {
+	keys := []string{}
+	v := reflect.ValueOf(m)
+	if v.Kind() == reflect.Map {
+		for _, key := range v.MapKeys() {
+			keys = append(keys, key.String())
+		}
+		sort.Strings(keys)
+		return keys
+	}
+	panic("StringKeys received not a map")
 }

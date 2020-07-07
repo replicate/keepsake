@@ -1,7 +1,7 @@
 import os
 
 
-def get_project_dir():
+def get_project_dir() -> str:
     """
     Returns the directory of the current project.
     """
