@@ -18,11 +18,7 @@ func newFeedbackCommand() *cobra.Command {
 
 func submitFeedback(cmd *cobra.Command, args []string) error {
 	fmt.Println(`
-The feedback function hasn't yet been implemented in the CLI.
-In the meantime, Please visit beta.replicate.ai and click the
-Feedback button in the bottom right corner.
-
-We really appreciate your feedback, good or bad!
+Please email team@replicate.ai. We really appreciate your comments, good or bad!
 
 				    ❤ Team Replicate\n`)
 	return nil
