@@ -17,6 +17,8 @@ def temp_bucket():
 
     try:
         s3.create_bucket(Bucket=bucket_name)
+        bucket = s3.Bucket(bucket_name)
+        bucket.wait_until_exists()
         yield bucket_name
     finally:
         bucket = s3.Bucket(bucket_name)
@@ -39,7 +41,11 @@ def test_s3_experiment(temp_bucket, tmpdir):
             temp_bucket,
             os.path.join("experiments", experiment.id, "replicate-metadata.json"),
         )
-        expected_experiment_meta = {"id": experiment.id, "params": {"foo": "bar"}}
+        expected_experiment_meta = {
+            "id": experiment.id,
+            "timestamp": experiment.timestamp,
+            "params": {"foo": "bar"},
+        }
         assert actual_experiment_meta == expected_experiment_meta
 
         commit = experiment.commit(metrics={"loss": 1.1, "baz": "qux"})
@@ -49,7 +55,12 @@ def test_s3_experiment(temp_bucket, tmpdir):
         )
         expected_commit_meta = {
             "id": commit.id,
-            "experiment": {"id": experiment.id, "params": {"foo": "bar"}},
+            "timestamp": commit.timestamp,
+            "experiment": {
+                "id": experiment.id,
+                "params": {"foo": "bar"},
+                "timestamp": experiment.timestamp,
+            },
             "metrics": {"loss": 1.1, "baz": "qux"},
         }
         assert actual_commit_meta == expected_commit_meta

@@ -12,6 +12,10 @@ jobs:
   test:
     name: "Test"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: python
     strategy:
       matrix:
         python: [3.6, 3.7, 3.8]
@@ -31,4 +35,3 @@ jobs:
       run: pip install tox
     - name: "Lint and test"
       run: tox -e py
-      working-directory: python

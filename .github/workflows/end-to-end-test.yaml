@@ -1,0 +1,37 @@
+name: End-to-end test
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
+jobs:
+  test:
+    name: End-to-end Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: test-end2end
+    strategy:
+      matrix:
+        python: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@master
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Install requirements
+      run: pip install -r requirements.txt
+    - name: Change /usr/local/bin permissions
+      run: sudo chmod 777 /usr/local/bin
+    - name: End-to-end Test
+      run: pytest -s .

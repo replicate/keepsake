@@ -1,21 +1,28 @@
-import hashlib
+import time
 import json
-import random
+from typing import Dict, Any, Optional
 
 from .commit import Commit
 from .config import load_config
 from .hash import random_hash
 from .project import get_project_dir
-from .storage import storage_for_url
+from .storage import storage_for_url, Storage
 
 
 class Experiment(object):
-    def __init__(self, storage, project_dir, params):
+    def __init__(
+        self,
+        storage: Storage,
+        project_dir: str,
+        timestamp: float,
+        params: Optional[Dict[str, Any]],
+    ):
         self.storage = storage
         # TODO: automatically detect workdir
         self.project_dir = project_dir
         self.params = params
         self.id = random_hash()
+        self.timestamp = timestamp
 
     def save(self):
         self.storage.put(
@@ -23,14 +30,16 @@ class Experiment(object):
             json.dumps(self.get_metadata(), indent=2),
         )
 
-    def commit(self, metrics):
-        commit = Commit(self, self.project_dir, metrics)
+    def commit(self, metrics: Dict[str, Any]) -> Commit:
+        timestamp = time.time()
+        commit = Commit(self, self.project_dir, timestamp, metrics)
         commit.save(self.storage)
         return commit
 
-    def get_metadata(self):
+    def get_metadata(self) -> Dict[str, Any]:
         return {
             "id": self.id,
+            "timestamp": self.timestamp,
             "params": self.params,
         }
 
@@ -38,10 +47,11 @@ class Experiment(object):
         return "experiments/{}/".format(self.id)
 
 
-def init(params=None):
+def init(params: Optional[Dict[str, Any]] = None) -> Experiment:
     project_dir = get_project_dir()
     config = load_config(project_dir)
     storage = storage_for_url(config["storage"])
-    experiment = Experiment(storage, project_dir, params)
+    timestamp = time.time()
+    experiment = Experiment(storage, project_dir, timestamp, params)
     experiment.save()
     return experiment

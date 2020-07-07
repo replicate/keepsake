@@ -1,7 +1,7 @@
 import sys
 import os
 from abc import ABCMeta, abstractmethod
-from typing import AnyStr, Generator, Dict
+from typing import AnyStr, Generator
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
