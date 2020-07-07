@@ -5,6 +5,7 @@
 __pycache__/
 .tox
 cli/release
+python/dist
 
 # scratch notebook
 python/Untitled.ipynb
