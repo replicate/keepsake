@@ -67,6 +67,7 @@ func NewRootCommand() (*cobra.Command, error) {
 	rootCmd.AddCommand(
 		newFeedbackCommand(),
 		newListCommand(),
+		newRunCommand(),
 	)
 
 	return &rootCmd, nil
