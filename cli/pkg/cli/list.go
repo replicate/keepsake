@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,10 +29,15 @@ func newListCommand() *cobra.Command {
 
 func listExperiments(cmd *cobra.Command, args []string) error {
 	var storageURL string
+	// FIXME (bfirsh): perhaps better as a flag? (just putting this here to remind ourselves to have this discussion)
 	if len(args) == 1 {
 		storageURL = args[0]
 	} else {
-		conf, err := config.FindConfig(global.SourceDirectory)
+		absoluteSourceDirectory, err := filepath.Abs(global.SourceDirectory)
+		if err != nil {
+			return nil
+		}
+		conf, err := config.FindConfig(absoluteSourceDirectory)
 		if err != nil {
 			return err
 		}
