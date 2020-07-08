@@ -13,20 +13,35 @@ import (
 	"replicate.ai/cli/pkg/global"
 )
 
-const MaxSearchDepth = 100
+const maxSearchDepth = 100
 
+type configNotFoundError struct {
+	message string
+}
+
+func (e *configNotFoundError) Error() string {
+	return e.message
+}
+
+// Config is replicate.yaml
 type Config struct {
 	Storage string `json:"storage"`
 }
 
+// FindConfig searches the current directory and any parent directories for replicate.yaml,
+// then loads it
 func FindConfig(folder string) (conf *Config, err error) {
 	configPath, err := findConfigPath(folder)
 	if err != nil {
+		if _, ok := err.(*configNotFoundError); ok {
+			return getDefaultConfig(), nil
+		}
 		return nil, err
 	}
 	return LoadConfig(configPath)
 }
 
+// LoadConfig reads and validates replicate.yaml
 func LoadConfig(configPath string) (conf *Config, err error) {
 	text, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -43,12 +58,17 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 	return conf, nil
 }
 
+// Parse replicate.yaml
 func Parse(text []byte) (conf *Config, err error) {
-	conf = new(Config)
+	conf = getDefaultConfig()
 
 	j, err := yaml.YAMLToJSON(text)
 	if err != nil {
 		return nil, err
+	}
+	// If it's an empty file, don't decode, otherwise we get this weird null object that isn't nil
+	if string(j) == "null" {
+		return conf, nil
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(j))
@@ -63,7 +83,7 @@ func Parse(text []byte) (conf *Config, err error) {
 
 func findConfigPath(startFolder string) (configPath string, err error) {
 	folder := startFolder
-	for i := 0; i < MaxSearchDepth; i++ {
+	for i := 0; i < maxSearchDepth; i++ {
 		configPath = filepath.Join(folder, global.ConfigFilename)
 		exists, err := files.FileExists(configPath)
 		if err != nil {
@@ -74,10 +94,18 @@ func findConfigPath(startFolder string) (configPath string, err error) {
 		}
 
 		if folder == "/" {
-			return "", fmt.Errorf("%s not found in %s (or in any parent directories", global.ConfigFilename, startFolder)
+			// These error messages aren't used anywhere, but I've left them in in case this function is used elsewhere in the future
+			return "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilename, startFolder)}
 		}
 
 		folder = filepath.Dir(folder)
 	}
-	return "", fmt.Errorf("%s not found, recursive reached max depth", global.ConfigFilename)
+	return "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilename)}
+}
+
+func getDefaultConfig() *Config {
+	// should match defaults in config.py
+	return &Config{
+		Storage: ".replicate/storage/",
+	}
 }
