@@ -5,6 +5,7 @@
 __pycache__/
 .tox
 cli/release
+python/build
 python/dist
 
 # scratch notebook
