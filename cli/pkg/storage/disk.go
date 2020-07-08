@@ -36,6 +36,13 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 		return nil
 	})
 	if err != nil {
+		// If directory does not exist, treat this as empty. This is consistent with how blob storage
+		// would behave
+		if os.IsNotExist(err) {
+			close(results)
+			return
+		}
+
 		results <- ListResult{Error: err}
 	}
 	close(results)
