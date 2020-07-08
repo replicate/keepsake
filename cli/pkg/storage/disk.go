@@ -21,8 +21,8 @@ func NewDiskStorage(folder string) (*DiskStorage, error) {
 	}, nil
 }
 
-func (s *DiskStorage) Get(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+func (s *DiskStorage) Get(p string) ([]byte, error) {
+	return ioutil.ReadFile(path.Join(s.folder, p))
 }
 
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
@@ -31,7 +31,11 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 			return err
 		}
 		if filepath.Base(path) == filename {
-			results <- ListResult{Path: path}
+			relPath, err := filepath.Rel(s.folder, path)
+			if err != nil {
+				return err
+			}
+			results <- ListResult{Path: relPath}
 		}
 		return nil
 	})
