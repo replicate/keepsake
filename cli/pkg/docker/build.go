@@ -4,32 +4,25 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/remote"
+	"replicate.ai/cli/pkg/rsync"
 )
 
 // Build a Docker image by calling `docker build` locally
 //
 // Log output is sent to stdout/err.
-func Build(host string, path string, dockerfile string, name string) error {
-	// TODO: This is local just to get this working. It probably wants to be remote so Docker doesn't
-	// have to be installed locally, and so SSH keys can work
-
-	args := []string{}
-	if host != "" {
-		args = append(args, "--host", host)
-	}
-	args = append(args,
+func Build(remoteOptions *remote.Options, folder string, dockerfile string, name string) error {
+	args := []string{
 		"build", ".",
 		"--build-arg", "BUILDKIT_INLINE_CACHE=1",
 		"--file", "-",
 		"--tag", name,
-	)
+	}
 
 	cmd := exec.Command("docker", args...)
-	cmd.Dir = path
-	cmd.Env = os.Environ()
+	cmd.Env = os.Environ() // TODO(andreas): do we actually want to passthru environemnt
 	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -44,11 +37,28 @@ func Build(host string, path string, dockerfile string, name string) error {
 		io.WriteString(stdin, dockerfile)
 	}()
 
-	console.Debug("Running '%v'", strings.Join(cmd.Args, " "))
+	console.Debug("Running '%s'", cmd.String())
 
-	if err := cmd.Start(); err != nil {
-		return err
+	if remoteOptions == nil {
+		cmd.Dir = folder
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+		return cmd.Wait()
 	}
 
-	return cmd.Wait()
+	remoteTempDir, err := rsync.UploadToTempDir(folder, remoteOptions)
+	if err != nil {
+		return err
+	}
+	cmd.Dir = remoteTempDir
+	client, err := remote.NewClient(remoteOptions)
+	if err != nil {
+		return err
+	}
+	remoteCmd := client.WrapCommand(cmd)
+	if err := remoteCmd.Start(); err != nil {
+		return err
+	}
+	return remoteCmd.Wait()
 }

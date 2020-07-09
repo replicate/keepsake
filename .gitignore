@@ -8,6 +8,8 @@ cli/release
 python/build
 python/dist
 
-# scratch notebook
+# scratch notebooks
 python/Untitled.ipynb
 python/.ipynb_checkpoints
+cli/Untitled.ipynb
+cli/.ipynb_checkpoints

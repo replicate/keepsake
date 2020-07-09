@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	dockerContext "github.com/docker/cli/cli/context/docker"
@@ -13,13 +16,17 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/spf13/cobra"
 
+	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/docker"
+	"replicate.ai/cli/pkg/global"
 	"replicate.ai/cli/pkg/hash"
+	"replicate.ai/cli/pkg/remote"
 )
 
 type runOpts struct {
-	host string
+	host       string
+	privateKey string
 }
 
 type closeFunc func() error
@@ -39,6 +46,7 @@ func newRunCommand() *cobra.Command {
 	// Flags after first argument are interpreted as arguments, so they get passed to Docker
 	flags.SetInterspersed(false)
 	flags.StringVarP(&opts.host, "host", "H", "", "SSH host and port to run command on")
+	flags.StringVarP(&opts.privateKey, "private-key", "K", "", "SSH private key path")
 
 	return cmd
 }
@@ -70,15 +78,30 @@ func runCommand(opts runOpts, args []string) error {
 	jobID := hash.Random()
 	containerName := "replicate-" + jobID
 
-	// TODO: pick working directory correctly. Should be same directory replicate.yaml is in.
-	workdir, err := os.Getwd()
+	sourceDir, err := findSourceDir()
 	if err != nil {
 		return err
 	}
 
 	console.Info("Building Docker image...")
 
-	if err := docker.Build(dockerHost, workdir, dockerfile, containerName); err != nil {
+	var remoteOptions *remote.Options
+	if opts.host != "" {
+		username, host, port, err := parseHost(opts.host)
+		if err != nil {
+			return err
+		}
+		remoteOptions = &remote.Options{
+			Host:     host,
+			Username: username,
+			Port:     port,
+		}
+		if opts.privateKey != "" {
+			remoteOptions.PrivateKeys = []string{opts.privateKey}
+		}
+	}
+
+	if err := docker.Build(remoteOptions, sourceDir, dockerfile, containerName); err != nil {
 		return err
 	}
 
@@ -200,4 +223,36 @@ func waitUntilExit(ctx context.Context, dockerClient *client.Client, containerID
 	}()
 
 	return statusChan
+}
+
+func findSourceDir() (string, error) {
+	if global.SourceDirectory == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		configPath, err := config.FindConfigPath(cwd)
+		if err != nil {
+			console.Debug("%s", err)
+			console.Warn("%s not found, using working directory %s", global.ReplicateDownloadURLs, cwd)
+			return cwd, nil
+		}
+		return filepath.Dir(configPath), nil
+	}
+	return global.SourceDirectory, nil
+}
+
+func parseHost(hostWithUsernameAndPort string) (username string, host string, port int, err error) {
+	re := regexp.MustCompile("^(?:([^@]+)@)?([^:]+)(?:([0-9]+))?$")
+	matches := re.FindStringSubmatch(hostWithUsernameAndPort)
+	if len(matches) == 0 {
+		return "", "", 0, fmt.Errorf("Invalid host. The host must be in the format [username@]hostname[:port]")
+	}
+	username = matches[1]
+	host = matches[2]
+	port, err = strconv.Atoi(matches[3])
+	if err != nil {
+		return "", "", 0, err
+	}
+	return username, host, port, nil
 }
