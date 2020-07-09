@@ -46,7 +46,7 @@ func newRunCommand() *cobra.Command {
 	// Flags after first argument are interpreted as arguments, so they get passed to Docker
 	flags.SetInterspersed(false)
 	flags.StringVarP(&opts.host, "host", "H", "", "SSH host and port to run command on")
-	flags.StringVarP(&opts.privateKey, "private-key", "K", "", "SSH private key path")
+	flags.StringVarP(&opts.privateKey, "identity-file", "i", "", "SSH private key path")
 
 	return cmd
 }
