@@ -31,7 +31,7 @@ type Config struct {
 // FindConfig searches the current directory and any parent directories for replicate.yaml,
 // then loads it
 func FindConfig(folder string) (conf *Config, err error) {
-	configPath, err := findConfigPath(folder)
+	configPath, err := FindConfigPath(folder)
 	if err != nil {
 		if _, ok := err.(*configNotFoundError); ok {
 			return getDefaultConfig(), nil
@@ -81,7 +81,7 @@ func Parse(text []byte) (conf *Config, err error) {
 	return conf, nil
 }
 
-func findConfigPath(startFolder string) (configPath string, err error) {
+func FindConfigPath(startFolder string) (configPath string, err error) {
 	folder := startFolder
 	for i := 0; i < maxSearchDepth; i++ {
 		configPath = filepath.Join(folder, global.ConfigFilename)

@@ -2,7 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"path/filepath"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -33,15 +34,11 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if len(args) == 1 {
 		storageURL = args[0]
 	} else {
-		absoluteSourceDirectory, err := filepath.Abs(global.SourceDirectory)
-		if err != nil {
-			return nil
-		}
-		conf, err := config.FindConfig(absoluteSourceDirectory)
+		var err error
+		storageURL, err = findStorageURL()
 		if err != nil {
 			return err
 		}
-		storageURL = conf.Storage
 	}
 
 	format, err := cmd.Flags().GetString("format")
@@ -59,4 +56,23 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	}
 
 	return list.Experiments(store, format)
+}
+
+func findStorageURL() (string, error) {
+	if global.SourceDirectory == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		conf, err := config.FindConfig(cwd)
+		if err != nil {
+			return "", err
+		}
+		return conf.Storage, nil
+	}
+	conf, err := config.LoadConfig(path.Join(global.SourceDirectory, global.ConfigFilename))
+	if err != nil {
+		return "", err
+	}
+	return conf.Storage, nil
 }
