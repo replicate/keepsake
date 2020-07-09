@@ -234,7 +234,6 @@ func findSourceDir() (string, error) {
 		configPath, err := config.FindConfigPath(cwd)
 		if err != nil {
 			console.Debug("%s", err)
-			console.Warn("%s not found, using working directory %s", global.ReplicateDownloadURLs, cwd)
 			return cwd, nil
 		}
 		return filepath.Dir(configPath), nil
