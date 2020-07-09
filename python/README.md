@@ -2,7 +2,8 @@
 
 ## Run tests
 
-    $ python -m unittest
+    $ pip install --editable .[test]
+    $ py.test
 
 ## Install for development
 
