@@ -30,6 +30,7 @@ setuptools.setup(
             "mypy==0.782",
             "black==19.10b0",
             "pytest==5.4.3",
+            "tox==3.14.1",
         ],
     }
 )
