@@ -17,6 +17,9 @@ def load_config(project_dir):
             data = yaml.safe_load(fh)
     except FileNotFoundError:
         data = {}
+    # Empty file
+    if data is None:
+        data = {}
     return validate_and_set_defaults(data)
 
 
