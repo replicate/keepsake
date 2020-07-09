@@ -10,7 +10,7 @@ import (
 	"replicate.ai/cli/pkg/rsync"
 )
 
-// Build a Docker image by calling `docker build` locally
+// Build a Docker image by calling `docker build` locally or remotely over SSH
 //
 // Log output is sent to stdout/err.
 func Build(remoteOptions *remote.Options, folder string, dockerfile string, name string) error {
