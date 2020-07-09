@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 
 	dockerContext "github.com/docker/cli/cli/context/docker"
@@ -45,7 +43,7 @@ func newRunCommand() *cobra.Command {
 	flags := cmd.Flags()
 	// Flags after first argument are interpreted as arguments, so they get passed to Docker
 	flags.SetInterspersed(false)
-	flags.StringVarP(&opts.host, "host", "H", "", "SSH host and port to run command on")
+	flags.StringVarP(&opts.host, "host", "H", "", "SSH host to run command on, in form [username@]hostname[:port]")
 	flags.StringVarP(&opts.privateKey, "identity-file", "i", "", "SSH private key path")
 
 	return cmd
@@ -87,14 +85,9 @@ func runCommand(opts runOpts, args []string) error {
 
 	var remoteOptions *remote.Options
 	if opts.host != "" {
-		username, host, port, err := parseHost(opts.host)
+		remoteOptions, err := remote.ParseHost(opts.host)
 		if err != nil {
 			return err
-		}
-		remoteOptions = &remote.Options{
-			Host:     host,
-			Username: username,
-			Port:     port,
 		}
 		if opts.privateKey != "" {
 			remoteOptions.PrivateKeys = []string{opts.privateKey}
@@ -239,19 +232,4 @@ func findSourceDir() (string, error) {
 		return filepath.Dir(configPath), nil
 	}
 	return global.SourceDirectory, nil
-}
-
-func parseHost(hostWithUsernameAndPort string) (username string, host string, port int, err error) {
-	re := regexp.MustCompile("^(?:([^@]+)@)?([^:]+)(?:([0-9]+))?$")
-	matches := re.FindStringSubmatch(hostWithUsernameAndPort)
-	if len(matches) == 0 {
-		return "", "", 0, fmt.Errorf("Invalid host. The host must be in the format [username@]hostname[:port]")
-	}
-	username = matches[1]
-	host = matches[2]
-	port, err = strconv.Atoi(matches[3])
-	if err != nil {
-		return "", "", 0, err
-	}
-	return username, host, port, nil
 }
