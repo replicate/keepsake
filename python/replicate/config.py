@@ -30,7 +30,9 @@ def validate_and_set_defaults(data):
     for key in REQUIRED_KEYS:
         if key not in data:
             raise ConfigValidationError(
-                "The option '{}' is required in replicate.yaml, but you have no set it."
+                "The option '{}' is required in replicate.yaml, but you have no set it.".format(
+                    key
+                )
             )
 
     for key, value in DEFAULTS.items():
@@ -40,7 +42,9 @@ def validate_and_set_defaults(data):
     for key, value in data.items():
         if key not in VALID_KEYS:
             raise ConfigValidationError(
-                "The option '{}' is in replicate.yaml, but it is not supported."
+                "The option '{}' is in replicate.yaml, but it is not supported.".format(
+                    key
+                )
             )
 
         if key == "storage":
