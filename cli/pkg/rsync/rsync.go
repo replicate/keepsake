@@ -92,6 +92,7 @@ func rsyncCmd(localDir string, remoteOptions *remote.Options, remoteDir string, 
 
 func getRemoteSpec(remoteOptions *remote.Options, remoteDir string) string {
 	remoteSpec := ""
+	// FIXME (bfirsh): this could be done with -l in SSHArgs so we don't have to concatenate strings, like how Docker client does it
 	if remoteOptions.Username != "" {
 		remoteSpec += remoteOptions.Username + "@"
 	}
