@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -48,6 +49,10 @@ func authMethodsFromOptions(options *Options) ([]ssh.AuthMethod, error) {
 		if exists {
 			pkAuth, err := privateKeyAuthMethod(absPath)
 			if err != nil {
+				// HACK (bfirsh): ignore encrypted keys to fall back to SSH agent
+				if strings.Contains(err.Error(), "cannot decode encrypted private keys") {
+					continue
+				}
 				return nil, err
 			}
 			authMethods = append(authMethods, pkAuth)
