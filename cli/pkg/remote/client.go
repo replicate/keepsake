@@ -3,6 +3,7 @@ package remote
 import (
 	"fmt"
 	"net"
+	"os/user"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -42,8 +43,17 @@ func NewClient(options *Options) (*Client, error) {
 		return nil, err
 	}
 
+	username := options.Username
+	if username == "" {
+		user, err := user.Current()
+		if err != nil {
+			return nil, err
+		}
+		username = user.Username
+	}
+
 	config := &ssh.ClientConfig{
-		User:            options.Username,
+		User:            username,
 		Auth:            authMethods,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: handle host keys securely
 	}
