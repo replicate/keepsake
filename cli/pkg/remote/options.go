@@ -40,7 +40,7 @@ func ParseHost(hostWithUsernameAndPort string) (options *Options, err error) {
 	return options, nil
 }
 
-// SSHArgs returns SSH arguments/flags, except for host, port, and username
+// SSHArgs returns SSH arguments/flags, except for host, and username
 func (o *Options) SSHArgs() []string {
 	args := []string{}
 

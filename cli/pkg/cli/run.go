@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	dockerContext "github.com/docker/cli/cli/context/docker"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -59,16 +58,30 @@ RUN [ -f requirements.txt ] && pip install -r requirements.txt || echo 0
 WORKDIR /code
 `
 
-func runCommand(opts runOpts, args []string) error {
-	var err error
-	dockerHost := ""
-	if opts.host != "" {
-		dockerHost = "ssh://" + opts.host
-	}
+func runCommand(opts runOpts, args []string) (err error) {
+	var remoteOptions *remote.Options
+	var dockerClient *client.Client
 
-	dockerClient, err := getDockerClient(dockerHost)
-	if err != nil {
-		return err
+	if opts.host == "" {
+		// Local mode
+		dockerClient, err = docker.NewLocalClient()
+		if err != nil {
+			return err
+		}
+	} else {
+		// Remote SSH mode
+		remoteOptions, err = remote.ParseHost(opts.host)
+		if err != nil {
+			return err
+		}
+		if opts.privateKey != "" {
+			remoteOptions.PrivateKeys = []string{opts.privateKey}
+		}
+
+		dockerClient, err = docker.NewRemoteClient(remoteOptions)
+		if err != nil {
+			return err
+		}
 	}
 
 	// TODO: maybe make this same as experiment ID? could generate environment ID here and pass as environment variable
@@ -82,17 +95,6 @@ func runCommand(opts runOpts, args []string) error {
 	}
 
 	console.Info("Building Docker image...")
-
-	var remoteOptions *remote.Options
-	if opts.host != "" {
-		remoteOptions, err := remote.ParseHost(opts.host)
-		if err != nil {
-			return err
-		}
-		if opts.privateKey != "" {
-			remoteOptions.PrivateKeys = []string{opts.privateKey}
-		}
-	}
 
 	if err := docker.Build(remoteOptions, sourceDir, dockerfile, containerName); err != nil {
 		return err
@@ -150,23 +152,6 @@ func runCommand(opts runOpts, args []string) error {
 	}
 
 	return nil
-}
-
-func getDockerClient(host string) (*client.Client, error) {
-	var err error
-	// Based on code from github.com/docker/cli/context/docker/load.go
-	// TODO (bfirsh): support reading from different SSH keys (with GCloud one by default)
-	endpoint := dockerContext.Endpoint{
-		EndpointMeta: dockerContext.EndpointMeta{
-			Host: host,
-		},
-	}
-	clientOpts, err := endpoint.ClientOpts()
-	if err != nil {
-		return nil, err
-	}
-
-	return client.NewClientWithOpts(clientOpts...)
 }
 
 // Based on containerAttach in github.com/docker/cli cli/command/container/run.go, but using logs instead of attach
