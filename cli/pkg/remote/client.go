@@ -25,10 +25,11 @@ func NewClient(options *Options) (*Client, error) {
 		options: options,
 	}
 
-	hostWithPort := options.Host
+	port := 22
 	if options.Port != 0 {
-		hostWithPort = net.JoinHostPort(options.Host, fmt.Sprintf("%d", options.Port))
+		port = options.Port
 	}
+	hostWithPort := net.JoinHostPort(options.Host, fmt.Sprintf("%d", port))
 
 	tcpConn, err := net.DialTimeout("tcp", hostWithPort, options.ConnectTimeout)
 	if err != nil {

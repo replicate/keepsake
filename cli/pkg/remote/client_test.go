@@ -2,7 +2,6 @@ package remote
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os/exec"
 	"testing"
@@ -18,7 +17,8 @@ func TestExecOutput(t *testing.T) {
 	defer mockRemote.Kill()
 
 	client, err := NewClient(&Options{
-		Host:        fmt.Sprintf("localhost:%d", mockRemote.Port),
+		Host:        "localhost",
+		Port:        mockRemote.Port,
 		Username:    "root",
 		PrivateKeys: []string{mockRemote.PrivateKeyPath},
 	})
@@ -37,7 +37,8 @@ func TestExecInput(t *testing.T) {
 	defer mockRemote.Kill()
 
 	client, err := NewClient(&Options{
-		Host:        fmt.Sprintf("localhost:%d", mockRemote.Port),
+		Host:        "localhost",
+		Port:        mockRemote.Port,
 		Username:    "root",
 		PrivateKeys: []string{mockRemote.PrivateKeyPath},
 	})
