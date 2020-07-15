@@ -11,6 +11,12 @@ RELEASE_DIR := release
 BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/$(NAME)
 INSTALL_PATH := /usr/local/bin/$(NAME)
 
+ASSETS_PACKAGE := assets
+ASSETS_DIR := pkg/$(ASSETS_PACKAGE)
+ASSETS_INPUT := raw-assets
+
+LDFLAGS := -ldflags "-X replicate.ai/cli/pkg/global.Version=$(VERSION) -w"
+
 export GO111MODULE = on
 
 .PHONY: default
@@ -20,24 +26,36 @@ default: build
 all: clean build_all install
 
 .PHONY: build
-build:
+build: assets
 	@mkdir -p $(RELEASE_DIR)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN)
 
 .PHONY: build-all
-build-all:
+build-all: assets
 	@mkdir -p $(RELEASE_DIR)
 	$(foreach GOOS, $(PLATFORMS),\
 	$(foreach GOARCH, $(ARCHITECTURES), \
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -v $(LDFLAGS) -o $(BINARY) $(MAIN); ))
 
+.PHONY: install
 install: build
 	cp $(BINARY) $(INSTALL_PATH)
 
-clean:
+.PHONY: assets
+assets:
+	@go-bindata --version &>/dev/null || go get -u github.com/go-bindata/go-bindata/...
+	@mkdir -p $(ASSETS_DIR)
+	go-bindata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
+
+.PHONY: clean-assets
+clean-assets:
+	rm -rf $(ASSETS_DIR)
+
+.PHONY: clean
+clean: clean-assets
 	rm -rf $(RELEASE_DIR)
 
-test: check-fmt vet lint
+test: check-fmt assets vet lint
 	REPLICATE_NO_ANALYTICS=1 go test -v -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
@@ -60,16 +78,8 @@ race:
 
 .PHONY: lint
 lint:
-	@golint "" 2>/dev/null || (echo "installing golint..." && go get -u golang.org/x/lint/golint &>/dev/null)
-	@golint ./... \
-	| grep -v "should have comment.* or be unexported"  > /tmp/replicate-cli-lint-errors.txt \
-	|| true
-	@if [[ $$(wc -l /tmp/replicate-cli-lint-errors.txt | cut -f1 -d" ") > 0 ]]; then \
-	    cat /tmp/replicate-cli-lint-errors.txt; \
-	    exit 1; \
-	else \
-	    echo "golint successful"; \
-	fi
+	@golangci-lint help &>/dev/null || (echo "installing golangci-lint..." && go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.27.0 &>/dev/null)
+	golangci-lint run ./...
 
 .PHONY: fmt
 fmt: install-goimports

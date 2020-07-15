@@ -21,16 +21,15 @@ func TestBuildLocal(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(localDir)
 
-	text := uniuri.New()
-	require.NoError(t, ioutil.WriteFile(path.Join(localDir, "foo.txt"), []byte(text), 0644))
-
 	dockerfile := `
-FROM alpine
-COPY foo.txt /foo.txt
-CMD cat /foo.txt
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+ARG HAS_GPU
+ENV HAS_GPU=$HAS_GPU
+CMD echo $HAS_GPU
 `
 	name := "replicate-" + strings.ToLower(uniuri.NewLen(10))
-	err = Build(nil, localDir, dockerfile, name)
+	err = Build(nil, localDir, dockerfile, name, "alpine", true)
 	require.NoError(t, err)
 
 	defer func() {
@@ -40,14 +39,14 @@ CMD cat /foo.txt
 	}()
 
 	out, err := exec.Command("docker", "run", "-i", "--rm", name).CombinedOutput()
-	require.NoError(t, err)
-	require.Equal(t, text, string(out))
+	require.NoError(t, err, string(out))
+	require.Equal(t, "1\n", string(out))
 }
 
 func TestBuildRemote(t *testing.T) {
 	mockRemote, err := remote.NewMockRemote()
 	require.NoError(t, err)
-	defer mockRemote.Kill()
+	defer mockRemote.Kill() //nolint
 
 	options := &remote.Options{
 		Host:        "localhost",
@@ -64,7 +63,8 @@ func TestBuildRemote(t *testing.T) {
 	require.NoError(t, ioutil.WriteFile(path.Join(localDir, "foo.txt"), []byte(text), 0644))
 
 	dockerfile := `
-FROM alpine
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
 COPY foo.txt /foo.txt
 CMD cat /foo.txt
 `
@@ -72,7 +72,7 @@ CMD cat /foo.txt
 	require.NoError(t, err)
 
 	name := "replicate-" + strings.ToLower(uniuri.NewLen(10))
-	err = Build(options, localDir, dockerfile, name)
+	err = Build(options, localDir, dockerfile, name, "alpine", false)
 	require.NoError(t, err)
 
 	defer func() {

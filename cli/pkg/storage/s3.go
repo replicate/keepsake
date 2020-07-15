@@ -66,9 +66,7 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filt
 	if !strings.HasSuffix(folder, "/") {
 		folder += "/"
 	}
-	if strings.HasPrefix(folder, "/") {
-		folder = folder[1:]
-	}
+	folder = strings.TrimPrefix(folder, "/")
 
 	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket:  aws.String(s.bucket),

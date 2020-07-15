@@ -14,7 +14,7 @@ import (
 func TestExecOutput(t *testing.T) {
 	mockRemote, err := NewMockRemote()
 	require.NoError(t, err)
-	defer mockRemote.Kill()
+	defer mockRemote.Kill() //nolint
 
 	client, err := NewClient(&Options{
 		Host:        "localhost",
@@ -34,7 +34,7 @@ func TestExecOutput(t *testing.T) {
 func TestExecInput(t *testing.T) {
 	mockRemote, err := NewMockRemote()
 	require.NoError(t, err)
-	defer mockRemote.Kill()
+	defer mockRemote.Kill() //nolint
 
 	client, err := NewClient(&Options{
 		Host:        "localhost",
@@ -59,7 +59,8 @@ func TestExecInput(t *testing.T) {
 	require.NoError(t, err)
 	stdin.Close()
 
-	remoteCmd.Wait()
+	err = remoteCmd.Wait()
+	require.NoError(t, err)
 
 	require.Equal(t, "hello world\n", output.String())
 }
