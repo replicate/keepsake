@@ -1,11 +1,10 @@
 module.exports = {
   someSidebar: {
-    Replicate: [
-      "getting-started",
+    "Getting started": [
+      "tutorial",
       "working-with-remote-machines",
-      "example-models",
-      "replicate-yaml",
-      "cli",
+      "how-it-works",
     ],
+    Reference: ["example-models", "python", "replicate-yaml", "cli"],
   },
 };
