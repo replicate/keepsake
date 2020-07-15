@@ -32,7 +32,7 @@ class Storage:
         """
         Save directory to path
         """
-        ignore = [".replicate", ".git"]
+        ignore = [".replicate", ".git", "venv"]
 
         for current_directory, dirs, files in os.walk(dir_to_store, topdown=True):
             dirs[:] = [d for d in dirs if d not in ignore]
