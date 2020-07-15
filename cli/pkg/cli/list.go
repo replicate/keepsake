@@ -2,14 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"replicate.ai/cli/pkg/config"
-	"replicate.ai/cli/pkg/global"
 	"replicate.ai/cli/pkg/list"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
@@ -34,11 +30,11 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if len(args) == 1 {
 		storageURL = args[0]
 	} else {
-		var err error
-		storageURL, err = findStorageURL()
+		conf, _, err := loadConfig()
 		if err != nil {
 			return err
 		}
+		storageURL = conf.Storage
 	}
 
 	format, err := cmd.Flags().GetString("format")
@@ -56,23 +52,4 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	}
 
 	return list.Experiments(store, format)
-}
-
-func findStorageURL() (string, error) {
-	if global.SourceDirectory == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return "", err
-		}
-		conf, err := config.FindConfig(cwd)
-		if err != nil {
-			return "", err
-		}
-		return conf.Storage, nil
-	}
-	conf, err := config.LoadConfig(path.Join(global.SourceDirectory, global.ConfigFilename))
-	if err != nil {
-		return "", err
-	}
-	return conf.Storage, nil
 }

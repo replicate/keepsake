@@ -2,11 +2,13 @@ package cli
 
 import (
 	"os"
+	"path"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/analytics"
+	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/global"
 	"replicate.ai/cli/pkg/settings"
@@ -85,4 +87,26 @@ func setPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&global.SourceDirectory, "source-directory", "D", "", "Local source directory")
 	cmd.PersistentFlags().BoolVarP(&global.Verbose, "verbose", "v", false, "Verbose output")
 
+}
+
+// loadConfig loads config from global.SourceDirectory if it's
+// defined, or searches recursively from cwd. If no replicate.yaml is
+// found, it creates a default config.
+func loadConfig() (conf *config.Config, sourceDir string, err error) {
+	if global.SourceDirectory == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return nil, "", err
+		}
+		conf, sourceDir, err := config.FindConfig(cwd)
+		if err != nil {
+			return nil, "", err
+		}
+		return conf, sourceDir, nil
+	}
+	conf, err = config.LoadConfig(path.Join(global.SourceDirectory, global.ConfigFilename))
+	if err != nil {
+		return nil, "", err
+	}
+	return conf, global.SourceDirectory, nil
 }

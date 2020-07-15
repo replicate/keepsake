@@ -53,7 +53,7 @@ func (c *Client) Track(event string, properties map[string]string) {
 	for k, v := range properties {
 		segmentProperties.Set(k, v)
 	}
-	c.segmentClient.Enqueue(segment.Track{
+	c.segmentClient.Enqueue(segment.Track{ //nolint
 		UserId:     c.email,
 		Event:      event,
 		Properties: segmentProperties,

@@ -63,13 +63,9 @@ func outputTable(experiments []*GroupedExperiment) error {
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	keys := []string{"experiment", "started"}
-	for _, heading := range expHeadings {
-		keys = append(keys, heading)
-	}
+	keys = append(keys, expHeadings...)
 	keys = append(keys, "commits", "latest")
-	for _, heading := range commitHeadings {
-		keys = append(keys, heading)
-	}
+	keys = append(keys, commitHeadings...)
 	for i, key := range keys {
 		fmt.Fprintf(tw, "%s", key)
 		if i < len(keys)-1 {

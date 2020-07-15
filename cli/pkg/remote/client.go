@@ -15,7 +15,6 @@ type Client struct {
 	sshConn    ssh.Conn
 	sshClient  *ssh.Client
 	sftpClient *sftp.Client
-	session    ssh.Session
 }
 
 // TODO: intern connections keyed on options

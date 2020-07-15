@@ -15,7 +15,7 @@ import (
 func TestUpload(t *testing.T) {
 	mockRemote, err := remote.NewMockRemote()
 	require.NoError(t, err)
-	defer mockRemote.Kill()
+	defer mockRemote.Kill() //nolint
 
 	localDir, err := ioutil.TempDir("/tmp", "replicate-test-")
 	require.NoError(t, err)

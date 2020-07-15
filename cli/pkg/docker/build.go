@@ -13,12 +13,16 @@ import (
 // Build a Docker image by calling `docker build` locally or remotely over SSH
 //
 // Log output is sent to stdout/err.
-func Build(remoteOptions *remote.Options, folder string, dockerfile string, name string) error {
+func Build(remoteOptions *remote.Options, folder string, dockerfile string, name string, baseImage string, hasGPU bool) error {
 	args := []string{
 		"build", ".",
 		"--build-arg", "BUILDKIT_INLINE_CACHE=1",
+		"--build-arg", "BASE_IMAGE=" + baseImage,
 		"--file", "-",
 		"--tag", name,
+	}
+	if hasGPU {
+		args = append(args, "--build-arg", "HAS_GPU=1")
 	}
 
 	cmd := exec.Command("docker", args...)
@@ -34,7 +38,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 
 	go func() {
 		defer stdin.Close()
-		io.WriteString(stdin, dockerfile)
+		io.WriteString(stdin, dockerfile) //nolint
 	}()
 
 	console.Debug("Running '%s'", cmd.String())

@@ -42,7 +42,7 @@ func NewMockRemote() (*MockRemote, error) {
 
 	err = netutils.WaitForPort(port, 60*time.Second)
 	if err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, fmt.Errorf("Failed to connect to sshd server before timeout")
 	}
 
@@ -50,37 +50,37 @@ func NewMockRemote() (*MockRemote, error) {
 	cmd := exec.Command("docker", "exec", "-i", m.ContainerName, "bash", "-c", "mkdir -p /root/.ssh && cat - > /root/.ssh/authorized_keys && chmod 400 /root/.ssh/authorized_keys")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if err := cmd.Start(); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if _, err := stdin.Write([]byte(publicKey)); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if err := stdin.Close(); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if err := cmd.Wait(); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err.(*exec.ExitError)
 	}
 
 	privateKeyFile, err := ioutil.TempFile("/tmp", "replicate-test-private-key-*")
 	if err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if _, err := privateKeyFile.WriteString(privateKey); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	if err := privateKeyFile.Close(); err != nil {
-		m.Kill()
+		m.Kill() //nolint
 		return nil, err
 	}
 	m.PrivateKeyPath = privateKeyFile.Name()

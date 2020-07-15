@@ -15,16 +15,26 @@ func TestFindConfig(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	conf, err := FindConfig(dir)
+	conf, _, err := FindConfig(dir)
 	require.NoError(t, err)
-	require.Equal(t, &Config{Storage: ".replicate/storage/"}, conf)
+	require.Equal(t, &Config{
+		Python:             "3.7",
+		PythonRequirements: "requirements.txt",
+		Install:            []string{},
+		Storage:            ".replicate/storage/",
+	}, conf)
 
 	// Loads a basic config
 	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("storage: 'foo'"), 0644)
 	require.NoError(t, err)
-	conf, err = FindConfig(dir)
+	conf, _, err = FindConfig(dir)
 	require.NoError(t, err)
-	require.Equal(t, &Config{Storage: "foo"}, conf)
+	require.Equal(t, &Config{
+		Python:             "3.7",
+		PythonRequirements: "requirements.txt",
+		Install:            []string{},
+		Storage:            "foo",
+	}, conf)
 }
 
 func TestParse(t *testing.T) {
@@ -35,5 +45,10 @@ func TestParse(t *testing.T) {
 	// Sets defaults in empty config
 	conf, err := Parse([]byte(""))
 	require.NoError(t, err)
-	require.Equal(t, &Config{Storage: ".replicate/storage/"}, conf)
+	require.Equal(t, &Config{
+		Python:             "3.7",
+		PythonRequirements: "requirements.txt",
+		Install:            []string{},
+		Storage:            ".replicate/storage/",
+	}, conf)
 }

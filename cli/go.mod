@@ -16,7 +16,9 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/ghodss/yaml v1.0.0
+	github.com/golangci/golangci-lint v1.27.0 // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
+	github.com/hashicorp/go-version v1.2.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/moby/term v0.0.0-20200611042045-63b9a826fb74 // indirect
@@ -30,8 +32,9 @@ require (
 	github.com/xeonx/timeago v1.0.0-rc4
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
 	gotest.tools v2.2.0+incompatible // indirect
+	k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19 // indirect
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
 )
