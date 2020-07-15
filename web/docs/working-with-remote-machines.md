@@ -5,9 +5,11 @@ title: Working with remote machines
 
 Replicate makes it really easy to work with multiple training machines.
 
+## Storing data on S3 or Google Cloud Storage
+
 You can push experiments to a central registry. This means that your experiments are not tied to the machine they are run on. It also allows you to share experiments with collagues.
 
-This guide is a work-in-progress, but hopefully it is enough to get you started.
+## Running training jobs on remote machines
 
 ## What's next
 

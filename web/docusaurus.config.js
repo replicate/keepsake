@@ -7,6 +7,7 @@ module.exports = {
   projectName: "docusaurus", // Usually your repo name.
   themeConfig: {
     disableDarkMode: true,
+    sidebarCollapsible: false, // Perhaps enable this when we have more content
     navbar: {
       title: "Replicate",
       logo: {
@@ -15,7 +16,7 @@ module.exports = {
       },
       links: [
         {
-          to: "docs/getting-started",
+          to: "docs/tutorial",
           activeBasePath: "docs",
           label: "Docs",
           position: "left",

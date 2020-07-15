@@ -100,7 +100,7 @@ function Home() {
                 "button button--secondary button--lg",
                 styles.getStarted
               )}
-              to={useBaseUrl("docs/getting-started")}
+              to={useBaseUrl("docs/tutorial")}
             >
               Get Started
             </Link>
@@ -272,7 +272,7 @@ $ git commit -am "Use hinge loss"`}
                   "button button--secondary button--lg margin-vert--md",
                   styles.getStarted
                 )}
-                to={useBaseUrl("docs/getting-started")}
+                to={useBaseUrl("docs/tutorial")}
               >
                 Get Started
               </Link>
