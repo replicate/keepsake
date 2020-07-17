@@ -16,7 +16,7 @@ func FileExists(filePath string) (bool, error) {
 	} else if os.IsNotExist(err) {
 		return false, nil
 	} else {
-		return false, fmt.Errorf("Failed to determine if %s exists, got error: %s", filePath, err)
+		return false, fmt.Errorf("Failed to determine if %s exists, got error: %w", filePath, err)
 	}
 }
 
