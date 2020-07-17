@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 {{range $i, $install := .Install}}
 RUN {{$install}}{{end}}
 {{if .HasPythonRequirements}}
-COPY {{.PythonRequirements}} /tmp/requirements.txt
+COPY "{{.PythonRequirements}}" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 {{end}}
 # FIXME: temporary, until this is on pypi or we find a better temporary spot
