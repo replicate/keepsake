@@ -17,8 +17,19 @@ func NewDiskStorage(folder string) (*DiskStorage, error) {
 	}, nil
 }
 
+// Get data at path
 func (s *DiskStorage) Get(p string) ([]byte, error) {
 	return ioutil.ReadFile(path.Join(s.folder, p))
+}
+
+// Put data at path
+func (s *DiskStorage) Put(p string, data []byte) error {
+	fullPath := path.Join(s.folder, p)
+	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(fullPath, data, 0644)
 }
 
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
