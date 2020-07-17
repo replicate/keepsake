@@ -49,7 +49,7 @@ func TempDir(prefix string) (string, error) {
 	}
 	name, err := ioutil.TempDir(tempFolder, prefix+"-")
 	if err != nil {
-		return "", fmt.Errorf("Failed to create temporary directory at %s, got error: %s", tempFolder, err)
+		return "", fmt.Errorf("Failed to create temporary directory at %s, got error: %w", tempFolder, err)
 	}
 	return name, nil
 }
