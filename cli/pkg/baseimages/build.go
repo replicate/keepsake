@@ -46,8 +46,8 @@ func BuildBaseImages(builder Builder, project string, registry string, version s
 				Python:        py,
 				Ubuntu:        cuVer.Ubuntu,
 				FrameworkMeta: nil,
-				CUDA:          &cuVer.CUDA,
-				CuDNN:         &cuVer.CuDNN,
+				CUDA:          cuVer.CUDA,
+				CuDNN:         cuVer.CuDNN,
 			}
 			gpuBaseImages[PythonCUDACuDNNUbuntu{
 				Python: py,
@@ -123,8 +123,8 @@ func BuildBaseImages(builder Builder, project string, registry string, version s
 				Python:        py,
 				Ubuntu:        ubuntu,
 				FrameworkMeta: meta,
-				CUDA:          &cuda,
-				CuDNN:         &cuDNN,
+				CUDA:          cuda,
+				CuDNN:         cuDNN,
 			}
 			if !builder.ImageExists(gpuImage.RepositoryName()) {
 				go buildImageWithPythonPackages(builder, &wg, gpuBaseImage.RepositoryName(), meta.GPUPackages(), py, gpuImage.RepositoryName())

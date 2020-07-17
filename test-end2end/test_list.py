@@ -1,38 +1,7 @@
 import json
 import os
 import subprocess
-import random
-import string
-import boto3
 import pytest  # type: ignore
-
-
-@pytest.fixture(autouse=True, scope="module")
-def install_cli():
-    subprocess.Popen(["make", "install"], cwd="../cli").wait()
-
-
-@pytest.fixture(autouse=True, scope="module")
-def install_python():
-    subprocess.Popen(["pip", "install", "."], cwd="../python").wait()
-
-
-@pytest.fixture(scope="function")
-def temp_bucket():
-    s3 = boto3.resource("s3")
-    bucket_name = "replicate-test-" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(20)
-    )
-
-    try:
-        s3.create_bucket(Bucket=bucket_name)
-        bucket = s3.Bucket(bucket_name)
-        bucket.wait_until_exists()
-        yield bucket_name
-    finally:
-        bucket = s3.Bucket(bucket_name)
-        bucket.objects.all().delete()
-        bucket.delete()
 
 
 @pytest.mark.parametrize("storage_backend", ["s3", "file", "undefined"])

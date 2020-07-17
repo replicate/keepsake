@@ -1,5 +1,8 @@
+import torch
 import replicate
 
+
+print(torch.cuda.device_count())
 
 experiment = replicate.init(params={"learning_rate": 0.002})
 

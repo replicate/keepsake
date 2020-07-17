@@ -14,9 +14,6 @@ jobs:
       run:
         shell: bash
         working-directory: test-end2end
-    strategy:
-      matrix:
-        python: [3.6, 3.7, 3.8]
     steps:
     - uses: actions/checkout@master
     - uses: actions/setup-go@v2
@@ -25,7 +22,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python }}
+        python-version: 3.7
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -36,5 +33,9 @@ jobs:
       run: pip install -r requirements.txt
     - name: Change /usr/local/bin permissions
       run: sudo chmod 777 /usr/local/bin
+    - name: Write private key
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key.pem
+        chmod 400 /tmp/private_key.pem
     - name: End-to-end Test
-      run: pytest -s .
+      run: pytest -s --aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" --aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" --ssh-private-key=/tmp/private_key.pem

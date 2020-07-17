@@ -3,7 +3,7 @@ package baseimages
 const (
 	DefaultRegistry = "us.gcr.io"
 	DefaultProject  = "replicate"
-	DefaultVersion  = "0.2"
+	DefaultVersion  = "0.3"
 
 	PyTorch    = "pytorch"
 	Tensorflow = "tensorflow"

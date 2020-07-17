@@ -11,8 +11,10 @@ import (
 	"replicate.ai/cli/pkg/slices"
 )
 
-// if we passthrough the environment to the remote host, we must filter some variables that cause problems
-var envBlacklist = []string{"Apple_PubSub_Socket_Render", "COMMAND_MODE", "DISPLAY", "EDITOR", "HISTCONTROL", "HISTFILESIZE", "HISTSIZE", "HOME", "HOMEBREW_AUTO_UPDATE_SECS", "JAVA_HOME", "JICOFO_AUTH_PASSWORD", "JICOFO_COMPONENT_SECRET", "JVB_AUTH_PASSWORD", "LANG", "LC_ALL", "LC_CTYPE", "OLDPWD", "PAGER", "PS1", "PWD", "SECURITYSESSIONID", "SHELL", "SHLVL", "SSH_AUTH_SOCK", "TERM", "TERMCAP", "TMPDIR", "USER", "XPC_FLAGS", "_", "__CF_USER_TEXT_ENCODING"}
+// if we passthrough the environment to the remote host, we must
+// filter some variables that cause problems. TODO(andreas): this is
+// brittle. maybe use a whitelist?
+var envBlacklist = []string{"Apple_PubSub_Socket_Render", "COLUMNS", "COMMAND_MODE", "DISPLAY", "EDITOR", "HISTCONTROL", "HISTFILESIZE", "HISTSIZE", "HOME", "HOMEBREW_AUTO_UPDATE_SECS", "JAVA_HOME", "JICOFO_AUTH_PASSWORD", "JICOFO_COMPONENT_SECRET", "JVB_AUTH_PASSWORD", "LANG", "LC_ALL", "LC_CTYPE", "LOGNAME", "NODE_PATH", "OLDPWD", "PAGER", "PATH", "PS1", "PWD", "PYENV_SHELL", "PYENV_VIRTUALENV_INIT", "SDKMAN_PLATFORM", "SECURITYSESSIONID", "SHELL", "SHLVL", "SSH_AUTH_SOCK", "TERM", "TERMCAP", "TMPDIR", "USER", "XPC_FLAGS", "_", "__CF_USER_TEXT_ENCODING", "PYENV_ROOT", "PYENV_VERSION", "SDKMAN_CANDIDATES_API", "PYENV_DIR", "SDKMAN_VERSION", "PYENV_HOOK_PATH", "XPC_SERVICE_NAME", "SDKMAN_DIR", "SDKMAN_CANDIDATES_DIR", "PYTEST_CURRENT_TEST"}
 
 type WrappedCmd struct {
 	client  *Client
@@ -93,20 +95,7 @@ func (c *WrappedCmd) newSession() error {
 	c.session.Stdout = c.cmd.Stdout
 	c.session.Stderr = c.cmd.Stderr
 
-	c.env = map[string]string{}
-	for _, env := range c.cmd.Env {
-		parts := strings.SplitN(env, "=", 2)
-		name := parts[0]
-		if slices.ContainsString(envBlacklist, name) {
-			continue
-		}
-
-		value := ""
-		if len(parts) == 2 {
-			value = parts[1]
-		}
-		c.env[name] = value
-	}
+	c.env = FilterEnvMap(c.cmd.Env)
 	return nil
 }
 
@@ -129,4 +118,35 @@ func (c *WrappedCmd) getCommandLine() string {
 	}
 
 	return cmdLine
+}
+
+// FilterEnvMap returns a map of environment variables, with
+// blacklisted keys filtered out
+func FilterEnvMap(env []string) map[string]string {
+	filtered := map[string]string{}
+	for _, env := range env {
+		parts := strings.SplitN(env, "=", 2)
+		name := parts[0]
+		if slices.ContainsString(envBlacklist, name) {
+			continue
+		}
+
+		value := ""
+		if len(parts) == 2 {
+			value = parts[1]
+		}
+		filtered[name] = value
+	}
+	return filtered
+}
+
+// FilterEnvList returns a list of "="-separated environment
+// key/values, with blacklisted keys filtered out
+func FilterEnvList(env []string) []string {
+	filtered := FilterEnvMap(env)
+	list := []string{}
+	for key, val := range filtered {
+		list = append(list, key+"="+val)
+	}
+	return list
 }
