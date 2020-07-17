@@ -34,4 +34,5 @@ RUN git clone https://github.com/momo-lab/pyenv-install-latest.git "$(pyenv root
         pyenv install-latest {{.PythonVersion}}
 RUN pyenv global $(pyenv install-latest --print {{.PythonVersion}})
 
+# TODO: pin version (jupyter is a weird meta-package which can't be pinned)
 RUN pip install jupyter
