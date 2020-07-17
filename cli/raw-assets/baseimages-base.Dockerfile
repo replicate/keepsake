@@ -2,6 +2,9 @@ FROM {{.BaseImage}}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# If you add something to this list, add a comment to explain what it's for.
+# It's often not clear what long lists of  apt packages in Dockerfiles are used for,
+# and this will help us keep it tidy.
 RUN apt-get update -q && apt-get install -qy --no-install-recommends \
         make \
         build-essential \
