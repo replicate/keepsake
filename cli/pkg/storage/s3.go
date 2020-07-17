@@ -40,6 +40,7 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 	return s, nil
 }
 
+// Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
@@ -53,6 +54,12 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 		return nil, fmt.Errorf("Failed to read body from s3://%s/%s, got error: %s", s.bucket, path, err)
 	}
 	return body, nil
+}
+
+// Put data at path
+func (s *S3Storage) Put(path string, data []byte) error {
+	// TODO
+	return nil
 }
 
 func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {

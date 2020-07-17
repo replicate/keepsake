@@ -31,6 +31,8 @@ class Storage:
     def put_directory(self, path: str, dir_to_store: str):
         """
         Save directory to path
+
+        Parallels storage.PutDirectory in Go.
         """
         ignore = [".replicate", ".git", "venv"]
 

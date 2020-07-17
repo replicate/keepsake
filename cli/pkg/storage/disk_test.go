@@ -3,10 +3,53 @@ package storage
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestDiskStorageGet(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	storage, err := NewDiskStorage(dir)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(dir, "some-file"), []byte("hello"), 0644)
+	require.NoError(t, err)
+
+	_, err = storage.Get("does-not-exist")
+	require.Error(t, err)
+
+	content, err := storage.Get("some-file")
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), content)
+}
+
+func TestDiskStoragePut(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	storage, err := NewDiskStorage(dir)
+	require.NoError(t, err)
+
+	err = storage.Put("some-file", []byte("hello"))
+	require.NoError(t, err)
+
+	content, err := ioutil.ReadFile(path.Join(dir, "some-file"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), content)
+
+	err = storage.Put("subdirectory/another-file", []byte("hello again"))
+	require.NoError(t, err)
+
+	content, err = ioutil.ReadFile(path.Join(dir, "subdirectory/another-file"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello again"), content)
+}
 
 func TestDiskMatchFilenamesRecursive(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
