@@ -44,7 +44,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y ffmpeg
 
-COPY requirements.txt /tmp/requirements.txt
+COPY "requirements.txt" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
 # FIXME: temporary, until this is on pypi or we find a better temporary spot
@@ -186,13 +186,13 @@ torch==1.5.0
 		expected              string
 		isError               bool
 	}{
-		{requirementsTf, "", "3.5", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.5-cuda10.1-cudnn7-tf2.1.0:0.2", false},
-		{requirementsTf, "10.1", "3.5", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.5-cuda10.1-cudnn7-tf2.1.0:0.2", false},
+		{requirementsTf, "", "3.5", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.5-cuda10.1-cudnn7-tf2.1.0:0.3", false},
+		{requirementsTf, "10.1", "3.5", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.5-cuda10.1-cudnn7-tf2.1.0:0.3", false},
 		{requirementsTf, "10.2", "3.5", "450.0", "", true},
 		{requirementsTf, "10.1", "3.5", "350.0", "", true},
-		{requirementsEmpty, "10.1", "3.7", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.7-cuda10.1-cudnn7:0.2", false},
-		{requirementsTorch, "", "3.8", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.8-cuda10.2-cudnn7-pytorch1.5.0:0.2", false},
-		{requirementsTorch, "", "3.8", "", "us.gcr.io/replicate/base-ubuntu18.04-python3.8-cpu-pytorch1.5.0:0.2", false},
+		{requirementsEmpty, "10.1", "3.7", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.7-cuda10.1-cudnn7:0.3", false},
+		{requirementsTorch, "", "3.8", "450.0", "us.gcr.io/replicate/base-ubuntu18.04-python3.8-cuda10.2-cudnn7-pytorch1.5.0:0.3", false},
+		{requirementsTorch, "", "3.8", "", "us.gcr.io/replicate/base-ubuntu18.04-python3.8-cpu-pytorch1.5.0:0.3", false},
 	} {
 		conf := &config.Config{
 			Python:             tt.confPython,

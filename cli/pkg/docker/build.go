@@ -18,6 +18,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 		"build", ".",
 		"--build-arg", "BUILDKIT_INLINE_CACHE=1",
 		"--build-arg", "BASE_IMAGE=" + baseImage,
+		"--progress", "plain",
 		"--file", "-",
 		"--tag", name,
 	}
@@ -26,7 +27,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	}
 
 	cmd := exec.Command("docker", args...)
-	cmd.Env = os.Environ() // TODO(andreas): do we actually want to passthru environemnt
+	cmd.Env = remote.FilterEnvList(os.Environ())
 	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

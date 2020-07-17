@@ -14,8 +14,8 @@ type BaseImage struct {
 	Python        Python
 	Ubuntu        Ubuntu
 	FrameworkMeta FrameworkMeta
-	CUDA          *CUDA
-	CuDNN         *CuDNN
+	CUDA          CUDA
+	CuDNN         CuDNN
 }
 
 // RepositoryName returns a fully qualified docker image repository
@@ -27,10 +27,10 @@ func (i *BaseImage) RepositoryName() string {
 		"python" + string(i.Python),
 	}
 
-	if i.CUDA == nil {
+	if i.CUDA == "" {
 		parts = append(parts, "cpu")
 	} else {
-		parts = append(parts, "cuda"+string(*i.CUDA), "cudnn"+string(*i.CuDNN))
+		parts = append(parts, "cuda"+string(i.CUDA), "cudnn"+string(i.CuDNN))
 	}
 
 	if i.FrameworkMeta != nil {

@@ -8,10 +8,8 @@ cli/release
 base-image-builder/release
 python/build
 python/dist
+/local
 
 # scratch notebooks
-python/Untitled.ipynb
-python/.ipynb_checkpoints
-cli/Untitled.ipynb
-cli/.ipynb_checkpoints
-/local
+Untitled.ipynb
+.ipynb_checkpoints

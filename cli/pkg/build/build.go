@@ -70,8 +70,8 @@ func GetBaseImage(conf *config.Config, sourceDir string, hostCUDADriverVersion s
 			Python:        baseimages.Python(conf.Python),
 			Ubuntu:        ubuntu,
 			FrameworkMeta: frameworkMeta,
-			CUDA:          &cuda,
-			CuDNN:         &cuDNN,
+			CUDA:          cuda,
+			CuDNN:         cuDNN,
 		}, nil
 	}
 

@@ -11,12 +11,13 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/remote"
 )
 
 type closeFunc func() error
 
 // Run runs a Docker container from imageName with cmd
-func Run(dockerClient *client.Client, imageName string, cmd []string) error {
+func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU bool) error {
 	// use same name for both container and image
 	containerName := imageName
 
@@ -24,10 +25,14 @@ func Run(dockerClient *client.Client, imageName string, cmd []string) error {
 	config := &container.Config{
 		Image: imageName,
 		Cmd:   cmd,
+		Env:   remote.FilterEnvList(os.Environ()),
 	}
 	// Options for starting container (port bindings, volume bindings, etc)
 	hostConfig := &container.HostConfig{
 		AutoRemove: false, // TODO: probably true
+	}
+	if hasGPU {
+		hostConfig.Runtime = "nvidia"
 	}
 
 	ctx, cancelFun := context.WithCancel(context.Background())

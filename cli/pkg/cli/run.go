@@ -89,9 +89,9 @@ func runCommand(opts runOpts, args []string) (err error) {
 		}
 
 		if hostCUDADriverVersion == "" {
-			console.Debug("No CUDA driver found on remote host")
+			console.Info("No CUDA driver found on remote host")
 		} else {
-			console.Debug("Found CUDA driver on remote host: %s", hostCUDADriverVersion)
+			console.Info("Found CUDA driver on remote host: %s", hostCUDADriverVersion)
 		}
 	}
 	hasGPU := hostCUDADriverVersion != ""
@@ -100,6 +100,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 	if err != nil {
 		return err
 	}
+	console.Debug("Using base image: %s", baseImage.RepositoryName())
 	dockerfile, err := build.GenerateDockerfile(conf, sourceDir)
 	if err != nil {
 		return err
@@ -112,6 +113,11 @@ func runCommand(opts runOpts, args []string) (err error) {
 	// Add a bit of space
 	fmt.Println()
 
+	// Prepend `python` for convenience
+	if strings.HasSuffix(args[0], ".py") {
+		args = append([]string{"python"}, args...)
+	}
+
 	console.Info("Running '%v'...", strings.Join(args, " "))
-	return docker.Run(dockerClient, containerName, args)
+	return docker.Run(dockerClient, containerName, args, hasGPU)
 }

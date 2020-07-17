@@ -41,7 +41,7 @@ build-all: assets
 install: build
 	cp $(BINARY) $(INSTALL_PATH)
 
-// TODO (bfirsh): this could be a real make statement to cache it. something like `pkg/assets/%.go: raw-assets/%`
+# TODO (bfirsh): this could be a real make statement to cache it. something like `pkg/assets/%.go: raw-assets/%`
 .PHONY: assets
 assets:
 	@go-bindata --version &>/dev/null || go get -u github.com/go-bindata/go-bindata/...
