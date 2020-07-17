@@ -16,9 +16,7 @@ Base images are built manually by compiling and running this project. Images are
 
 ## Installation
 
-1. Clone this repo.
-1. You _must_ place this repo as a sibling of replicate-cli, and the replicate-cli folder _must_ be named `cli` (or else you have to modify `go.mod`).
-1. `make install`
+    make install
 
 ## Usage
 
