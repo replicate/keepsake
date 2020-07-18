@@ -84,6 +84,7 @@ func ExecuteWithArgs(cmd *cobra.Command, args ...string) error {
 
 func setPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&global.Color, "color", true, "Display color in output")
+	// FIXME (bfirsh): this noun needs standardizing. we use the term "working directory" in some places.
 	cmd.PersistentFlags().StringVarP(&global.SourceDirectory, "source-directory", "D", "", "Local source directory")
 	cmd.PersistentFlags().BoolVarP(&global.Verbose, "verbose", "v", false, "Verbose output")
 

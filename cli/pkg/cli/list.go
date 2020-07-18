@@ -6,6 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"replicate.ai/cli/pkg/config"
+	"replicate.ai/cli/pkg/global"
 	"replicate.ai/cli/pkg/list"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
@@ -30,7 +32,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if len(args) == 1 {
 		storageURL = args[0]
 	} else {
-		conf, _, err := loadConfig()
+		conf, _, err := config.FindConfigInWorkingDir(global.SourceDirectory)
 		if err != nil {
 			return err
 		}
