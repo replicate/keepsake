@@ -94,7 +94,7 @@ func dockerfile() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "Dockerfile", size: 496, mode: os.FileMode(420), modTime: time.Unix(1595026671, 0)}
+	info := bindataFileInfo{name: "Dockerfile", size: 496, mode: os.FileMode(420), modTime: time.Unix(1595095480, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -114,7 +114,7 @@ func baseimagesBaseDockerfile() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "baseimages-base.Dockerfile", size: 1201, mode: os.FileMode(420), modTime: time.Unix(1595026671, 0)}
+	info := bindataFileInfo{name: "baseimages-base.Dockerfile", size: 1201, mode: os.FileMode(420), modTime: time.Unix(1595095480, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -134,7 +134,7 @@ func baseimagesPackagesDockerfile() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "baseimages-packages.Dockerfile", size: 57, mode: os.FileMode(420), modTime: time.Unix(1595026671, 0)}
+	info := bindataFileInfo{name: "baseimages-packages.Dockerfile", size: 57, mode: os.FileMode(420), modTime: time.Unix(1595095480, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
