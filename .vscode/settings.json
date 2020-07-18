@@ -3,5 +3,6 @@
   "python.formatting.provider": "black",
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "go.lintTool": "golangci-lint"
 }
