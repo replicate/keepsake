@@ -60,6 +60,12 @@ test: check-fmt assets vet lint
 	REPLICATE_NO_ANALYTICS=1 go test -v -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
+.PHONY: benchmark
+benchmark: install
+	# TODO: might be able to use the test binary instead of installing globally?
+	go test -bench=. -benchtime 100s ./benchmark 
+
+
 .PHONY:
 install-goimports:
 	@goimports -h 2>&1 | grep -q usage || (go get golang.org/x/tools/cmd/goimports && echo "installed goimports")
