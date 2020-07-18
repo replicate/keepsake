@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
@@ -23,13 +25,34 @@ func (e *configNotFoundError) Error() string {
 	return e.message
 }
 
-// FindConfig searches the current directory and any parent
+// FindConfigInWorkingDir searches working directory and any parent directories
+// for replicate.yaml and loads it. If overrideDir is passed, it uses that
+// directory instead.
+func FindConfigInWorkingDir(overrideDir string) (conf *Config, sourceDir string, err error) {
+	if overrideDir != "" {
+		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilename))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return getDefaultConfig(overrideDir), overrideDir, nil
+			}
+			return nil, "", err
+		}
+		return conf, overrideDir, nil
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, "", err
+	}
+	return FindConfig(cwd)
+}
+
+// FindConfig searches the given directory and any parent
 // directories for replicate.yaml, then loads it
-func FindConfig(folder string) (conf *Config, sourceDir string, err error) {
-	configPath, err := FindConfigPath(folder)
+func FindConfig(dir string) (conf *Config, sourceDir string, err error) {
+	configPath, err := FindConfigPath(dir)
 	if err != nil {
 		if _, ok := err.(*configNotFoundError); ok {
-			return getDefaultConfig(), folder, nil
+			return getDefaultConfig(dir), dir, nil
 		}
 		return nil, "", err
 	}
@@ -42,19 +65,14 @@ func FindConfig(folder string) (conf *Config, sourceDir string, err error) {
 
 // LoadConfig reads and validates replicate.yaml
 func LoadConfig(configPath string) (conf *Config, err error) {
-	exists, err := files.FileExists(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to determine if %s exists, got error: %s", configPath, err)
-	}
-	if !exists {
-		return getDefaultConfig(), nil
-	}
-
 	text, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read config file %s", configPath)
+		if os.IsNotExist(err) {
+			return getDefaultConfig(path.Dir(configPath)), nil
+		}
+		return nil, fmt.Errorf("Failed to read config file '%s': %w", configPath, err)
 	}
-	conf, err = Parse(text)
+	conf, err = Parse(text, path.Dir(configPath))
 	if err != nil {
 		// FIXME (bfirsh): implement standard way of displaying config errors so this can be used in other places
 		msg := fmt.Sprintf("%v\n\n", err)
@@ -66,8 +84,8 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 }
 
 // Parse replicate.yaml
-func Parse(text []byte) (conf *Config, err error) {
-	conf = getDefaultConfig()
+func Parse(text []byte, dir string) (conf *Config, err error) {
+	conf = getDefaultConfig(dir)
 
 	j, err := yaml.YAMLToJSON(text)
 	if err != nil {
