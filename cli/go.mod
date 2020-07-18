@@ -1,3 +1,4 @@
+// FIXME (bfirsh): it would be nice if this were a real URL
 module replicate.ai/cli
 
 go 1.13

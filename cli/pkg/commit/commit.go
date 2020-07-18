@@ -3,13 +3,17 @@ package commit
 import (
 	"encoding/json"
 	"fmt"
+	"path"
+	"time"
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/experiment"
+	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/storage"
 )
 
+// Commit is a snapshot of an experiment's filesystem
 type Commit struct {
 	ID         string                `json:"id"`
 	Timestamp  float64               `json:"timestamp"`
@@ -17,6 +21,26 @@ type Commit struct {
 
 	// TODO(andreas): rename metrics to something else or split it up semantically
 	Metrics map[string]*param.Value `json:"metrics"`
+}
+
+// NewCommit creates a commit
+func NewCommit(experiment experiment.Experiment, metrics map[string]*param.Value) *Commit {
+	// FIXME (bfirsh): content addressable (also in Python)
+	return &Commit{
+		ID:         hash.Random(),
+		Timestamp:  float64(time.Now().Unix()),
+		Experiment: experiment,
+		Metrics:    metrics,
+	}
+}
+
+// Save a commit, with a copy of the filesystem
+func (c *Commit) Save(storage storage.Storage, workingDir string) error {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	return storage.Put(path.Join("commits", c.ID, "replicate-metadata.json"), data)
 }
 
 func ListCommits(store storage.Storage) ([]*Commit, error) {
