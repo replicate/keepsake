@@ -58,7 +58,7 @@ clean: clean-assets
 	rm -rf $(RELEASE_DIR)
 
 test: check-fmt assets vet lint
-	REPLICATE_NO_ANALYTICS=1 go test -v -timeout 1200s -parallel 5 ./... $(ARGS)
+	REPLICATE_NO_ANALYTICS=1 go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
 .PHONY: benchmark
