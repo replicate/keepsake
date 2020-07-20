@@ -4,5 +4,6 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "go.lintTool": "golangci-lint"
+  "go.lintTool": "golangci-lint",
+  "python.linting.mypyEnabled": true
 }
