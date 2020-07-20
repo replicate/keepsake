@@ -27,8 +27,6 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	}
 
 	cmd := exec.Command("docker", args...)
-	cmd.Env = remote.FilterEnvList(os.Environ())
-	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -44,13 +42,20 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 
 	console.Debug("Running '%s'", cmd.String())
 
+	// Local
 	if remoteOptions == nil {
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 		cmd.Dir = folder
 		if err := cmd.Start(); err != nil {
 			return err
 		}
 		return cmd.Wait()
 	}
+
+	// Remote, via SSH
+	cmd.Env = remote.FilterEnvList(os.Environ())
+	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 
 	remoteTempDir, err := rsync.UploadToTempDir(folder, remoteOptions)
 	if err != nil {
