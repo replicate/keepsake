@@ -12,17 +12,17 @@ import (
 
 // Experiment represents a training run
 type Experiment struct {
-	ID        string                  `json:"id"`
-	Timestamp float64                 `json:"timestamp"`
-	Params    map[string]*param.Value `json:"params"`
+	ID      string                  `json:"id"`
+	Created time.Time               `json:"created"`
+	Params  map[string]*param.Value `json:"params"`
 }
 
-// NewExperiment creates a commit, setting ID and Timestamp
+// NewExperiment creates a commit, setting ID and Created
 func NewExperiment(params map[string]*param.Value) *Experiment {
 	return &Experiment{
-		ID:        hash.Random(),
-		Timestamp: float64(time.Now().Unix()),
-		Params:    params,
+		ID:      hash.Random(),
+		Created: time.Now().UTC(),
+		Params:  params,
 	}
 }
 

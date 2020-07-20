@@ -16,7 +16,7 @@ import (
 // Commit is a snapshot of an experiment's filesystem
 type Commit struct {
 	ID         string                `json:"id"`
-	Timestamp  float64               `json:"timestamp"`
+	Created    time.Time             `json:"created"`
 	Experiment experiment.Experiment `json:"experiment"`
 
 	// TODO(andreas): rename metrics to something else or split it up semantically
@@ -28,7 +28,7 @@ func NewCommit(experiment experiment.Experiment, metrics map[string]*param.Value
 	// FIXME (bfirsh): content addressable (also in Python)
 	return &Commit{
 		ID:         hash.Random(),
-		Timestamp:  float64(time.Now().Unix()),
+		Created:    time.Now().UTC(),
 		Experiment: experiment,
 		Metrics:    metrics,
 	}

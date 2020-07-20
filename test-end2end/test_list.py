@@ -59,6 +59,7 @@ if __name__ == "__main__":
     assert exp["params"] == {"my-param": "my-value"}
     assert exp["num_commits"] == 3
     assert len(latest["id"]) == 64
-    assert latest["timestamp"] > exp["start_timestamp"]
+    # FIXME: now rfc3339 strings
+    # assert latest["created"] > exp["created"]
     assert latest["experiment"]["id"] == exp["id"]
     assert latest["metrics"] == {"step": 2}
