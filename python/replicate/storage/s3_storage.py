@@ -39,6 +39,7 @@ class S3Storage(Storage):
         Save directory to path
         """
         loop = asyncio.get_event_loop()
+        # TODO(andreas): handle exceptions
         loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
 
     async def put_directory_async(self, loop: asyncio.BaseEventLoop, path: str, dir_to_store: str):
