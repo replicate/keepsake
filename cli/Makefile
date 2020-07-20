@@ -42,6 +42,7 @@ install: build
 	cp $(BINARY) $(INSTALL_PATH)
 
 # TODO (bfirsh): this could be a real make statement to cache it. something like `pkg/assets/%.go: raw-assets/%`
+# TODO(andreas): verify in CI that generated assets.go match raw-assets
 .PHONY: assets
 assets:
 	@go-bindata --version &>/dev/null || go get -u github.com/go-bindata/go-bindata/...
@@ -63,7 +64,7 @@ test: check-fmt assets vet lint
 .PHONY: benchmark
 benchmark: install
 	# TODO: might be able to use the test binary instead of installing globally?
-	go test -bench=. -benchtime 100s ./benchmark 
+	go test -bench=. -benchtime 100s ./benchmark
 
 
 .PHONY:
