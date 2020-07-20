@@ -44,5 +44,6 @@ require (
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
+	gotest.tools/gotestsum v0.5.2
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787 // indirect
 )
