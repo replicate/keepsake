@@ -7,6 +7,42 @@ from .hash import random_hash
 from .storage import Storage
 
 
+# fmt: off
+try:
+    import numpy as np
+    has_numpy = True
+except ImportError:
+    has_numpy = False
+try:
+    import torch
+    has_torch = True
+except ImportError:
+    has_torch = False
+try:
+    import tensorflow as tf
+    has_tensorflow = True
+except ImportError:
+    has_tensorflow = False
+# fmt: on
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if has_numpy:
+            if isinstance(obj, np.integer):
+                return int(obj)
+            elif isinstance(obj, np.floating):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+        if has_torch and isinstance(obj, torch.Tensor):
+            return obj.detach().tolist()
+        if has_tensorflow and isinstance(obj, tf.Tensor):
+            return obj.numpy().tolist()
+        print(type(obj))
+        return json.JSONEncoder.default(self, obj)
+
+
 class Commit(object):
     """
     A snapshot of a training job -- the working directory plus any metadata.
@@ -39,6 +75,7 @@ class Commit(object):
                     "metrics": self.metrics,
                 },
                 indent=2,
+                cls=CustomJSONEncoder,
             ),
         )
 
