@@ -43,7 +43,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
         )
         expected_experiment_meta = {
             "id": experiment.id,
-            "timestamp": experiment.timestamp,
+            "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
         }
         assert actual_experiment_meta == expected_experiment_meta
@@ -55,11 +55,11 @@ def test_s3_experiment(temp_bucket, tmpdir):
         )
         expected_commit_meta = {
             "id": commit.id,
-            "timestamp": commit.timestamp,
+            "created": commit.created.isoformat() + "Z",
             "experiment": {
                 "id": experiment.id,
                 "params": {"foo": "bar"},
-                "timestamp": experiment.timestamp,
+                "created": experiment.created.isoformat() + "Z",
             },
             "metrics": {"loss": 1.1, "baz": "qux"},
         }

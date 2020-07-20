@@ -20,11 +20,11 @@ const FormatJSON = "json"
 const FormatTable = "table"
 
 type GroupedExperiment struct {
-	ID             string                  `json:"id"`
-	StartTimestamp float64                 `json:"start_timestamp"`
-	Params         map[string]*param.Value `json:"params"`
-	NumCommits     int                     `json:"num_commits"`
-	LatestCommit   *commit.Commit          `json:"latest_commit"`
+	ID           string                  `json:"id"`
+	Created      time.Time               `json:"created"`
+	Params       map[string]*param.Value `json:"params"`
+	NumCommits   int                     `json:"num_commits"`
+	LatestCommit *commit.Commit          `json:"latest_commit"`
 }
 
 func Experiments(store storage.Storage, format string) error {
@@ -76,14 +76,14 @@ func outputTable(experiments []*GroupedExperiment) error {
 
 	for _, exp := range experiments {
 		fmt.Fprintf(tw, "%s\t", exp.ID[:7])
-		fmt.Fprintf(tw, "%s\t", formatTimestamp(exp.StartTimestamp))
+		fmt.Fprintf(tw, "%s\t", formatTime(exp.Created))
 		for _, heading := range expHeadings {
 			if val, ok := exp.Params[heading]; ok {
 				fmt.Fprintf(tw, "%v\t", val)
 			}
 		}
 		fmt.Fprintf(tw, "%d\t", exp.NumCommits)
-		fmt.Fprintf(tw, "%s\t", formatTimestamp(exp.LatestCommit.Timestamp))
+		fmt.Fprintf(tw, "%s\t", formatTime(exp.LatestCommit.Created))
 		for _, heading := range commitHeadings {
 			if val, ok := exp.LatestCommit.Metrics[heading]; ok {
 				fmt.Fprintf(tw, "%v\t", val)
@@ -99,8 +99,8 @@ func outputTable(experiments []*GroupedExperiment) error {
 	return nil
 }
 
-func formatTimestamp(timestamp float64) string {
-	return timeago.English.Format(time.Unix(int64(timestamp), 0))
+func formatTime(t time.Time) string {
+	return timeago.English.Format(t)
 }
 
 func getTableHeadings(experiments []*GroupedExperiment) (expHeadings []string, commitHeadings []string) {
@@ -132,22 +132,22 @@ func groupCommits(commits []*commit.Commit) []*GroupedExperiment {
 	ret := []*GroupedExperiment{}
 	for _, commits := range expIDToCommits {
 		sort.Slice(commits, func(i, j int) bool {
-			return commits[i].Timestamp < commits[j].Timestamp
+			return commits[i].Created.Before(commits[j].Created)
 		})
 		latestCommit := commits[len(commits)-1]
 		exp := latestCommit.Experiment
 		groupedExperiment := GroupedExperiment{
-			ID:             exp.ID,
-			Params:         exp.Params,
-			NumCommits:     len(commits),
-			LatestCommit:   latestCommit,
-			StartTimestamp: exp.Timestamp,
+			ID:           exp.ID,
+			Params:       exp.Params,
+			NumCommits:   len(commits),
+			LatestCommit: latestCommit,
+			Created:      exp.Created,
 		}
 		ret = append(ret, &groupedExperiment)
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].LatestCommit.Timestamp < ret[j].LatestCommit.Timestamp
+		return ret[i].LatestCommit.Created.Before(ret[j].LatestCommit.Created)
 	})
 
 	return ret

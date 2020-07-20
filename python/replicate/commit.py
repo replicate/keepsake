@@ -1,9 +1,11 @@
+import datetime
 import hashlib
 import json
 import random
 from typing import Optional, Dict, Any
 
 from .hash import random_hash
+from .metadata import rfc3339_datetime
 from .storage import Storage
 
 
@@ -52,12 +54,12 @@ class Commit(object):
         self,
         experiment,  # can't type annotate due to circular import
         project_dir: str,
-        timestamp: float,
+        created: datetime.datetime,
         metrics: Dict[str, Any],
     ):
         self.experiment = experiment
         self.project_dir = project_dir
-        self.timestamp = timestamp
+        self.created = created
         self.metrics = metrics
 
         # TODO (bfirsh): content addressable id
@@ -70,7 +72,7 @@ class Commit(object):
             json.dumps(
                 {
                     "id": self.id,
-                    "timestamp": self.timestamp,
+                    "created": rfc3339_datetime(self.created),
                     "experiment": self.experiment.get_metadata(),
                     "metrics": self.metrics,
                 },
