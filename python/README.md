@@ -46,6 +46,14 @@ This will build an egg in `dist/`.
 
     $ python setup.py bdist_egg
 
+## Release package
+
+This will build a tarball of the current version push it to `gs://replicate-python-dev/`
+
+    $ make release
+
+If you've updated the version string in `setup.py` you need to update the version in `../cli/raw-assets/Dockerfile`.
+
 ## Format source code
 
 Any contributions must be formatted with [Black](https://github.com/psf/black). The best thing is to set up your editor to automatically format code, but you can also do it manually by running:
