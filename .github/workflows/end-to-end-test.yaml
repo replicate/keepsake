@@ -31,11 +31,11 @@ jobs:
         aws-region: us-east-1
     - name: Install requirements
       run: pip install -r requirements.txt
-    - name: Change /usr/local/bin permissions
-      run: sudo chmod 777 /usr/local/bin
     - name: Write private key
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key.pem
         chmod 400 /tmp/private_key.pem
+    - name: Change /usr/local/bin permissions so we can install replicate in the test
+      run: sudo chmod 777 /usr/local/bin
     - name: End-to-end Test
       run: pytest -s --aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" --aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" --ssh-private-key=/tmp/private_key.pem
