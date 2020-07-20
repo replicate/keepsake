@@ -15,13 +15,16 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/replicate/replicate",
+    python_requires='>=3.6.0',
     packages=setuptools.find_packages(),
     # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
     # and break in weird ways?
     install_requires=[
         "pyyaml==5.3.1",
-        "boto3==1.14.15",
-        "boto3-stubs[essential]==1.14.15.0",
+        "boto3==1.12.32",
+        "boto3-stubs[essential]==1.12.32.0",
+        "botocore==1.15.32",
+        "aiobotocore==1.0.7",
         "typing-extensions",
     ],
     extras_require={
