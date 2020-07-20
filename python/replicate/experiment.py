@@ -1,6 +1,7 @@
+import sys
 import time
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from .commit import Commit
 from .config import load_config
@@ -16,6 +17,7 @@ class Experiment(object):
         project_dir: str,
         timestamp: float,
         params: Optional[Dict[str, Any]],
+        args: Optional[List[str]],
     ):
         self.storage = storage
         # TODO: automatically detect workdir
@@ -47,11 +49,17 @@ class Experiment(object):
         return "experiments/{}/".format(self.id)
 
 
-def init(params: Optional[Dict[str, Any]] = None) -> Experiment:
+def init(
+    params: Optional[Dict[str, Any]] = None, include_argv: bool = True
+) -> Experiment:
     project_dir = get_project_dir()
     config = load_config(project_dir)
     storage = storage_for_url(config["storage"])
     timestamp = time.time()
-    experiment = Experiment(storage, project_dir, timestamp, params)
+    if include_argv:
+        args = sys.argv
+    else:
+        args = None
+    experiment = Experiment(storage, project_dir, timestamp, params, args)
     experiment.save()
     return experiment
