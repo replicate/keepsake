@@ -14,6 +14,8 @@ ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
 class Storage:
     __metaclass__ = ABCMeta
 
+    put_directory_ignore = [".replicate", ".git", "venv", ".mypy_cache"]
+
     @abstractmethod
     def get(self, path: str) -> bytes:
         """
@@ -34,10 +36,8 @@ class Storage:
 
         Parallels storage.PutDirectory in Go.
         """
-        ignore = [".replicate", ".git", "venv"]
-
         for current_directory, dirs, files in os.walk(dir_to_store, topdown=True):
-            dirs[:] = [d for d in dirs if d not in ignore]
+            dirs[:] = [d for d in dirs if d not in self.put_directory_ignore]
 
             for filename in files:
                 with open(os.path.join(current_directory, filename), "rb") as fh:
