@@ -31,12 +31,19 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
-    - name: Write GCP credentials
-      run: |
-        echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/gcp_credentials.json
-        chmod 400 /tmp/gcp_credentials.json
-        echo ::set-env name=GOOGLE_APPLICATION_CREDENTIALS::/tmp/gcp_credentials.json
+    - name: Setup GCP credentials
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
     - name: Install tox
       run: pip install tox
+    - name: DUMMY check gcloud is installed
+      run: |
+        gcloud auth list
+        gsutil ls
+        python -c "from google.cloud import storage; client = storage.Client(); print(list(client.list_buckets()))"
     - name: "Lint and test"
       run: tox -e py

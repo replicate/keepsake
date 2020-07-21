@@ -4,7 +4,7 @@ on:
   push:
     branches:
     - master
-  pull_request:
+#  pull_request:
 
 jobs:
   test:
@@ -35,11 +35,13 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key.pem
         chmod 400 /tmp/private_key.pem
-    - name: Write GCP credentials
-      run: |
-        echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/gcp_credentials.json
-        chmod 400 /tmp/gcp_credentials.json
-        echo ::set-env name=GOOGLE_APPLICATION_CREDENTIALS::/tmp/gcp_credentials.json
+    - name: Setup GCP credentials
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
     - name: Change /usr/local/bin permissions so we can install replicate in the test
       run: sudo chmod 777 /usr/local/bin
     - name: End-to-end Test

@@ -5,8 +5,8 @@ on:
     paths: "cli/**"
     branches:
     - master
-  pull_request:
-    paths: "cli/**"
+#  pull_request:
+#    paths: "cli/**"
 
 jobs:
   test:
