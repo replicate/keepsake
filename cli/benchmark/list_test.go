@@ -19,6 +19,22 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
+// run a command and return stdout. If there is an error, print stdout/err and fail test
+func run(b *testing.B, name string, arg ...string) string {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd := exec.Command(name, arg...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		fmt.Println(stdout.String())
+		fmt.Println(stderr.String())
+		b.Fatal(err)
+	}
+	return stdout.String()
+
+}
+
 func BenchmarkList(b *testing.B) {
 	// Create working dir
 	workingDir, err := ioutil.TempDir("", "replicate-test")
@@ -58,26 +74,23 @@ func BenchmarkList(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		var stdout bytes.Buffer
-		var stderr bytes.Buffer
-		cmd := exec.Command("replicate", "list", "-D", workingDir)
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			fmt.Println(stdout.String())
-			fmt.Println(stderr.String())
-			b.Fatal(err)
-		}
+		out := run(b, "replicate", "list", "-D", workingDir)
 
 		// Check the output is sensible
-		stdoutStr := stdout.String()
-		firstLine := strings.Split(stdoutStr, "\n")[0]
+		firstLine := strings.Split(out, "\n")[0]
 		require.Contains(b, firstLine, "experiment")
 		// 100 experiments
-		require.Equal(b, 102, len(strings.Split(stdoutStr, "\n")))
+		require.Equal(b, 102, len(strings.Split(out, "\n")))
 		// TODO: check first line is reasonable
 	}
 
 	// Stop timer before deferred cleanup
 	b.StopTimer()
+}
+
+func BenchmarkHelp(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		out := run(b, "replicate", "--help")
+		require.Contains(b, out, "Usage:")
+	}
 }
