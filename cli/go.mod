@@ -24,7 +24,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kr/text v0.2.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/moby/term v0.0.0-20200611042045-63b9a826fb74 // indirect
+	github.com/moby/term v0.0.0-20200611042045-63b9a826fb74
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect

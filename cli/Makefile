@@ -57,7 +57,7 @@ clean: clean-assets
 	rm -rf $(RELEASE_DIR)
 
 test: check-fmt assets vet lint
-	REPLICATE_NO_ANALYTICS=1 go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
+	go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
 .PHONY: benchmark
@@ -129,4 +129,4 @@ strings:
 # FIXME (bfirsh): get this working again
 .PHONY: docs
 docs:
-	REPLICATE_NO_ANALYTICS=1 go run ./cmd/replicate/main.go generate-docs --docs-folder web/docs
+	go run ./cmd/replicate/main.go generate-docs --docs-folder web/docs
