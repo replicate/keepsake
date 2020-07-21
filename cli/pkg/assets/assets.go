@@ -94,7 +94,7 @@ func dockerfile() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "Dockerfile", size: 489, mode: os.FileMode(420), modTime: time.Unix(1595264550, 0)}
+	info := bindataFileInfo{name: "Dockerfile", size: 489, mode: os.FileMode(420), modTime: time.Unix(1595336753, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

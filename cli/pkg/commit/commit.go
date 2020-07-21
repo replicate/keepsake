@@ -56,7 +56,7 @@ func ListCommits(store storage.Storage) ([]*Commit, error) {
 		if err == nil {
 			commits = append(commits, com)
 		} else {
-			console.Warn("Failed to commit metadata from %s, got error: %s", result.Path, err)
+			console.Warn("Failed to load metadata from %s, got error: %s", result.Path, err)
 		}
 	}
 	return commits, nil

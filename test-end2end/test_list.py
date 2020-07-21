@@ -4,10 +4,12 @@ import subprocess
 import pytest  # type: ignore
 
 
-@pytest.mark.parametrize("storage_backend", ["s3", "file", "undefined"])
+@pytest.mark.parametrize("storage_backend", ["gcs", "s3", "file", "undefined"])
 def test_list(storage_backend, tmpdir, temp_bucket, tmpdir_factory):
     if storage_backend == "s3":
         storage = "s3://" + temp_bucket
+    if storage_backend == "gcs":
+        storage = "gs://" + temp_bucket
     elif storage_backend == "file":
         storage = "file://" + str(tmpdir_factory.mktemp("storage"))
     elif storage_backend == "undefined":
