@@ -4,4 +4,7 @@
 
 package cli
 
-import _ "gotest.tools/gotestsum"
+import (
+	_ "github.com/go-bindata/go-bindata/go-bindata"
+	_ "gotest.tools/gotestsum"
+)

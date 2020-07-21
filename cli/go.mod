@@ -18,7 +18,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/hashicorp/go-version v1.2.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51

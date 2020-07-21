@@ -45,9 +45,8 @@ install: build
 # TODO(andreas): verify in CI that generated assets.go match raw-assets
 .PHONY: assets
 assets:
-	@go-bindata --version &>/dev/null || go get -u github.com/go-bindata/go-bindata/...
 	@mkdir -p $(ASSETS_DIR)
-	go-bindata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
+	go run github.com/go-bindata/go-bindata/go-bindata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
 
 .PHONY: clean-assets
 clean-assets:
