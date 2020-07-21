@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -20,10 +22,15 @@ import (
 )
 
 // run a command and return stdout. If there is an error, print stdout/err and fail test
-func run(b *testing.B, name string, arg ...string) string {
+func replicate(b *testing.B, arg ...string) string {
+	// Get absolute path to built binary
+	_, currentFilename, _, _ := runtime.Caller(0)
+	binPath, err := filepath.Abs(path.Join(path.Dir(currentFilename), "../release", runtime.GOOS, runtime.GOARCH, "replicate"))
+	require.NoError(b, err)
+
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	cmd := exec.Command(name, arg...)
+	cmd := exec.Command(binPath, arg...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
@@ -74,7 +81,7 @@ func BenchmarkList(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		out := run(b, "replicate", "list", "-D", workingDir)
+		out := replicate(b, "list", "-D", workingDir)
 
 		// Check the output is sensible
 		firstLine := strings.Split(out, "\n")[0]
@@ -90,7 +97,7 @@ func BenchmarkList(b *testing.B) {
 
 func BenchmarkHelp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		out := run(b, "replicate", "--help")
+		out := replicate(b, "--help")
 		require.Contains(b, out, "Usage:")
 	}
 }

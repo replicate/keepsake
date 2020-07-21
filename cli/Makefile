@@ -61,8 +61,7 @@ test: check-fmt assets vet lint
 
 
 .PHONY: benchmark
-benchmark: install
-	# TODO: might be able to use the test binary instead of installing globally?
+benchmark: build
 	go test -bench=. -benchtime 100x ./benchmark
 
 
