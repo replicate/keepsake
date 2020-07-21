@@ -35,7 +35,6 @@ if __name__ == "__main__":
         )
 
     env = os.environ
-    env["REPLICATE_NO_ANALYTICS"] = "1"
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
     env["AWS_ACCESS_KEY_ID"] = gpu_instance.aws_access_key_id
     env["AWS_SECRET_ACCESS_KEY"] = gpu_instance.aws_secret_access_key

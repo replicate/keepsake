@@ -23,7 +23,7 @@ func NewRootCommand() (*cobra.Command, error) {
 	}
 
 	// On first launch, ask user for email
-	if userSettings.Email == "" && reportAnalytics {
+	if console.IsTerminal() && userSettings.Email == "" && reportAnalytics {
 		if userSettings.Email, err = analytics.RunOnboarding(); err != nil {
 			return nil, err
 		}
@@ -76,8 +76,6 @@ func NewRootCommand() (*cobra.Command, error) {
 }
 
 func ExecuteWithArgs(cmd *cobra.Command, args ...string) error {
-	// HACK: no simple way of passing through variables for tests
-	os.Setenv("REPLICATE_NO_ANALYTICS", "1")
 	cmd.SetArgs(args)
 	return cmd.Execute()
 }

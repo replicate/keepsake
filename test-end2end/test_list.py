@@ -40,7 +40,6 @@ if __name__ == "__main__":
         )
 
     env = os.environ
-    env["REPLICATE_NO_ANALYTICS"] = "1"
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
     return_code = subprocess.Popen(
