@@ -4,6 +4,7 @@ module replicate.ai/cli
 go 1.13
 
 require (
+	cloud.google.com/go/storage v1.6.0
 	github.com/GitbookIO/diskache v0.0.0-20161028144708-bfb81bf58cb1
 	github.com/GitbookIO/syncgroup v0.0.0-20181003125046-3e73b2e6a972 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
@@ -17,7 +18,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/hashicorp/go-version v1.2.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -37,9 +38,9 @@ require (
 	github.com/xeonx/timeago v1.0.0-rc4
 	github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
+	go.opencensus.io v0.22.4 // indirect
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
-	golang.org/x/text v0.3.2 // indirect
+	google.golang.org/api v0.29.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect

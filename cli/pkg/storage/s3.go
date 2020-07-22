@@ -14,9 +14,8 @@ import (
 )
 
 type S3Storage struct {
-	bucket string
-	sess   *session.Session
-	svc    *s3.S3
+	bucketName string
+	svc        *s3.S3
 }
 
 func NewS3Storage(bucket string) (*S3Storage, error) {
@@ -26,16 +25,16 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 	}
 
 	s := &S3Storage{
-		bucket: bucket,
+		bucketName: bucket,
 	}
-	s.sess, err = session.NewSession(&aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(region),
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to S3, got error: %s", err)
 	}
-	s.svc = s3.New(s.sess)
+	s.svc = s3.New(sess)
 
 	return s, nil
 }
@@ -43,15 +42,15 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 // Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(s.bucket),
+		Bucket: aws.String(s.bucketName),
 		Key:    aws.String(path),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read s3://%s/%s, got error: %s", s.bucket, path, err)
+		return nil, fmt.Errorf("Failed to read s3://%s/%s, got error: %s", s.bucketName, path, err)
 	}
 	body, err := ioutil.ReadAll(obj.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read body from s3://%s/%s, got error: %s", s.bucket, path, err)
+		return nil, fmt.Errorf("Failed to read body from s3://%s/%s, got error: %s", s.bucketName, path, err)
 	}
 	return body, nil
 }
@@ -76,7 +75,7 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filt
 	folder = strings.TrimPrefix(folder, "/")
 
 	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
-		Bucket:  aws.String(s.bucket),
+		Bucket:  aws.String(s.bucketName),
 		Prefix:  aws.String(folder),
 		MaxKeys: aws.Int64(1000),
 	}, func(page *s3.ListObjectsOutput, lastPage bool) bool {
@@ -89,7 +88,7 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filt
 		return lastPage
 	})
 	if err != nil {
-		results <- ListResult{Error: fmt.Errorf("Failed to list objects in s3://%s, got error: %s", s.bucket, err)}
+		results <- ListResult{Error: fmt.Errorf("Failed to list objects in s3://%s, got error: %s", s.bucketName, err)}
 	}
 	close(results)
 }

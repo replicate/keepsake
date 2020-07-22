@@ -33,6 +33,8 @@ func ForURL(storageURL string) (Storage, error) {
 	switch scheme {
 	case "s3":
 		return NewS3Storage(path)
+	case "gs":
+		return NewGCSStorage(path)
 	case "file":
 		return NewDiskStorage(path)
 	}

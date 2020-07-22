@@ -1,5 +1,5 @@
-.PHONY: format
-format:
+.PHONY: fmt
+fmt:
 	black .
 
 .PHONY: test
