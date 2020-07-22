@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -11,10 +12,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 type S3Storage struct {
 	bucketName string
+	sess       *session.Session
 	svc        *s3.S3
 }
 
@@ -27,14 +31,14 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 	s := &S3Storage{
 		bucketName: bucket,
 	}
-	sess, err := session.NewSession(&aws.Config{
+	s.sess, err = session.NewSession(&aws.Config{
 		Region:                        aws.String(region),
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to S3, got error: %s", err)
 	}
-	s.svc = s3.New(sess)
+	s.svc = s3.New(s.sess)
 
 	return s, nil
 }
@@ -57,18 +61,112 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 
 // Put data at path
 func (s *S3Storage) Put(path string, data []byte) error {
-	// TODO
+	uploader := s3manager.NewUploader(s.sess)
+	_, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(s.bucketName),
+		Key:    aws.String(path),
+		Body:   bytes.NewReader(data),
+	})
+	if err != nil {
+		return fmt.Errorf("Unable to upload %q to %q: %w", path, s.bucketName, err)
+	}
 	return nil
 }
 
 func (s *S3Storage) PutDirectory(dest, source string) error {
-	// TODO
-	return nil
+	files, err := putDirectoryFiles(dest, source)
+	if err != nil {
+		return err
+	}
+
+	maxWorkers := int64(128)
+
+	group, ctx := errgroup.WithContext(context.Background())
+	group.Go(func() error {
+		sem := semaphore.NewWeighted(maxWorkers)
+
+		for _, file := range files {
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return err
+			}
+
+			group.Go(func() error {
+				defer sem.Release(1)
+
+				data, err := ioutil.ReadFile(file.Source)
+				if err != nil {
+					return err
+				}
+
+				uploader := s3manager.NewUploader(s.sess)
+				_, err = uploader.Upload(&s3manager.UploadInput{
+					Bucket: aws.String(s.bucketName),
+					Key:    aws.String(file.Dest),
+					Body:   bytes.NewReader(data),
+				})
+				return err
+			})
+		}
+		return nil
+	})
+
+	return group.Wait()
 }
 
 func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
+	})
+}
+
+func CreateS3Bucket(region, bucket string) (err error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:                        aws.String(region),
+		CredentialsChainVerboseErrors: aws.Bool(true),
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to connect to S3, got error: %w", err)
+	}
+	svc := s3.New(sess)
+
+	_, err = svc.CreateBucket(&s3.CreateBucketInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return fmt.Errorf("Unable to create bucket %q, %w", bucket, err)
+	}
+
+	return svc.WaitUntilBucketExists(&s3.HeadBucketInput{
+		Bucket: aws.String(bucket),
+	})
+}
+
+func DeleteS3Bucket(region, bucket string) (err error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:                        aws.String(region),
+		CredentialsChainVerboseErrors: aws.Bool(true),
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to connect to S3, got error: %w", err)
+	}
+	svc := s3.New(sess)
+
+	iter := s3manager.NewDeleteListIterator(svc, &s3.ListObjectsInput{
+		Bucket: aws.String(bucket),
+	})
+
+	if err := s3manager.NewBatchDeleteWithClient(svc).Delete(aws.BackgroundContext(), iter); err != nil {
+		return fmt.Errorf("Unable to delete objects from bucket %q, %w", bucket, err)
+	}
+	_, err = svc.DeleteBucket(&s3.DeleteBucketInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return fmt.Errorf("Unable to delete bucket %q, %w", bucket, err)
+	}
+
+	return svc.WaitUntilBucketNotExists(&s3.HeadBucketInput{
+		Bucket: aws.String(bucket),
 	})
 }
 
