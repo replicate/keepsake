@@ -3,8 +3,8 @@
 import os
 import asyncio
 import re
-from typing import AnyStr, Optional, Generator, Set
-import aiobotocore
+from typing import AnyStr, Optional, Generator, Set, Any
+import aiobotocore  # type: ignore
 import boto3
 import mypy_boto3_s3 as s3
 
@@ -31,7 +31,7 @@ class S3Storage(Storage):
             obj = client.get_object(Bucket=self.bucket_name, Key=path)
         except client.exceptions.NoSuchKey:
             raise DoesNotExistError()
-        ret = obj["Body"].read()
+        ret = obj["Body"].read()  # type: ignore
         return ret
 
     def put_directory(self, path: str, dir_to_store: str):
@@ -43,7 +43,7 @@ class S3Storage(Storage):
         loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
 
     async def put_directory_async(
-        self, loop: asyncio.BaseEventLoop, path: str, dir_to_store: str
+        self, loop: asyncio.AbstractEventLoop, path: str, dir_to_store: str
     ):
         put_tasks = set()
         session = aiobotocore.get_session()
@@ -61,9 +61,11 @@ class S3Storage(Storage):
                 # to finish when the number of tasks == self.concurrency
                 put_tasks.add(put_task)
                 if len(put_tasks) >= self.concurrency:
-                    _, put_tasks = await asyncio.wait(
+                    _, new_tasks = await asyncio.wait(
                         put_tasks, return_when=asyncio.FIRST_COMPLETED
                     )
+                    for task in new_tasks:
+                        put_tasks.add(loop.create_task(task))
 
             await asyncio.wait(put_tasks)
 
@@ -139,7 +141,7 @@ class S3Storage(Storage):
         if self.client is not None:
             return self.client
 
-        self.client = boto3.client("s3")
+        self.client = boto3.client("s3")  # type: ignore
         return self.client
 
     def create_bucket(self):

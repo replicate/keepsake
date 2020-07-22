@@ -42,7 +42,7 @@ class Storage:
 
     def walk_directory_data(
         self, directory: str
-    ) -> Generator[Tuple[str, str], None, None]:
+    ) -> Generator[Tuple[str, bytes], None, None]:
         """
         Yields (relative_path, data) of all files, recursively, in
         directory.
