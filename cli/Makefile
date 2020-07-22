@@ -60,9 +60,10 @@ test: check-fmt assets vet lint
 	go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
+BENCH := "."
 .PHONY: benchmark
 benchmark: build
-	go test -bench=. -benchtime 100x ./benchmark
+	go test -bench=$(BENCH) -benchtime 100x ./benchmark $(ARGS)
 
 
 .PHONY:
