@@ -1,3 +1,6 @@
+.PHONY: pre-commit
+pre-commit: lint
+
 .PHONY: fmt
 fmt:
 	black .
