@@ -12,6 +12,14 @@ You can pass additional arguments to `go test` with the `ARGS` variable. For exa
 
     make test ARGS="-run CheckpointNoRegistry"
 
+## Run benchmarks
+
+    make benchmark
+
+You can run specific benchmarks with the `BENCH` variable. For example:
+
+    make benchmark BENCH="BenchmarkReplicateListOnDisk"
+
 ## Release new version
 
 Check your Git working directory is clean:
