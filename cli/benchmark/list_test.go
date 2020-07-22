@@ -48,9 +48,9 @@ func BenchmarkList(b *testing.B) {
 	require.NoError(b, err)
 	defer os.RemoveAll(workingDir)
 
-	// 1000 1KB files is a bit like a bit source directory
+	// Some 1KB files is a bit like a bit source directory
 	content := []byte(strings.Repeat("a", 1000))
-	for i := 1; i < 1000; i++ {
+	for i := 1; i < 10; i++ {
 		err := ioutil.WriteFile(path.Join(workingDir, fmt.Sprintf("%d", i)), content, 0644)
 		require.NoError(b, err)
 	}

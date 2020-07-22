@@ -35,12 +35,16 @@ func NewCommit(experiment experiment.Experiment, metrics map[string]*param.Value
 }
 
 // Save a commit, with a copy of the filesystem
-func (c *Commit) Save(storage storage.Storage, workingDir string) error {
+func (c *Commit) Save(st storage.Storage, workingDir string) error {
+	err := st.PutDirectory(path.Join("commits", c.ID), workingDir)
+	if err != nil {
+		return err
+	}
 	data, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}
-	return storage.Put(path.Join("commits", c.ID, "replicate-metadata.json"), data)
+	return st.Put(path.Join("commits", c.ID, "replicate-metadata.json"), data)
 }
 
 func ListCommits(store storage.Storage) ([]*Commit, error) {
