@@ -63,7 +63,7 @@ test: check-fmt assets vet lint
 BENCH := "."
 .PHONY: benchmark
 benchmark: build
-	go test -bench=$(BENCH) -benchtime 100x ./benchmark $(ARGS)
+	go test -bench=$(BENCH) -benchtime 10x ./benchmark $(ARGS)
 
 
 .PHONY:
