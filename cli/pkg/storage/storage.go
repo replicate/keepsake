@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,6 +16,7 @@ type ListResult struct {
 type Storage interface {
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
+	PutDirectory(path, source string) error
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
@@ -42,22 +42,26 @@ func ForURL(storageURL string) (Storage, error) {
 	return nil, fmt.Errorf("Unknown storage backend: %s", scheme)
 }
 
-// PutDirectory recursively puts the local `source` directory into path `dest` on storage
-//
-// Parallels Storage.put_directory in Python.
-func PutDirectory(storage Storage, dest, source string) error {
-	// TODO (bfirsh): support ignore, like in Python
-	return filepath.Walk(source, func(currentPath string, info os.FileInfo, err error) error {
+var putDirectorySkip = []string{".replicate", ".git", "venv", ".mypy_cache"}
+
+type fileToPut struct {
+	Source string
+	Dest   string
+}
+
+func putDirectoryFiles(dest, source string) ([]fileToPut, error) {
+	result := []fileToPut{}
+	err := filepath.Walk(source, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
+			for _, dir := range putDirectorySkip {
+				if info.Name() == dir {
+					return filepath.SkipDir
+				}
+			}
 			return nil
-		}
-
-		data, err := ioutil.ReadFile(currentPath)
-		if err != nil {
-			return err
 		}
 
 		// Strip local path
@@ -66,6 +70,11 @@ func PutDirectory(storage Storage, dest, source string) error {
 			return err
 		}
 
-		return storage.Put(path.Join(dest, relativePath), data)
+		result = append(result, fileToPut{
+			Source: currentPath,
+			Dest:   path.Join(dest, relativePath),
+		})
+		return nil
 	})
+	return result, err
 }
