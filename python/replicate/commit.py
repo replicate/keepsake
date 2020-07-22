@@ -9,19 +9,21 @@ from .metadata import rfc3339_datetime
 from .storage import Storage
 
 
+# this slows down import replicate considerably, but is probably fine
+# since the framework is probably loaded/about to be loaded anyway
 # fmt: off
 try:
-    import numpy as np
+    import numpy as np  # type: ignore
     has_numpy = True
 except ImportError:
     has_numpy = False
 try:
-    import torch
+    import torch  # type: ignore
     has_torch = True
 except ImportError:
     has_torch = False
 try:
-    import tensorflow as tf
+    import tensorflow as tf  # type: ignore
     has_tensorflow = True
 except ImportError:
     has_tensorflow = False

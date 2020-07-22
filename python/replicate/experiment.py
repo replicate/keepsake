@@ -57,6 +57,7 @@ def init(
     config = load_config(project_dir)
     storage = storage_for_url(config["storage"])
     created = datetime.datetime.utcnow()
+    args: Optional[List[str]]
     if include_argv:
         args = sys.argv
     else:

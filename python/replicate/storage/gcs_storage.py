@@ -2,9 +2,9 @@ import os
 import asyncio
 from typing import AnyStr, Optional, Generator, Set
 import aiohttp
-from gcloud.aio.storage import Storage as AioStorage
-from google.cloud import storage
-from google.api_core import exceptions
+from gcloud.aio.storage import Storage as AioStorage  # type: ignore
+from google.cloud import storage  # type: ignore
+from google.api_core import exceptions  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError
@@ -36,7 +36,7 @@ class GCSStorage(Storage):
         loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
 
     async def put_directory_async(
-        self, loop: asyncio.BaseEventLoop, path: str, dir_to_store: str
+        self, loop: asyncio.AbstractEventLoop, path: str, dir_to_store: str
     ):
         put_tasks = set()
         async with aiohttp.ClientSession() as session:
@@ -52,9 +52,11 @@ class GCSStorage(Storage):
                 # to finish when the number of tasks == self.concurrency
                 put_tasks.add(put_task)
                 if len(put_tasks) >= self.concurrency:
-                    _, put_tasks = await asyncio.wait(
+                    _, new_tasks = await asyncio.wait(
                         put_tasks, return_when=asyncio.FIRST_COMPLETED
                     )
+                    for task in new_tasks:
+                        put_tasks.add(loop.create_task(task))
 
             await asyncio.wait(put_tasks)
 
@@ -87,3 +89,11 @@ class GCSStorage(Storage):
         except exceptions.NotFound:
             client.create_bucket(self.bucket_name)
             return client.get_bucket(self.bucket_name)
+
+    def delete(self, path: str):
+        # TODO
+        pass
+
+    def list(self, path: str) -> Generator[ListFileInfo, None, None]:
+        # TODO
+        pass
