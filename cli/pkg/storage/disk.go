@@ -32,6 +32,27 @@ func (s *DiskStorage) Put(p string, data []byte) error {
 	return ioutil.WriteFile(fullPath, data, 0644)
 }
 
+// PutDirectory recursively puts the local `source` directory into path `dest` on storage
+//
+// Parallels Storage.put_directory in Python.
+func (s *DiskStorage) PutDirectory(dest, source string) error {
+	files, err := putDirectoryFiles(dest, source)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		data, err := ioutil.ReadFile(file.Source)
+		if err != nil {
+			return err
+		}
+		err = s.Put(file.Dest, data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	err := filepath.Walk(path.Join(s.folder, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
