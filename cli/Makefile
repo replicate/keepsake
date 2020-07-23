@@ -46,7 +46,7 @@ install: build
 .PHONY: assets
 assets:
 	@mkdir -p $(ASSETS_DIR)
-	go run github.com/go-bindata/go-bindata/go-bindata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
+	go run github.com/go-bindata/go-bindata/go-bindata -nometadata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
 
 .PHONY: clean-assets
 clean-assets:
