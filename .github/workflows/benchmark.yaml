@@ -25,7 +25,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Run benchmark
-        run: make benchmark | tee output.txt
+        # FIXME (bfirsh): S3 benchmark disabled
+        run: make benchmark BENCH="BenchmarkReplicateListOnDisk" | tee output.txt
       # WIP attempt to make web page
       # - name: Store benchmark result
       #   # uses: rhysd/github-action-benchmark@v1
