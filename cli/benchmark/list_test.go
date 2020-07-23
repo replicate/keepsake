@@ -2,6 +2,7 @@ package benchmark
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,9 +14,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 
 	"replicate.ai/cli/pkg/commit"
 	"replicate.ai/cli/pkg/experiment"
+	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 
 	"replicate.ai/cli/pkg/storage"
@@ -42,18 +46,64 @@ func replicate(b *testing.B, arg ...string) string {
 
 }
 
-func BenchmarkList(b *testing.B) {
+// Create lots of files in a working dir
+func createLotsOfFiles(b *testing.B, dir string) {
+	// Some 1KB files is a bit like a bit source directory
+	content := []byte(strings.Repeat("a", 1000))
+	for i := 1; i < 10; i++ {
+		err := ioutil.WriteFile(path.Join(dir, fmt.Sprintf("%d", i)), content, 0644)
+		require.NoError(b, err)
+	}
+}
+
+// Create lots of experiments and commits
+func createBigProject(workingDir string, storage storage.Storage) error {
+	numExperiments := 50
+	numCommits := 50
+
+	maxWorkers := int64(25)
+
+	group, ctx := errgroup.WithContext(context.Background())
+	group.Go(func() error {
+		sem := semaphore.NewWeighted(maxWorkers)
+
+		for i := 0; i < numExperiments; i++ {
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return err
+			}
+			group.Go(func() error {
+				defer sem.Release(1)
+
+				exp := experiment.NewExperiment(map[string]*param.Value{
+					"learning_rate": param.Float(0.001),
+				})
+				if err := exp.Save(storage); err != nil {
+					return err
+				}
+
+				for j := 0; j < numCommits; j++ {
+					com := commit.NewCommit(*exp, map[string]*param.Value{
+						"accuracy": param.Float(0.987),
+					})
+					if err := com.Save(storage, workingDir); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+		}
+		return nil
+	})
+	return group.Wait()
+}
+
+func BenchmarkReplicateListOnDisk(b *testing.B) {
 	// Create working dir
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(b, err)
 	defer os.RemoveAll(workingDir)
 
-	// Some 1KB files is a bit like a bit source directory
-	content := []byte(strings.Repeat("a", 1000))
-	for i := 1; i < 10; i++ {
-		err := ioutil.WriteFile(path.Join(workingDir, fmt.Sprintf("%d", i)), content, 0644)
-		require.NoError(b, err)
-	}
+	createLotsOfFiles(b, workingDir)
 
 	// Create storage
 	storageDir := path.Join(workingDir, ".replicate/storage")
@@ -61,21 +111,8 @@ func BenchmarkList(b *testing.B) {
 	require.NoError(b, err)
 	defer os.RemoveAll(storageDir)
 
-	for i := 0; i < 100; i++ {
-		exp := experiment.NewExperiment(map[string]*param.Value{
-			"learning_rate": param.Float(0.001),
-		})
-		err := exp.Save(storage)
-		require.NoError(b, err)
-
-		for j := 0; j < 100; j++ {
-			com := commit.NewCommit(*exp, map[string]*param.Value{
-				"accuracy": param.Float(0.987),
-			})
-			err := com.Save(storage, workingDir)
-			require.NoError(b, err)
-		}
-	}
+	err = createBigProject(workingDir, storage)
+	require.NoError(b, err)
 
 	// So we're not timing setup
 	b.ResetTimer()
@@ -86,8 +123,8 @@ func BenchmarkList(b *testing.B) {
 		// Check the output is sensible
 		firstLine := strings.Split(out, "\n")[0]
 		require.Contains(b, firstLine, "experiment")
-		// 100 experiments
-		require.Equal(b, 102, len(strings.Split(out, "\n")))
+		// 50 experiments
+		require.Equal(b, 52, len(strings.Split(out, "\n")))
 		// TODO: check first line is reasonable
 	}
 
@@ -95,7 +132,59 @@ func BenchmarkList(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkHelp(b *testing.B) {
+func BenchmarkReplicateListOnS3(b *testing.B) {
+	// TODO: print stuff when setup is run once before
+	// fmt.Println("Creating project on S3...")
+
+	// Create working dir
+	workingDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(b, err)
+	defer os.RemoveAll(workingDir)
+
+	createLotsOfFiles(b, workingDir)
+
+	// Create a bucket
+	bucketName := "replicate-test-benchmark-" + hash.Random()[0:10]
+	err = storage.CreateS3Bucket("us-east-1", bucketName)
+	require.NoError(b, err)
+	defer func() {
+		// fmt.Println("Deleting S3 bucket...")
+		require.NoError(b, storage.DeleteS3Bucket("us-east-1", bucketName))
+	}()
+
+	// replicate.yaml
+	err = ioutil.WriteFile(
+		path.Join(workingDir, "replicate.yaml"),
+		[]byte(fmt.Sprintf("storage: s3://%s", bucketName)), 0644)
+	require.NoError(b, err)
+
+	// Create storage
+	storage, err := storage.NewS3Storage(bucketName)
+	require.NoError(b, err)
+
+	// Create experiments in storage
+	err = createBigProject(workingDir, storage)
+	require.NoError(b, err)
+
+	// So we're not timing setup
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		out := replicate(b, "list", "-D", workingDir)
+
+		// Check the output is sensible
+		firstLine := strings.Split(out, "\n")[0]
+		require.Contains(b, firstLine, "experiment")
+		// 50 experiments
+		require.Equal(b, 52, len(strings.Split(out, "\n")))
+		// TODO: check first line is reasonable
+	}
+
+	// Stop timer before deferred cleanup
+	b.StopTimer()
+}
+
+func BenchmarkReplicateHelp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		out := replicate(b, "--help")
 		require.Contains(b, out, "Usage:")
