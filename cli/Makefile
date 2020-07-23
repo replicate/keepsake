@@ -19,6 +19,16 @@ LDFLAGS := -ldflags "-X replicate.ai/cli/pkg/global.Version=$(VERSION) -w"
 
 export GO111MODULE = on
 
+# Local configuration
+# This exports all the local make variables, but I think that's fine?
+# https://stackoverflow.com/questions/44628206/how-to-load-and-export-variables-from-an-env-file-in-makefile
+include .env
+export
+
+.env:
+	touch .env
+
+
 .PHONY: default
 default: build
 
