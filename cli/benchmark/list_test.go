@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -78,7 +79,7 @@ func createBigProject(workingDir string, storage storage.Storage) error {
 					"learning_rate": param.Float(0.001),
 				})
 				if err := exp.Save(storage); err != nil {
-					return err
+					return fmt.Errorf("Error saving experiment: %w", err)
 				}
 
 				for j := 0; j < numCommits; j++ {
@@ -86,7 +87,7 @@ func createBigProject(workingDir string, storage storage.Storage) error {
 						"accuracy": param.Float(0.987),
 					})
 					if err := com.Save(storage, workingDir); err != nil {
-						return err
+						return fmt.Errorf("Error saving commit: %w", err)
 					}
 				}
 				return nil
@@ -148,9 +149,10 @@ func BenchmarkReplicateListOnS3(b *testing.B) {
 	err = storage.CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(b, err)
 	defer func() {
-		// fmt.Println("Deleting S3 bucket...")
 		require.NoError(b, storage.DeleteS3Bucket("us-east-1", bucketName))
 	}()
+	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
+	time.Sleep(5 * time.Second)
 
 	// replicate.yaml
 	err = ioutil.WriteFile(
