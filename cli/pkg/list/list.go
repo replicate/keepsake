@@ -70,7 +70,7 @@ func Experiments(store storage.Storage, format string) error {
 }
 
 func outputJSON(experiments []*GroupedExperiment) error {
-	data, err := json.Marshal(experiments)
+	data, err := json.MarshalIndent(experiments, "", " ")
 	if err != nil {
 		return err
 	}
