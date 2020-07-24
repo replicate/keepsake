@@ -13,13 +13,13 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
-func newListCommand() *cobra.Command {
+func newPsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "ls [project-storage-url]",
-		Short:   "List experiments in this project",
-		Aliases: []string{"list"},
-		RunE:    listExperiments,
-		Args:    cobra.MaximumNArgs(1),
+		Use:     "ps",
+		Short:   "List running experiments in this project",
+		Aliases: []string{"processes"},
+		RunE:    listRunningExperiments,
+		Args:    cobra.ExactArgs(0),
 	}
 
 	cmd.Flags().StringP("format", "f", "table", "Output format (table/json)")
@@ -27,7 +27,7 @@ func newListCommand() *cobra.Command {
 	return cmd
 }
 
-func listExperiments(cmd *cobra.Command, args []string) error {
+func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	var storageURL string
 	// FIXME (bfirsh): perhaps better as a flag? (just putting this here to remind ourselves to have this discussion)
 	if len(args) == 1 {
@@ -54,5 +54,5 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return list.Experiments(store, format)
+	return list.RunningExperiments(store, format)
 }

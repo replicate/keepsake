@@ -30,6 +30,29 @@ type GroupedExperiment struct {
 	Running      bool                    `json:"running"`
 }
 
+func RunningExperiments(store storage.Storage, format string) error {
+	commits, err := commit.ListCommits(store)
+	if err != nil {
+		return err
+	}
+	experiments := groupCommits(commits)
+
+	running := []*GroupedExperiment{}
+	for _, exp := range experiments {
+		if exp.Running {
+			running = append(running, exp)
+		}
+	}
+
+	switch format {
+	case FormatJSON:
+		return outputJSON(running)
+	case FormatTable:
+		return outputTable(running)
+	}
+	return fmt.Errorf("Unknown format: %s", format)
+}
+
 func Experiments(store storage.Storage, format string) error {
 	commits, err := commit.ListCommits(store)
 	if err != nil {
