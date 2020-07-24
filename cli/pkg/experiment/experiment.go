@@ -10,11 +10,22 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
+// corresponds to DEFAULT_REFRESH_INTERVAL in heartbeat.py
+var heartbeatRefreshInterval = 10 * time.Second
+
+// the number of missed heartbeats we tolerate before declaring
+// the experiment "stopped"
+var heartbeatMissTolerance = 3
+
 // Experiment represents a training run
 type Experiment struct {
-	ID      string                  `json:"id"`
-	Created time.Time               `json:"created"`
-	Params  map[string]*param.Value `json:"params"`
+	ID            string                  `json:"id"`
+	Created       time.Time               `json:"created"`
+	Params        map[string]*param.Value `json:"params"`
+	Host          string                  `json:"host"`
+	User          string                  `json:"user"`
+	LastHeartbeat time.Time               `json:"last_heartbeat"`
+	Running       bool                    `json:"running"`
 }
 
 // NewExperiment creates a commit, setting ID and Created
@@ -33,4 +44,10 @@ func (e *Experiment) Save(storage storage.Storage) error {
 		return err
 	}
 	return storage.Put(path.Join("experiments", e.ID, "replicate-metadata.json"), data)
+}
+
+func IsRunning(lastHeartbeat time.Time) bool {
+	now := time.Now()
+	lastTolerableHeartbeat := now.Add(-heartbeatRefreshInterval * time.Duration(heartbeatMissTolerance))
+	return lastHeartbeat.After(lastTolerableHeartbeat)
 }

@@ -14,10 +14,12 @@ DEFAULT_REFRESH_INTERVAL = datetime.timedelta(seconds=10)
 class Heartbeat:
     def __init__(
         self,
+        experiment_id: str,
         storage_url: str,
         path: str,
         refresh_interval: datetime.timedelta = DEFAULT_REFRESH_INTERVAL,
     ):
+        self.experiment_id = experiment_id
         self.storage_url = storage_url
         self.path = path
         self.refresh_interval = refresh_interval
@@ -53,9 +55,12 @@ class Heartbeat:
 
     def refresh(self, storage: Storage):
         obj = json.dumps(
-            {"last_heartbeat": rfc3339_datetime(datetime.datetime.utcnow())}
+            {
+                "experiment_id": self.experiment_id,
+                "last_heartbeat": rfc3339_datetime(datetime.datetime.utcnow()),
+            }
         )
         try:
             storage.put(self.path, obj)
         except Exception as e:
-            sys.stderr.write("Failed to save checkpoint, got error: {}".format(e))
+            sys.stderr.write("Failed to save heartbeat, got error: {}".format(e))

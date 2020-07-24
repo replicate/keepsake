@@ -4,35 +4,70 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/remote"
+	"replicate.ai/cli/pkg/storage"
 )
 
 type closeFunc func() error
 
 // Run runs a Docker container from imageName with cmd
-func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU bool) error {
+func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU bool, user string, host string, storageURL string) error {
 	// use same name for both container and image
 	containerName := imageName
+
+	env := remote.FilterEnvList(os.Environ())
+
+	// REPLICATE_USER and REPLICATE_HOST is used by the replicate
+	// python library to save user/host in experiment metadata
+	env = append(env, "REPLICATE_USER="+user)
+	env = append(env, "REPLICATE_HOST="+host)
 
 	// Options for creating container
 	config := &container.Config{
 		Image: imageName,
 		Cmd:   cmd,
-		Env:   remote.FilterEnvList(os.Environ()),
+		Env:   env,
 	}
 	// Options for starting container (port bindings, volume bindings, etc)
 	hostConfig := &container.HostConfig{
 		AutoRemove: false, // TODO: probably true
+		Mounts:     []mount.Mount{},
 	}
 	if hasGPU {
 		hostConfig.Runtime = "nvidia"
+	}
+
+	// if storage is disk storage, it doesn't make sense to write
+	// to the storage path inside the container since it's not
+	// available outside the container. to fix this we rewrite the
+	// storage path inside the container to a temporary directory,
+	// and mount that to the actual storage path on the host.
+	scheme, storagePath, err := storage.SplitURL(storageURL)
+	if err != nil {
+		return err
+	}
+	if scheme == storage.SchemeDisk {
+		storagePath, err = filepath.Abs(storagePath)
+		if err != nil {
+			return fmt.Errorf("Failed to determine absolute directory of %s, got error: %w", storagePath, err)
+		}
+		inContainerStorage := "/replicate-storage"
+		config.Env = append(config.Env, "REPLICATE_STORAGE="+inContainerStorage)
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Source:   storagePath,
+			Target:   inContainerStorage,
+			ReadOnly: false,
+			Type:     mount.TypeBind,
+		})
 	}
 
 	ctx, cancelFun := context.WithCancel(context.Background())

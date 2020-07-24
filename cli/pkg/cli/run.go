@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os/user"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -11,7 +12,9 @@ import (
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/docker"
 	"replicate.ai/cli/pkg/hash"
+	"replicate.ai/cli/pkg/netutils"
 	"replicate.ai/cli/pkg/remote"
+	"replicate.ai/cli/pkg/settings"
 )
 
 type runOpts struct {
@@ -118,6 +121,37 @@ func runCommand(opts runOpts, args []string) (err error) {
 		args = append([]string{"python"}, args...)
 	}
 
+	// forward the local username (using environment variable)
+	// to the container, which will get saved in metadata
+	username, err := getUser()
+	if err != nil {
+		return err
+	}
+
+	// also forward the host: if we're running with --host,
+	// use that. otherwise use the local outbound IP
+	var host string
+	if remoteOptions == nil {
+		host, err = netutils.GetOutboundIP()
+		if err != nil {
+			return err
+		}
+	} else {
+		host = remoteOptions.Host
+	}
+
 	console.Info("Running '%v'...", strings.Join(args, " "))
-	return docker.Run(dockerClient, containerName, args, hasGPU)
+	return docker.Run(dockerClient, containerName, args, hasGPU, username, host, conf.Storage)
+}
+
+func getUser() (string, error) {
+	userSettings, err := settings.LoadUserSettings()
+	if err != nil || userSettings.Email == "" {
+		u, err := user.Current()
+		if err != nil {
+			return "", fmt.Errorf("Failed to determine current user, got error: %w", err)
+		}
+		return u.Username, nil
+	}
+	return userSettings.Email, nil
 }

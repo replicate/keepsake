@@ -1,3 +1,4 @@
+import time
 import json
 import sys
 import subprocess
@@ -6,6 +7,8 @@ import pytest
 
 
 def test_gpu_training(gpu_instance, tmpdir, temp_bucket):
+    tmpdir = str(tmpdir)
+
     storage = "s3://" + temp_bucket
 
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
@@ -23,10 +26,12 @@ storage: {storage}
             """
 import replicate
 import torch
+import time
 
 def main():
     experiment = replicate.init()
     num_gpus = torch.cuda.device_count()
+    time.sleep(1)
     experiment.commit(metrics={"num_gpus": num_gpus})
 
 if __name__ == "__main__":
@@ -67,3 +72,15 @@ if __name__ == "__main__":
     exp = experiments[0]
     latest = exp["latest_commit"]
     assert latest["metrics"] == {"num_gpus": 1}
+    assert exp["running"]
+
+    time.sleep(31)  # TODO(andreas): speed this up to make CI faster
+    experiments = json.loads(
+        subprocess.check_output(
+            ["replicate", "list", "--format=json"], cwd=tmpdir, env=env,
+        )
+    )
+    assert len(experiments) == 1
+
+    exp = experiments[0]
+    assert not exp["running"]

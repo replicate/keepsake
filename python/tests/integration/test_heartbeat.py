@@ -10,9 +10,14 @@ from replicate.heartbeat import Heartbeat
 
 
 def test_heartbeat_running(tmpdir):
-    tmpdir = tmpdir.dirname
+    tmpdir = str(tmpdir)
     path = "foo/heartbeat.json"
-    heartbeat = Heartbeat(tmpdir, path, datetime.timedelta(seconds=1))
+    heartbeat = Heartbeat(
+        "experiment-id-foo",
+        tmpdir,
+        path,
+        refresh_interval=datetime.timedelta(seconds=1),
+    )
     assert not heartbeat.is_alive()
 
     heartbeat.start()
@@ -26,11 +31,16 @@ def test_heartbeat_running(tmpdir):
 
 
 def test_heartbeat_write(tmpdir):
-    tmpdir = tmpdir.dirname
+    tmpdir = str(tmpdir)
     t1 = datetime.datetime.utcnow().replace(tzinfo=tzutc())
 
     path = "foo/heartbeat.json"
-    heartbeat = Heartbeat(tmpdir, path, datetime.timedelta(seconds=1))
+    heartbeat = Heartbeat(
+        "experiment-id-foo",
+        tmpdir,
+        path,
+        refresh_interval=datetime.timedelta(seconds=1),
+    )
     heartbeat.start()
     time.sleep(2.0)
 

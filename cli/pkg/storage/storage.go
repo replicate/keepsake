@@ -8,6 +8,14 @@ import (
 	"regexp"
 )
 
+type Scheme string
+
+const (
+	SchemeDisk Scheme = "file"
+	SchemeS3   Scheme = "s3"
+	SchemeGCS  Scheme = "gs"
+)
+
 type ListResult struct {
 	Path  string
 	Error error
@@ -20,22 +28,37 @@ type Storage interface {
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
-func ForURL(storageURL string) (Storage, error) {
+// SplitURL splits a storage URL into <scheme>://<path>
+func SplitURL(storageURL string) (scheme Scheme, path string, err error) {
 	urlRegex := regexp.MustCompile("^([^:]+)://(.+)$")
 	matches := urlRegex.FindStringSubmatch(storageURL)
 	if len(matches) == 0 {
-		return NewDiskStorage(storageURL)
+		return SchemeDisk, storageURL, nil
 	}
 
-	scheme := matches[1]
-	path := matches[2]
-
-	switch scheme {
+	path = matches[2]
+	switch matches[1] {
 	case "s3":
-		return NewS3Storage(path)
+		return SchemeS3, path, nil
 	case "gs":
-		return NewGCSStorage(path)
+		return SchemeGCS, path, nil
 	case "file":
+		return SchemeDisk, path, nil
+	}
+	return "", "", fmt.Errorf("Unknown storage backend: %s", matches[1])
+}
+
+func ForURL(storageURL string) (Storage, error) {
+	scheme, path, err := SplitURL(storageURL)
+	if err != nil {
+		return nil, err
+	}
+	switch scheme {
+	case SchemeS3:
+		return NewS3Storage(path)
+	case SchemeGCS:
+		return NewGCSStorage(path)
+	case SchemeDisk:
 		return NewDiskStorage(path)
 	}
 

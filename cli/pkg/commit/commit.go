@@ -48,25 +48,61 @@ func (c *Commit) Save(st storage.Storage, workingDir string) error {
 }
 
 func ListCommits(store storage.Storage) ([]*Commit, error) {
+	commits := []*Commit{}
+	heartbeatsByExpID := map[string]*experiment.Heartbeat{}
+
 	results := make(chan storage.ListResult)
 	go store.MatchFilenamesRecursive(results, "commits", "replicate-metadata.json")
-
-	commits := []*Commit{}
 	for result := range results {
 		if result.Error != nil {
 			return nil, result.Error
 		}
-		com, err := LoadFromPath(store, result.Path)
+		com, err := loadCommitFromPath(store, result.Path)
 		if err == nil {
 			commits = append(commits, com)
 		} else {
 			console.Warn("Failed to load metadata from %s, got error: %s", result.Path, err)
 		}
 	}
+
+	// heartbeats are stored in experiments/<id>/replicate-heartbeat.json
+	// we fetch all heartbeats and then attach them to the commits'
+	// experiment metadata
+	results = make(chan storage.ListResult)
+	go store.MatchFilenamesRecursive(results, "experiments", "replicate-heartbeat.json")
+	for result := range results {
+		if result.Error != nil {
+			return nil, result.Error
+		}
+		heartbeat, err := loadHeartbeatFromPath(store, result.Path)
+		if err == nil {
+			heartbeatsByExpID[heartbeat.ExperimentID] = heartbeat
+		} else {
+			console.Warn("Failed to load heartbeat from %s, got error: %s", result.Path, err)
+		}
+	}
+	attachHeartbeatsToCommitExperiments(commits, heartbeatsByExpID)
+
 	return commits, nil
 }
 
-func LoadFromPath(store storage.Storage, path string) (*Commit, error) {
+func attachHeartbeatsToCommitExperiments(commits []*Commit, heartbeatsByExpID map[string]*experiment.Heartbeat) {
+	missingHeartbeats := map[string]bool{}
+	for _, commit := range commits {
+		heartbeat, ok := heartbeatsByExpID[commit.Experiment.ID]
+		if ok {
+			commit.Experiment.LastHeartbeat = heartbeat.LastHeartbeat
+			commit.Experiment.Running = experiment.IsRunning(heartbeat.LastHeartbeat)
+		} else {
+			if hasLogged := missingHeartbeats[commit.Experiment.ID]; !hasLogged {
+				console.Warn("Heartbeat not found for experiment %s", commit.Experiment.ID)
+				missingHeartbeats[commit.Experiment.ID] = true
+			}
+		}
+	}
+}
+
+func loadCommitFromPath(store storage.Storage, path string) (*Commit, error) {
 	contents, err := store.Get(path)
 	if err != nil {
 		return nil, err
@@ -76,4 +112,16 @@ func LoadFromPath(store storage.Storage, path string) (*Commit, error) {
 		return nil, fmt.Errorf("Parse error: %s", err)
 	}
 	return com, nil
+}
+
+func loadHeartbeatFromPath(store storage.Storage, path string) (*experiment.Heartbeat, error) {
+	contents, err := store.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	hb := new(experiment.Heartbeat)
+	if err := json.Unmarshal(contents, hb); err != nil {
+		return nil, fmt.Errorf("Parse error: %s", err)
+	}
+	return hb, nil
 }

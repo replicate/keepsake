@@ -41,6 +41,12 @@ def test_s3_experiment(temp_bucket, tmpdir):
             temp_bucket,
             os.path.join("experiments", experiment.id, "replicate-metadata.json"),
         )
+        # TODO(andreas): actually check values of host and user
+        assert "host" in actual_experiment_meta
+        assert "user" in actual_experiment_meta
+        del actual_experiment_meta["host"]
+        del actual_experiment_meta["user"]
+
         expected_experiment_meta = {
             "id": experiment.id,
             "created": experiment.created.isoformat() + "Z",
@@ -53,6 +59,11 @@ def test_s3_experiment(temp_bucket, tmpdir):
         actual_commit_meta = s3_read_json(
             temp_bucket, os.path.join("commits", commit.id, "replicate-metadata.json"),
         )
+        assert "host" in actual_commit_meta["experiment"]
+        assert "user" in actual_commit_meta["experiment"]
+        del actual_commit_meta["experiment"]["host"]
+        del actual_commit_meta["experiment"]["user"]
+
         expected_commit_meta = {
             "id": commit.id,
             "created": commit.created.isoformat() + "Z",

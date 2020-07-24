@@ -21,7 +21,7 @@ import (
 // changes. perhaps it'd be better to just use sftp.
 
 const rsyncX86BinaryURL = "https://github.com/JBBgameich/rsync-static/releases/download/continuous/rsync-x86"
-const remoteRsyncTempPath = "/opt/replicate/rsync"
+const remoteRsyncTempPath = "/tmp/replicate/rsync"
 
 func UploadToTempDir(localDir string, remoteOptions *remote.Options) (remoteDir string, err error) {
 	remoteDir = path.Join("/tmp/replicate/upload", uniuri.NewLen(20))
