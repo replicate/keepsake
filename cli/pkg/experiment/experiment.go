@@ -41,7 +41,7 @@ func NewExperiment(params map[string]*param.Value) *Experiment {
 
 // Save experiment to storage
 func (e *Experiment) Save(storage storage.Storage) error {
-	data, err := json.Marshal(e)
+	data, err := json.MarshalIndent(e, "", " ")
 	if err != nil {
 		return err
 	}

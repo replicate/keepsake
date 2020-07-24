@@ -40,7 +40,7 @@ func (c *Commit) Save(st storage.Storage, workingDir string) error {
 	if err != nil {
 		return err
 	}
-	data, err := json.Marshal(c)
+	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return err
 	}

@@ -43,7 +43,7 @@ func LoadUserSettings() (*UserSettings, error) {
 
 // Save saves global user settings to disk
 func (s *UserSettings) Save() error {
-	bytes, err := json.Marshal(s)
+	bytes, err := json.MarshalIndent(s, "", " ")
 	if err != nil {
 		return err
 	}
