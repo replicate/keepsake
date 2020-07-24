@@ -20,6 +20,7 @@ import (
 type closeFunc func() error
 
 // Run runs a Docker container from imageName with cmd
+// TODO: this could do with a configuration struct
 func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU bool, user string, host string, storageURL string) error {
 	// use same name for both container and image
 	containerName := imageName

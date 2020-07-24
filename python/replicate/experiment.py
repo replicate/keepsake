@@ -74,7 +74,10 @@ class Experiment:
             return host
         try:
             external_ip = (
-                urllib.request.urlopen("https://ident.me").read().decode("utf8")
+                # FIXME: check this has a short timeout
+                urllib.request.urlopen("https://ident.me")
+                .read()
+                .decode("utf8")
             )
             return external_ip
         except urllib.error.URLError as e:
