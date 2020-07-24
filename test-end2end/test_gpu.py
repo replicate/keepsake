@@ -74,6 +74,14 @@ if __name__ == "__main__":
     assert latest["metrics"] == {"num_gpus": 1}
     assert exp["running"]
 
+    running = json.loads(
+        subprocess.check_output(
+            ["replicate", "ps", "--format=json"], cwd=tmpdir, env=env,
+        )
+    )
+
+    assert running == experiments
+
     time.sleep(31)  # TODO(andreas): speed this up to make CI faster
     experiments = json.loads(
         subprocess.check_output(
@@ -84,3 +92,10 @@ if __name__ == "__main__":
 
     exp = experiments[0]
     assert not exp["running"]
+
+    running = json.loads(
+        subprocess.check_output(
+            ["replicate", "ps", "--format=json"], cwd=tmpdir, env=env,
+        )
+    )
+    assert len(running) == 0
