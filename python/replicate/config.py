@@ -20,6 +20,13 @@ def load_config(project_dir):
     # Empty file
     if data is None:
         data = {}
+
+    # if replicate is running inside docker and storage is disk,
+    # REPLICATE_STORAGE is mounted to the value of storage: in
+    # replicate.yaml
+    if "REPLICATE_STORAGE" in os.environ:
+        data["storage"] = os.environ["REPLICATE_STORAGE"]
+
     return validate_and_set_defaults(data)
 
 

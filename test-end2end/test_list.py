@@ -4,8 +4,18 @@ import subprocess
 import pytest  # type: ignore
 
 
-@pytest.mark.parametrize("storage_backend", ["gcs", "s3", "file", "undefined"])
-def test_list(storage_backend, tmpdir, temp_bucket, tmpdir_factory):
+@pytest.mark.parametrize(
+    "storage_backend,use_replicate_run",
+    [
+        ("gcs", False),
+        ("s3", False),
+        ("file", False),
+        ("file", True),
+        ("undefined", False),
+    ],
+)
+def test_list(storage_backend, use_replicate_run, tmpdir, temp_bucket, tmpdir_factory):
+    tmpdir = str(tmpdir)
     if storage_backend == "s3":
         storage = "s3://" + temp_bucket
     if storage_backend == "gcs":
@@ -42,9 +52,11 @@ if __name__ == "__main__":
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
-    return_code = subprocess.Popen(
-        ["python", "train.py", "train.py"], cwd=tmpdir, env=env,
-    ).wait()
+    if use_replicate_run:
+        cmd = ["replicate", "run", "train.py"]
+    else:
+        cmd = ["python", "train.py"]
+    return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()
     assert return_code == 0
 
     experiments = json.loads(

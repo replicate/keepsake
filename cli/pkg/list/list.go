@@ -25,6 +25,9 @@ type GroupedExperiment struct {
 	Params       map[string]*param.Value `json:"params"`
 	NumCommits   int                     `json:"num_commits"`
 	LatestCommit *commit.Commit          `json:"latest_commit"`
+	User         string                  `json:"user"`
+	Host         string                  `json:"host"`
+	Running      bool                    `json:"running"`
 }
 
 func Experiments(store storage.Storage, format string) error {
@@ -62,7 +65,7 @@ func outputTable(experiments []*GroupedExperiment) error {
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	keys := []string{"experiment", "started"}
+	keys := []string{"experiment", "started", "status", "host", "user"}
 	keys = append(keys, expHeadings...)
 	keys = append(keys, "commits", "latest")
 	keys = append(keys, commitHeadings...)
@@ -77,6 +80,13 @@ func outputTable(experiments []*GroupedExperiment) error {
 	for _, exp := range experiments {
 		fmt.Fprintf(tw, "%s\t", exp.ID[:7])
 		fmt.Fprintf(tw, "%s\t", formatTime(exp.Created))
+		if exp.Running {
+			fmt.Fprint(tw, "running\t")
+		} else {
+			fmt.Fprint(tw, "stopped\t")
+		}
+		fmt.Fprintf(tw, "%s\t", exp.Host)
+		fmt.Fprintf(tw, "%s\t", exp.User)
 		for _, heading := range expHeadings {
 			if val, ok := exp.Params[heading]; ok {
 				fmt.Fprintf(tw, "%v\t", val)
@@ -142,6 +152,9 @@ func groupCommits(commits []*commit.Commit) []*GroupedExperiment {
 			NumCommits:   len(commits),
 			LatestCommit: latestCommit,
 			Created:      exp.Created,
+			Host:         exp.Host,
+			User:         exp.User,
+			Running:      exp.Running,
 		}
 		ret = append(ret, &groupedExperiment)
 	}

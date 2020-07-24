@@ -1,3 +1,4 @@
+import time
 import torch
 import replicate
 
@@ -11,3 +12,4 @@ print("Starting experiment {}...".format(experiment.id))
 for epoch in range(10):
     print("Committing epoch {}...".format(epoch))
     experiment.commit(metrics={"epoch": epoch})
+    time.sleep(100)

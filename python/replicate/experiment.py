@@ -1,3 +1,7 @@
+import urllib
+import urllib.error
+import getpass
+import os
 import datetime
 import json
 import sys
@@ -28,7 +32,9 @@ class Experiment:
         self.id = random_hash()
         self.created = created
         self.heartbeat = Heartbeat(
-            storage_url, self.get_path() + "replicate-heartbeat.json"
+            experiment_id=self.id,
+            storage_url=storage_url,
+            path=self.get_path() + "replicate-heartbeat.json",
         )
 
     def save(self):
@@ -49,10 +55,31 @@ class Experiment:
             "id": self.id,
             "created": rfc3339_datetime(self.created),
             "params": self.params,
+            "user": self.get_user(),
+            "host": self.get_host(),
         }
 
-    def get_path(self):
+    def get_path(self) -> str:
         return "experiments/{}/".format(self.id)
+
+    def get_user(self) -> str:
+        user = os.environ.get("REPLICATE_USER")
+        if user is not None:
+            return user
+        return getpass.getuser()
+
+    def get_host(self) -> str:
+        host = os.environ.get("REPLICATE_HOST")
+        if host is not None:
+            return host
+        try:
+            external_ip = (
+                urllib.request.urlopen("https://ident.me").read().decode("utf8")
+            )
+            return external_ip
+        except urllib.error.URLError as e:
+            sys.stderr.write("Failed to determine external IP, got error: {}".format(e))
+            return ""
 
 
 def init(
