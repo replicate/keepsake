@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -136,9 +137,10 @@ func CreateS3Bucket(region, bucket string) (err error) {
 		return fmt.Errorf("Unable to create bucket %q, %w", bucket, err)
 	}
 
-	return svc.WaitUntilBucketExists(&s3.HeadBucketInput{
+	// Default max attempts is 20, but we hit this sometimes
+	return svc.WaitUntilBucketExistsWithContext(aws.BackgroundContext(), &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
-	})
+	}, request.WithWaiterMaxAttempts(50))
 }
 
 func DeleteS3Bucket(region, bucket string) (err error) {
@@ -164,10 +166,7 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 	if err != nil {
 		return fmt.Errorf("Unable to delete bucket %q, %w", bucket, err)
 	}
-
-	return svc.WaitUntilBucketNotExists(&s3.HeadBucketInput{
-		Bucket: aws.String(bucket),
-	})
+	return nil
 }
 
 func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filter func(string) bool) {
