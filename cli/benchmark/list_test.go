@@ -98,7 +98,7 @@ func createBigProject(workingDir string, storage storage.Storage) error {
 	return group.Wait()
 }
 
-func BenchmarkReplicateListOnDisk(b *testing.B) {
+func BenchmarkReplicateDisk(b *testing.B) {
 	// Create working dir
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(b, err)
@@ -115,28 +115,22 @@ func BenchmarkReplicateListOnDisk(b *testing.B) {
 	err = createBigProject(workingDir, storage)
 	require.NoError(b, err)
 
-	// So we're not timing setup
-	b.ResetTimer()
+	b.Run("list", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			out := replicate(b, "list", "-D", workingDir)
 
-	for i := 0; i < b.N; i++ {
-		out := replicate(b, "list", "-D", workingDir)
+			// Check the output is sensible
+			firstLine := strings.Split(out, "\n")[0]
+			require.Contains(b, firstLine, "experiment")
+			// 50 experiments
+			require.Equal(b, 52, len(strings.Split(out, "\n")))
+			// TODO: check first line is reasonable
+		}
+	})
 
-		// Check the output is sensible
-		firstLine := strings.Split(out, "\n")[0]
-		require.Contains(b, firstLine, "experiment")
-		// 50 experiments
-		require.Equal(b, 52, len(strings.Split(out, "\n")))
-		// TODO: check first line is reasonable
-	}
-
-	// Stop timer before deferred cleanup
-	b.StopTimer()
 }
 
-func BenchmarkReplicateListOnS3(b *testing.B) {
-	// TODO: print stuff when setup is run once before
-	// fmt.Println("Creating project on S3...")
-
+func BenchmarkReplicateS3(b *testing.B) {
 	// Create working dir
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(b, err)
@@ -168,22 +162,18 @@ func BenchmarkReplicateListOnS3(b *testing.B) {
 	err = createBigProject(workingDir, storage)
 	require.NoError(b, err)
 
-	// So we're not timing setup
-	b.ResetTimer()
+	b.Run("list", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			out := replicate(b, "list", "-D", workingDir)
 
-	for i := 0; i < b.N; i++ {
-		out := replicate(b, "list", "-D", workingDir)
-
-		// Check the output is sensible
-		firstLine := strings.Split(out, "\n")[0]
-		require.Contains(b, firstLine, "experiment")
-		// 50 experiments
-		require.Equal(b, 52, len(strings.Split(out, "\n")))
-		// TODO: check first line is reasonable
-	}
-
-	// Stop timer before deferred cleanup
-	b.StopTimer()
+			// Check the output is sensible
+			firstLine := strings.Split(out, "\n")[0]
+			require.Contains(b, firstLine, "experiment")
+			// 50 experiments
+			require.Equal(b, 52, len(strings.Split(out, "\n")))
+			// TODO: check first line is reasonable
+		}
+	})
 }
 
 func BenchmarkReplicateHelp(b *testing.B) {
