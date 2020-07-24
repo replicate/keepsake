@@ -14,6 +14,7 @@ from .metadata import rfc3339_datetime
 from .project import get_project_dir
 from .storage import storage_for_url, Storage
 from .heartbeat import Heartbeat
+from .version import attach_version
 
 
 class Experiment:
@@ -40,7 +41,7 @@ class Experiment:
     def save(self):
         self.storage.put(
             self.get_path() + "replicate-metadata.json",
-            json.dumps(self.get_metadata(), indent=2),
+            json.dumps(attach_version(self.get_metadata()), indent=2),
         )
 
     def commit(self, metrics: Dict[str, Any]) -> Commit:

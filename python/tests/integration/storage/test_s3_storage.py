@@ -51,6 +51,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "id": experiment.id,
             "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
+            "metadata_version": "1",
         }
         assert actual_experiment_meta == expected_experiment_meta
 
@@ -73,6 +74,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
                 "created": experiment.created.isoformat() + "Z",
             },
             "metrics": {"loss": 1.1, "baz": "qux"},
+            "metadata_version": "1",
         }
         assert actual_commit_meta == expected_commit_meta
 

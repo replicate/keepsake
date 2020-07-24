@@ -7,6 +7,7 @@ from typing import Optional, Dict, Any
 from .hash import random_hash
 from .metadata import rfc3339_datetime
 from .storage import Storage
+from .version import attach_version
 
 
 # this slows down import replicate considerably, but is probably fine
@@ -72,12 +73,14 @@ class Commit(object):
         storage.put(
             self.get_path() + "replicate-metadata.json",
             json.dumps(
-                {
-                    "id": self.id,
-                    "created": rfc3339_datetime(self.created),
-                    "experiment": self.experiment.get_metadata(),
-                    "metrics": self.metrics,
-                },
+                attach_version(
+                    {
+                        "id": self.id,
+                        "created": rfc3339_datetime(self.created),
+                        "experiment": self.experiment.get_metadata(),
+                        "metrics": self.metrics,
+                    }
+                ),
                 indent=2,
                 cls=CustomJSONEncoder,
             ),
