@@ -18,7 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 
-	"replicate.ai/cli/pkg/commit"
 	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
@@ -87,11 +86,10 @@ func createBigProject(workingDir string, storage storage.Storage) error {
 				}
 
 				for j := 0; j < numCommits; j++ {
-					com := commit.NewCommit(*exp, map[string]*param.Value{
+					if _, err := exp.Commit(storage, map[string]*param.Value{
 						"accuracy": param.Float(0.987),
-					})
-					if err := com.Save(storage, workingDir); err != nil {
-						return fmt.Errorf("Error saving commit: %w", err)
+					}, workingDir); err != nil {
+						return fmt.Errorf("Error creating commit: %w", err)
 					}
 				}
 				return nil
