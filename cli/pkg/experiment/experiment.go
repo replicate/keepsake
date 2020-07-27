@@ -48,6 +48,18 @@ func (e *Experiment) Save(storage storage.Storage) error {
 	return storage.Put(path.Join("experiments", e.ID, "replicate-metadata.json"), data)
 }
 
+func (e *Experiment) Heartbeat(storage storage.Storage, t time.Time) error {
+	heartbeat := &Heartbeat{
+		ExperimentID:  e.ID,
+		LastHeartbeat: t,
+	}
+	data, err := json.MarshalIndent(heartbeat, "", " ")
+	if err != nil {
+		return err
+	}
+	return storage.Put(path.Join("experiments", e.ID, "replicate-heartbeat.json"), data)
+}
+
 func IsRunning(lastHeartbeat time.Time) bool {
 	now := time.Now()
 	lastTolerableHeartbeat := now.Add(-heartbeatRefreshInterval * time.Duration(heartbeatMissTolerance))
