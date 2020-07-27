@@ -82,6 +82,10 @@ func createBigProject(workingDir string, storage storage.Storage) error {
 					return fmt.Errorf("Error saving experiment: %w", err)
 				}
 
+				if err := exp.Heartbeat(storage, time.Now().Add(-24*time.Hour)); err != nil {
+					return fmt.Errorf("Error creating heartbeat: %w", err)
+				}
+
 				for j := 0; j < numCommits; j++ {
 					com := commit.NewCommit(*exp, map[string]*param.Value{
 						"accuracy": param.Float(0.987),
