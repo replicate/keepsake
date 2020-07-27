@@ -60,6 +60,11 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 	return body, nil
 }
 
+// GetMultiple files in parallel
+func (s *S3Storage) GetMultiple(paths []string) (map[string][]byte, error) {
+	return parallelGet(s, paths)
+}
+
 // Put data at path
 func (s *S3Storage) Put(path string, data []byte) error {
 	uploader := s3manager.NewUploader(s.sess)

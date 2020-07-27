@@ -1,11 +1,15 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
+
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 type Scheme string
@@ -23,6 +27,8 @@ type ListResult struct {
 
 type Storage interface {
 	Get(path string) ([]byte, error)
+	// GetMultiple files in whatever way is most efficient for that storage mechanism
+	GetMultiple(path []string) (map[string][]byte, error)
 	Put(path string, data []byte) error
 	PutDirectory(path, source string) error
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
@@ -100,4 +106,45 @@ func putDirectoryFiles(dest, source string) ([]fileToPut, error) {
 		return nil
 	})
 	return result, err
+}
+
+func parallelGet(storage Storage, paths []string) (map[string][]byte, error) {
+	maxWorkers := int64(128)
+
+	type Result struct {
+		path string
+		data []byte
+	}
+	results := make([]Result, len(paths))
+
+	group, ctx := errgroup.WithContext(context.Background())
+	group.Go(func() error {
+		sem := semaphore.NewWeighted(maxWorkers)
+
+		for i, p := range paths {
+			i, p := i, p
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return err
+			}
+			group.Go(func() error {
+				defer sem.Release(1)
+				data, err := storage.Get(p)
+				if err != nil {
+					return err
+				}
+				results[i] = Result{p, data}
+				return nil
+			})
+		}
+		return nil
+	})
+	if err := group.Wait(); err != nil {
+		return nil, err
+	}
+	// Rejig the results into {path: data} map
+	ret := map[string][]byte{}
+	for _, result := range results {
+		ret[result.path] = result.data
+	}
+	return ret, nil
 }

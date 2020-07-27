@@ -22,6 +22,18 @@ func (s *DiskStorage) Get(p string) ([]byte, error) {
 	return ioutil.ReadFile(path.Join(s.folder, p))
 }
 
+// GetMultiple files. Done sequentially, because that is probably the most efficient way to do it on disks.
+func (s *DiskStorage) GetMultiple(paths []string) (result map[string][]byte, err error) {
+	result = map[string][]byte{}
+	for _, p := range paths {
+		result[p], err = s.Get(p)
+		if err != nil {
+			return result, err
+		}
+	}
+	return result, err
+}
+
 // Put data at path
 func (s *DiskStorage) Put(p string, data []byte) error {
 	fullPath := path.Join(s.folder, p)

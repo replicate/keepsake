@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"path/filepath"
 	"time"
 
 	"replicate.ai/cli/pkg/commit"
@@ -92,62 +93,60 @@ func (e *Experiment) IsRunning() bool {
 }
 
 func List(store storage.Storage) ([]*Experiment, error) {
-	experiments := []*Experiment{}
-	// heartbeatsByExpID := map[string]*experiment.Heartbeat{}
-
+	paths := []string{}
 	results := make(chan storage.ListResult)
 	go store.MatchFilenamesRecursive(results, "experiments", "replicate-metadata.json")
 	for result := range results {
 		if result.Error != nil {
 			return nil, result.Error
 		}
-		exp, err := loadExperimentFromPath(store, result.Path)
-		if err == nil {
-			experiments = append(experiments, exp)
-		} else {
-			console.Warn("Failed to load metadata from %q: %s", result.Path, err)
-		}
+		paths = append(paths, result.Path)
 	}
-
-	// Heartbeats are stored in experiments/<id>/replicate-heartbeat.json
-	// First, create a mapping that lets us do this easily. This is stored by reference, so this will modify list.
-	expMap := map[string]*Experiment{}
-	for _, e := range experiments {
-		expMap[e.ID] = e
-	}
-
-	// Next, fetch all heartbeats and then attach them to experiment metadata
 	results = make(chan storage.ListResult)
 	go store.MatchFilenamesRecursive(results, "experiments", "replicate-heartbeat.json")
 	for result := range results {
 		if result.Error != nil {
 			return nil, result.Error
 		}
-		heartbeat, err := loadHeartbeatFromPath(store, result.Path)
-		if err != nil {
-			console.Warn("Failed to load heartbeat from %q, got error: %s", result.Path, err)
-			continue
-		}
-		if _, ok := expMap[heartbeat.ExperimentID]; !ok {
-			console.Warn("Failed to load heartbeat from %q, could not find corresponding experiment %q", result.Path, heartbeat.ExperimentID)
-			continue
-		}
-
-		exp := expMap[heartbeat.ExperimentID]
-		exp.LastHeartbeat = heartbeat.LastHeartbeat
+		paths = append(paths, result.Path)
 	}
 
-	return experiments, nil
-}
-
-func loadExperimentFromPath(store storage.Storage, path string) (*Experiment, error) {
-	contents, err := store.Get(path)
+	datas, err := store.GetMultiple(paths)
 	if err != nil {
 		return nil, err
 	}
-	exp := new(Experiment)
-	if err := json.Unmarshal(contents, exp); err != nil {
-		return nil, fmt.Errorf("Parse error: %s", err)
+
+	// First, build experiments from replicate-metadata.json
+	experiments := map[string]*Experiment{}
+	for path, data := range datas {
+		if filepath.Base(path) == "replicate-metadata.json" {
+			exp := new(Experiment)
+			if err := json.Unmarshal(data, exp); err != nil {
+				return nil, fmt.Errorf("Parse error: %s", err)
+			}
+			experiments[exp.ID] = exp
+		}
 	}
-	return exp, nil
+
+	// Next, attach heartbeats from replicate-heartbeat.json
+	for path, data := range datas {
+		if filepath.Base(path) == "replicate-heartbeat.json" {
+			heartbeat := new(Heartbeat)
+			if err := json.Unmarshal(data, heartbeat); err != nil {
+				return nil, fmt.Errorf("Parse error: %s", err)
+			}
+			if _, ok := experiments[heartbeat.ExperimentID]; !ok {
+				console.Warn("Failed to load heartbeat from %q, could not find corresponding experiment %q", path, heartbeat.ExperimentID)
+				continue
+			}
+			experiments[heartbeat.ExperimentID].LastHeartbeat = heartbeat.LastHeartbeat
+		}
+	}
+
+	experimentList := make([]*Experiment, 0, len(experiments))
+	for _, exp := range experiments {
+		experimentList = append(experimentList, exp)
+	}
+
+	return experimentList, nil
 }

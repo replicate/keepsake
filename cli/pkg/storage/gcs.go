@@ -45,6 +45,10 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 	return data, nil
 }
 
+func (s *GCSStorage) GetMultiple(paths []string) (map[string][]byte, error) {
+	return parallelGet(s, paths)
+}
+
 // Put data at path
 func (s *GCSStorage) Put(path string, data []byte) error {
 	// TODO
