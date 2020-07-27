@@ -83,7 +83,12 @@ func outputTable(experiments []*experiment.Experiment) error {
 			}
 		}
 		fmt.Fprintf(tw, "%d\t", len(exp.Commits))
-		fmt.Fprintf(tw, "%s\t", formatTime(exp.LatestCommit().Created))
+
+		latestCommitTime := ""
+		if exp.LatestCommit() != nil {
+			latestCommitTime = formatTime(exp.LatestCommit().Created)
+		}
+		fmt.Fprintf(tw, "%s\t", latestCommitTime)
 		for _, heading := range commitHeadings {
 			if val, ok := exp.LatestCommit().Metrics[heading]; ok {
 				fmt.Fprintf(tw, "%v\t", val)
@@ -111,8 +116,10 @@ func getTableHeadings(experiments []*experiment.Experiment) (expHeadings []strin
 		for key := range exp.Params {
 			expHeadingSet[key] = true
 		}
-		for key := range exp.LatestCommit().Metrics {
-			commitHeadingSet[key] = true
+		if exp.LatestCommit() != nil {
+			for key := range exp.LatestCommit().Metrics {
+				commitHeadingSet[key] = true
+			}
 		}
 	}
 
