@@ -73,8 +73,8 @@ func (s *S3Storage) Put(path string, data []byte) error {
 	return nil
 }
 
-func (s *S3Storage) PutDirectory(dest, source string) error {
-	files, err := putDirectoryFiles(dest, source)
+func (s *S3Storage) PutDirectory(localPath string, storagePath string) error {
+	files, err := putDirectoryFiles(localPath, storagePath)
 	if err != nil {
 		return err
 	}

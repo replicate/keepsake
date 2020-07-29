@@ -65,7 +65,7 @@ func TestPutDirectory(t *testing.T) {
 	require.NoError(t, os.Mkdir(path.Join(workDir, "subdirectory"), 0755))
 	require.NoError(t, ioutil.WriteFile(path.Join(workDir, "subdirectory/another-file"), []byte("hello again"), 0644))
 
-	err = storage.PutDirectory("parent", workDir)
+	err = storage.PutDirectory(workDir, "parent")
 	require.NoError(t, err)
 
 	content, err := ioutil.ReadFile(path.Join(storageDir, "parent/some-file"))

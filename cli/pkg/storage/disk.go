@@ -32,11 +32,11 @@ func (s *DiskStorage) Put(p string, data []byte) error {
 	return ioutil.WriteFile(fullPath, data, 0644)
 }
 
-// PutDirectory recursively puts the local `source` directory into path `dest` on storage
+// PutDirectory recursively puts the local `localPath` directory into path `storagePath` on storage
 //
 // Parallels Storage.put_directory in Python.
-func (s *DiskStorage) PutDirectory(dest, source string) error {
-	files, err := putDirectoryFiles(dest, source)
+func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
+	files, err := putDirectoryFiles(localPath, storagePath)
 	if err != nil {
 		return err
 	}
