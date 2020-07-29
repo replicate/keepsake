@@ -24,7 +24,7 @@ type ListResult struct {
 type Storage interface {
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
-	PutDirectory(path, source string) error
+	PutDirectory(localPath string, storagePath string) error
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
