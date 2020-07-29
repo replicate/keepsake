@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -15,6 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
+
+	"replicate.ai/cli/pkg/console"
 )
 
 type S3Storage struct {
@@ -114,6 +118,72 @@ func (s *S3Storage) PutDirectory(localPath string, storagePath string) error {
 	return group.Wait()
 }
 
+// GetDirectory recursively copies storageDir to localDir
+func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
+	iter := new(s3manager.DownloadObjectsIterator)
+	files := []*os.File{}
+	defer func() {
+		for _, f := range files {
+			if err := f.Close(); err != nil {
+				console.Warn("Failed to close file %s", f.Name())
+			}
+		}
+	}()
+
+	keys := []*string{}
+	err := s.svc.ListObjectsV2PagesWithContext(aws.BackgroundContext(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.bucketName),
+		Prefix: aws.String(storageDir),
+	}, func(output *s3.ListObjectsV2Output, last bool) bool {
+		for _, object := range output.Contents {
+			keys = append(keys, object.Key)
+		}
+		return true
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to list objects in s3://%s/%s, got error: %w", s.bucketName, storageDir, err)
+	}
+
+	for _, key := range keys {
+		// skip replicate-metadata
+		if path.Base(*key) == "replicate-metadata.json" {
+			continue
+		}
+
+		relPath, err := filepath.Rel(storageDir, *key)
+		if err != nil {
+			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", *key, storageDir, err)
+		}
+		localPath := filepath.Join(localDir, relPath)
+		localDir := filepath.Dir(localPath)
+		if err := os.MkdirAll(localDir, 0755); err != nil {
+			return fmt.Errorf("Failed to create directory %s, got error: %w", localDir, err)
+		}
+
+		f, err := os.Create(localPath)
+		if err != nil {
+			return fmt.Errorf("Failed to create file %s, got error: %w", localPath, err)
+		}
+
+		console.Debug("Downloading %s to %s", *key, localPath)
+
+		iter.Objects = append(iter.Objects, s3manager.BatchDownloadObject{
+			Object: &s3.GetObjectInput{
+				Bucket: aws.String(s.bucketName),
+				Key:    key,
+			},
+			Writer: f,
+		})
+		files = append(files, f)
+	}
+
+	downloader := s3manager.NewDownloader(s.sess)
+	if err := downloader.DownloadWithIterator(aws.BackgroundContext(), iter); err != nil {
+		return fmt.Errorf("Failed to download s3://%s/%s to %s", s.bucketName, storageDir, localDir)
+	}
+	return nil
+}
+
 func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
@@ -187,7 +257,7 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filt
 				results <- ListResult{Path: key}
 			}
 		}
-		return lastPage
+		return true
 	})
 	if err != nil {
 		results <- ListResult{Error: fmt.Errorf("Failed to list objects in s3://%s, got error: %s", s.bucketName, err)}

@@ -1,30 +1,33 @@
 package storage
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/otiai10/copy"
 )
 
 type DiskStorage struct {
-	folder string
+	rootDir string
 }
 
-func NewDiskStorage(folder string) (*DiskStorage, error) {
+func NewDiskStorage(rootDir string) (*DiskStorage, error) {
 	return &DiskStorage{
-		folder: folder,
+		rootDir: rootDir,
 	}, nil
 }
 
 // Get data at path
 func (s *DiskStorage) Get(p string) ([]byte, error) {
-	return ioutil.ReadFile(path.Join(s.folder, p))
+	return ioutil.ReadFile(path.Join(s.rootDir, p))
 }
 
 // Put data at path
 func (s *DiskStorage) Put(p string, data []byte) error {
-	fullPath := path.Join(s.folder, p)
+	fullPath := path.Join(s.rootDir, p)
 	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
 	if err != nil {
 		return err
@@ -54,12 +57,12 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 }
 
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
-	err := filepath.Walk(path.Join(s.folder, folder), func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if filepath.Base(path) == filename {
-			relPath, err := filepath.Rel(s.folder, path)
+			relPath, err := filepath.Rel(s.rootDir, path)
 			if err != nil {
 				return err
 			}
@@ -78,4 +81,16 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 		results <- ListResult{Error: err}
 	}
 	close(results)
+}
+
+// GetDirectory recursively copies storageDir to localDir
+func (s *DiskStorage) GetDirectory(storageDir string, localDir string) error {
+	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir, copy.Options{
+		Skip: func(src string) (bool, error) {
+			return path.Base(src) == "replicate-metadata.json", nil
+		},
+	}); err != nil {
+		return fmt.Errorf("Failed to copy directory from %s to %s, got error: %w", storageDir, localDir, err)
+	}
+	return nil
 }

@@ -70,6 +70,7 @@ func NewRootCommand() (*cobra.Command, error) {
 		newFeedbackCommand(),
 		newListCommand(),
 		newPsCommand(),
+		newCheckoutCommand(),
 		newRunCommand(),
 	)
 

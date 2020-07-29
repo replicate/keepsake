@@ -25,6 +25,7 @@ type Storage interface {
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
 	PutDirectory(localPath string, storagePath string) error
+	GetDirectory(storagePath string, localPath string) error
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
@@ -72,9 +73,9 @@ type fileToPut struct {
 	Dest   string
 }
 
-func putDirectoryFiles(dest, source string) ([]fileToPut, error) {
+func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error) {
 	result := []fileToPut{}
-	err := filepath.Walk(source, func(currentPath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(localPath, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -88,14 +89,14 @@ func putDirectoryFiles(dest, source string) ([]fileToPut, error) {
 		}
 
 		// Strip local path
-		relativePath, err := filepath.Rel(source, currentPath)
+		relativePath, err := filepath.Rel(localPath, currentPath)
 		if err != nil {
 			return err
 		}
 
 		result = append(result, fileToPut{
 			Source: currentPath,
-			Dest:   path.Join(dest, relativePath),
+			Dest:   path.Join(storagePath, relativePath),
 		})
 		return nil
 	})
