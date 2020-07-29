@@ -2,6 +2,7 @@ package files
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -52,4 +53,21 @@ func TempDir(prefix string) (string, error) {
 		return "", fmt.Errorf("Failed to create temporary directory at %s, got error: %w", tempFolder, err)
 	}
 	return name, nil
+}
+
+func DirIsEmpty(dirPath string) (bool, error) {
+	f, err := os.Open(dirPath)
+	if err != nil {
+		return false, fmt.Errorf("Failed to open %s, got error: %w", dirPath, err)
+	}
+	defer f.Close()
+
+	_, err = f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("Failed to read directory at %s, got error: %w", dirPath, err)
+	}
+	return false, nil
 }

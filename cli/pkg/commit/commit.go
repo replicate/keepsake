@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"strings"
 	"time"
 
+	"replicate.ai/cli/pkg/cache"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/hash"
@@ -36,7 +38,7 @@ func NewCommit(experiment experiment.Experiment, metrics map[string]*param.Value
 
 // Save a commit, with a copy of the filesystem
 func (c *Commit) Save(st storage.Storage, workingDir string) error {
-	err := st.PutDirectory(path.Join("commits", c.ID), workingDir)
+	err := st.PutDirectory(workingDir, path.Join("commits", c.ID))
 	if err != nil {
 		return err
 	}
@@ -103,13 +105,24 @@ func attachHeartbeatsToCommitExperiments(commits []*Commit, heartbeatsByExpID ma
 }
 
 func loadCommitFromPath(store storage.Storage, path string) (*Commit, error) {
+	// TODO(andreas): just added caching here to speed up
+	// development. Gettin commitID this way is a hack
+	commitID := strings.Split(path, "/")[1]
+	cacheKey := "commit-" + commitID
+	com := new(Commit)
+	if ok := cache.GetStruct(cacheKey, com); ok {
+		return com, nil
+	}
+
 	contents, err := store.Get(path)
 	if err != nil {
 		return nil, err
 	}
-	com := new(Commit)
 	if err := json.Unmarshal(contents, com); err != nil {
 		return nil, fmt.Errorf("Parse error: %s", err)
+	}
+	if err := cache.SetStruct(cacheKey, com); err != nil {
+		return nil, err
 	}
 	return com, nil
 }
@@ -124,4 +137,19 @@ func loadHeartbeatFromPath(store storage.Storage, path string) (*experiment.Hear
 		return nil, fmt.Errorf("Parse error: %s", err)
 	}
 	return hb, nil
+}
+
+// CommitIDFromPrefix returns the full commit ID given a prefix
+func CommitIDFromPrefix(store storage.Storage, prefix string) (string, error) {
+	// TODO(andreas): this is a naive implementation, pending data refactoring
+	commits, err := ListCommits(store)
+	if err != nil {
+		return "", err
+	}
+	for _, com := range commits {
+		if strings.HasPrefix(com.ID, prefix) {
+			return com.ID, nil
+		}
+	}
+	return "", fmt.Errorf("Commit not found: %s", prefix)
 }
