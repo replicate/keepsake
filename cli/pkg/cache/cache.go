@@ -26,7 +26,7 @@ func Instance() (*Cache, error) {
 		return nil, fmt.Errorf("Failed to determine home directory, got error: %s", err)
 	}
 	dc, err := diskache.New(&diskache.Opts{
-		Directory: path.Join(homeDir, ".config", "replicate", "cache"),
+		Directory: path.Join(homeDir, ".cache", "replicate"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create disk cache, got error: %s", err)
