@@ -16,6 +16,7 @@ type Config struct {
 	CUDA               string   `json:"cuda"`
 	PythonRequirements string   `json:"python_requirements"`
 	Install            []string `json:"install"`
+	InstallScript      string   `json:"install_script"`
 }
 
 // ReadPythonRequirements returns trimmed lines of text from

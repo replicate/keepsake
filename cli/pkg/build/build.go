@@ -20,6 +20,7 @@ type DockerfileParams struct {
 	HasPythonRequirements bool
 	PythonRequirements    string
 	Install               []string
+	InstallScript         string
 }
 
 // GenerateDockerfile generates a Dockerfile from a template,
@@ -30,10 +31,22 @@ func GenerateDockerfile(conf *config.Config, sourceDir string) (string, error) {
 		return "", err
 	}
 
+	if conf.InstallScript != "" {
+		absInstallScript := path.Join(sourceDir, conf.InstallScript)
+		installScriptExists, err := files.FileExists(absInstallScript)
+		if err != nil {
+			return "", err
+		}
+		if !installScriptExists {
+			return "", fmt.Errorf("File for install_script does not exist at %s", absInstallScript)
+		}
+	}
+
 	params := &DockerfileParams{
 		HasPythonRequirements: hasPythonRequirements,
 		PythonRequirements:    conf.PythonRequirements,
 		Install:               conf.Install,
+		InstallScript:         conf.InstallScript,
 	}
 	contents := assets.MustAsset("Dockerfile")
 	tmpl, err := template.New("Dockerfile").Parse(string(contents))
