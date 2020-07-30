@@ -47,6 +47,17 @@ func replicate(b *testing.B, arg ...string) string {
 
 }
 
+func replicateList(b *testing.B, workingDir string, numExperiments int) {
+	out := replicate(b, "list", "-D", workingDir)
+
+	// Check the output is sensible
+	firstLine := strings.Split(out, "\n")[0]
+	require.Contains(b, firstLine, "experiment")
+	// numExperiments + heading + trailing \n
+	require.Equal(b, numExperiments+2, len(strings.Split(out, "\n")))
+	// TODO: check first line is reasonable
+}
+
 // Create lots of files in a working dir
 func createLotsOfFiles(b *testing.B, dir string) {
 	// Some 1KB files is a bit like a bit source directory
@@ -58,8 +69,7 @@ func createLotsOfFiles(b *testing.B, dir string) {
 }
 
 // Create lots of experiments and commits
-func createBigProject(workingDir string, storage storage.Storage) error {
-	numExperiments := 50
+func createLotsOfExperiments(workingDir string, storage storage.Storage, numExperiments int) error {
 	numCommits := 50
 
 	maxWorkers := int64(25)
@@ -116,22 +126,32 @@ func BenchmarkReplicateDisk(b *testing.B) {
 	require.NoError(b, err)
 	defer os.RemoveAll(storageDir)
 
-	err = createBigProject(workingDir, storage)
+	err = createLotsOfExperiments(workingDir, storage, 10)
 	require.NoError(b, err)
 
-	b.Run("list", func(b *testing.B) {
+	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			out := replicate(b, "list", "-D", workingDir)
-
-			// Check the output is sensible
-			firstLine := strings.Split(out, "\n")[0]
-			require.Contains(b, firstLine, "experiment")
-			// 50 experiments
-			require.Equal(b, 52, len(strings.Split(out, "\n")))
-			// TODO: check first line is reasonable
+			replicateList(b, workingDir, 10)
 		}
 	})
 
+	err = createLotsOfExperiments(workingDir, storage, 10)
+	require.NoError(b, err)
+
+	b.Run("list first run with 20 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 20)
+		}
+	})
+
+	err = createLotsOfExperiments(workingDir, storage, 10)
+	require.NoError(b, err)
+
+	b.Run("list first run with 30 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 30)
+		}
+	})
 }
 
 func BenchmarkReplicateS3(b *testing.B) {
@@ -162,20 +182,30 @@ func BenchmarkReplicateS3(b *testing.B) {
 	storage, err := storage.NewS3Storage(bucketName)
 	require.NoError(b, err)
 
-	// Create experiments in storage
-	err = createBigProject(workingDir, storage)
+	err = createLotsOfExperiments(workingDir, storage, 10)
 	require.NoError(b, err)
 
-	b.Run("list", func(b *testing.B) {
+	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			out := replicate(b, "list", "-D", workingDir)
+			replicateList(b, workingDir, 10)
+		}
+	})
 
-			// Check the output is sensible
-			firstLine := strings.Split(out, "\n")[0]
-			require.Contains(b, firstLine, "experiment")
-			// 50 experiments
-			require.Equal(b, 52, len(strings.Split(out, "\n")))
-			// TODO: check first line is reasonable
+	err = createLotsOfExperiments(workingDir, storage, 10)
+	require.NoError(b, err)
+
+	b.Run("list first run with 20 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 20)
+		}
+	})
+
+	err = createLotsOfExperiments(workingDir, storage, 10)
+	require.NoError(b, err)
+
+	b.Run("list first run with 30 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 30)
 		}
 	})
 }
