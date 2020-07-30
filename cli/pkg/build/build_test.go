@@ -21,6 +21,7 @@ func TestGenerateDockerfile(t *testing.T) {
 			"apt-get update",
 			"apt-get install -y ffmpeg",
 		},
+		InstallScript: "install/script.sh",
 	}
 
 	tmpDir, err := files.TempDir("test")
@@ -28,6 +29,10 @@ func TestGenerateDockerfile(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	err = ioutil.WriteFile(path.Join(tmpDir, "requirements.txt"), []byte("tensorflow==2.2.0"), 0644)
+	require.NoError(t, err)
+	err = os.Mkdir(path.Join(tmpDir, "install"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(tmpDir, "install/script.sh"), []byte("apt-get install -y cowsay"), 0644)
 	require.NoError(t, err)
 
 	dockerfile, err := GenerateDockerfile(conf, tmpDir)
@@ -40,6 +45,9 @@ ARG HAS_GPU
 ENV HAS_GPU=$HAS_GPU
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+COPY "install/script.sh" /tmp/install.sh
+RUN chmod +x /tmp/install.sh && /tmp/install.sh
 
 RUN apt-get update
 RUN apt-get install -y ffmpeg
