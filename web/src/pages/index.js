@@ -139,14 +139,14 @@ function Home() {
 import replicate
 
 def train(**params):
-    experiment = replicate.init(params)
+    experiment = replicate.init(**params)
     model = Model()
 
     for epoch in range(params["num_epochs"]):
         # ...
 
         torch.save(model, "model.torch")
-        experiment.commit(metrics)`}
+        experiment.commit(**metrics)`}
               </CodeBlock>
             </div>
             <div className={classnames(`col col--6`)}>

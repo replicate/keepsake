@@ -17,22 +17,20 @@ import (
 
 // Commit is a snapshot of an experiment's filesystem
 type Commit struct {
-	ID         string                `json:"id"`
-	Created    time.Time             `json:"created"`
-	Experiment experiment.Experiment `json:"experiment"`
-
-	// TODO(andreas): rename metrics to something else or split it up semantically
-	Metrics map[string]*param.Value `json:"metrics"`
+	ID         string                  `json:"id"`
+	Created    time.Time               `json:"created"`
+	Experiment experiment.Experiment   `json:"experiment"`
+	Data       map[string]*param.Value `json:"data"`
 }
 
 // NewCommit creates a commit
-func NewCommit(experiment experiment.Experiment, metrics map[string]*param.Value) *Commit {
+func NewCommit(experiment experiment.Experiment, data map[string]*param.Value) *Commit {
 	// FIXME (bfirsh): content addressable (also in Python)
 	return &Commit{
 		ID:         hash.Random(),
 		Created:    time.Now().UTC(),
 		Experiment: experiment,
-		Metrics:    metrics,
+		Data:       data,
 	}
 }
 

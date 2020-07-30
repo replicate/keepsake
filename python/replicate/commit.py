@@ -57,30 +57,31 @@ class Commit(object):
         experiment,  # can't type annotate due to circular import
         project_dir: str,
         created: datetime.datetime,
-        metrics: Dict[str, Any],
+        step: Optional[int],
+        data: Dict[str, Any],
     ):
         self.experiment = experiment
         self.project_dir = project_dir
         self.created = created
-        self.metrics = metrics
+        self.step = step
+        self.data = data
 
         # TODO (bfirsh): content addressable id
         self.id = random_hash()
 
     def save(self, storage: Storage):
         storage.put_directory(self.get_path(), self.project_dir)
+        obj = {
+            "id": self.id,
+            "created": rfc3339_datetime(self.created),
+            "experiment": self.experiment.get_metadata(),
+            "data": self.data,
+        }
+        if self.step is not None:
+            obj["step"] = self.step
         storage.put(
             self.get_path() + "replicate-metadata.json",
-            json.dumps(
-                {
-                    "id": self.id,
-                    "created": rfc3339_datetime(self.created),
-                    "experiment": self.experiment.get_metadata(),
-                    "metrics": self.metrics,
-                },
-                indent=2,
-                cls=CustomJSONEncoder,
-            ),
+            json.dumps(obj, indent=2, cls=CustomJSONEncoder),
         )
 
     def get_path(self) -> str:
