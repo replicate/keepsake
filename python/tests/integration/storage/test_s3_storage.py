@@ -35,7 +35,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
     current_workdir = os.getcwd()
     try:
         os.chdir(tmpdir)
-        experiment = replicate.init(params={"foo": "bar"})
+        experiment = replicate.init(foo="bar")
 
         actual_experiment_meta = s3_read_json(
             temp_bucket,
@@ -54,7 +54,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
         }
         assert actual_experiment_meta == expected_experiment_meta
 
-        commit = experiment.commit(metrics={"loss": 1.1, "baz": "qux"})
+        commit = experiment.commit(step=10, loss=1.1, baz="qux")
 
         actual_commit_meta = s3_read_json(
             temp_bucket, os.path.join("commits", commit.id, "replicate-metadata.json"),
@@ -72,7 +72,8 @@ def test_s3_experiment(temp_bucket, tmpdir):
                 "params": {"foo": "bar"},
                 "created": experiment.created.isoformat() + "Z",
             },
-            "metrics": {"loss": 1.1, "baz": "qux"},
+            "step": 10,
+            "data": {"loss": 1.1, "baz": "qux"},
         }
         assert actual_commit_meta == expected_commit_meta
 

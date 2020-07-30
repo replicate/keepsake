@@ -38,7 +38,7 @@ import replicate
 
 def main():
     experiment = replicate.init()
-    experiment.commit(metrics={})
+    experiment.commit()
 
 if __name__ == "__main__":
     main()

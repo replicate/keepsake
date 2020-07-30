@@ -43,9 +43,18 @@ class Experiment:
             json.dumps(self.get_metadata(), indent=2),
         )
 
-    def commit(self, metrics: Dict[str, Any]) -> Commit:
+    def commit(
+        self, step: Optional[int] = None, options: Optional[Any] = None, **kwargs
+    ) -> Commit:
+        options = set_option_defaults(options, {})
         created = datetime.datetime.utcnow()
-        commit = Commit(self, self.project_dir, created, metrics)
+        commit = Commit(
+            experiment=self,
+            project_dir=self.project_dir,
+            created=created,
+            step=step,
+            data=kwargs,
+        )
         commit.save(self.storage)
         self.heartbeat.ensure_running()
         return commit
@@ -85,19 +94,38 @@ class Experiment:
             return ""
 
 
-def init(
-    params: Optional[Dict[str, Any]] = None, include_argv: bool = True
-) -> Experiment:
+def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
+    options = set_option_defaults(options, {"include_argv": True})
     project_dir = get_project_dir()
     config = load_config(project_dir)
     storage_url = config["storage"]
     created = datetime.datetime.utcnow()
     args: Optional[List[str]]
-    if include_argv:
+    if options["include_argv"] is True:
         args = sys.argv
     else:
         args = None
-    experiment = Experiment(storage_url, project_dir, created, params, args)
+    experiment = Experiment(storage_url, project_dir, created, kwargs, args)
     experiment.save()
     experiment.heartbeat.start()
     return experiment
+
+
+def set_option_defaults(
+    options: Optional[Dict[str, Any]], defaults: Dict[str, Any]
+) -> Dict[str, Any]:
+    if options is None:
+        options = {}
+    else:
+        options = options.copy()
+    for name, value in defaults.items():
+        if name not in options:
+            options[name] = value
+    invalid_options = set(options) - set(defaults)
+    if invalid_options:
+        raise ValueError(
+            "Invalid option{}: {}".format(
+                "s" if len(invalid_options) > 1 else "", ", ".join(invalid_options)
+            )
+        )
+    return options

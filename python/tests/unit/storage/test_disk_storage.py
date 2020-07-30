@@ -19,10 +19,13 @@ def test_list():
         storage = DiskStorage(root=tmpdir)
         storage.put("foo", "nice")
         storage.put("some/bar", "nice")
-        assert list(storage.list("")) == [
+        actual = list(storage.list(""))
+        actual.sort(key=lambda x: x["name"])
+        expected = [
             {"name": "foo", "type": "file"},
             {"name": "some", "type": "directory"},
         ]
+        assert actual == expected
         assert list(storage.list("some")) == [{"name": "bar", "type": "file"}]
 
 

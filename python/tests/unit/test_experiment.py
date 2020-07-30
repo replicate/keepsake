@@ -18,7 +18,7 @@ def temp_workdir():
 
 
 def test_init(temp_workdir):
-    experiment = replicate.init(params={"learning_rate": 0.002})
+    experiment = replicate.init(learning_rate=0.002)
 
     assert len(experiment.id) == 64
     with open(
@@ -35,8 +35,8 @@ def test_commit(temp_workdir):
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
-    experiment = replicate.init(params={"learning_rate": 0.002})
-    commit = experiment.commit({"validation_loss": 0.123})
+    experiment = replicate.init(learning_rate=0.002)
+    commit = experiment.commit(step=1, validation_loss=0.123)
 
     assert len(commit.id) == 64
     with open(
@@ -44,7 +44,8 @@ def test_commit(temp_workdir):
     ) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == commit.id
-    assert metadata["metrics"] == {"validation_loss": 0.123}
+    assert metadata["step"] == 1
+    assert metadata["data"] == {"validation_loss": 0.123}
     assert metadata["experiment"]["id"] == experiment.id
 
     with open(".replicate/storage/commits/{}/train.py".format(commit.id)) as fh:

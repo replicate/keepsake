@@ -39,10 +39,10 @@ storage: {storage}
 import replicate
 
 def main():
-    experiment = replicate.init(params={"my-param": "my-value"})
+    experiment = replicate.init(my_param="my-value")
 
     for step in range(3):
-        experiment.commit(metrics={"step": step})
+        experiment.commit(step=step)
 
 if __name__ == "__main__":
     main()
@@ -69,10 +69,10 @@ if __name__ == "__main__":
     exp = experiments[0]
     latest = exp["latest_commit"]
     assert len(exp["id"]) == 64
-    assert exp["params"] == {"my-param": "my-value"}
+    assert exp["params"] == {"my_param": "my-value"}
     assert exp["num_commits"] == 3
     assert len(latest["id"]) == 64
     # FIXME: now rfc3339 strings
     # assert latest["created"] > exp["created"]
     assert latest["experiment"]["id"] == exp["id"]
-    assert latest["metrics"] == {"step": 2}
+    assert latest["step"] == 2

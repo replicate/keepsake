@@ -79,16 +79,15 @@ def train(learning_rate):
 
     learn = tabular.tabular_learner(data, layers=[200, 100], metrics=tabular.accuracy)
 
-    experiment = replicate.init(params={"learning_rate": learning_rate})
+    experiment = replicate.init(learning_rate=learning_rate)
 
     class ReplicateCallback(tabular.Callback):
         def on_epoch_end(self, epoch, last_loss, last_metrics, **kwargs):
             experiment.commit(
-                metrics={
-                    "train_loss": float(last_loss.item()),
-                    "val_loss": last_metrics[0].astype(float),
-                    "accuracy": float(last_metrics[1].item()),
-                }
+                step=epoch,
+                train_loss=float(last_loss.item()),
+                val_loss=last_metrics[0].astype(float),
+                accuracy=float(last_metrics[1].item()),
             )
 
     learn.fit(50, lr=learning_rate, callbacks=[ReplicateCallback()])
