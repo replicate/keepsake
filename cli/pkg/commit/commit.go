@@ -142,6 +142,7 @@ func loadHeartbeatFromPath(store storage.Storage, path string) (*experiment.Hear
 // CommitIDFromPrefix returns the full commit ID given a prefix
 func CommitIDFromPrefix(store storage.Storage, prefix string) (string, error) {
 	// TODO(andreas): this is a naive implementation, pending data refactoring
+	// TODO(bfirsh): fail if the prefix is ambiguous
 	commits, err := ListCommits(store)
 	if err != nil {
 		return "", err

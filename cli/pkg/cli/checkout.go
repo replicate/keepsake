@@ -73,6 +73,8 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if !isEmpty && !force {
+		// TODO(andreas): tell the user which files may get
+		// overwritten, etc.
 		doOverwrite, err := interact.InteractiveBool{
 			Prompt:  fmt.Sprintf("The directory %s is not empty.\nThis checkout may overwrite existing files.\nDo you want to continue?", outputDir),
 			Default: false,
@@ -91,6 +93,7 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// TODO(andreas): empty directory before getting new contents
 	if err := store.GetDirectory(path.Join("commits", commitID), outputDir); err != nil {
 		return err
 	}
