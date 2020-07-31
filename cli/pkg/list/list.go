@@ -13,6 +13,7 @@ import (
 	"replicate.ai/cli/pkg/commit"
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
@@ -27,7 +28,7 @@ type Metric struct {
 	Value   float64
 }
 
-type GroupedExperiment struct {
+type ListExperiment struct {
 	ID           string                  `json:"id"`
 	Created      time.Time               `json:"created"`
 	Params       map[string]*param.Value `json:"params"`
@@ -40,15 +41,19 @@ type GroupedExperiment struct {
 }
 
 func RunningExperiments(store storage.Storage, format string, allParams bool) error {
-	commits, err := commit.ListCommits(store)
+	experiments, err := experiment.List(store)
 	if err != nil {
 		return err
 	}
-	conf := configFromCommits(commits)
-	experiments := groupCommits(conf, commits)
+	conf := configFromExperiments(experiments)
 
-	running := []*GroupedExperiment{}
-	for _, exp := range experiments {
+	listExperiments, err := createListExperiments(conf, store, experiments)
+	if err != nil {
+		return err
+	}
+
+	running := []*ListExperiment{}
+	for _, exp := range listExperiments {
 		if exp.Running {
 			running = append(running, exp)
 		}
@@ -64,39 +69,42 @@ func RunningExperiments(store storage.Storage, format string, allParams bool) er
 }
 
 func Experiments(store storage.Storage, format string, allParams bool) error {
-	commits, err := commit.ListCommits(store)
+	experiments, err := experiment.List(store)
 	if err != nil {
 		return err
 	}
+
 	// TODO(andreas): this means we read config from storage every
 	// time. we should use local config if it exists, so you can
 	// update metrics etc.
-	conf := configFromCommits(commits)
-	experiments := groupCommits(conf, commits)
+	// See also discussion in https://github.com/replicate/replicate/pull/44
+	conf := configFromExperiments(experiments)
+
+	listExperiments, err := createListExperiments(conf, store, experiments)
+	if err != nil {
+		return err
+	}
 
 	switch format {
 	case FormatJSON:
-		return outputJSON(experiments)
+		return outputJSON(listExperiments)
 	case FormatTable:
-		return outputTable(conf, experiments, allParams)
+		return outputTable(conf, listExperiments, allParams)
 	}
 	return fmt.Errorf("Unknown format: %s", format)
 }
 
-func outputJSON(experiments []*GroupedExperiment) error {
-	data, err := json.MarshalIndent(experiments, "", " ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(data))
-	return nil
+func outputJSON(experiments []*ListExperiment) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(experiments)
 }
 
 // output something like (TODO: this is getting very wide)
 // experiment  started             status   host      user     param-1  latest   step  label-1  best     step  label-1
 // 1eeeeee     10 seconds ago      running  10.1.1.1  andreas  100      3cccccc  20    0.02     2cccccc  20    0.01
 // 2eeeeee     about a second ago  stopped  10.1.1.2  andreas  200      4cccccc  5              N/A
-func outputTable(conf *config.Config, experiments []*GroupedExperiment, allParams bool) error {
+func outputTable(conf *config.Config, experiments []*ListExperiment, allParams bool) error {
 	if len(experiments) == 0 {
 		fmt.Println("No experiments found")
 		return nil
@@ -201,7 +209,7 @@ func formatTime(t time.Time) string {
 
 // get experiment params. if onlyChangedParams is true, only return
 // params which have changed across experiments
-func getExperimentHeadings(experiments []*GroupedExperiment, onlyChangedParams bool) []string {
+func getExperimentHeadings(experiments []*ListExperiment, onlyChangedParams bool) []string {
 	expHeadingSet := map[string]bool{}
 
 	if onlyChangedParams {
@@ -233,7 +241,7 @@ func getExperimentHeadings(experiments []*GroupedExperiment, onlyChangedParams b
 }
 
 // get commit labels that are also defined as metrics in config
-func getCommitHeadings(conf *config.Config, experiments []*GroupedExperiment) []string {
+func getCommitHeadings(conf *config.Config, experiments []*ListExperiment) []string {
 	metricNameSet := map[string]bool{}
 	commitHeadingSet := map[string]bool{}
 
@@ -251,41 +259,54 @@ func getCommitHeadings(conf *config.Config, experiments []*GroupedExperiment) []
 	return slices.StringKeys(commitHeadingSet)
 }
 
-func groupCommits(conf *config.Config, commits []*commit.Commit) []*GroupedExperiment {
+func createListExperiments(conf *config.Config, store storage.Storage, experiments []*experiment.Experiment) ([]*ListExperiment, error) {
+	commits, err := commit.ListCommits(store)
+	if err != nil {
+		return nil, err
+	}
 	expIDToCommits := make(map[string][]*commit.Commit)
 	for _, com := range commits {
-		expID := com.Experiment.ID
+		expID := com.ExperimentID
 		if _, ok := expIDToCommits[expID]; !ok {
 			expIDToCommits[expID] = []*commit.Commit{}
 		}
 		expIDToCommits[expID] = append(expIDToCommits[expID], com)
 	}
 
-	ret := []*GroupedExperiment{}
-	for _, commits := range expIDToCommits {
-		latestCommit := getLatestCommit(commits)
-		bestCommit := getBestCommit(conf, commits)
-		exp := latestCommit.Experiment
+	ret := []*ListExperiment{}
 
-		groupedExperiment := GroupedExperiment{
-			ID:           exp.ID,
-			Params:       exp.Params,
-			NumCommits:   len(commits),
-			LatestCommit: latestCommit,
-			BestCommit:   bestCommit,
-			Created:      exp.Created,
-			Host:         exp.Host,
-			User:         exp.User,
-			Running:      exp.Running,
+	for _, exp := range experiments {
+		listExperiment := ListExperiment{
+			ID:      exp.ID,
+			Params:  exp.Params,
+			Created: exp.Created,
+			Host:    exp.Host,
+			User:    exp.User,
 		}
-		ret = append(ret, &groupedExperiment)
+
+		commits, ok := expIDToCommits[exp.ID]
+		if ok {
+			listExperiment.LatestCommit = getLatestCommit(commits)
+			listExperiment.BestCommit = getBestCommit(conf, commits)
+			listExperiment.NumCommits = len(commits)
+		}
+
+		heartbeat, err := experiment.LoadHeartbeat(store, exp.ID)
+		// TODO: handle errors other than heartbeat not existing. requires some standard not exist error for storage, and maybe heartbeats too.
+		if err == nil {
+			listExperiment.Running = heartbeat.IsRunning()
+		}
+
+		ret = append(ret, &listExperiment)
+
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
 		return ret[i].LatestCommit.Created.Before(ret[j].LatestCommit.Created)
 	})
 
-	return ret
+	return ret, nil
+
 }
 
 func getLatestCommit(commits []*commit.Commit) *commit.Commit {
@@ -340,12 +361,16 @@ func getBestCommit(conf *config.Config, commits []*commit.Commit) *commit.Commit
 }
 
 // pull out the saved config from the commits list
-// TODO(andreas): this is a temporary hack, refactor once
-// we've migrated to the new data format.
 // TODO(andreas): what to do if config changes between experiments
-func configFromCommits(commits []*commit.Commit) *config.Config {
-	if len(commits) == 0 || commits[0].Experiment.Config == nil {
+// See also discussion in https://github.com/replicate/replicate/pull/44
+func configFromExperiments(experiments []*experiment.Experiment) *config.Config {
+	if len(experiments) == 0 || experiments[0].Config == nil {
+		// FIXME (bfirsh): Should this be getDefaultConfig()? if so, we need to get the working dir somehow
+		// Maybe config should just be nullable.
 		return new(config.Config)
 	}
-	return commits[0].Experiment.Config
+	// FIXME (bfirsh): this isn't sorted, so is kind of meaningless. this implementation is also broken, and will
+	// fix in subsequent commit.
+	// see https://replicatehq.slack.com/archives/CPRGK33J5/p1596491607005100
+	return experiments[0].Config
 }

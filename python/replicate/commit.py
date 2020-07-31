@@ -73,22 +73,19 @@ class Commit(object):
         self.validate_labels()
 
     def save(self, storage: Storage):
-        storage.put_directory(self.get_path(), self.project_dir)
+        storage.put_directory("commits/{}/".format(self.id), self.project_dir)
         obj = {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
-            "experiment": self.experiment.get_metadata(),
+            "experiment_id": self.experiment.id,
             "labels": self.labels,
         }
         if self.step is not None:
             obj["step"] = self.step
         storage.put(
-            self.get_path() + "replicate-metadata.json",
+            "metadata/commits/{}.json".format(self.id),
             json.dumps(obj, indent=2, cls=CustomJSONEncoder),
         )
-
-    def get_path(self) -> str:
-        return "commits/{}/".format(self.id)
 
     def validate_labels(self):
         metrics = self.experiment.config.get("metrics", {})

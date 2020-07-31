@@ -22,9 +22,7 @@ def test_init(temp_workdir):
 
     assert len(experiment.id) == 64
     with open(
-        ".replicate/storage/experiments/{}/replicate-metadata.json".format(
-            experiment.id
-        )
+        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
     ) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
@@ -39,14 +37,19 @@ def test_commit(temp_workdir):
     commit = experiment.commit(step=1, validation_loss=0.123)
 
     assert len(commit.id) == 64
-    with open(
-        ".replicate/storage/commits/{}/replicate-metadata.json".format(commit.id)
-    ) as fh:
+    with open(".replicate/storage/metadata/commits/{}.json".format(commit.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == commit.id
     assert metadata["step"] == 1
     assert metadata["labels"] == {"validation_loss": 0.123}
-    assert metadata["experiment"]["id"] == experiment.id
+    assert metadata["experiment_id"] == experiment.id
 
     with open(".replicate/storage/commits/{}/train.py".format(commit.id)) as fh:
         assert fh.read() == "print(1 + 1)"
+
+
+def test_heartbeat():
+    experiment = replicate.init()
+    assert experiment.heartbeat.path == "metadata/heartbeats/{}.json".format(
+        experiment.id
+    )

@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -63,6 +62,34 @@ func (s *GCSStorage) PutDirectory(localPath string, storagePath string) error {
 	return nil
 }
 
+// List files in a path non-recursively
+func (s *GCSStorage) List(dir string) ([]string, error) {
+	results := []string{}
+
+	// prefixes must end with / and must not end with /
+	if !strings.HasSuffix(dir, "/") {
+		dir += "/"
+	}
+	dir = strings.TrimPrefix(dir, "/")
+
+	bucket := s.client.Bucket(s.bucketName)
+	it := bucket.Objects(context.TODO(), &storage.Query{
+		Prefix:    dir,
+		Delimiter: "/",
+	})
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Failed to list gs://%s/%s", s.bucketName, dir)
+		}
+		results = append(results, attrs.Name)
+	}
+	return results, nil
+}
+
 func (s *GCSStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
@@ -111,10 +138,6 @@ func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
 		}
 		if err != nil {
 			return err
-		}
-		// skip replicate-metadata
-		if path.Base(attrs.Name) == "replicate-metadata.json" {
-			continue
 		}
 
 		if err := sem.Acquire(ctx, 1); err != nil {

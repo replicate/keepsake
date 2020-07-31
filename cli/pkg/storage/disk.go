@@ -56,6 +56,19 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 	return nil
 }
 
+// List files in a path non-recursively
+func (s *DiskStorage) List(p string) ([]string, error) {
+	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]string, len(files))
+	for i, f := range files {
+		result[i] = path.Join(p, f.Name())
+	}
+	return result, nil
+}
+
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -85,11 +98,7 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 
 // GetDirectory recursively copies storageDir to localDir
 func (s *DiskStorage) GetDirectory(storageDir string, localDir string) error {
-	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir, copy.Options{
-		Skip: func(src string) (bool, error) {
-			return path.Base(src) == "replicate-metadata.json", nil
-		},
-	}); err != nil {
+	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir); err != nil {
 		return fmt.Errorf("Failed to copy directory from %s to %s, got error: %w", storageDir, localDir, err)
 	}
 	return nil

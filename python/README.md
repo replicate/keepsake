@@ -34,6 +34,10 @@ Install [tox](https://tox.readthedocs.io/en/latest/) to run tests.
 
     $ tox -e py37 -- tests/unit/storage/test_s3_storage.py -k test_delete_exists
 
+### Run integration tests
+
+FIXME (bfirsh): document where to put keys
+
 ## Install for development
 
     $ python setup.py develop
