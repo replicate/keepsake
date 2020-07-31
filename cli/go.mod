@@ -23,6 +23,7 @@ require (
 	github.com/hashicorp/go-version v1.2.1
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kr/text v0.2.0 // indirect
+	github.com/larrabee/s3sync v0.0.0-20200428065907-3fbec8ff13ef
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/moby/term v0.0.0-20200611042045-63b9a826fb74
 	github.com/morikuni/aec v1.0.0 // indirect
