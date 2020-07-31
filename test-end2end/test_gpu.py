@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     exp = experiments[0]
     latest = exp["latest_commit"]
-    assert latest["data"] == {"num_gpus": 1}
+    assert latest["labels"] == {"num_gpus": 1}
     assert exp["running"]
 
     running = json.loads(
