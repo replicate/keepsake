@@ -63,6 +63,12 @@ func (s *GCSStorage) PutDirectory(localPath string, storagePath string) error {
 	return nil
 }
 
+// List files in a path non-recursively
+func (s *GCSStorage) List(path string) ([]string, error) {
+	// TODO
+	return nil, nil
+}
+
 func (s *GCSStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename

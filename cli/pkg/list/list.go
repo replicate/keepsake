@@ -3,7 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"sort"
 	"text/tabwriter"
 	"time"
@@ -11,6 +11,7 @@ import (
 	"github.com/xeonx/timeago"
 
 	"replicate.ai/cli/pkg/commit"
+	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
@@ -30,15 +31,21 @@ type GroupedExperiment struct {
 	Running      bool                    `json:"running"`
 }
 
-func RunningExperiments(store storage.Storage, format string) error {
+func RunningExperiments(out io.Writer, store storage.Storage, format string) error {
+	experiments, err := experiment.List(store)
+	if err != nil {
+		return err
+	}
+
 	commits, err := commit.ListCommits(store)
 	if err != nil {
 		return err
 	}
-	experiments := groupCommits(commits)
+
+	groupedExperiments := groupExperiments(store, experiments, commits)
 
 	running := []*GroupedExperiment{}
-	for _, exp := range experiments {
+	for _, exp := range groupedExperiments {
 		if exp.Running {
 			running = append(running, exp)
 		}
@@ -46,39 +53,41 @@ func RunningExperiments(store storage.Storage, format string) error {
 
 	switch format {
 	case FormatJSON:
-		return outputJSON(running)
+		return outputJSON(out, running)
 	case FormatTable:
-		return outputTable(running)
+		return outputTable(out, running)
 	}
 	return fmt.Errorf("Unknown format: %s", format)
 }
 
-func Experiments(store storage.Storage, format string) error {
+func Experiments(out io.Writer, store storage.Storage, format string) error {
+	experiments, err := experiment.List(store)
+	if err != nil {
+		return err
+	}
+
 	commits, err := commit.ListCommits(store)
 	if err != nil {
 		return err
 	}
-	experiments := groupCommits(commits)
+	groupedExperiments := groupExperiments(store, experiments, commits)
 
 	switch format {
 	case FormatJSON:
-		return outputJSON(experiments)
+		return outputJSON(out, groupedExperiments)
 	case FormatTable:
-		return outputTable(experiments)
+		return outputTable(out, groupedExperiments)
 	}
 	return fmt.Errorf("Unknown format: %s", format)
 }
 
-func outputJSON(experiments []*GroupedExperiment) error {
-	data, err := json.MarshalIndent(experiments, "", " ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(data))
-	return nil
+func outputJSON(out io.Writer, experiments []*GroupedExperiment) error {
+	enc := json.NewEncoder(out)
+	enc.SetIndent("", "  ")
+	return enc.Encode(experiments)
 }
 
-func outputTable(experiments []*GroupedExperiment) error {
+func outputTable(out io.Writer, experiments []*GroupedExperiment) error {
 	if len(experiments) == 0 {
 		fmt.Println("No experiments found")
 		return nil
@@ -86,7 +95,7 @@ func outputTable(experiments []*GroupedExperiment) error {
 
 	expHeadings, commitHeadings := getTableHeadings(experiments)
 
-	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	tw := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 
 	keys := []string{"experiment", "started", "status", "host", "user"}
 	keys = append(keys, expHeadings...)
@@ -152,10 +161,10 @@ func getTableHeadings(experiments []*GroupedExperiment) (expHeadings []string, c
 	return slices.StringKeys(expHeadingSet), slices.StringKeys(commitHeadingSet)
 }
 
-func groupCommits(commits []*commit.Commit) []*GroupedExperiment {
+func groupExperiments(store storage.Storage, experiments []*experiment.Experiment, commits []*commit.Commit) []*GroupedExperiment {
 	expIDToCommits := make(map[string][]*commit.Commit)
 	for _, com := range commits {
-		expID := com.Experiment.ID
+		expID := com.ExperimentID
 		if _, ok := expIDToCommits[expID]; !ok {
 			expIDToCommits[expID] = []*commit.Commit{}
 		}
@@ -163,23 +172,33 @@ func groupCommits(commits []*commit.Commit) []*GroupedExperiment {
 	}
 
 	ret := []*GroupedExperiment{}
-	for _, commits := range expIDToCommits {
-		sort.Slice(commits, func(i, j int) bool {
-			return commits[i].Created.Before(commits[j].Created)
-		})
-		latestCommit := commits[len(commits)-1]
-		exp := latestCommit.Experiment
+
+	for _, exp := range experiments {
 		groupedExperiment := GroupedExperiment{
-			ID:           exp.ID,
-			Params:       exp.Params,
-			NumCommits:   len(commits),
-			LatestCommit: latestCommit,
-			Created:      exp.Created,
-			Host:         exp.Host,
-			User:         exp.User,
-			Running:      exp.Running,
+			ID:      exp.ID,
+			Params:  exp.Params,
+			Created: exp.Created,
+			Host:    exp.Host,
+			User:    exp.User,
 		}
+
+		commits, ok := expIDToCommits[exp.ID]
+		if ok {
+			sort.Slice(commits, func(i, j int) bool {
+				return commits[i].Created.Before(commits[j].Created)
+			})
+			groupedExperiment.LatestCommit = commits[len(commits)-1]
+			groupedExperiment.NumCommits = len(commits)
+		}
+
+		heartbeat, err := experiment.LoadHeartbeat(store, exp.ID)
+		// TODO: handle errors other than heartbeat not existing
+		if err == nil {
+			groupedExperiment.Running = heartbeat.IsRunning()
+		}
+
 		ret = append(ret, &groupedExperiment)
+
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
@@ -187,4 +206,5 @@ func groupCommits(commits []*commit.Commit) []*GroupedExperiment {
 	})
 
 	return ret
+
 }

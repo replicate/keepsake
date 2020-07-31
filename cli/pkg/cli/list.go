@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format)
+	return list.Experiments(os.Stdout, store, format)
 }
 
 func addListFormatFlag(cmd *cobra.Command) {

@@ -190,6 +190,31 @@ func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder st
 	})
 }
 
+// List files in a path non-recursively
+func (s *S3Storage) List(dir string) ([]string, error) {
+	results := []string{}
+
+	// prefixes must end with / and must not end with /
+	if !strings.HasSuffix(dir, "/") {
+		dir += "/"
+	}
+	dir = strings.TrimPrefix(dir, "/")
+
+	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
+		Bucket:    aws.String(s.bucketName),
+		Prefix:    aws.String(dir),
+		Delimiter: aws.String("/"),
+		MaxKeys:   aws.Int64(1000),
+	}, func(page *s3.ListObjectsOutput, lastPage bool) bool {
+		for _, value := range page.Contents {
+			key := *value.Key
+			results = append(results, key)
+		}
+		return true
+	})
+	return results, err
+}
+
 func CreateS3Bucket(region, bucket string) (err error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(region),

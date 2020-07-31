@@ -56,6 +56,19 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 	return nil
 }
 
+// List files in a path non-recursively
+func (s *DiskStorage) List(p string) ([]string, error) {
+	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
+	if err != nil {
+		return nil, err
+	}
+	result := make([]string, len(files))
+	for i, f := range files {
+		result[i] = path.Join(p, f.Name())
+	}
+	return result, nil
+}
+
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {

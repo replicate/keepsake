@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/list"
@@ -35,5 +37,5 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.RunningExperiments(store, format)
+	return list.RunningExperiments(os.Stdout, store, format)
 }
