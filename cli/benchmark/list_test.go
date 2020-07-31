@@ -58,6 +58,10 @@ func replicateList(b *testing.B, workingDir string, numExperiments int) {
 	// TODO: check first line is reasonable
 }
 
+func removeMetadataCache(b *testing.B, workingDir string) {
+	require.NoError(b, os.RemoveAll(path.Join(workingDir, ".replicate/metadata-cache")))
+}
+
 // Create lots of files in a working dir
 func createLotsOfFiles(b *testing.B, dir string) {
 	// Some 1KB files is a bit like a bit source directory
@@ -188,6 +192,14 @@ func BenchmarkReplicateS3(b *testing.B) {
 	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			replicateList(b, workingDir, 10)
+			removeMetadataCache(b, workingDir)
+		}
+	})
+
+	replicateList(b, workingDir, 10)
+	b.Run("list second run with 10 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 10)
 		}
 	})
 
@@ -197,6 +209,14 @@ func BenchmarkReplicateS3(b *testing.B) {
 	b.Run("list first run with 20 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			replicateList(b, workingDir, 20)
+			removeMetadataCache(b, workingDir)
+		}
+	})
+
+	replicateList(b, workingDir, 20)
+	b.Run("list second run with 10 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 20)
 		}
 	})
 
@@ -204,6 +224,14 @@ func BenchmarkReplicateS3(b *testing.B) {
 	require.NoError(b, err)
 
 	b.Run("list first run with 30 experiments", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			replicateList(b, workingDir, 30)
+			removeMetadataCache(b, workingDir)
+		}
+	})
+
+	replicateList(b, workingDir, 10)
+	b.Run("list second run with 30 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			replicateList(b, workingDir, 30)
 		}

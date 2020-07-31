@@ -68,6 +68,12 @@ func ForURL(storageURL string) (Storage, error) {
 	return nil, fmt.Errorf("Unknown storage backend: %s", scheme)
 }
 
+// NeedsCaching returns true if the storage is slow and needs caching
+func NeedsCaching(storage Storage) bool {
+	_, isDiskStorage := storage.(*DiskStorage)
+	return !isDiskStorage
+}
+
 var putDirectorySkip = []string{".replicate", ".git", "venv", ".mypy_cache"}
 
 type fileToPut struct {

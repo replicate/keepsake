@@ -3,10 +3,12 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/list"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
@@ -28,7 +30,7 @@ func newListCommand() *cobra.Command {
 }
 
 func listExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, workingDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -39,6 +41,19 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	store, err := storage.ForURL(storageURL)
 	if err != nil {
 		return err
+	}
+	// TODO: refactor this logic so it can be reused in other commands
+	if storage.NeedsCaching(store) && workingDir != "" {
+		// FIXME: prefix metadata
+		store, err = storage.NewCachedStorage(store, "experiments", path.Join(workingDir, ".replicate/metadata-cache"))
+		if err != nil {
+			return err
+		}
+		console.Info("Fetching new experiment data...")
+		cachedStore := store.(*storage.CachedStorage)
+		if err := cachedStore.SyncCache(); err != nil {
+			return err
+		}
 	}
 	return list.Experiments(os.Stdout, store, format)
 }
