@@ -1,3 +1,4 @@
+import sys
 import datetime
 import hashlib
 import json
@@ -69,6 +70,8 @@ class Commit(object):
         # TODO (bfirsh): content addressable id
         self.id = random_hash()
 
+        self.validate_labels()
+
     def save(self, storage: Storage):
         storage.put_directory(self.get_path(), self.project_dir)
         obj = {
@@ -86,3 +89,15 @@ class Commit(object):
 
     def get_path(self) -> str:
         return "commits/{}/".format(self.id)
+
+    def validate_labels(self):
+        metrics = self.experiment.config.get("metrics", {})
+        metric_keys = set(metrics.keys())
+        label_keys = set(self.labels.keys())
+        missing_keys = metric_keys - label_keys
+        if missing_keys:
+            sys.stderr.write(
+                "Warning: Missing metric{} in commit: {}".format(
+                    "s" if len(missing_keys) > 1 else "", ", ".join(missing_keys)
+                )
+            )

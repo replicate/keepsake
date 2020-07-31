@@ -21,6 +21,7 @@ require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/hashicorp/go-version v1.2.1
+	github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kr/text v0.2.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible

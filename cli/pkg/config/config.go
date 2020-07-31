@@ -9,6 +9,19 @@ import (
 	"replicate.ai/cli/pkg/files"
 )
 
+type MetricGoal string
+
+const (
+	GoalMaximize MetricGoal = "maximize"
+	GoalMinimize MetricGoal = "minimize"
+)
+
+type Metric struct {
+	Name    string     `json:"name"`
+	Goal    MetricGoal `json:"goal"`
+	Primary bool       `json:"primary"`
+}
+
 // Config is replicate.yaml
 type Config struct {
 	Storage            string   `json:"storage"`
@@ -17,6 +30,7 @@ type Config struct {
 	PythonRequirements string   `json:"python_requirements"`
 	Install            []string `json:"install"`
 	InstallScript      string   `json:"install_script"`
+	Metrics            []Metric `json:"metrics"`
 }
 
 // ReadPythonRequirements returns trimmed lines of text from
@@ -45,6 +59,15 @@ func (conf *Config) ReadPythonRequirements(sourceDir string) (lines []string, er
 		}
 	}
 	return lines, nil
+}
+
+func (conf *Config) PrimaryMetric() *Metric {
+	for _, metric := range conf.Metrics {
+		if metric.Primary {
+			return &metric
+		}
+	}
+	return nil
 }
 
 func getDefaultConfig(workingDir string) *Config {

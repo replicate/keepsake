@@ -97,7 +97,7 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 				}
 
 				for j := 0; j < numCommits; j++ {
-					com := commit.NewCommit(*exp, map[string]*param.Value{
+					com := commit.NewCommit(exp, map[string]*param.Value{
 						"accuracy": param.Float(0.987),
 					})
 					if err := com.Save(storage, workingDir); err != nil {
