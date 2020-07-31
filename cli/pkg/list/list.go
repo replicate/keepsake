@@ -118,7 +118,7 @@ func outputTable(experiments []*GroupedExperiment) error {
 		fmt.Fprintf(tw, "%d\t", exp.NumCommits)
 		fmt.Fprintf(tw, "%s\t", formatTime(exp.LatestCommit.Created))
 		for _, heading := range commitHeadings {
-			if val, ok := exp.LatestCommit.Data[heading]; ok {
+			if val, ok := exp.LatestCommit.Labels[heading]; ok {
 				fmt.Fprintf(tw, "%v\t", val)
 			}
 		}
@@ -144,7 +144,7 @@ func getTableHeadings(experiments []*GroupedExperiment) (expHeadings []string, c
 		for key := range exp.Params {
 			expHeadingSet[key] = true
 		}
-		for key := range exp.LatestCommit.Data {
+		for key := range exp.LatestCommit.Labels {
 			commitHeadingSet[key] = true
 		}
 	}

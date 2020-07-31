@@ -58,13 +58,13 @@ class Commit(object):
         project_dir: str,
         created: datetime.datetime,
         step: Optional[int],
-        data: Dict[str, Any],
+        labels: Dict[str, Any],
     ):
         self.experiment = experiment
         self.project_dir = project_dir
         self.created = created
         self.step = step
-        self.data = data
+        self.labels = labels
 
         # TODO (bfirsh): content addressable id
         self.id = random_hash()
@@ -75,7 +75,7 @@ class Commit(object):
             "id": self.id,
             "created": rfc3339_datetime(self.created),
             "experiment": self.experiment.get_metadata(),
-            "data": self.data,
+            "labels": self.labels,
         }
         if self.step is not None:
             obj["step"] = self.step

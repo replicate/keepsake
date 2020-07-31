@@ -45,7 +45,7 @@ def test_commit(temp_workdir):
         metadata = json.load(fh)
     assert metadata["id"] == commit.id
     assert metadata["step"] == 1
-    assert metadata["data"] == {"validation_loss": 0.123}
+    assert metadata["labels"] == {"validation_loss": 0.123}
     assert metadata["experiment"]["id"] == experiment.id
 
     with open(".replicate/storage/commits/{}/train.py".format(commit.id)) as fh:

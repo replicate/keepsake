@@ -20,17 +20,18 @@ type Commit struct {
 	ID         string                  `json:"id"`
 	Created    time.Time               `json:"created"`
 	Experiment experiment.Experiment   `json:"experiment"`
-	Data       map[string]*param.Value `json:"data"`
+	Labels     map[string]*param.Value `json:"labels"`
+	Step       int                     `json:"step"`
 }
 
 // NewCommit creates a commit
-func NewCommit(experiment experiment.Experiment, data map[string]*param.Value) *Commit {
+func NewCommit(experiment experiment.Experiment, labels map[string]*param.Value) *Commit {
 	// FIXME (bfirsh): content addressable (also in Python)
 	return &Commit{
 		ID:         hash.Random(),
 		Created:    time.Now().UTC(),
 		Experiment: experiment,
-		Data:       data,
+		Labels:     labels,
 	}
 }
 

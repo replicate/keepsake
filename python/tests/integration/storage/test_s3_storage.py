@@ -73,7 +73,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
                 "created": experiment.created.isoformat() + "Z",
             },
             "step": 10,
-            "data": {"loss": 1.1, "baz": "qux"},
+            "labels": {"loss": 1.1, "baz": "qux"},
         }
         assert actual_commit_meta == expected_commit_meta
 

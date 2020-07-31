@@ -23,7 +23,7 @@ class Experiment:
         project_dir: str,
         created: datetime.datetime,
         params: Optional[Dict[str, Any]],
-        args: Optional[List[str]],
+        args: List[str],
     ):
         self.storage = storage_for_url(storage_url)
         # TODO: automatically detect workdir (see .project)
@@ -53,7 +53,7 @@ class Experiment:
             project_dir=self.project_dir,
             created=created,
             step=step,
-            data=kwargs,
+            labels=kwargs,
         )
         commit.save(self.storage)
         self.heartbeat.ensure_running()
@@ -95,17 +95,18 @@ class Experiment:
 
 
 def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
-    options = set_option_defaults(options, {"include_argv": True})
+    options = set_option_defaults(options, {})
     project_dir = get_project_dir()
     config = load_config(project_dir)
     storage_url = config["storage"]
     created = datetime.datetime.utcnow()
-    args: Optional[List[str]]
-    if options["include_argv"] is True:
-        args = sys.argv
-    else:
-        args = None
-    experiment = Experiment(storage_url, project_dir, created, kwargs, args)
+    experiment = Experiment(
+        storage_url=storage_url,
+        project_dir=project_dir,
+        created=created,
+        params=kwargs,
+        args=sys.argv,
+    )
     experiment.save()
     experiment.heartbeat.start()
     return experiment
