@@ -5,6 +5,7 @@ import (
 	"path"
 	"time"
 
+	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/storage"
@@ -24,6 +25,7 @@ type Experiment struct {
 	Params  map[string]*param.Value `json:"params"`
 	Host    string                  `json:"host"`
 	User    string                  `json:"user"`
+	Config  *config.Config          `json:"config"`
 
 	// properties that are not actually part of metadata json
 	LastHeartbeat time.Time `json:"-"`

@@ -51,6 +51,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "id": experiment.id,
             "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
+            "config": {"python": "3.7", "storage": "s3://" + temp_bucket},
         }
         assert actual_experiment_meta == expected_experiment_meta
 
@@ -71,6 +72,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
                 "id": experiment.id,
                 "params": {"foo": "bar"},
                 "created": experiment.created.isoformat() + "Z",
+                "config": {"python": "3.7", "storage": "s3://" + temp_bucket,},
             },
             "step": 10,
             "labels": {"loss": 1.1, "baz": "qux"},

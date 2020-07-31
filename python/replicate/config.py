@@ -31,7 +31,7 @@ def load_config(project_dir):
 
 
 # TODO(andreas): more rigorous validation
-VALID_KEYS = ["storage", "python", "cuda", "python_requirements", "install"]
+VALID_KEYS = ["storage", "python", "cuda", "python_requirements", "install", "metrics"]
 REQUIRED_KEYS: List[str] = []
 DEFAULTS = {"storage": ".replicate/storage/", "python": "3.7"}
 

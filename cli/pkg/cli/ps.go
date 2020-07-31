@@ -17,7 +17,7 @@ func newPsCommand() *cobra.Command {
 	}
 
 	addStorageURLFlag(cmd)
-	addListFormatFlag(cmd)
+	addListFormatFlags(cmd)
 
 	return cmd
 }
@@ -27,7 +27,7 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	format, err := parseListFormatFlag(cmd)
+	format, allParams, err := parseListFormatFlags(cmd)
 	if err != nil {
 		return err
 	}
@@ -35,5 +35,5 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.RunningExperiments(store, format)
+	return list.RunningExperiments(store, format, allParams)
 }

@@ -76,3 +76,13 @@ if __name__ == "__main__":
     # assert latest["created"] > exp["created"]
     assert latest["experiment"]["id"] == exp["id"]
     assert latest["step"] == 2
+
+    # test that --storage-url works
+    experiments2 = json.loads(
+        subprocess.check_output(
+            ["replicate", "list", "--format=json", "--storage-url=" + storage],
+            cwd=tmpdir_factory.mktemp("list"),
+            env=env,
+        )
+    )
+    assert experiments2 == experiments

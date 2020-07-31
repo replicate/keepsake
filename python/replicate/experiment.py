@@ -19,12 +19,14 @@ from .heartbeat import Heartbeat
 class Experiment:
     def __init__(
         self,
-        storage_url: str,
+        config: dict,
         project_dir: str,
         created: datetime.datetime,
         params: Optional[Dict[str, Any]],
         args: List[str],
     ):
+        self.config = config
+        storage_url = config["storage"]
         self.storage = storage_for_url(storage_url)
         # TODO: automatically detect workdir (see .project)
         self.project_dir = project_dir
@@ -66,6 +68,7 @@ class Experiment:
             "params": self.params,
             "user": self.get_user(),
             "host": self.get_host(),
+            "config": self.config,
         }
 
     def get_path(self) -> str:
@@ -98,10 +101,9 @@ def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
     options = set_option_defaults(options, {})
     project_dir = get_project_dir()
     config = load_config(project_dir)
-    storage_url = config["storage"]
     created = datetime.datetime.utcnow()
     experiment = Experiment(
-        storage_url=storage_url,
+        config=config,
         project_dir=project_dir,
         created=created,
         params=kwargs,

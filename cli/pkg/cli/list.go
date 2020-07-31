@@ -21,7 +21,7 @@ func newListCommand() *cobra.Command {
 	}
 
 	addStorageURLFlag(cmd)
-	addListFormatFlag(cmd)
+	addListFormatFlags(cmd)
 
 	return cmd
 }
@@ -31,7 +31,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	format, err := parseListFormatFlag(cmd)
+	format, allParams, err := parseListFormatFlags(cmd)
 	if err != nil {
 		return err
 	}
@@ -39,22 +39,28 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format)
+	return list.Experiments(store, format, allParams)
 }
 
-func addListFormatFlag(cmd *cobra.Command) {
+func addListFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("format", "f", "table", "Output format (table/json)")
+	cmd.Flags().BoolP("all-params", "p", false, "Output all experiment params (by default, outputs only parameters that change between experiments)")
 }
 
-func parseListFormatFlag(cmd *cobra.Command) (format string, err error) {
+func parseListFormatFlags(cmd *cobra.Command) (format string, allParams bool, err error) {
 	format, err = cmd.Flags().GetString("format")
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	validFormats := []string{list.FormatJSON, list.FormatTable}
 	if !slices.ContainsString(validFormats, format) {
-		return "", fmt.Errorf("%s is not a valid format. Valid formats are: %s", format, strings.Join(validFormats, ", "))
+		return "", false, fmt.Errorf("%s is not a valid format. Valid formats are: %s", format, strings.Join(validFormats, ", "))
 	}
 
-	return format, nil
+	allParams, err = cmd.Flags().GetBool("all-params")
+	if err != nil {
+		return "", false, err
+	}
+
+	return format, allParams, nil
 }
