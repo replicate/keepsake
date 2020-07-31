@@ -39,7 +39,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
 
         actual_experiment_meta = s3_read_json(
             temp_bucket,
-            os.path.join("experiments", experiment.id, "replicate-metadata.json"),
+            os.path.join("metadata", "experiments", experiment.id + ".json"),
         )
         # TODO(andreas): actually check values of host and user
         assert "host" in actual_experiment_meta
@@ -58,22 +58,13 @@ def test_s3_experiment(temp_bucket, tmpdir):
         commit = experiment.commit(step=10, loss=1.1, baz="qux")
 
         actual_commit_meta = s3_read_json(
-            temp_bucket, os.path.join("commits", commit.id, "replicate-metadata.json"),
+            temp_bucket, os.path.join("metadata", "commits", commit.id + ".json"),
         )
-        assert "host" in actual_commit_meta["experiment"]
-        assert "user" in actual_commit_meta["experiment"]
-        del actual_commit_meta["experiment"]["host"]
-        del actual_commit_meta["experiment"]["user"]
 
         expected_commit_meta = {
             "id": commit.id,
             "created": commit.created.isoformat() + "Z",
-            "experiment": {
-                "id": experiment.id,
-                "params": {"foo": "bar"},
-                "created": experiment.created.isoformat() + "Z",
-                "config": {"python": "3.7", "storage": "s3://" + temp_bucket,},
-            },
+            "experiment_id": experiment.id,
             "step": 10,
             "labels": {"loss": 1.1, "baz": "qux"},
         }

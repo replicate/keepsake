@@ -36,12 +36,12 @@ class Experiment:
         self.heartbeat = Heartbeat(
             experiment_id=self.id,
             storage_url=storage_url,
-            path=self.get_path() + "replicate-heartbeat.json",
+            path="metadata/heartbeats/{}.json".format(self.id),
         )
 
     def save(self):
         self.storage.put(
-            self.get_path() + "replicate-metadata.json",
+            "metadata/experiments/{}.json".format(self.id),
             json.dumps(self.get_metadata(), indent=2),
         )
 
@@ -70,9 +70,6 @@ class Experiment:
             "host": self.get_host(),
             "config": self.config,
         }
-
-    def get_path(self) -> str:
-        return "experiments/{}/".format(self.id)
 
     def get_user(self) -> str:
         user = os.environ.get("REPLICATE_USER")

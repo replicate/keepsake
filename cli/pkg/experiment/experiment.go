@@ -2,21 +2,16 @@ package experiment
 
 import (
 	"encoding/json"
+	"fmt"
 	"path"
 	"time"
 
 	"replicate.ai/cli/pkg/config"
+	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/storage"
 )
-
-// corresponds to DEFAULT_REFRESH_INTERVAL in heartbeat.py
-var heartbeatRefreshInterval = 10 * time.Second
-
-// the number of missed heartbeats we tolerate before declaring
-// the experiment "stopped"
-var heartbeatMissTolerance = 3
 
 // Experiment represents a training run
 type Experiment struct {
@@ -26,10 +21,6 @@ type Experiment struct {
 	Host    string                  `json:"host"`
 	User    string                  `json:"user"`
 	Config  *config.Config          `json:"config"`
-
-	// properties that are not actually part of metadata json
-	LastHeartbeat time.Time `json:"-"`
-	Running       bool      `json:"-"`
 }
 
 // NewExperiment creates a commit, setting ID and Created
@@ -47,23 +38,35 @@ func (e *Experiment) Save(storage storage.Storage) error {
 	if err != nil {
 		return err
 	}
-	return storage.Put(path.Join("experiments", e.ID, "replicate-metadata.json"), data)
+	return storage.Put(path.Join("metadata", "experiments", e.ID+".json"), data)
 }
 
-func (e *Experiment) Heartbeat(storage storage.Storage, t time.Time) error {
-	heartbeat := &Heartbeat{
-		ExperimentID:  e.ID,
-		LastHeartbeat: t,
-	}
-	data, err := json.MarshalIndent(heartbeat, "", " ")
+func List(store storage.Storage) ([]*Experiment, error) {
+	paths, err := store.List("metadata/experiments/")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return storage.Put(path.Join("experiments", e.ID, "replicate-heartbeat.json"), data)
+	experiments := []*Experiment{}
+	for _, p := range paths {
+		exp, err := loadExperimentFromPath(store, p)
+		if err == nil {
+			experiments = append(experiments, exp)
+		} else {
+			// TODO: should this just be ignored? can this be recovered from?
+			console.Warn("Failed to load metadata from %q: %s", p, err)
+		}
+	}
+	return experiments, nil
 }
 
-func IsRunning(lastHeartbeat time.Time) bool {
-	now := time.Now()
-	lastTolerableHeartbeat := now.Add(-heartbeatRefreshInterval * time.Duration(heartbeatMissTolerance))
-	return lastHeartbeat.After(lastTolerableHeartbeat)
+func loadExperimentFromPath(store storage.Storage, path string) (*Experiment, error) {
+	contents, err := store.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	exp := new(Experiment)
+	if err := json.Unmarshal(contents, exp); err != nil {
+		return nil, fmt.Errorf("Parse error: %s", err)
+	}
+	return exp, nil
 }

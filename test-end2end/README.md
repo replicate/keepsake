@@ -12,3 +12,5 @@ pytest -s --aws-access-key-id=$CI_AWS_ACCESS_KEY_ID --aws-secret-access-key=$CI_
 where
 * `$CI_AWS_ACCESS_KEY_ID` and `$CI_SSH_PRIVATE_KEY` are AWS credentials
 * `$CI_SSH_PRIVATE_KEY` is a path to a copy of the CI private key
+
+FIXME (bfirsh): document setting up GCS backend

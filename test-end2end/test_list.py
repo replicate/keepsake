@@ -74,7 +74,6 @@ if __name__ == "__main__":
     assert len(latest["id"]) == 64
     # FIXME: now rfc3339 strings
     # assert latest["created"] > exp["created"]
-    assert latest["experiment"]["id"] == exp["id"]
     assert latest["step"] == 2
 
     # test that --storage-url works
