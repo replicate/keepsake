@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"sort"
 	"time"
 
 	"replicate.ai/cli/pkg/config"
@@ -23,7 +24,12 @@ type Experiment struct {
 	Config  *config.Config          `json:"config"`
 }
 
-// NewExperiment creates a commit, setting ID and Created
+type NamedParam struct {
+	Name  string
+	Value *param.Value
+}
+
+// NewExperiment creates an experiment, setting ID and Created
 func NewExperiment(params map[string]*param.Value) *Experiment {
 	return &Experiment{
 		ID:      hash.Random(),
@@ -41,7 +47,18 @@ func (e *Experiment) Save(storage storage.Storage) error {
 	return storage.Put(path.Join("metadata", "experiments", e.ID+".json"), data)
 }
 
-func List(store storage.Storage) ([]*Experiment, error) {
+func (c *Experiment) SortedParams() []*NamedParam {
+	ret := []*NamedParam{}
+	for k, v := range c.Params {
+		ret = append(ret, &NamedParam{Name: k, Value: v})
+	}
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].Name < ret[j].Name
+	})
+	return ret
+}
+
+func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	paths, err := store.List("metadata/experiments/")
 	if err != nil {
 		return nil, err

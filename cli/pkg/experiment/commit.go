@@ -1,10 +1,10 @@
-package commit
+package experiment
 
 import (
 	"encoding/json"
 	"fmt"
 	"path"
-	"strings"
+	"sort"
 	"time"
 
 	"replicate.ai/cli/pkg/console"
@@ -46,7 +46,18 @@ func (c *Commit) Save(st storage.Storage, workingDir string) error {
 	return st.Put(path.Join("metadata", "commits", c.ID+".json"), data)
 }
 
-func ListCommits(store storage.Storage) ([]*Commit, error) {
+func (c *Commit) SortedLabels() []*NamedParam {
+	ret := []*NamedParam{}
+	for k, v := range c.Labels {
+		ret = append(ret, &NamedParam{Name: k, Value: v})
+	}
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].Name < ret[j].Name
+	})
+	return ret
+}
+
+func listCommits(store storage.Storage) ([]*Commit, error) {
 	paths, err := store.List("metadata/commits/")
 	if err != nil {
 		return nil, err
@@ -73,20 +84,4 @@ func loadCommitFromPath(store storage.Storage, path string) (*Commit, error) {
 		return nil, fmt.Errorf("Parse error: %s", err)
 	}
 	return com, nil
-}
-
-// CommitIDFromPrefix returns the full commit ID given a prefix
-func CommitIDFromPrefix(store storage.Storage, prefix string) (string, error) {
-	// TODO(andreas): this is a naive implementation, pending data refactoring
-	// TODO(bfirsh): fail if the prefix is ambiguous
-	commits, err := ListCommits(store)
-	if err != nil {
-		return "", err
-	}
-	for _, com := range commits {
-		if strings.HasPrefix(com.ID, prefix) {
-			return com.ID, nil
-		}
-	}
-	return "", fmt.Errorf("Commit not found: %s", prefix)
 }

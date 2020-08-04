@@ -6,6 +6,7 @@ import (
 	"path"
 	"time"
 
+	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -33,14 +34,32 @@ func CreateHeartbeat(storage storage.Storage, experimentID string, t time.Time) 
 	return storage.Put(path.Join("metadata", "heartbeats", experimentID+".json"), data)
 }
 
+func listHeartbeats(store storage.Storage) ([]*Heartbeat, error) {
+	paths, err := store.List("metadata/heartbeats/")
+	if err != nil {
+		return nil, err
+	}
+	heartbeats := []*Heartbeat{}
+	for _, p := range paths {
+		exp, err := loadHeartbeatFromPath(store, p)
+		if err == nil {
+			heartbeats = append(heartbeats, exp)
+		} else {
+			// TODO: should this just be ignored? can this be recovered from?
+			console.Warn("Failed to load metadata from %q: %s", p, err)
+		}
+	}
+	return heartbeats, nil
+}
+
 func (h *Heartbeat) IsRunning() bool {
 	now := time.Now().UTC()
 	lastTolerableHeartbeat := now.Add(-heartbeatRefreshInterval * time.Duration(heartbeatMissTolerance))
 	return h.LastHeartbeat.After(lastTolerableHeartbeat)
 }
 
-func LoadHeartbeat(store storage.Storage, experimentID string) (*Heartbeat, error) {
-	contents, err := store.Get(path.Join("metadata", "heartbeats", experimentID+".json"))
+func loadHeartbeatFromPath(store storage.Storage, path string) (*Heartbeat, error) {
+	contents, err := store.Get(path)
 	if err != nil {
 		return nil, err
 	}

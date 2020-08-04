@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"replicate.ai/cli/pkg/commit"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/interact"
 	"replicate.ai/cli/pkg/storage"
@@ -30,7 +30,7 @@ func newCheckoutCommand() *cobra.Command {
 }
 
 func checkoutCommit(cmd *cobra.Command, args []string) error {
-	commitID := args[0]
+	prefix := args[0]
 
 	outputDir, err := cmd.Flags().GetString("output-directory")
 	if err != nil {
@@ -88,15 +88,16 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	commitID, err = commit.CommitIDFromPrefix(store, commitID)
+	proj := experiment.NewProject(store)
+	com, err := proj.CommitFromPrefix(prefix)
 	if err != nil {
 		return err
 	}
 
 	// TODO(andreas): empty directory before getting new contents
-	if err := store.GetDirectory(path.Join("commits", commitID), outputDir); err != nil {
+	if err := store.GetDirectory(path.Join("commits", com.ID), outputDir); err != nil {
 		return err
 	}
-	console.Info("Checked out %s to %s", commitID, outputDir)
+	console.Info("Checked out %s to %s", com.ID, outputDir)
 	return nil
 }
