@@ -72,6 +72,7 @@ func NewRootCommand() (*cobra.Command, error) {
 		newPsCommand(),
 		newCheckoutCommand(),
 		newRunCommand(),
+		newShowCommand(),
 	)
 
 	return &rootCmd, nil

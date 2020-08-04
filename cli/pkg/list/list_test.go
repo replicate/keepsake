@@ -12,7 +12,6 @@ import (
 	"github.com/kami-zh/go-capturer"
 	"github.com/stretchr/testify/require"
 
-	"replicate.ai/cli/pkg/commit"
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
@@ -50,7 +49,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, exp.Save(store))
 	}
 
-	var commits = []*commit.Commit{{
+	var commits = []*experiment.Commit{{
 		ID:           "1ccccccccc",
 		Created:      time.Now().UTC().Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
@@ -184,7 +183,7 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, experiment.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
-	com := commit.NewCommit(exp.ID, map[string]*param.Value{
+	com := experiment.NewCommit(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))
@@ -196,7 +195,7 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, experiment.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
-	com = commit.NewCommit(exp.ID, map[string]*param.Value{
+	com = experiment.NewCommit(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))
