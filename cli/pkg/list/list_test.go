@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"replicate.ai/cli/pkg/config"
-	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -23,7 +23,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	require.NoError(t, err)
 
 	require.NoError(t, err)
-	var experiments = []*experiment.Experiment{{
+	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
 		Created: time.Now().UTC(),
 		Params: map[string]*param.Value{
@@ -49,7 +49,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, exp.Save(store))
 	}
 
-	var commits = []*experiment.Commit{{
+	var commits = []*project.Commit{{
 		ID:           "1ccccccccc",
 		Created:      time.Now().UTC().Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
@@ -89,8 +89,8 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, com.Save(store, workingDir))
 	}
 
-	require.NoError(t, experiment.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
-	require.NoError(t, experiment.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
+	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
+	require.NoError(t, project.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
 
 	return store
 }
@@ -177,25 +177,25 @@ func TestListJSON(t *testing.T) {
 	defer os.RemoveAll(storageDir)
 
 	// Experiment no longer running
-	exp := experiment.NewExperiment(map[string]*param.Value{
+	exp := project.NewExperiment(map[string]*param.Value{
 		"learning_rate": param.Float(0.001),
 	})
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
-	require.NoError(t, experiment.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
-	com := experiment.NewCommit(exp.ID, map[string]*param.Value{
+	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
+	com := project.NewCommit(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))
 
 	// Experiment still running
-	exp = experiment.NewExperiment(map[string]*param.Value{
+	exp = project.NewExperiment(map[string]*param.Value{
 		"learning_rate": param.Float(0.002),
 	})
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
-	require.NoError(t, experiment.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
-	com = experiment.NewCommit(exp.ID, map[string]*param.Value{
+	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
+	com = project.NewCommit(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))

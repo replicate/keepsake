@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"replicate.ai/cli/pkg/config"
-	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -23,7 +23,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	require.NoError(t, err)
 
 	require.NoError(t, err)
-	var experiments = []*experiment.Experiment{{
+	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
 		Created: time.Now().UTC(),
 		Params: map[string]*param.Value{
@@ -49,7 +49,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, exp.Save(store))
 	}
 
-	var commits = []*experiment.Commit{{
+	var commits = []*project.Commit{{
 		ID:           "1ccccccccc",
 		Created:      time.Now().UTC().Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
@@ -89,8 +89,8 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, com.Save(store, workingDir))
 	}
 
-	require.NoError(t, experiment.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
-	require.NoError(t, experiment.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
+	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
+	require.NoError(t, project.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
 
 	return store
 }
@@ -111,7 +111,7 @@ func TestShowCommit(t *testing.T) {
 	}
 
 	store := createTestData(t, workingDir, conf)
-	proj := experiment.NewProject(store)
+	proj := project.NewProject(store)
 	result, err := proj.CommitOrExperimentFromPrefix("3cc")
 	require.NoError(t, err)
 	require.NotNil(t, result.Commit)

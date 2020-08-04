@@ -12,8 +12,8 @@ import (
 
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
-	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/param"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
 )
@@ -32,8 +32,8 @@ type ListExperiment struct {
 	Created      time.Time               `json:"created"`
 	Params       map[string]*param.Value `json:"params"`
 	NumCommits   int                     `json:"num_commits"`
-	LatestCommit *experiment.Commit      `json:"latest_commit"`
-	BestCommit   *experiment.Commit      `json:"best_commit"`
+	LatestCommit *project.Commit         `json:"latest_commit"`
+	BestCommit   *project.Commit         `json:"best_commit"`
 	User         string                  `json:"user"`
 	Host         string                  `json:"host"`
 	Running      bool                    `json:"running"`
@@ -43,7 +43,7 @@ type ListExperiment struct {
 }
 
 func RunningExperiments(store storage.Storage, format string, allParams bool) error {
-	proj := experiment.NewProject(store)
+	proj := project.NewProject(store)
 	listExperiments, err := createListExperiments(proj)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func RunningExperiments(store storage.Storage, format string, allParams bool) er
 }
 
 func Experiments(store storage.Storage, format string, allParams bool) error {
-	proj := experiment.NewProject(store)
+	proj := project.NewProject(store)
 	listExperiments, err := createListExperiments(proj)
 	if err != nil {
 		return err
@@ -257,7 +257,7 @@ func getCommitHeadings(experiments []*ListExperiment) []string {
 	return slices.StringKeys(commitHeadingSet)
 }
 
-func createListExperiments(proj *experiment.Project) ([]*ListExperiment, error) {
+func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 	experiments, err := proj.Experiments()
 	if err != nil {
 		return nil, err

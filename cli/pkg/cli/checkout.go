@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/console"
-	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/interact"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -88,7 +88,7 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	proj := experiment.NewProject(store)
+	proj := project.NewProject(store)
 	com, err := proj.CommitFromPrefix(prefix)
 	if err != nil {
 		return err
