@@ -18,9 +18,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 
-	"replicate.ai/cli/pkg/experiment"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -83,19 +83,19 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 			group.Go(func() error {
 				defer sem.Release(1)
 
-				exp := experiment.NewExperiment(map[string]*param.Value{
+				exp := project.NewExperiment(map[string]*param.Value{
 					"learning_rate": param.Float(0.001),
 				})
 				if err := exp.Save(storage); err != nil {
 					return fmt.Errorf("Error saving experiment: %w", err)
 				}
 
-				if err := experiment.CreateHeartbeat(storage, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
+				if err := project.CreateHeartbeat(storage, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
 					return fmt.Errorf("Error creating heartbeat: %w", err)
 				}
 
 				for j := 0; j < numCommits; j++ {
-					com := experiment.NewCommit(exp.ID, map[string]*param.Value{
+					com := project.NewCommit(exp.ID, map[string]*param.Value{
 						"accuracy": param.Float(0.987),
 					})
 					if err := com.Save(storage, workingDir); err != nil {

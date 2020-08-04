@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/config"
-	"replicate.ai/cli/pkg/experiment"
+	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -38,7 +38,7 @@ func show(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	proj := experiment.NewProject(store)
+	proj := project.NewProject(store)
 	result, err := proj.CommitOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func show(cmd *cobra.Command, args []string) error {
 	return showExperiment(au, w, proj, result.Experiment)
 }
 
-func showCommit(au aurora.Aurora, w *tabwriter.Writer, proj *experiment.Project, com *experiment.Commit) error {
+func showCommit(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Commit) error {
 	exp, err := proj.ExperimentByID(com.ExperimentID)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func showCommit(au aurora.Aurora, w *tabwriter.Writer, proj *experiment.Project,
 	return w.Flush()
 }
 
-func showExperiment(au aurora.Aurora, w *tabwriter.Writer, proj *experiment.Project, exp *experiment.Experiment) error {
+func showExperiment(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, exp *project.Experiment) error {
 	fmt.Fprintf(w, "%s\n\n", au.Yellow(fmt.Sprintf("Experiment:\t%s", exp.ID)))
 
 	writeExperimentCommon(au, w, exp)
@@ -98,7 +98,7 @@ func showExperiment(au aurora.Aurora, w *tabwriter.Writer, proj *experiment.Proj
 	return nil
 }
 
-func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *experiment.Experiment) {
+func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment) {
 	fmt.Fprintf(w, "%s\n", au.Bold("Params"))
 	if len(exp.Params) > 0 {
 		for _, p := range exp.SortedParams() {
@@ -110,7 +110,7 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *experimen
 	fmt.Fprintln(w)
 }
 
-func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *experiment.Project, com *experiment.Commit) error {
+func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Commit) error {
 	exp, err := proj.ExperimentByID(com.ExperimentID)
 	if err != nil {
 		return err
