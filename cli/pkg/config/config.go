@@ -17,20 +17,19 @@ const (
 )
 
 type Metric struct {
-	Name    string     `json:"name"`
 	Goal    MetricGoal `json:"goal"`
 	Primary bool       `json:"primary"`
 }
 
 // Config is replicate.yaml
 type Config struct {
-	Storage            string   `json:"storage"`
-	Python             string   `json:"python"`
-	CUDA               string   `json:"cuda"`
-	PythonRequirements string   `json:"python_requirements"`
-	Install            []string `json:"install"`
-	InstallScript      string   `json:"install_script"`
-	Metrics            []Metric `json:"metrics"`
+	Storage            string            `json:"storage"`
+	Python             string            `json:"python"`
+	CUDA               string            `json:"cuda"`
+	PythonRequirements string            `json:"python_requirements"`
+	Install            []string          `json:"install"`
+	InstallScript      string            `json:"install_script"`
+	Metrics            map[string]Metric `json:"metrics"`
 }
 
 // ReadPythonRequirements returns trimmed lines of text from
@@ -61,13 +60,18 @@ func (conf *Config) ReadPythonRequirements(sourceDir string) (lines []string, er
 	return lines, nil
 }
 
-func (conf *Config) PrimaryMetric() *Metric {
-	for _, metric := range conf.Metrics {
+func (conf *Config) PrimaryMetric() (string, *Metric) {
+	for name, metric := range conf.Metrics {
 		if metric.Primary {
-			return &metric
+			return name, &metric
 		}
 	}
-	return nil
+	return "", nil
+}
+
+func (conf *Config) HasPrimaryMetric() bool {
+	_, m := conf.PrimaryMetric()
+	return m != nil
 }
 
 func getDefaultConfig(workingDir string) *Config {

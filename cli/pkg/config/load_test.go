@@ -82,4 +82,24 @@ func TestParse(t *testing.T) {
 		Install:            []string{},
 		Storage:            "/foo/.replicate/storage",
 	}, conf)
+
+	// Loads metrics as a dictionary
+	conf, err = Parse([]byte(`
+metrics:
+  accuracy:
+    goal: "maximize"
+    primary: true
+`), "")
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Python:             "3.7",
+		PythonRequirements: "requirements.txt",
+		Install:            []string{},
+		Storage:            ".replicate/storage",
+		Metrics: map[string]Metric{
+			"accuracy": {
+				Goal:    GoalMaximize,
+				Primary: true,
+			}},
+	}, conf)
 }

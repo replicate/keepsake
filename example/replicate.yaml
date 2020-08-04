@@ -1,0 +1,4 @@
+metrics:
+  accuracy:
+    goal: "maximize"
+    primary: true

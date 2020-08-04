@@ -75,10 +75,11 @@ var commits = []*commit.Commit{{
 
 func TestGroupCommitsWithoutPrimaryMetric(t *testing.T) {
 	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name: "label-1",
-			Goal: config.GoalMinimize,
-		}},
+		Metrics: map[string]config.Metric{
+			"label-1": {
+				Goal: config.GoalMinimize,
+			},
+		},
 	}
 	expected := []*GroupedExperiment{{
 		ID:      "1eeeeeeeee",
@@ -115,11 +116,12 @@ func TestGroupCommitsWithoutPrimaryMetric(t *testing.T) {
 
 func TestGroupCommitsWithPrimaryMetric(t *testing.T) {
 	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "label-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}},
+		Metrics: map[string]config.Metric{
+			"label-1": {
+				Goal:    config.GoalMinimize,
+				Primary: true,
+			},
+		},
 	}
 	expected := []*GroupedExperiment{{
 		ID:      "1eeeeeeeee",
@@ -156,14 +158,14 @@ func TestGroupCommitsWithPrimaryMetric(t *testing.T) {
 
 func TestOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "label-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "label-3",
-			Goal: config.GoalMinimize,
-		}},
+		Metrics: map[string]config.Metric{
+			"label-1": {
+				Goal:    config.GoalMinimize,
+				Primary: true,
+			},
+			"label-3": {
+				Goal: config.GoalMinimize,
+			}},
 	}
 	experiments := groupCommits(conf, commits)
 	actual := capturer.CaptureStdout(func() {
@@ -182,14 +184,14 @@ experiment  started             status   host      user     param-1  latest   st
 
 func TestOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "label-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "label-3",
-			Goal: config.GoalMinimize,
-		}},
+		Metrics: map[string]config.Metric{
+			"label-1": {
+				Goal:    config.GoalMinimize,
+				Primary: true,
+			},
+			"label-3": {
+				Goal: config.GoalMinimize,
+			}},
 	}
 	experiments := groupCommits(conf, commits)
 	actual := capturer.CaptureStdout(func() {

@@ -111,7 +111,7 @@ func outputTable(conf *config.Config, experiments []*GroupedExperiment, allParam
 	keys = append(keys, expHeadings...)
 	keys = append(keys, "latest", "step")
 	keys = append(keys, commitHeadings...)
-	if conf.PrimaryMetric() != nil {
+	if conf.HasPrimaryMetric() {
 		keys = append(keys, "best", "step")
 		keys = append(keys, commitHeadings...)
 	}
@@ -180,7 +180,7 @@ func outputTable(conf *config.Config, experiments []*GroupedExperiment, allParam
 				}
 				fmt.Fprintf(tw, "\t")
 			}
-		} else if conf.PrimaryMetric() != nil {
+		} else if conf.HasPrimaryMetric() {
 			fmt.Fprintf(tw, "N/A")
 		}
 
@@ -237,8 +237,8 @@ func getCommitHeadings(conf *config.Config, experiments []*GroupedExperiment) []
 	metricNameSet := map[string]bool{}
 	commitHeadingSet := map[string]bool{}
 
-	for _, metric := range conf.Metrics {
-		metricNameSet[metric.Name] = true
+	for name := range conf.Metrics {
+		metricNameSet[name] = true
 	}
 	for _, exp := range experiments {
 		for key := range exp.LatestCommit.Labels {
@@ -299,15 +299,15 @@ func getLatestCommit(commits []*commit.Commit) *commit.Commit {
 // if primary metric is not defined or if none of the commits have
 // the primary metric defined
 func getBestCommit(conf *config.Config, commits []*commit.Commit) *commit.Commit {
-	primaryMetric := conf.PrimaryMetric()
+	primaryMetricName, primaryMetric := conf.PrimaryMetric()
 	if primaryMetric == nil {
 		return nil
 	}
 
 	// sort commits in ascending order, according to the primary metric
 	sort.Slice(commits, func(i, j int) bool {
-		iVal, iOK := commits[i].Labels[primaryMetric.Name]
-		jVal, jOK := commits[j].Labels[primaryMetric.Name]
+		iVal, iOK := commits[i].Labels[primaryMetricName]
+		jVal, jOK := commits[j].Labels[primaryMetricName]
 		if !iOK {
 			return true
 		}
@@ -332,7 +332,7 @@ func getBestCommit(conf *config.Config, commits []*commit.Commit) *commit.Commit
 
 	// if the last (best) commit in the sorted list doesn't have
 	// a value for the primary metric, none of them do
-	if _, ok := best.Labels[primaryMetric.Name]; !ok {
+	if _, ok := best.Labels[primaryMetricName]; !ok {
 		return nil
 	}
 
