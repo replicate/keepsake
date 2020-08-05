@@ -100,3 +100,47 @@ label-2:                  2                         (not set)
 	expected = expected[1:]
 	require.Equal(t, expected, actual)
 }
+
+func TestMapString(t *testing.T) {
+	// string pointer helpers
+	baz := "baz"
+	bop := "bop"
+
+	// same
+	require.Equal(t, map[string][]*string{}, mapString(map[string]string{
+		"same": "in both",
+	}, map[string]string{
+		"same": "in both",
+	}))
+
+	// just in left
+	require.Equal(t, map[string][]*string{
+		"left": {&baz, nil},
+	}, mapString(map[string]string{
+		"same": "in both",
+		"left": "baz",
+	}, map[string]string{
+		"same": "in both",
+	}))
+
+	// just in right
+	require.Equal(t, map[string][]*string{
+		"right": {nil, &baz},
+	}, mapString(map[string]string{
+		"same": "in both",
+	}, map[string]string{
+		"same":  "in both",
+		"right": "baz",
+	}))
+
+	// different
+	require.Equal(t, map[string][]*string{
+		"different": {&baz, &bop},
+	}, mapString(map[string]string{
+		"same":      "in both",
+		"different": "baz",
+	}, map[string]string{
+		"same":      "in both",
+		"different": "bop",
+	}))
+}
