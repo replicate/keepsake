@@ -13,6 +13,7 @@ import (
 )
 
 func getAurora() aurora.Aurora {
+	// TODO (bfirsh): consolidate this logic in console package
 	return aurora.NewAurora(os.Getenv("NO_COLOR") == "")
 }
 
