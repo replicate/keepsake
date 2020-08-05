@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -40,6 +41,13 @@ type ListExperiment struct {
 
 	// exclude config from json output
 	Config *config.Config `json:"-"`
+}
+
+func (e *ListExperiment) LatestActivity() time.Time {
+	if e.LatestCommit != nil {
+		return e.LatestCommit.Created
+	}
+	return e.Created
 }
 
 func RunningExperiments(store storage.Storage, format string, allParams bool) error {
@@ -153,36 +161,45 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			fmt.Fprintf(tw, "\t")
 		}
 
-		// latest commit id
-		fmt.Fprintf(tw, "%s\t", exp.LatestCommit.ID[:7])
-
-		// latest step
-		fmt.Fprintf(tw, "%d\t", exp.LatestCommit.Step)
+		latestCommitID := ""
+		latestCommitStep := ""
+		if exp.LatestCommit != nil {
+			latestCommitID = exp.LatestCommit.ID[:7]
+			latestCommitStep = strconv.Itoa(exp.LatestCommit.Step)
+		}
+		fmt.Fprintf(tw, "%s\t", latestCommitID)
+		fmt.Fprintf(tw, "%s\t", latestCommitStep)
 
 		// latest commit labels
 		for _, heading := range commitHeadings {
-			if val, ok := exp.LatestCommit.Labels[heading]; ok {
-				fmt.Fprintf(tw, "%v", val)
+			val := ""
+			if exp.LatestCommit != nil {
+				if v, ok := exp.LatestCommit.Labels[heading]; ok {
+					val = v.String()
+				}
 			}
-			fmt.Fprintf(tw, "\t")
+			fmt.Fprintf(tw, "%s\t", val)
 		}
 
+		bestCommitID := ""
+		bestStepID := ""
+
 		if exp.BestCommit != nil {
-			// best commit id
-			fmt.Fprintf(tw, "%s\t", exp.BestCommit.ID[:7])
+			bestCommitID = exp.BestCommit.ID[:7]
+			bestStepID = strconv.Itoa(exp.BestCommit.Step)
+		}
+		fmt.Fprintf(tw, "%s\t", bestCommitID)
+		fmt.Fprintf(tw, "%s\t", bestStepID)
 
-			// best step
-			fmt.Fprintf(tw, "%d\t", exp.BestCommit.Step)
-
-			// best commit labels
-			for _, heading := range commitHeadings {
-				if val, ok := exp.BestCommit.Labels[heading]; ok {
-					fmt.Fprintf(tw, "%v", val)
+		// best commit labels
+		for _, heading := range commitHeadings {
+			val := ""
+			if exp.BestCommit != nil {
+				if v, ok := exp.BestCommit.Labels[heading]; ok {
+					val = v.String()
 				}
-				fmt.Fprintf(tw, "\t")
 			}
-		} else if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
-			fmt.Fprintf(tw, "N/A")
+			fmt.Fprintf(tw, "%s\t", val)
 		}
 
 		// newline!
@@ -247,9 +264,11 @@ func getCommitHeadings(experiments []*ListExperiment) []string {
 		}
 	}
 	for _, exp := range experiments {
-		for key := range exp.LatestCommit.Labels {
-			if _, ok := metricNameSet[key]; ok {
-				commitHeadingSet[key] = true
+		if exp.LatestCommit != nil {
+			for key := range exp.LatestCommit.Labels {
+				if _, ok := metricNameSet[key]; ok {
+					commitHeadingSet[key] = true
+				}
 			}
 		}
 	}
@@ -299,7 +318,7 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].LatestCommit.Created.Before(ret[j].LatestCommit.Created)
+		return ret[i].LatestActivity().Before(ret[j].LatestActivity())
 	})
 
 	return ret, nil
