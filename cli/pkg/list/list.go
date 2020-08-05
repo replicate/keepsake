@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -116,13 +117,13 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	keys := []string{"experiment", "started", "status", "host", "user"}
-	keys = append(keys, expHeadings...)
-	keys = append(keys, "latest", "step")
-	keys = append(keys, commitHeadings...)
+	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
+	keys = append(keys, upper(expHeadings)...)
+	keys = append(keys, "LATEST", "STEP")
+	keys = append(keys, upper(commitHeadings)...)
 	if hasPrimaryMetric {
-		keys = append(keys, "best", "step")
-		keys = append(keys, commitHeadings...)
+		keys = append(keys, "BEST", "STEP")
+		keys = append(keys, upper(commitHeadings)...)
 	}
 
 	for i, key := range keys {
@@ -323,4 +324,12 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 
 	return ret, nil
 
+}
+
+func upper(in []string) []string {
+	ret := make([]string, len(in))
+	for i, s := range in {
+		ret[i] = strings.ToUpper(s)
+	}
+	return ret
 }
