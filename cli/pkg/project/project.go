@@ -60,7 +60,7 @@ func (p *Project) ExperimentCommits(experimentID string) ([]*Commit, error) {
 	}
 	commits, ok := p.commitsByExpID[experimentID]
 	if !ok {
-		return nil, fmt.Errorf("No experiment found with ID %s", experimentID)
+		return []*Commit{}, nil
 	}
 	return commits, nil
 }
@@ -71,10 +71,7 @@ func (p *Project) ExperimentLatestCommit(experimentID string) (*Commit, error) {
 		return nil, err
 	}
 	commits, ok := p.commitsByExpID[experimentID]
-	if !ok {
-		return nil, fmt.Errorf("No experiment found with ID %s", experimentID)
-	}
-	if len(commits) == 0 {
+	if !ok || len(commits) == 0 {
 		return nil, nil
 	}
 	sort.Slice(commits, func(i, j int) bool {
