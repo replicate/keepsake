@@ -26,8 +26,14 @@ type Storage interface {
 	Put(path string, data []byte) error
 	PutDirectory(localPath string, storagePath string) error
 	GetDirectory(storagePath string, localPath string) error
+
 	// List files in a path non-recursively
+	//
+	// Returns a list of paths, prefixed with the given path, that can be passed straight to Get().
+	// Directories are not listed.
+	// If path does not exist, an empty list will be returned.
 	List(path string) ([]string, error)
+
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
