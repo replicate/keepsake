@@ -88,13 +88,16 @@ class Commit(object):
         )
 
     def validate_labels(self):
-        metrics = self.experiment.config.get("metrics", {})
-        metric_keys = set(metrics.keys())
+        metrics = self.experiment.config.get("metrics", [])
+        metric_keys = set(
+            filter(lambda x: x, [metric.get("name") for metric in metrics])
+        )
         label_keys = set(self.labels.keys())
         missing_keys = metric_keys - label_keys
         if missing_keys:
-            sys.stderr.write(
-                "Warning: Missing metric{} in commit: {}".format(
-                    "s" if len(missing_keys) > 1 else "", ", ".join(missing_keys)
-                )
+            print(
+                "Warning: You specified these metrics in replicate.yaml, but they are missing in your call to replicate.commit(): {}".format(
+                    ", ".join(missing_keys)
+                ),
+                file=sys.stderr,
             )
