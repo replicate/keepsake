@@ -71,6 +71,10 @@ func TestDiskStorageList(t *testing.T) {
 	paths, err = storage.List("dir")
 	require.NoError(t, err)
 	require.Equal(t, []string{"dir/another-file"}, paths)
+
+	paths, err = storage.List("dir-that-does-not-exist")
+	require.NoError(t, err)
+	require.Equal(t, []string{}, paths)
 }
 
 func TestPutDirectory(t *testing.T) {

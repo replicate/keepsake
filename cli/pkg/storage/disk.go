@@ -68,6 +68,9 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 func (s *DiskStorage) List(p string) ([]string, error) {
 	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
 	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
 		return nil, err
 	}
 	result := []string{}
