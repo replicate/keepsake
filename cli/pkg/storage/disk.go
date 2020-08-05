@@ -61,14 +61,20 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 }
 
 // List files in a path non-recursively
+//
+// Returns a list of paths, prefixed with the given path, that can be passed straight to Get().
+// Directories are not listed.
+// If path does not exist, an empty list will be returned.
 func (s *DiskStorage) List(p string) ([]string, error) {
 	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
 	if err != nil {
 		return nil, err
 	}
-	result := make([]string, len(files))
-	for i, f := range files {
-		result[i] = path.Join(p, f.Name())
+	result := []string{}
+	for _, f := range files {
+		if !f.IsDir() {
+			result = append(result, path.Join(p, f.Name()))
+		}
 	}
 	return result, nil
 }

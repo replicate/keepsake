@@ -50,6 +50,29 @@ func TestDiskStoragePut(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello again"), content)
 }
+
+func TestDiskStorageList(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	storage, err := NewDiskStorage(dir)
+	require.NoError(t, err)
+
+	err = storage.Put("some-file", []byte("hello"))
+	require.NoError(t, err)
+	err = storage.Put("dir/another-file", []byte("hello"))
+	require.NoError(t, err)
+
+	paths, err := storage.List("")
+	require.NoError(t, err)
+	require.Equal(t, []string{"some-file"}, paths)
+
+	paths, err = storage.List("dir")
+	require.NoError(t, err)
+	require.Equal(t, []string{"dir/another-file"}, paths)
+}
+
 func TestPutDirectory(t *testing.T) {
 	storageDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
