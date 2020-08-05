@@ -62,4 +62,4 @@ If you've updated the version string in `setup.py` you need to update the versio
 
 Any contributions must be formatted with [Black](https://github.com/psf/black). The best thing is to set up your editor to automatically format code, but you can also do it manually by running:
 
-    $ make format
+    $ make fmt
