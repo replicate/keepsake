@@ -21,7 +21,7 @@ func TestDiskStorageGet(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = storage.Get("does-not-exist")
-	require.Error(t, err)
+	require.IsType(t, &NotExistError{}, err)
 
 	content, err := storage.Get("some-file")
 	require.NoError(t, err)

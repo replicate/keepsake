@@ -40,6 +40,9 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 	obj := bucket.Object(path)
 	reader, err := obj.NewReader(context.TODO())
 	if err != nil {
+		if err == storage.ErrObjectNotExist {
+			return nil, &NotExistError{msg: "Get: path does not exist: " + path}
+		}
 		return nil, fmt.Errorf("Failed to open %s, got error: %s", pathString, err)
 	}
 	defer reader.Close()

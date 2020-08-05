@@ -22,7 +22,11 @@ func NewDiskStorage(rootDir string) (*DiskStorage, error) {
 
 // Get data at path
 func (s *DiskStorage) Get(p string) ([]byte, error) {
-	return ioutil.ReadFile(path.Join(s.rootDir, p))
+	data, err := ioutil.ReadFile(path.Join(s.rootDir, p))
+	if err != nil && os.IsNotExist(err) {
+		return nil, &NotExistError{msg: "Get: path does not exist: " + p}
+	}
+	return data, err
 }
 
 // Put data at path

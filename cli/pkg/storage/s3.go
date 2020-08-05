@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -54,6 +55,11 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 		Key:    aws.String(path),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			if aerr.Code() == s3.ErrCodeNoSuchKey {
+				return nil, &NotExistError{msg: "Get: path does not exist: " + path}
+			}
+		}
 		return nil, fmt.Errorf("Failed to read s3://%s/%s, got error: %s", s.bucketName, path, err)
 	}
 	body, err := ioutil.ReadAll(obj.Body)
