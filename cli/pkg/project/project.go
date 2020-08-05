@@ -145,7 +145,8 @@ func (p *Project) ExperimentIsRunning(experimentID string) (bool, error) {
 	}
 	heartbeat, ok := p.heartbeatsByExpID[experimentID]
 	if !ok {
-		console.Warn("No heartbeat found for experiment %s", experimentID)
+		// TODO(bfirsh): unknown state? https://github.com/replicate/replicate/issues/36
+		console.Debug("No heartbeat found for experiment %s", experimentID)
 		return false, nil
 	}
 	return heartbeat.IsRunning(), nil
