@@ -58,6 +58,11 @@ func (c *Experiment) SortedParams() []*NamedParam {
 	return ret
 }
 
+func (e *Experiment) HasMetrics() bool {
+	// TODO(andreas): we should weed out all the circumstances where e.Config or e.Config.Metrics can be nil
+	return e.Config != nil && e.Config.Metrics != nil && len(e.Config.Metrics) > 0
+}
+
 func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	paths, err := store.List("metadata/experiments/")
 	if err != nil {
