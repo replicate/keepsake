@@ -50,7 +50,7 @@ func replicateList(b *testing.B, workingDir string, numExperiments int) {
 
 	// Check the output is sensible
 	firstLine := strings.Split(out, "\n")[0]
-	require.Contains(b, firstLine, "experiment")
+	require.Contains(b, firstLine, "EXPERIMENT")
 	// numExperiments + heading + trailing \n
 	require.Equal(b, numExperiments+2, len(strings.Split(out, "\n")))
 	// TODO: check first line is reasonable
