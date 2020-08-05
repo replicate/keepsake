@@ -18,7 +18,7 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
-func createTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
+func createShowTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
 	store, err := storage.NewDiskStorage(path.Join(workingDir, ".replicate/storage"))
 	require.NoError(t, err)
 
@@ -94,6 +94,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 
 	return store
 }
+
 func TestShowCommit(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
@@ -110,7 +111,7 @@ func TestShowCommit(t *testing.T) {
 		}},
 	}
 
-	store := createTestData(t, workingDir, conf)
+	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
 	result, err := proj.CommitOrExperimentFromPrefix("3cc")
 	require.NoError(t, err)
@@ -136,7 +137,57 @@ Metrics
 label-1:  0.02 (primary, goal: minimize)
 label-3:  (none) (goal: minimize)
 Labels
-label-1:  0.02
+label-2:  2
+
+`
+	// remove initial newline
+	expected = expected[1:]
+	require.Equal(t, expected, actual)
+}
+
+func TestShowExperiment(t *testing.T) {
+	workingDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workingDir)
+
+	conf := &config.Config{
+		Metrics: []config.Metric{{
+			Name:    "label-1",
+			Goal:    config.GoalMinimize,
+			Primary: true,
+		}},
+	}
+
+	store := createShowTestData(t, workingDir, conf)
+	proj := project.NewProject(store)
+	result, err := proj.CommitOrExperimentFromPrefix("1eee")
+	require.NoError(t, err)
+	require.NotNil(t, result.Experiment)
+
+	out := new(bytes.Buffer)
+	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
+
+	au := aurora.NewAurora(false)
+	err = showExperiment(au, w, proj, result.Experiment)
+	require.NoError(t, err)
+	actual := out.String()
+
+	expected := `
+Experiment:  1eeeeeeeee
+
+Params
+param-1:  100
+param-2:  hello
+
+Latest commit  3ccccccccc
+Metrics
+label-1:  0.02 (primary, goal: minimize)
+Labels
+label-2:     2
+Best commit  2ccccccccc
+Metrics
+label-1:  0.01 (primary, goal: minimize)
+Labels
 label-2:  2
 
 `

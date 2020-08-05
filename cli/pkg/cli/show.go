@@ -44,8 +44,7 @@ func show(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// TODO: support NO_COLOR everywhere
-	au := aurora.NewAurora(os.Getenv("NO_COLOR") == "")
+	au := getAurora()
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
 
 	if result.Commit != nil {
@@ -90,12 +89,14 @@ func showExperiment(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project
 		return err
 	}
 	if best != nil {
-		fmt.Fprintf(w, "%s\n", au.Bold(fmt.Sprintf("Best commit\t%s", latest.ID)))
+		fmt.Fprintf(w, "%s\n", au.Bold(fmt.Sprintf("Best commit\t%s", best.ID)))
 		if err := writeCommitMetrics(au, w, proj, best); err != nil {
 			return err
 		}
 	}
-	return nil
+
+	fmt.Fprintln(w)
+	return w.Flush()
 }
 
 func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment) {
@@ -149,7 +150,9 @@ func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Pro
 	if len(labelNames) > 0 {
 		fmt.Fprintf(w, "%s\n", au.Bold("Labels"))
 		for _, lab := range com.SortedLabels() {
-			fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
+			if _, ok := metricNameSet[lab.Name]; !ok {
+				fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
+			}
 		}
 	}
 	return nil

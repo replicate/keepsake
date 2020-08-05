@@ -73,6 +73,7 @@ func NewRootCommand() (*cobra.Command, error) {
 		newCheckoutCommand(),
 		newRunCommand(),
 		newShowCommand(),
+		newDiffCommand(),
 	)
 
 	return &rootCmd, nil
