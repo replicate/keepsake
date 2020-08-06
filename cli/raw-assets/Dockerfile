@@ -15,7 +15,7 @@ COPY "{{.PythonRequirements}}" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 {{end}}
 # FIXME: temporary, until this is on pypi or we find a better temporary spot
-RUN pip install https://storage.googleapis.com/replicate-python-dev/replicate-0.0.8.tar.gz
+RUN pip install https://storage.googleapis.com/replicate-python-dev/replicate-0.0.9.tar.gz
 
 COPY . /code
 WORKDIR /code
