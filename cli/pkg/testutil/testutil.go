@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -53,4 +54,12 @@ func RequireFileContentsEqual(t *testing.T, path string, expected string) {
 	contents, err := ioutil.ReadFile(path)
 	require.NoError(t, err)
 	require.Equal(t, expected, string(contents))
+}
+
+func TrimRightLines(s string) string {
+	lines := []string{}
+	for _, line := range strings.Split(s, "\n") {
+		lines = append(lines, strings.TrimRight(line, " "))
+	}
+	return strings.Join(lines, "\n")
 }

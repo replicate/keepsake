@@ -16,16 +16,23 @@ import (
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
+	"replicate.ai/cli/pkg/testutil"
 )
+
+func init() {
+	timezone, _ = time.LoadLocation("Asia/Ulaanbaatar")
+}
 
 func createShowTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
 	store, err := storage.NewDiskStorage(path.Join(workingDir, ".replicate/storage"))
 	require.NoError(t, err)
 
+	fixedTime, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+
 	require.NoError(t, err)
 	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
-		Created: time.Now().UTC(),
+		Created: fixedTime,
 		Params: map[string]*param.Value{
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
@@ -35,7 +42,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Config: conf,
 	}, {
 		ID:      "2eeeeeeeee",
-		Created: time.Now().UTC().Add(-1 * time.Minute),
+		Created: fixedTime.Add(-1 * time.Minute),
 		Params: map[string]*param.Value{
 			"param-1": param.Int(200),
 			"param-2": param.String("hello"),
@@ -51,7 +58,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 
 	var commits = []*project.Commit{{
 		ID:           "1ccccccccc",
-		Created:      time.Now().UTC().Add(-1 * time.Minute),
+		Created:      fixedTime.Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.1),
@@ -60,7 +67,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 10,
 	}, {
 		ID:           "2ccccccccc",
-		Created:      time.Now().UTC(),
+		Created:      fixedTime,
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.01),
@@ -69,7 +76,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 20,
 	}, {
 		ID:           "3ccccccccc",
-		Created:      time.Now().UTC(),
+		Created:      fixedTime,
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.02),
@@ -78,7 +85,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 20,
 	}, {
 		ID:           "4ccccccccc",
-		Created:      time.Now().UTC(),
+		Created:      fixedTime,
 		ExperimentID: experiments[1].ID,
 		Labels: map[string]*param.Value{
 			"label-3": param.Float(0.5),
@@ -129,9 +136,13 @@ func TestShowCommit(t *testing.T) {
 Commit:  3ccccccccc
 
 Experiment:  1eeeeeeeee
+Created:     Mon, 02 Jan 2006 23:04:05 +08
+Host:        10.1.1.1
+User:        andreas
+
 Params
-param-1:  100
-param-2:  hello
+param-1:     100
+param-2:     hello
 
 Metrics
 label-1:  0.02 (primary, goal: minimize)
@@ -142,6 +153,7 @@ label-2:  2
 `
 	// remove initial newline
 	expected = expected[1:]
+	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
 }
 
@@ -165,33 +177,30 @@ func TestShowExperiment(t *testing.T) {
 	require.NotNil(t, result.Experiment)
 
 	out := new(bytes.Buffer)
-	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
-
 	au := aurora.NewAurora(false)
-	err = showExperiment(au, w, proj, result.Experiment)
+	err = showExperiment(au, out, proj, result.Experiment)
 	require.NoError(t, err)
 	actual := out.String()
 
 	expected := `
-Experiment:  1eeeeeeeee
+Experiment: 1eeeeeeeee
+
+Created:  Mon, 02 Jan 2006 23:04:05 +08
+Host:     10.1.1.1
+User:     andreas
 
 Params
 param-1:  100
 param-2:  hello
 
-Latest commit  3ccccccccc
-Metrics
-label-1:  0.02 (primary, goal: minimize)
-Labels
-label-2:     2
-Best commit  2ccccccccc
-Metrics
-label-1:  0.01 (primary, goal: minimize)
-Labels
-label-2:  2
-
+Commits
+ID       STEP  CREATED     LABEL-1      LABEL-2
+1cccccc  10    2006-01-02  0.1          2
+3cccccc  20    2006-01-02  0.02         2
+2cccccc  20    2006-01-02  0.01 (best)  2
 `
 	// remove initial newline
 	expected = expected[1:]
+	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
 }

@@ -62,6 +62,9 @@ func (p *Project) ExperimentCommits(experimentID string) ([]*Commit, error) {
 	if !ok {
 		return []*Commit{}, nil
 	}
+	sort.Slice(commits, func(i, j int) bool {
+		return commits[i].Created.Before(commits[j].Created)
+	})
 	return commits, nil
 }
 
