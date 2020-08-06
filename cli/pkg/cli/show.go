@@ -64,6 +64,11 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 	if err != nil {
 		return err
 	}
+	experimentRunning, err := proj.ExperimentIsRunning(exp.ID)
+	if err != nil {
+		return err
+	}
+
 	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold((fmt.Sprintf("Commit: %s", com.ID)))))
 
 	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
@@ -75,7 +80,7 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 
 	fmt.Fprintf(w, "ID:\t%s\n", exp.ID)
 
-	writeExperimentCommon(au, w, exp)
+	writeExperimentCommon(au, w, exp, experimentRunning)
 
 	if err := writeCommitMetrics(au, w, proj, com); err != nil {
 		return err
@@ -86,10 +91,15 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 }
 
 func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment) error {
+	experimentRunning, err := proj.ExperimentIsRunning(exp.ID)
+	if err != nil {
+		return err
+	}
+
 	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold(fmt.Sprintf("Experiment: %s", exp.ID))))
 
 	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
-	writeExperimentCommon(au, w, exp)
+	writeExperimentCommon(au, w, exp, experimentRunning)
 	if err := w.Flush(); err != nil {
 		return err
 	}
@@ -141,8 +151,13 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	return cw.Flush()
 }
 
-func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment) {
+func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment, experimentRunning bool) {
 	fmt.Fprintf(w, "Created:\t%s\n", exp.Created.In(timezone).Format(time.RFC1123))
+	if experimentRunning {
+		fmt.Fprint(w, "Status:\trunning\n")
+	} else {
+		fmt.Fprint(w, "Status:\tstopped\n")
+	}
 	fmt.Fprintf(w, "Host:\t%s\n", exp.Host)
 	fmt.Fprintf(w, "User:\t%s\n", exp.User)
 
