@@ -54,21 +54,29 @@ func show(cmd *cobra.Command, args []string) error {
 	au := getAurora()
 
 	if result.Commit != nil {
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
-		return showCommit(au, w, proj, result.Commit)
+		return showCommit(au, os.Stdout, proj, result.Commit)
 	}
 	return showExperiment(au, os.Stdout, proj, result.Experiment)
 }
 
-func showCommit(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Commit) error {
+func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *project.Commit) error {
 	exp, err := proj.ExperimentByID(com.ExperimentID)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(w, "%s\n\n", au.Yellow(fmt.Sprintf("Commit:\t%s", com.ID)))
-	fmt.Fprintf(w, "Experiment:\t%s\n", exp.ID)
+	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold((fmt.Sprintf("Commit: %s", com.ID)))))
+
+	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
+	fmt.Fprintf(w, "Created:\t%s\n", com.Created.In(timezone).Format(time.RFC1123))
+	fmt.Fprintf(w, "Step:\t%d\n", com.Step)
+
+	fmt.Fprintf(w, "\t\n")
+	fmt.Fprintf(w, "%s\t\n", au.Bold("Experiment"))
+
+	fmt.Fprintf(w, "ID:\t%s\n", exp.ID)
 
 	writeExperimentCommon(au, w, exp)
+
 	if err := writeCommitMetrics(au, w, proj, com); err != nil {
 		return err
 	}
@@ -146,9 +154,9 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 			fmt.Fprintf(w, "%s:\t%s\n", p.Name, p.Value.String())
 		}
 	} else {
-		fmt.Fprintf(w, "%s\n", au.Faint("(none)"))
+		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
 	}
-	fmt.Fprintln(w)
+	fmt.Fprintf(w, "\t\n")
 }
 
 func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Commit) error {
@@ -161,12 +169,13 @@ func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Pro
 		conf = new(config.Config)
 	}
 
-	fmt.Fprintf(w, "%s\n", au.Bold("Metrics"))
-
 	metricNameSet := map[string]bool{}
+
 	if len(conf.Metrics) > 0 {
+		fmt.Fprintf(w, "%s\t\n", au.Bold("Metrics"))
+
 		for _, metric := range conf.Metrics {
-			valueString := "(none)"
+			valueString := "(not set)"
 			value, ok := com.Labels[metric.Name]
 			if ok {
 				valueString = value.String()
@@ -178,8 +187,8 @@ func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Pro
 			fmt.Fprintf(w, "%s:\t%s (%sgoal: %s)\n", metric.Name, valueString, primaryString, metric.Goal)
 			metricNameSet[metric.Name] = true
 		}
-	} else {
-		fmt.Fprintf(w, "%s\n", au.Faint("(none)"))
+
+		fmt.Fprintf(w, "\t\n")
 	}
 	labelNames := []string{}
 	for name := range com.Labels {
@@ -188,7 +197,7 @@ func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Pro
 		}
 	}
 	if len(labelNames) > 0 {
-		fmt.Fprintf(w, "%s\n", au.Bold("Labels"))
+		fmt.Fprintf(w, "%s\t\n", au.Bold("Labels"))
 		for _, lab := range com.SortedLabels() {
 			if _, ok := metricNameSet[lab.Name]; !ok {
 				fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
