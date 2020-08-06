@@ -58,8 +58,12 @@ This will build an egg in `dist/`.
     - `cli/raw-assets/Dockerfile`
     - `cli/pkg/build/build_test.go`
 
-2.  Commit this change ("Release Python x.y.z")
-3.  Run this, which will build a tarball of the current version push it to `gs://replicate-python-dev/`:
+2.  Build the assets:
+
+        $ make assets
+
+3.  Commit this change ("Release Python x.y.z")
+4.  Run this, which will build a tarball of the current version push it to `gs://replicate-python-dev/`:
 
         $ make release
 
