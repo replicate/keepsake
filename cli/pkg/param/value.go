@@ -5,6 +5,8 @@ package param
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 )
 
@@ -106,6 +108,35 @@ func (v *Value) String() string {
 		panic("Failed to marshal value")
 	}
 	return string(data)
+}
+
+// ShortString returns a shorter version of the string, useful for displaying
+// in the user interface when there isn't much space
+//
+// Small floats will be truncated to precision decimal points.
+// Big floats will be truncated to maxLength
+// Strings will be truncated to maxLength.
+// Everything else is just default.
+//
+// TODO: some interesting stuff could be done with color here (e.g. "..." and "none" could be dimmed)
+// so maybe this should be lifted out into a generic shortener in the console package.
+func (v *Value) ShortString(maxLength int, precision int) string {
+	if v.Type() == TypeString {
+		s := v.StringVal()
+		if len(s) > maxLength && maxLength > 3 {
+			return s[:len(s)-4] + "..."
+		}
+	} else if v.Type() == TypeFloat {
+		f := v.FloatVal()
+
+		// For big numbers, don't truncate so eagerly
+		if f > math.Pow10(precision) && f < math.Pow10(maxLength) && maxLength > precision {
+			precision = maxLength
+		}
+
+		return strconv.FormatFloat(f, 'g', precision, 64)
+	}
+	return v.String()
 }
 
 func (v *Value) Type() Type {
