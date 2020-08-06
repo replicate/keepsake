@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"testing"
-	"text/tabwriter"
 	"time"
 
 	"github.com/logrusorgru/aurora"
@@ -125,30 +124,33 @@ func TestShowCommit(t *testing.T) {
 	require.NotNil(t, result.Commit)
 
 	out := new(bytes.Buffer)
-	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
-
 	au := aurora.NewAurora(false)
-	err = showCommit(au, w, proj, result.Commit)
+	err = showCommit(au, out, proj, result.Commit)
 	require.NoError(t, err)
 	actual := out.String()
 
 	expected := `
-Commit:  3ccccccccc
+Commit: 3ccccccccc
 
-Experiment:  1eeeeeeeee
-Created:     Mon, 02 Jan 2006 23:04:05 +08
-Host:        10.1.1.1
-User:        andreas
+Created:    Mon, 02 Jan 2006 23:04:05 +08
+Step:       20
+
+Experiment
+ID:         1eeeeeeeee
+Created:    Mon, 02 Jan 2006 23:04:05 +08
+Host:       10.1.1.1
+User:       andreas
 
 Params
-param-1:     100
-param-2:     hello
+param-1:    100
+param-2:    hello
 
 Metrics
-label-1:  0.02 (primary, goal: minimize)
-label-3:  (none) (goal: minimize)
+label-1:    0.02 (primary, goal: minimize)
+label-3:    (not set) (goal: minimize)
+
 Labels
-label-2:  2
+label-2:    2
 
 `
 	// remove initial newline
