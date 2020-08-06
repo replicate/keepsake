@@ -129,10 +129,10 @@ func TestOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
-3eeeeee     2 minutes ago       stopped  ben      200
-1eeeeee     about a second ago  running  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
-2eeeeee     about a minute ago  stopped  andreas  200      4cccccc (step 5)            0.5
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = trimRightLines(actual)
@@ -162,10 +162,10 @@ func TestOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   USER     PARAM-1  PARAM-2  PARAM-3  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
-3eeeeee     2 minutes ago       stopped  ben      200      hello    hi
-1eeeeee     about a second ago  running  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
-2eeeeee     about a minute ago  stopped  andreas  200      hello    hi       4cccccc (step 5)            0.5
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = trimRightLines(actual)

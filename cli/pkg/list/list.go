@@ -120,7 +120,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "USER"}
+	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
 	keys = append(keys, upper(expHeadings)...)
 	keys = append(keys, "LATEST COMMIT")
 	keys = append(keys, upper(commitHeadings)...)
@@ -150,6 +150,9 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		} else {
 			fmt.Fprint(tw, "stopped\t")
 		}
+
+		// host
+		fmt.Fprintf(tw, "%s\t", exp.Host)
 
 		// user
 		fmt.Fprintf(tw, "%s\t", exp.User)
