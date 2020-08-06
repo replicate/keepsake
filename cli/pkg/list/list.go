@@ -23,6 +23,9 @@ import (
 const FormatJSON = "json"
 const FormatTable = "table"
 
+const valueMaxLength = 10
+const valueTruncate = 5
+
 type Metric struct {
 	Primary bool
 	Name    string
@@ -176,7 +179,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			val := ""
 			if exp.LatestCommit != nil {
 				if v, ok := exp.LatestCommit.Labels[heading]; ok {
-					val = v.String()
+					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
 			fmt.Fprintf(tw, "%s\t", val)
@@ -197,7 +200,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			val := ""
 			if exp.BestCommit != nil {
 				if v, ok := exp.BestCommit.Labels[heading]; ok {
-					val = v.String()
+					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
 			fmt.Fprintf(tw, "%s\t", val)

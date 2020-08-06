@@ -58,3 +58,22 @@ func TestMarshalValue(t *testing.T) {
 		}
 	}
 }
+
+func TestShortString(t *testing.T) {
+	require.Equal(t, "hello", String("hello").ShortString(5, 5))
+	require.Equal(t, "he...", String("helloo").ShortString(5, 5))
+	require.Equal(t, "0.12", Float(0.12).ShortString(10, 5))
+	require.Equal(t, "12.34", Float(12.34).ShortString(10, 5))
+	require.Equal(t, "0.12346", Float(0.1234567).ShortString(10, 5))
+	// TODO: always keep a decimal point if it's float
+	// require.Equal(t, "12345.6", Float(12345.6789).ShortString(10, 5))
+	require.Equal(t, "0.0012346", Float(0.001234567).ShortString(10, 5))
+	require.Equal(t, "1.2346e-06", Float(0.000001234567).ShortString(10, 5))
+	require.Equal(t, "1.2346e-11", Float(0.00000000001234567).ShortString(10, 5))
+
+	// Big numbers
+	require.Equal(t, "123456.789", Float(123456.789).ShortString(10, 5))
+	require.Equal(t, "123456789.1", Float(123456789.123456789).ShortString(10, 5))
+	require.Equal(t, "1.2346e+13", Float(12345678912345.6789).ShortString(10, 5))
+
+}
