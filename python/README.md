@@ -52,11 +52,11 @@ This will build an egg in `dist/`.
 
 ## Release package
 
-This will build a tarball of the current version push it to `gs://replicate-python-dev/`
+1.  Update the version string in `setup.py` and `../cli/raw-assets/Dockerfile`.
+2.  Commit this change ("Release x.y.z")
+3.  Run this, which will build a tarball of the current version push it to `gs://replicate-python-dev/`:
 
-    $ make release
-
-If you've updated the version string in `setup.py` you need to update the version in `../cli/raw-assets/Dockerfile`.
+        $ make release
 
 ## Format source code
 
