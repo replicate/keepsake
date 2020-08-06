@@ -122,10 +122,10 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
 	keys = append(keys, upper(expHeadings)...)
-	keys = append(keys, "LATEST", "STEP")
+	keys = append(keys, "LATEST COMMIT")
 	keys = append(keys, upper(commitHeadings)...)
 	if hasPrimaryMetric {
-		keys = append(keys, "BEST", "STEP")
+		keys = append(keys, "BEST COMMIT")
 		keys = append(keys, upper(commitHeadings)...)
 	}
 
@@ -165,14 +165,11 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			fmt.Fprintf(tw, "\t")
 		}
 
-		latestCommitID := ""
-		latestCommitStep := ""
+		latestCommit := ""
 		if exp.LatestCommit != nil {
-			latestCommitID = exp.LatestCommit.ID[:7]
-			latestCommitStep = strconv.Itoa(exp.LatestCommit.Step)
+			latestCommit = fmt.Sprintf("%s (step %s)", exp.LatestCommit.ID[:7], strconv.Itoa(exp.LatestCommit.Step))
 		}
-		fmt.Fprintf(tw, "%s\t", latestCommitID)
-		fmt.Fprintf(tw, "%s\t", latestCommitStep)
+		fmt.Fprintf(tw, "%s\t", latestCommit)
 
 		// latest commit labels
 		for _, heading := range commitHeadings {
@@ -185,15 +182,12 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			fmt.Fprintf(tw, "%s\t", val)
 		}
 
-		bestCommitID := ""
-		bestStepID := ""
+		bestCommit := ""
 
 		if exp.BestCommit != nil {
-			bestCommitID = exp.BestCommit.ID[:7]
-			bestStepID = strconv.Itoa(exp.BestCommit.Step)
+			bestCommit = fmt.Sprintf("%s (step %s)", exp.BestCommit.ID[:7], strconv.Itoa(exp.BestCommit.Step))
 		}
-		fmt.Fprintf(tw, "%s\t", bestCommitID)
-		fmt.Fprintf(tw, "%s\t", bestStepID)
+		fmt.Fprintf(tw, "%s\t", bestCommit)
 
 		// best commit labels
 		for _, heading := range commitHeadings {
