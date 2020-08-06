@@ -10,8 +10,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/xeonx/timeago"
-
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/param"
@@ -142,7 +140,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		fmt.Fprintf(tw, "%s\t", exp.ID[:7])
 
 		// started
-		fmt.Fprintf(tw, "%s\t", formatTime(exp.Created))
+		fmt.Fprintf(tw, "%s\t", console.FormatTime(exp.Created))
 
 		// status
 		if exp.Running {
@@ -167,7 +165,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 		latestCommit := ""
 		if exp.LatestCommit != nil {
-			latestCommit = fmt.Sprintf("%s (step %s)", exp.LatestCommit.ID[:7], strconv.Itoa(exp.LatestCommit.Step))
+			latestCommit = fmt.Sprintf("%s (step %s)", exp.LatestCommit.ShortID(), strconv.Itoa(exp.LatestCommit.Step))
 		}
 		fmt.Fprintf(tw, "%s\t", latestCommit)
 
@@ -185,7 +183,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		bestCommit := ""
 
 		if exp.BestCommit != nil {
-			bestCommit = fmt.Sprintf("%s (step %s)", exp.BestCommit.ID[:7], strconv.Itoa(exp.BestCommit.Step))
+			bestCommit = fmt.Sprintf("%s (step %s)", exp.BestCommit.ShortID(), strconv.Itoa(exp.BestCommit.Step))
 		}
 		fmt.Fprintf(tw, "%s\t", bestCommit)
 
@@ -209,10 +207,6 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 	}
 
 	return nil
-}
-
-func formatTime(t time.Time) string {
-	return timeago.English.Format(t)
 }
 
 // get experiment params. if onlyChangedParams is true, only return

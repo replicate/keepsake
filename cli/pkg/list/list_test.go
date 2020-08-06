@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 	"testing"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
+	"replicate.ai/cli/pkg/testutil"
 )
 
 func createTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
@@ -135,7 +135,7 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMM
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
-	actual = trimRightLines(actual)
+	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
 }
 
@@ -168,16 +168,8 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PA
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
-	actual = trimRightLines(actual)
+	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
-}
-
-func trimRightLines(s string) string {
-	lines := []string{}
-	for _, line := range strings.Split(s, "\n") {
-		lines = append(lines, strings.TrimRight(line, " "))
-	}
-	return strings.Join(lines, "\n")
 }
 
 func TestListJSON(t *testing.T) {

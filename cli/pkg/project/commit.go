@@ -57,6 +57,10 @@ func (c *Commit) SortedLabels() []*NamedParam {
 	return ret
 }
 
+func (c *Commit) ShortID() string {
+	return c.ID[:7]
+}
+
 func listCommits(store storage.Storage) ([]*Commit, error) {
 	paths, err := store.List("metadata/commits/")
 	if err != nil {
