@@ -138,6 +138,7 @@ Step:       20
 Experiment
 ID:         1eeeeeeeee
 Created:    Mon, 02 Jan 2006 23:04:05 +08
+Status:     running
 Host:       10.1.1.1
 User:       andreas
 
@@ -188,6 +189,7 @@ func TestShowExperiment(t *testing.T) {
 Experiment: 1eeeeeeeee
 
 Created:  Mon, 02 Jan 2006 23:04:05 +08
+Status:   running
 Host:     10.1.1.1
 User:     andreas
 
