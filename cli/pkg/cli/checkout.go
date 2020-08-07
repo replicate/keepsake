@@ -76,6 +76,12 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	proj := project.NewProject(store)
+	com, err := proj.CommitFromPrefix(prefix)
+	if err != nil {
+		return err
+	}
+
 	isEmpty, err := files.DirIsEmpty(outputDir)
 	if err != nil {
 		return err
@@ -97,12 +103,6 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 			console.Info("Aborting.")
 			return nil
 		}
-	}
-
-	proj := project.NewProject(store)
-	com, err := proj.CommitFromPrefix(prefix)
-	if err != nil {
-		return err
 	}
 
 	// TODO(andreas): empty directory before getting new contents
