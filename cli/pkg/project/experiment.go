@@ -63,6 +63,10 @@ func (e *Experiment) HasMetrics() bool {
 	return e.Config != nil && e.Config.Metrics != nil && len(e.Config.Metrics) > 0
 }
 
+func (e *Experiment) ShortID() string {
+	return e.ID[:7]
+}
+
 func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	paths, err := store.List("metadata/experiments/")
 	if err != nil {
