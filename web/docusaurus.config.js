@@ -5,6 +5,7 @@ module.exports = {
   favicon: "img/favicon.ico",
   organizationName: "facebook", // Usually your GitHub org/user name.
   projectName: "docusaurus", // Usually your repo name.
+  plugins: ["docusaurus-plugin-sass"],
   themeConfig: {
     disableDarkMode: true,
     sidebarCollapsible: false, // Perhaps enable this when we have more content
@@ -47,6 +48,9 @@ module.exports = {
       ],
       copyright: ``,
     },
+    prism: {
+      additionalLanguages: ["shell-session"],
+    },
   },
   presets: [
     [
@@ -57,7 +61,7 @@ module.exports = {
           editUrl: "https://github.com/replicate/replicate/edit/master/web/",
         },
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: require.resolve("./src/css/custom.scss"),
         },
       },
     ],
