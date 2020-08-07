@@ -44,58 +44,71 @@ We're going to make a model that classifies Iris plants, trained on the [Iris da
 First, let's make a directory to work in:
 
 ```
-mkdir replicate-getting-started
-cd replicate-getting-started
+mkdir iris-classifier
+cd iris-classifier
 ```
 
 Then, copy and paste this code into `train.py`:
 
-```python title="train.py" {29,33-39}
+```python title="train.py" {12,52}
 import argparse
-from fastai import tabular
-import pandas
 import replicate
+from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
+import torch
+from torch import nn
+from torch.autograd import Variable
 
 
-def train(learning_rate):
-    df = pandas.read_csv(
-        "bezdekIris.data",
-        names=["sepal_length", "sepal_width", "petal_length", "petal_width", "class"],
+def train(learning_rate, num_epochs):
+    experiment = replicate.init(learning_rate=learning_rate, num_epochs=num_epochs)
+
+    iris = load_iris()
+    train_features, val_features, train_labels, val_labels = train_test_split(
+        iris.data,
+        iris.target,
+        train_size=0.8,
+        test_size=0.2,
+        random_state=0,
+        stratify=iris.target,
     )
-    dep_var = "class"
-    cont_names = ["sepal_length", "sepal_width", "petal_length", "petal_width"]
-    procs = [tabular.FillMissing, tabular.Categorify, tabular.Normalize]
+    train_features = torch.FloatTensor(train_features)
+    val_features = torch.FloatTensor(val_features)
+    train_labels = torch.LongTensor(train_labels)
+    val_labels = torch.LongTensor(val_labels)
 
-    train_df, test_df = train_test_split(df, test_size=0.2, random_state=1)
-    test = tabular.TabularList.from_df(test_df, cont_names=cont_names)
-    data = (
-        tabular.TabularList.from_df(train_df, cont_names=cont_names, procs=procs)
-        .split_by_rand_pct(valid_pct=0.2, seed=1)
-        .label_from_df(cols=dep_var)
-        .add_test(test)
-        .databunch()
-    )
+    torch.manual_seed(0)
+    model = nn.Sequential(nn.Linear(4, 15), nn.ReLU(), nn.Linear(15, 3),)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    criterion = nn.CrossEntropyLoss()
 
-    learn = tabular.tabular_learner(data, layers=[200, 100], metrics=tabular.accuracy)
+    for epoch in range(num_epochs):
+        model.train()
+        optimizer.zero_grad()
+        outputs = model(train_features)
+        loss = criterion(outputs, train_labels)
+        loss.backward()
+        optimizer.step()
 
-    experiment = replicate.init(learning_rate=learning_rate)
+        with torch.no_grad():
+            model.eval()
+            output = model(val_features)
+            accuracy = (output.argmax(1) == val_labels).float().sum() / len(val_labels)
 
-    class ReplicateCallback(tabular.Callback):
-        def on_epoch_end(self, epoch, last_loss, last_metrics, **kwargs):
-            experiment.commit(
-                step=epoch,
-                train_loss=float(last_loss.item()),
-                val_loss=last_metrics[0].astype(float),
-                accuracy=float(last_metrics[1].item()),
+        print(
+            "Epoch {}, train loss: {:.3f}, validation accuracy: {:.3f}".format(
+                epoch, loss.item(), accuracy
             )
-
-    learn.fit(50, lr=learning_rate, callbacks=[ReplicateCallback()])
+        )
+        torch.save(model, "model.pth")
+        experiment.commit(step=epoch, loss=loss.item(), accuracy=accuracy)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--learning_rate", type=float, default=0.01)
+    parser.add_argument("--num_epochs", type=int, default=100)
     train(**vars(parser.parse_args()))
 ```
 
@@ -105,23 +118,16 @@ The first is `replicate.init()`. This creates an **experiment**, which represent
 
 The second is `experiment.commit()`. This creates a **commit**, which saves the exact state of the filesystem at that point (code, weights, Tensorboard logs, etc), along with some metrics you pass to the function. An experiment will typically contain multiple commits, and they're typically done on every epoch when you might save your model file.
 
-## Download training data and dependencies
+## Install dependencies
 
-Before we start training, we need to download training data and install the Python dependencies.
-
-Download the training data:
-
-```
-wget https://archive.ics.uci.edu/ml/machine-learning-databases/iris/bezdekIris.data
-```
+Before we start training, we need to install the Python dependencies.
 
 Create `requirements.txt` to define our requirements:
 
 ```txt title="requirements.txt"
-pandas==1.0.5
-fastai==1.0.61
+https://storage.googleapis.com/replicate-python-dev/replicate-0.0.9.tar.gz
 scikit-learn==0.23.1
-https://storage.googleapis.com/bfirsh-dev/replicate-python-2/replicate-0.0.1.tar.gz
+torch==1.5.1
 ```
 
 Then, install the Python requirements inside a Virtualenv:
@@ -132,7 +138,7 @@ virtualenv venv
 pip install -r requirements.txt
 ```
 
-## Start training
+## Train the model
 
 We're now going to train this model a couple of times with different parameters to see what we can do with Replicate.
 
@@ -140,29 +146,90 @@ First, train it with default parameters:
 
 ```
 $ python train.py
-epoch     train_loss  valid_loss  accuracy  time
-0         1.102223    0.367693    0.916667  00:00
-1         0.688286    0.281458    0.916667  00:00
-2         0.508243    0.329499    0.916667  00:00
-3         0.420214    0.410820    0.875000  00:00
-4         0.355645    0.424739    0.875000  00:00
-5         0.312976    0.417650    0.875000  00:00
+Epoch 0, train loss: 1.184, validation accuracy: 0.333
+Epoch 1, train loss: 1.117, validation accuracy: 0.333
+Epoch 2, train loss: 1.061, validation accuracy: 0.467
 ...
+Epoch 97, train loss: 0.121, validation accuracy: 1.000
+Epoch 98, train loss: 0.119, validation accuracy: 1.000
+Epoch 99, train loss: 0.118, validation accuracy: 1.000
 ```
 
 Next, run the training with a different learning rate:
 
 ```
-$ python train.py --learning_rate=0.05
-epoch     train_loss  valid_loss  accuracy  time
-0         1.188458    0.173192    0.916667  00:00
-1         0.795049    0.584164    0.750000  00:00
-4         0.388231    0.926992    0.875000  00:00
-5         0.324020    0.919221    0.875000  00:00
+$ python train.py --learning_rate=0.2
+Epoch 0, train loss: 1.184, validation accuracy: 0.333
+Epoch 1, train loss: 1.161, validation accuracy: 0.633
+Epoch 2, train loss: 1.124, validation accuracy: 0.667
 ...
+Epoch 97, train loss: 0.057, validation accuracy: 0.967
+Epoch 98, train loss: 0.057, validation accuracy: 0.967
+Epoch 99, train loss: 0.056, validation accuracy: 0.967
 ```
 
 ## List and view experiments
+
+By default, the calls to the `replicate` Python library have saved your experiments to your local disk. You can use `replicate list` to list them:
+
+    $ replicate list
+    EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
+    c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
+    a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
+
+As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
+
+To list the commits within these experiments, you can use `replicate show`:
+
+    $ replicate show c9f
+    Experiment: c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
+
+    Created:  Thu, 06 Aug 2020 11:55:54 PDT
+    Status:   stopped
+    Host:     107.133.144.125
+    User:     ben
+
+    Params
+    learning_rate:  0.01
+    num_epochs:     100
+
+    Commits
+    ID       STEP  CREATED      ACCURACY  LOSS
+    862e932  0     6 hours ago  0.33333   1.1836
+    dfdb97b  1     6 hours ago  0.33333   1.1173
+    e3650fe  2     6 hours ago  0.46667   1.0611
+    c811301  3     6 hours ago  0.63333   1.0138
+    ...
+    71502b0  97    6 hours ago  1         0.12076
+    7cf044a  98    6 hours ago  1         0.11915
+    d4fb0d3  99    6 hours ago  1         0.1176
+
+Notice how you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
+
+You can also use `replicate show` on commits to get all the information about it:
+
+    $ replicate show d4f
+    Commit: d4fb0d38114453337fb936a0c65cad63872f89e73c4e9161b666d59260848824
+
+    Created:  Thu, 06 Aug 2020 11:55:55 PDT
+    Step:     99
+
+    Experiment
+    ID:       c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
+    Created:  Thu, 06 Aug 2020 11:55:54 PDT
+    Status:   stopped
+    Host:     107.133.144.125
+    User:     ben
+
+    Params
+    learning_rate:  0.01
+    num_epochs:     100
+
+    Labels
+    accuracy:  1
+    loss:      0.11759971082210541
+
+Similar to how Git works, all this data is in the current directory, so you'll only see the model you're working on. (If you want to poke around, it's inside `.replicate/` in your working directory.)
 
 ## Compare experiments
 
