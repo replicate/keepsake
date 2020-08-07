@@ -202,6 +202,9 @@ ID       STEP  CREATED     LABEL-1      LABEL-2
 1cccccc  10    2006-01-02  0.1          2
 3cccccc  20    2006-01-02  0.02         2
 2cccccc  20    2006-01-02  0.01 (best)  2
+
+To see more details about a commit, run:
+  replicate show COMMIT_ID
 `
 	// remove initial newline
 	expected = expected[1:]

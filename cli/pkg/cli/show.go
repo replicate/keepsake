@@ -148,7 +148,14 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 		}
 		fmt.Fprintf(cw, "%s\n", strings.Join(columns, "\t"))
 	}
-	return cw.Flush()
+	if err := cw.Flush(); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(out, "\n")
+	fmt.Fprintf(out, "To see more details about a commit, run:\n")
+	fmt.Fprintf(out, "  replicate show COMMIT_ID\n")
+	return nil
 }
 
 func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment, experimentRunning bool) {
