@@ -24,15 +24,19 @@ values={[
 
 Run the following commands in a terminal:
 
-    curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/darwin/amd64/replicate
-    chmod +x /usr/local/bin/replicate
+```shell-session
+curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/darwin/amd64/replicate
+chmod +x /usr/local/bin/replicate
+```
 
 </TabItem>
 <TabItem value="linux">
 Run the following commands in a terminal:
 
-    sudo curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/linux/amd64/replicate
-    sudo chmod +x /usr/local/bin/replicate
+```shell-session
+sudo curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/linux/amd64/replicate
+sudo chmod +x /usr/local/bin/replicate
+```
 
 </TabItem>
 </Tabs>
@@ -43,7 +47,7 @@ We're going to make a model that classifies Iris plants, trained on the [Iris da
 
 First, let's make a directory to work in:
 
-```
+```shell-session
 mkdir iris-classifier
 cd iris-classifier
 ```
@@ -132,7 +136,7 @@ torch==1.5.1
 
 Then, install the Python requirements inside a Virtualenv:
 
-```
+```shell-session
 virtualenv venv
 . venv/bin/activate
 pip install -r requirements.txt
@@ -144,7 +148,7 @@ We're now going to train this model a couple of times with different parameters 
 
 First, train it with default parameters:
 
-```
+```shell-session
 $ python train.py
 Epoch 0, train loss: 1.184, validation accuracy: 0.333
 Epoch 1, train loss: 1.117, validation accuracy: 0.333
@@ -157,7 +161,7 @@ Epoch 99, train loss: 0.118, validation accuracy: 1.000
 
 Next, run the training with a different learning rate:
 
-```
+```shell-session
 $ python train.py --learning_rate=0.2
 Epoch 0, train loss: 1.184, validation accuracy: 0.333
 Epoch 1, train loss: 1.161, validation accuracy: 0.633
@@ -172,64 +176,76 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 By default, the calls to the `replicate` Python library have saved your experiments to your local disk. You can use `replicate list` to list them:
 
-    $ replicate list
-    EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
-    c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
-    a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
+```shell-session
+$ replicate list
+EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
+c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
+a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
+```
 
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
 
 To list the commits within these experiments, you can use `replicate show`:
 
-    $ replicate show c9f
-    Experiment: c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
+```shell-session
+$ replicate show c9f
+Experiment: c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
 
-    Created:  Thu, 06 Aug 2020 11:55:54 PDT
-    Status:   stopped
-    Host:     107.133.144.125
-    User:     ben
+Created:  Thu, 06 Aug 2020 11:55:54 PDT
+Status:   stopped
+Host:     107.133.144.125
+User:     ben
 
-    Params
-    learning_rate:  0.01
-    num_epochs:     100
+Params
+learning_rate:  0.01
+num_epochs:     100
 
-    Commits
-    ID       STEP  CREATED      ACCURACY  LOSS
-    862e932  0     6 hours ago  0.33333   1.1836
-    dfdb97b  1     6 hours ago  0.33333   1.1173
-    e3650fe  2     6 hours ago  0.46667   1.0611
-    c811301  3     6 hours ago  0.63333   1.0138
-    ...
-    71502b0  97    6 hours ago  1         0.12076
-    7cf044a  98    6 hours ago  1         0.11915
-    d4fb0d3  99    6 hours ago  1         0.1176
+Commits
+ID       STEP  CREATED      ACCURACY  LOSS
+862e932  0     6 hours ago  0.33333   1.1836
+dfdb97b  1     6 hours ago  0.33333   1.1173
+e3650fe  2     6 hours ago  0.46667   1.0611
+c811301  3     6 hours ago  0.63333   1.0138
+...
+71502b0  97    6 hours ago  1         0.12076
+7cf044a  98    6 hours ago  1         0.11915
+d4fb0d3  99    6 hours ago  1         0.1176
+```
 
-Notice how you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
+:::note
+Notice you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
+:::
 
 You can also use `replicate show` on commits to get all the information about it:
 
-    $ replicate show d4f
-    Commit: d4fb0d38114453337fb936a0c65cad63872f89e73c4e9161b666d59260848824
+```shell-session
+$ replicate show d4f
+Commit: d4fb0d38114453337fb936a0c65cad63872f89e73c4e9161b666d59260848824
 
-    Created:  Thu, 06 Aug 2020 11:55:55 PDT
-    Step:     99
+Created:  Thu, 06 Aug 2020 11:55:55 PDT
+Step:     99
 
-    Experiment
-    ID:       c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
-    Created:  Thu, 06 Aug 2020 11:55:54 PDT
-    Status:   stopped
-    Host:     107.133.144.125
-    User:     ben
+Experiment
+ID:       c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
+Created:  Thu, 06 Aug 2020 11:55:54 PDT
+Status:   stopped
+Host:     107.133.144.125
+User:     ben
 
-    Params
-    learning_rate:  0.01
-    num_epochs:     100
+Params
+learning_rate:  0.01
+num_epochs:     100
 
-    Labels
-    accuracy:  1
-    loss:      0.11759971082210541
+Labels
+accuracy:  1
+loss:      0.11759971082210541
+```
 
-Similar to how Git works, all this data is in the current directory, so you'll only see the model you're working on. (If you want to poke around, it's inside `.replicate/` in your working directory.)
+:::note
+Similar to how Git works, all this data is in the current directory, so you'll only see experiments from the model you're working on.
+
+If you want to poke around, the data is inside `.replicate/` in your working directory.
+:::
 
 ## Compare experiments
 

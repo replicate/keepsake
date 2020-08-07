@@ -190,7 +190,7 @@ def train(**params):
                 were run on other machines.
               </p>
 
-              <CodeBlock>
+              <CodeBlock className="shell-session">
                 {`$ replicate ls
 EXPERIMENT   HOST         STATUS     BEST COMMIT
 e510303      10.52.2.23   finished   49668cb (val_loss=0.1484)
@@ -204,7 +204,7 @@ e510303      10.52.2.23   finished   49668cb (val_loss=0.1484)
                 dependencies, just in case that latest Tensorflow version did
                 something weird.
               </p>
-              <CodeBlock>
+              <CodeBlock className="shell-session">
                 {`$ replicate diff 49668cb 41f0c60
 Checkpoint:       49668cb     41f0c60
 Experiment:       e510303     9e97e07
@@ -229,7 +229,7 @@ val_accuracy:     0.9607      0.9411`}
                 <code>experiment.commit()</code>, so you can commit to Git once
                 you've found something that works.
               </p>
-              <CodeBlock>
+              <CodeBlock className="shell-session">
                 {`$ replicate checkout f81069d
 Copying code and weights to working directory...
 
@@ -245,7 +245,7 @@ $ git commit -am "Use hinge loss"`}
                 experiment inside Docker. All the results are stored on S3 so
                 you can access them from your laptop.
               </p>
-              <CodeBlock>
+              <CodeBlock className="shell-session">
                 {`$ replicate run -H 10.52.63.24 python train.py
 ---| Checking 10.52.63.24 is set up correctly...
 ✔️ NVIDIA drivers 361.93 installed.
