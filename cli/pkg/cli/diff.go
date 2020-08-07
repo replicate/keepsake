@@ -10,6 +10,7 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
+	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
@@ -181,9 +182,25 @@ func loadCommit(proj *project.Project, prefix string) (*project.Commit, error) {
 	}
 	exp := obj.Experiment
 	if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
-		return proj.ExperimentBestCommit(exp.ID)
+		console.Info("%q matches an experiment, picking the best commit", prefix)
+		commit, err := proj.ExperimentBestCommit(exp.ID)
+		if err != nil {
+			return nil, err
+		}
+		if commit == nil {
+			return nil, fmt.Errorf("Could not pick best commit for experiment %q: it does not have any commits or the commits are missing the primary metric.", exp.ShortID())
+		}
+		return commit, nil
 	}
-	return proj.ExperimentLatestCommit(exp.ID)
+	console.Info("%q is an experiment, picking the latest commit", prefix)
+	commit, err := proj.ExperimentLatestCommit(exp.ID)
+	if err != nil {
+		return nil, err
+	}
+	if commit == nil {
+		return nil, fmt.Errorf("Could not pick best commit for experiment %q: it does not have any commits.", exp.ShortID())
+	}
+	return commit, nil
 }
 
 // mapString takes two maps of strings and returns a single map with two values
