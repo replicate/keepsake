@@ -30,18 +30,29 @@ func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, sourc
 	}
 
 	if storageURL == "" {
-		conf, dir, err := config.FindConfigInWorkingDir(global.SourceDirectory)
+		conf, sourceDir, err := config.FindConfigInWorkingDir(global.SourceDirectory)
 		if err != nil {
 			return "", "", err
 		}
-		return conf.Storage, dir, nil
+		return conf.Storage, sourceDir, nil
 	}
 
 	// if global.SourceDirectory == "", abs of that is cwd
+	// FIXME (bfirsh): this does not look up directories for replicate.yaml, so might be the wrong
+	// sourceDir. It should probably use return value of FindConfigInWorkingDir.
 	sourceDir, err = filepath.Abs(global.SourceDirectory)
 	if err != nil {
 		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s', got error: %w", global.SourceDirectory, err)
 	}
 
 	return storageURL, sourceDir, nil
+}
+
+// getSourceDir returns the project's source directory
+func getSourceDir() (string, error) {
+	_, sourceDir, err := config.FindConfigInWorkingDir(global.SourceDirectory)
+	if err != nil {
+		return "", err
+	}
+	return sourceDir, nil
 }
