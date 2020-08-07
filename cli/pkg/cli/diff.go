@@ -144,8 +144,8 @@ func printMapDiff(w *tabwriter.Writer, au aurora.Aurora, map1, map2 map[string]s
 
 	if len(keyVals) > 0 {
 		for _, kv := range keyVals {
-			left := au.Faint("(not set)").String()
-			right := au.Faint("(not set)").String()
+			left := "(not set)"
+			right := "(not set)"
 			if kv.value[0] != nil {
 				left = *(kv.value[0])
 			}
