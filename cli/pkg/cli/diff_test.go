@@ -11,6 +11,7 @@ import (
 
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/project"
+	"replicate.ai/cli/pkg/testutil"
 )
 
 func TestDiffSameExperiment(t *testing.T) {
@@ -39,8 +40,8 @@ func TestDiffSameExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Checkpoint:               2ccccccccc                3ccccccccc
-Experiment:               1eeeeeeeee                1eeeeeeeee
+Checkpoint:               2cccccc                   3cccccc
+Experiment:               1eeeeee                   1eeeeee
 
 Params
 (no difference)
@@ -52,6 +53,7 @@ Labels
 (no difference)
 
 `
+	actual = testutil.TrimRightLines(actual)
 	expected = expected[1:]
 	require.Equal(t, expected, actual)
 }
@@ -82,8 +84,8 @@ func TestDiffDifferentExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Checkpoint:               2ccccccccc                4ccccccccc
-Experiment:               1eeeeeeeee                2eeeeeeeee
+Checkpoint:               2cccccc                   4cccccc
+Experiment:               1eeeeee                   2eeeeee
 
 Params
 param-1:                  100                       200
@@ -97,6 +99,7 @@ Labels
 label-2:                  2                         (not set)
 
 `
+	actual = testutil.TrimRightLines(actual)
 	expected = expected[1:]
 	require.Equal(t, expected, actual)
 }

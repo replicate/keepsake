@@ -51,6 +51,15 @@ func diffCommits(cmd *cobra.Command, args []string) error {
 	return printDiff(os.Stdout, au, proj, prefix1, prefix2)
 }
 
+// TODO: implement this as a thing in console
+func br(w *tabwriter.Writer) {
+	fmt.Fprintf(w, "\t\t\n")
+}
+
+func heading(w *tabwriter.Writer, au aurora.Aurora, text string) {
+	fmt.Fprintf(w, "%s\t\t\n", au.Bold(text))
+}
+
 func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 string, prefix2 string) error {
 	com1, err := loadCommit(proj, prefix1)
 	if err != nil {
@@ -72,20 +81,18 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	// min width for 3 columns in 78 char terminal
 	w := tabwriter.NewWriter(out, 78/3, 8, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Checkpoint:\t%s\t%s\n", com1.ID, com2.ID)
-	fmt.Fprintf(w, "Experiment:\t%s\t%s\n", com1.ExperimentID, com2.ExperimentID)
-	w.Flush()
+	fmt.Fprintf(w, "Checkpoint:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
+	fmt.Fprintf(w, "Experiment:\t%s\t%s\n", com1.ShortExperimentID(), com2.ShortExperimentID())
 
-	fmt.Fprintf(w, "\n")
-
-	fmt.Fprintf(w, "%s\n", au.Bold("Params"))
+	br(w)
+	heading(w, au, "Params")
 	printMapDiff(w, au, paramMapToStringMap(exp1.Params), paramMapToStringMap(exp2.Params))
-	fmt.Fprintln(w)
+	br(w)
 
 	metrics1 := map[string]*param.Value{}
 	metrics2 := map[string]*param.Value{}
 	if exp1.HasMetrics() || exp2.HasMetrics() {
-		fmt.Fprintf(w, "%s\n", au.Bold("Metrics"))
+		heading(w, au, "Metrics")
 		for _, metric := range exp1.Config.Metrics {
 			if value, ok := com1.Labels[metric.Name]; ok {
 				metrics1[metric.Name] = value
@@ -97,10 +104,10 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 			}
 		}
 		printMapDiff(w, au, paramMapToStringMap(metrics1), paramMapToStringMap(metrics2))
-		fmt.Fprintln(w)
+		br(w)
 	}
 
-	fmt.Fprintf(w, "%s\n", au.Bold("Labels"))
+	heading(w, au, "Labels")
 	labels1 := map[string]*param.Value{}
 	labels2 := map[string]*param.Value{}
 	for name, label := range com1.Labels {
@@ -114,7 +121,8 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 		}
 	}
 	printMapDiff(w, au, paramMapToStringMap(labels1), paramMapToStringMap(labels2))
-	fmt.Fprintln(w)
+	br(w)
+
 	return w.Flush()
 }
 
@@ -147,7 +155,7 @@ func printMapDiff(w *tabwriter.Writer, au aurora.Aurora, map1, map2 map[string]s
 			fmt.Fprintf(w, "%s:\t%s\t%s\n", kv.key, left, right)
 		}
 	} else {
-		fmt.Fprintf(w, "%s\n", au.Faint("(no difference)"))
+		fmt.Fprintf(w, "%s\t\t\n", au.Faint("(no difference)"))
 	}
 }
 
