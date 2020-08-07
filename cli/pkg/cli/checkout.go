@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/console"
@@ -23,7 +24,7 @@ func newCheckoutCommand() *cobra.Command {
 	}
 
 	addStorageURLFlag(cmd)
-	cmd.Flags().StringP("output-directory", "o", "", "Output directory (defaults to current working directory)")
+	cmd.Flags().StringP("output-directory", "o", "", "Output directory (defaults to working directory or directory with replicate.yaml in it)")
 	cmd.Flags().BoolP("force", "f", false, "Force checkout without prompt, even if the directory is not empty")
 
 	return cmd
@@ -36,6 +37,13 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	if outputDir == "" {
+		outputDir, err = getSourceDir()
+		if err != nil {
+			return err
+		}
+	}
+
 	force, err := cmd.Flags().GetBool("force")
 	if err != nil {
 		return err
@@ -60,11 +68,11 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		if !isDir {
-			return fmt.Errorf("Checkout path %s is not a directory", outputDir)
+			return fmt.Errorf("Checkout path %q is not a directory", outputDir)
 		}
 	} else {
 		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %s, got error: %w", outputDir, err)
+			return fmt.Errorf("Failed to create directory %q, got error: %w", outputDir, err)
 		}
 	}
 
@@ -73,10 +81,13 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if !isEmpty && !force {
+		console.Warn("The directory %q is not empty.", outputDir)
+		console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
+		fmt.Println()
 		// TODO(andreas): tell the user which files may get
 		// overwritten, etc.
 		doOverwrite, err := interact.InteractiveBool{
-			Prompt:  fmt.Sprintf("The directory %s is not empty.\nThis checkout may overwrite existing files.\nDo you want to continue?", outputDir),
+			Prompt:  "Do you want to continue?",
 			Default: false,
 		}.Read()
 		if err != nil {
@@ -98,6 +109,7 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	if err := store.GetDirectory(path.Join("commits", com.ID), outputDir); err != nil {
 		return err
 	}
-	console.Info("Checked out %s to %s", com.ID, outputDir)
+	fmt.Println()
+	console.Info("Checked out %s to %q", com.ShortID(), outputDir)
 	return nil
 }
