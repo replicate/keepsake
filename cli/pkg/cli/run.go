@@ -20,6 +20,7 @@ import (
 type runOpts struct {
 	host       string
 	privateKey string
+	mounts     []string
 }
 
 func newRunCommand() *cobra.Command {
@@ -38,6 +39,9 @@ func newRunCommand() *cobra.Command {
 	flags.SetInterspersed(false)
 	flags.StringVarP(&opts.host, "host", "H", "", "SSH host to run command on, in form [username@]hostname[:port]")
 	flags.StringVarP(&opts.privateKey, "identity-file", "i", "", "SSH private key path")
+
+	// TODO(andreas): mounts really ought to be defined in replicate.yaml since models probably wont work without them existing
+	flags.StringArrayVarP(&opts.mounts, "mount", "m", []string{}, "Mount directories from the host to Replicate's Docker container. Format: --mount <host-directory>:<container-directory>")
 
 	return cmd
 }
@@ -118,7 +122,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 
 	// Prepend `python` for convenience
 	if strings.HasSuffix(args[0], ".py") {
-		args = append([]string{"python"}, args...)
+		args = append([]string{"python", "-u"}, args...)
 	}
 
 	// forward the local username (using environment variable)
@@ -140,8 +144,28 @@ func runCommand(opts runOpts, args []string) (err error) {
 		host = remoteOptions.Host
 	}
 
+	mounts, err := parseMounts(opts.mounts)
+	if err != nil {
+		return err
+	}
+
 	console.Info("Running '%v'...", strings.Join(args, " "))
-	return docker.Run(dockerClient, containerName, args, hasGPU, username, host, conf.Storage)
+	return docker.Run(dockerClient, containerName, args, mounts, hasGPU, username, host, conf.Storage)
+}
+
+func parseMounts(mountStrings []string) ([]docker.Mount, error) {
+	mounts := []docker.Mount{}
+	for _, s := range mountStrings {
+		parts := strings.Split(s, ":")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("Mount is not in the format \"<host-directory>:<container-directory>\": %s", s)
+		}
+		mounts = append(mounts, docker.Mount{
+			HostDir:      parts[0],
+			ContainerDir: parts[1],
+		})
+	}
+	return mounts, nil
 }
 
 func getUser() (string, error) {

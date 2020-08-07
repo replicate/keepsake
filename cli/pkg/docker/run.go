@@ -19,9 +19,15 @@ import (
 
 type closeFunc func() error
 
+type Mount struct {
+	HostDir      string
+	ContainerDir string
+}
+
 // Run runs a Docker container from imageName with cmd
 // TODO: this could do with a configuration struct
-func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU bool, user string, host string, storageURL string) error {
+// TODO(andreas): this function is getting really unwieldy and has lots of responsibilities, let's refactor
+func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []Mount, hasGPU bool, user string, host string, storageURL string) error {
 	// use same name for both container and image
 	containerName := imageName
 
@@ -40,11 +46,24 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, hasGPU boo
 	}
 	// Options for starting container (port bindings, volume bindings, etc)
 	hostConfig := &container.HostConfig{
-		AutoRemove: false, // TODO: probably true
+		AutoRemove: true,
 		Mounts:     []mount.Mount{},
 	}
 	if hasGPU {
 		hostConfig.Runtime = "nvidia"
+	}
+
+	for _, mnt := range mounts {
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Source: mnt.HostDir,
+			Target: mnt.ContainerDir,
+
+			// TODO(andreas): are there cases where you might want to write to a directory on the host?
+			ReadOnly: true,
+
+			// TODO(andreas): is this the best mount type?
+			Type: mount.TypeBind,
+		})
 	}
 
 	// if storage is disk storage, it doesn't make sense to write
