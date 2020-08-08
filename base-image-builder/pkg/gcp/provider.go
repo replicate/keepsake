@@ -1,24 +1,17 @@
 package gcp
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
-	"cloud.google.com/go/logging/logadmin"
-	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/cloudbuild/v1"
 )
 
 type Provider struct {
-	build        *cloudbuild.Service
-	storage      *storage.Client
-	logadmin     *logadmin.Client
-	monitoring   *monitoring.MetricClient
-	projectID    string
-	zone         string
-	network      string
-	subnet       string
+	build     *cloudbuild.Service
+	storage   *storage.Client
+	projectID string
 }
 
 // TODO: automatically run gcloud services enable container.googleapis.com

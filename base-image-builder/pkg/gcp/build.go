@@ -20,7 +20,6 @@ import (
 )
 
 const topLevelSourceDir = "source"
-const registry = "gcr.io"
 
 var tagRe = regexp.MustCompile("^([^:]+):([^-]+)(-.+)?$")
 
@@ -181,6 +180,9 @@ func compressSource(sourceDir string) (archivePath string, tempDir string, err e
 		return "", tempDir, err
 	}
 	err = archiver.Archive([]string{sourceDir}, archivePath)
+	if err != nil {
+		return "", tempDir, err
+	}
 
 	return archivePath, tempDir, nil
 }
