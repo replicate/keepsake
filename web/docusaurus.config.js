@@ -7,15 +7,19 @@ module.exports = {
   projectName: "docusaurus", // Usually your repo name.
   plugins: ["docusaurus-plugin-sass"],
   themeConfig: {
-    disableDarkMode: true,
+    colorMode: {
+      defaultMode: "light",
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
+    },
     sidebarCollapsible: false, // Perhaps enable this when we have more content
     navbar: {
       title: "Replicate",
       logo: {
-        alt: "",
+        alt: " ",
         src: "img/logo.svg",
       },
-      links: [
+      items: [
         {
           to: "docs/tutorial",
           activeBasePath: "docs",
@@ -33,7 +37,7 @@ module.exports = {
       style: "dark",
       links: [
         {
-          title: "",
+          title: " ",
           items: [
             {
               label: "GitHub",
@@ -46,7 +50,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: ``,
+      copyright: ` `,
     },
     prism: {
       additionalLanguages: ["shell-session"],

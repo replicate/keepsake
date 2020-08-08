@@ -27,14 +27,14 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
-/* HACK: can't figure out how to override this */
-.codeBlockTitle_node_modules-\@docusaurus-theme-classic-src-theme-CodeBlock-,
-.codeBlockContent_node_modules-\@docusaurus-theme-classic-src-theme-CodeBlock- {
+/* HACK: this should be overriden in javascript somewhere, I think.. */
+.codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-,
+.codeBlockContent_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
   font-size: 80%;
 }
 
 /* shell-session code blocks */
-.codeBlockContent_node_modules-\@docusaurus-theme-classic-src-theme-CodeBlock- {
+.codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
   .command {
     font-weight: bold;
     color: white;
