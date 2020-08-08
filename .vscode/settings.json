@@ -1,9 +1,6 @@
 {
-  "editor.formatOnSave": true,
-  "python.formatting.provider": "black",
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "go.lintTool": "golangci-lint",
-  "python.linting.mypyEnabled": true
+  "files.exclude": {
+    "base-image-builder": true,
+    "cli": true
+  }
 }

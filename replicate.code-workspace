@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "base-image-builder"
+    },
+    {
+      "path": "cli"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "files.insertFinalNewline": true,
+    "go.coverOnTestPackage": false,
+    "go.lintTool": "golangci-lint",
+    "go.useLanguageServer": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "python.formatting.provider": "black",
+    "python.linting.mypyEnabled": true
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "golang.go",
+      "ms-python.python"
+    ]
+  }
+}
