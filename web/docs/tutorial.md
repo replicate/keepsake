@@ -41,7 +41,7 @@ sudo chmod +x /usr/local/bin/replicate
 </TabItem>
 </Tabs>
 
-## Write model
+## Write a model
 
 We're going to make a model that classifies Iris plants, trained on the [Iris dataset](https://archive.ics.uci.edu/ml/datasets/iris). It's an intentionally simple model that trains really fast, just so we can show you how Replicate works.
 
@@ -120,11 +120,13 @@ Notice there are two statements in this training code that call Replicate, highl
 
 The first is `replicate.init()`. This creates an **experiment**, which represents the training run. This is called just once in your training script at the start so you can pass your hyperparameters.
 
-The second is `experiment.commit()`. This creates a **commit**, which saves the exact state of the filesystem at that point (code, weights, Tensorboard logs, etc), along with some metrics you pass to the function. An experiment will typically contain multiple commits, and they're typically done on every epoch when you might save your model file.
+The second is `experiment.commit()`. This creates a **commit** within the experiment, which saves the exact state of the filesystem at that point (code, weights, Tensorboard logs, etc), along with some metrics you pass to the function.
 
-## Install dependencies
+An experiment will typically contain multiple commits to save the progress of your training script over time, and they're typically done on every epoch after where you might save your model file.
 
-Before we start training, we need to install the Python dependencies.
+## Install the dependencies
+
+Before we start training, we need to install the Python packages that the model needs.
 
 Create `requirements.txt` to define our requirements:
 
@@ -172,7 +174,7 @@ Epoch 98, train loss: 0.057, validation accuracy: 0.967
 Epoch 99, train loss: 0.056, validation accuracy: 0.967
 ```
 
-## List and view experiments
+## Experiments and commits
 
 By default, the calls to the `replicate` Python library have saved your experiments to your local disk. You can use `replicate list` to list them:
 
@@ -247,9 +249,74 @@ Similar to how Git works, all this data is in the current directory, so you'll o
 If you want to poke around, the data is inside `.replicate/` in your working directory.
 :::
 
-## Compare experiments
+## Compare commits
 
-## Check out experiments
+Let's compare the last commits from the two experiments we ran:
+
+```shell-session
+$ replicate diff c9f a7c
+═══╡ "c9f" is an experiment, picking the latest commit
+═══╡ "a7c" is an experiment, picking the latest commit
+Checkpoint:               d4fb0d3                   1f0865c
+Experiment:               c9f380d                   a7cd781
+
+Params
+learning_rate:            0.01                      0.2
+
+Labels
+accuracy:                 1                         0.9666666388511658
+loss:                     0.11759971082210541       0.056485891342163086
+```
+
+`replicate diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Replicate is aware of: params, metrics, dependencies, and so on.
+
+:::note
+`replicate diff` compares **commits**, because that is the thing that actually has all the results. When you pass an experiment ID, it picks the best or latest commit from that experiment.
+
+If you want to compare specific commits, you can pass the commit ID.
+:::
+
+## Check out a commit
+
+At some point you might want to get back to some point in the past. Maybe you've run a bunch of experiments in parallel, and you want to choose one that works best. Or, perhaps you've gone down a line of exploration and it's not working, so you want to get back to where you were a week ago.
+
+The `replicate checkout` command will the files the commit and copy them into your working directory. For example:
+
+```shell-session
+$ replicate checkout d4fb0d3
+═══╡ The directory "/Users/ben/p/tmp/iris-classifier" is not empty.
+═══╡ This checkout may overwrite existing files. Make sure you've committed everything to Git so it's safe!
+
+Do you want to continue? (y/N) y
+
+═══╡ Checked out d4fb0d3 to "/Users/ben/p/tmp/iris-classifier"
+```
+
+The model file in your working directory is now the model saved in that commit:
+
+```shell-session
+$ ls -lh model.pth
+-rw-r--r--  1 ben  staff   8.3K Aug  7 16:42 model.pth
+```
+
+This is useful for getting the trained model out of an experiment from the past, but **it also copies all of the code from that commit**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment so you can commit it to Git.
+
+**This means you don't have to remember to commit to Git when you're running experiments.** Just try a bunch of things, then when you've found something that works, use Replicate to get back to the exact code that produced those results and formally commit it to Git.
+
+Neat, huh? Replicate is keeping track of everything in the background so you don't have to.
+
+## The workflow so far
+
+With these tools, let's recap what the workflow looks like:
+
+- Add `experiment = replicate.init()` and `experiment.commit()` to our training code.
+- Run several experiments by running the training script as usual, with changes to the hyperparameters or code.
+- See the results of our experiments with `replicate ls` and `replicate show`.
+- Compare the differences between experiments with `replicate diff`.
+- Get the code from the best experiment with `replicate checkout`.
+- Commit that code cleanly to Git.
+
+You don't have to keep track of what you changed in your experiments, because Replicate does that automatically for you. You can also safely change things without committing to Git, because `replicate checkout` will always be able to get you back to the exact environment the experiment was run in.
 
 ## What's next
 
