@@ -76,12 +76,16 @@ CMD cat /foo.txt
 	require.NoError(t, err)
 
 	defer func() {
-		if out, err := client.Command("docker", "rmi", name).Output(); err != nil {
+		cmd := client.Command("docker", "rmi", name)
+		require.NoError(t, err)
+		if out, err := cmd.Output(); err != nil {
 			console.Warn("Failed to remove docker image %s, got error: %s", name, out)
 		}
 	}()
 
-	out, err := client.Command("docker", "run", "-i", "--rm", name).CombinedOutput()
+	cmd := client.Command("docker", "run", "-i", "--rm", name)
+	require.NoError(t, err)
+	out, err := cmd.CombinedOutput()
 	require.NoError(t, err)
 	require.Equal(t, text, string(out))
 }

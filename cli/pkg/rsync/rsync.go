@@ -106,7 +106,8 @@ func ensureRemoteRsync(remoteOptions *remote.Options) (remoteRsyncPath string, e
 		return "", err
 	}
 
-	if client.Command("which", "rsync").Run() == nil {
+	cmd := client.Command("which", "rsync")
+	if cmd.Run() == nil {
 		return "rsync", nil
 	}
 

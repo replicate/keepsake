@@ -51,11 +51,13 @@ func TestUpload(t *testing.T) {
 
 	require.Equal(t, expectedNames, names)
 
-	contents, err := client.Command("cat", "/tmp/upload/foo.txt").Output()
+	cmd := client.Command("cat", "/tmp/upload/foo.txt")
+	contents, err := cmd.Output()
 	require.NoError(t, err)
 	require.Equal(t, "hello foo", string(contents))
 
-	contents, err = client.Command("cat", "/tmp/upload/bar/baz.txt").Output()
+	cmd = client.Command("cat", "/tmp/upload/bar/baz.txt")
+	contents, err = cmd.Output()
 	require.NoError(t, err)
 	require.Equal(t, "hello baz", string(contents))
 }

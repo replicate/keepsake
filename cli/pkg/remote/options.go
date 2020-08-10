@@ -40,9 +40,22 @@ func ParseHost(hostWithUsernameAndPort string) (options *Options, err error) {
 	return options, nil
 }
 
-// SSHArgs returns SSH arguments/flags, except for host, and username
+// GetPort returns options.Port or 22 if options.Port is not set
+func (o *Options) GetPort() int {
+	port := 22
+	if o.Port != 0 {
+		port = o.Port
+	}
+	return port
+}
+
+// SSHArgs returns SSH arguments/flags, except for host
 func (o *Options) SSHArgs() []string {
 	args := []string{}
+
+	if o.Username != "" {
+		args = append(args, "-l", o.Username)
+	}
 
 	if o.PrivateKeys != nil {
 		for _, key := range o.PrivateKeys {
@@ -54,7 +67,14 @@ func (o *Options) SSHArgs() []string {
 		if err != nil {
 			panic("default private key has an error")
 		}
-		args = append(args, "-i", absPath)
+		exists, err := files.FileExists(absPath)
+		if err != nil {
+			// TODO(andreas): make this an error
+			panic("failed to determine if private key exists at " + absPath)
+		}
+		if exists {
+			args = append(args, "-i", absPath)
+		}
 	}
 
 	if o.Port != 0 {
