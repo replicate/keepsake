@@ -2,7 +2,6 @@ package project
 
 import (
 	"encoding/json"
-	"fmt"
 	"path"
 	"sort"
 	"time"
@@ -72,24 +71,12 @@ func listCommits(store storage.Storage) ([]*Commit, error) {
 	}
 	commits := []*Commit{}
 	for _, p := range paths {
-		com, err := loadCommitFromPath(store, p)
-		if err == nil {
+		com := new(Commit)
+		if err := cachedLoadFromPath(store, p, com); err == nil {
 			commits = append(commits, com)
 		} else {
 			console.Warn("Failed to load metadata from %q: %s", p, err)
 		}
 	}
 	return commits, nil
-}
-
-func loadCommitFromPath(store storage.Storage, path string) (*Commit, error) {
-	com := new(Commit)
-	contents, err := store.Get(path)
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(contents, com); err != nil {
-		return nil, fmt.Errorf("Parse error: %s", err)
-	}
-	return com, nil
 }

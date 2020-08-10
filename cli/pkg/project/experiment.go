@@ -2,7 +2,6 @@ package project
 
 import (
 	"encoding/json"
-	"fmt"
 	"path"
 	"sort"
 	"time"
@@ -74,8 +73,8 @@ func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	}
 	experiments := []*Experiment{}
 	for _, p := range paths {
-		exp, err := loadExperimentFromPath(store, p)
-		if err == nil {
+		exp := new(Experiment)
+		if err := cachedLoadFromPath(store, p, exp); err == nil {
 			experiments = append(experiments, exp)
 		} else {
 			// TODO: should this just be ignored? can this be recovered from?
@@ -83,16 +82,4 @@ func listExperiments(store storage.Storage) ([]*Experiment, error) {
 		}
 	}
 	return experiments, nil
-}
-
-func loadExperimentFromPath(store storage.Storage, path string) (*Experiment, error) {
-	contents, err := store.Get(path)
-	if err != nil {
-		return nil, err
-	}
-	exp := new(Experiment)
-	if err := json.Unmarshal(contents, exp); err != nil {
-		return nil, fmt.Errorf("Parse error: %s", err)
-	}
-	return exp, nil
 }

@@ -41,9 +41,8 @@ func listHeartbeats(store storage.Storage) ([]*Heartbeat, error) {
 	}
 	heartbeats := []*Heartbeat{}
 	for _, p := range paths {
-		exp, err := loadHeartbeatFromPath(store, p)
-		if err == nil {
-			heartbeats = append(heartbeats, exp)
+		if hb, err := loadHeartbeatFromPath(store, p); err == nil {
+			heartbeats = append(heartbeats, hb)
 		} else {
 			// TODO: should this just be ignored? can this be recovered from?
 			console.Warn("Failed to load metadata from %q: %s", p, err)

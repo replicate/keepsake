@@ -1,10 +1,12 @@
 package project
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 
+	"replicate.ai/cli/pkg/cache"
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/storage"
@@ -276,4 +278,18 @@ func copyCommits(commits []*Commit) []*Commit {
 	copied := make([]*Commit, len(commits))
 	copy(copied, commits)
 	return copied
+}
+
+func cachedLoadFromPath(store storage.Storage, path string, obj interface{}) error {
+	if ok := cache.GetStruct(path, obj); ok {
+		return nil
+	}
+	contents, err := store.Get(path)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(contents, obj); err != nil {
+		return fmt.Errorf("Parse error: %s", err)
+	}
+	return cache.SetStruct(path, obj)
 }
