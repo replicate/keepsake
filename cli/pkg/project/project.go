@@ -77,6 +77,7 @@ func (p *Project) ExperimentLatestCommit(experimentID string) (*Commit, error) {
 	if !ok || len(commits) == 0 {
 		return nil, nil
 	}
+	commits = copyCommits(commits)
 	sort.Slice(commits, func(i, j int) bool {
 		return commits[i].Created.Before(commits[j].Created)
 	})
@@ -107,6 +108,7 @@ func (p *Project) ExperimentBestCommit(experimentID string) (*Commit, error) {
 	if !ok || len(commits) == 0 {
 		return nil, nil
 	}
+	commits = copyCommits(commits)
 
 	sort.Slice(commits, func(i, j int) bool {
 		iVal, iOK := commits[i].Labels[primaryMetric.Name]
@@ -268,4 +270,10 @@ func (p *Project) setObjects(experiments []*Experiment, commits []*Commit, heart
 		}
 		p.commitsByExpID[com.ExperimentID] = append(p.commitsByExpID[com.ExperimentID], com)
 	}
+}
+
+func copyCommits(commits []*Commit) []*Commit {
+	copied := make([]*Commit, len(commits))
+	copy(copied, commits)
+	return copied
 }
