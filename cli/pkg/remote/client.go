@@ -2,18 +2,13 @@ package remote
 
 import (
 	"fmt"
-	"net"
-	"os/user"
+	"os/exec"
 
 	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 )
 
 type Client struct {
 	options    *Options
-	tcpConn    net.Conn
-	sshConn    ssh.Conn
-	sshClient  *ssh.Client
 	sftpClient *sftp.Client
 }
 
@@ -25,45 +20,8 @@ func NewClient(options *Options) (*Client, error) {
 		options: options,
 	}
 
-	port := 22
-	if options.Port != 0 {
-		port = options.Port
-	}
-	hostWithPort := net.JoinHostPort(options.Host, fmt.Sprintf("%d", port))
-
-	tcpConn, err := net.DialTimeout("tcp", hostWithPort, options.ConnectTimeout)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to %s, got error: %s", hostWithPort, err)
-	}
-	c.tcpConn = tcpConn
-
-	authMethods, err := authMethodsFromOptions(options)
-	if err != nil {
-		return nil, err
-	}
-
-	username := options.Username
-	if username == "" {
-		user, err := user.Current()
-		if err != nil {
-			return nil, err
-		}
-		username = user.Username
-	}
-
-	config := &ssh.ClientConfig{
-		User:            username,
-		Auth:            authMethods,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: handle host keys securely
-	}
-	sshConn, chans, reqs, err := ssh.NewClientConn(c.tcpConn, hostWithPort, config)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to open SSH connection to %s, got error: %s", hostWithPort, err)
-	}
-	c.sshConn = sshConn
-	c.sshClient = ssh.NewClient(sshConn, chans, reqs)
-
-	c.sftpClient, err = sftp.NewClient(c.sshClient)
+	var err error
+	c.sftpClient, err = makeSFTPClient(options)
 	if err != nil {
 		return nil, err
 	}
@@ -91,4 +49,26 @@ func (c *Client) WriteFile(data []byte, path string) error {
 	}
 
 	return nil
+}
+
+func makeSFTPClient(options *Options) (*sftp.Client, error) {
+	args := options.SSHArgs()
+	args = append(args, options.Host, "-s", "sftp")
+	sshCmd := exec.Command("ssh", args...)
+	wr, err := sshCmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	rd, err := sshCmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(andreas): what happens if the connection is interrupted?
+	// TODO(andreas): handle cmd.Stderr
+	if err := sshCmd.Start(); err != nil {
+		// TODO(andreas): more actionable error message
+		return nil, fmt.Errorf("Failed to establish SSH connection to %s: %w", options.Host, err)
+	}
+	return sftp.NewClientPipe(rd, wr)
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/kballard/go-shellquote"
-	"golang.org/x/crypto/ssh"
 
 	"replicate.ai/cli/pkg/slices"
 )
@@ -16,102 +15,47 @@ import (
 // brittle. maybe use a whitelist?
 var envBlacklist = []string{"Apple_PubSub_Socket_Render", "COLUMNS", "COMMAND_MODE", "DISPLAY", "EDITOR", "HISTCONTROL", "HISTFILESIZE", "HISTSIZE", "HOME", "HOMEBREW_AUTO_UPDATE_SECS", "JAVA_HOME", "JICOFO_AUTH_PASSWORD", "JICOFO_COMPONENT_SECRET", "JVB_AUTH_PASSWORD", "LANG", "LC_ALL", "LC_CTYPE", "LOGNAME", "NODE_PATH", "OLDPWD", "PAGER", "PATH", "PS1", "PWD", "PYENV_SHELL", "PYENV_VIRTUALENV_INIT", "SDKMAN_PLATFORM", "SECURITYSESSIONID", "SHELL", "SHLVL", "SSH_AUTH_SOCK", "TERM", "TERMCAP", "TMPDIR", "USER", "XPC_FLAGS", "_", "__CF_USER_TEXT_ENCODING", "PYENV_ROOT", "PYENV_VERSION", "SDKMAN_CANDIDATES_API", "PYENV_DIR", "SDKMAN_VERSION", "PYENV_HOOK_PATH", "XPC_SERVICE_NAME", "SDKMAN_DIR", "SDKMAN_CANDIDATES_DIR", "PYTEST_CURRENT_TEST"}
 
-type WrappedCmd struct {
-	client  *Client
-	cmd     *exec.Cmd
-	session *ssh.Session
-	env     map[string]string
-}
-
 // WrapCommand wraps an exec.Command with ssh execution,
 // behind a similar API
-func (c *Client) WrapCommand(cmd *exec.Cmd) *WrappedCmd {
-	return &WrappedCmd{
-		cmd:    cmd,
-		client: c,
-	}
+func (c *Client) WrapCommand(cmd *exec.Cmd) *exec.Cmd {
+	options := c.options
+	args := options.SSHArgs()
+	args = append(args, options.Host, getCommandLine(cmd))
+	wrapped := exec.Command("ssh", args...)
+
+	wrapped.Stdin = cmd.Stdin
+	wrapped.Stdout = cmd.Stdout
+	wrapped.Stderr = cmd.Stderr
+	wrapped.Env = FilterEnvList(cmd.Env)
+
+	return wrapped
 }
 
 // Command creates a new command similar to exec.Command,
 // with ssh execution
-func (c *Client) Command(name string, arg ...string) *WrappedCmd {
+func (c *Client) Command(name string, arg ...string) *exec.Cmd {
 	return c.WrapCommand(exec.Command(name, arg...))
 }
 
-func (c *WrappedCmd) Output() ([]byte, error) {
-	if err := c.newSession(); err != nil {
-		return nil, err
-	}
-	cmdLine := c.getCommandLine()
-	return c.session.Output(cmdLine)
-}
+func getCommandLine(cmd *exec.Cmd) string {
+	cmdLine := shellquote.Join(cmd.Args...)
 
-func (c *WrappedCmd) CombinedOutput() ([]byte, error) {
-	if err := c.newSession(); err != nil {
-		return nil, err
-	}
-	cmdLine := c.getCommandLine()
-	return c.session.CombinedOutput(cmdLine)
-}
-
-func (c *WrappedCmd) Run() error {
-	if err := c.Start(); err != nil {
-		return err
-	}
-	return c.Wait()
-}
-
-func (c *WrappedCmd) Start() error {
-	if err := c.newSession(); err != nil {
-		return err
-	}
-	cmdLine := c.getCommandLine()
-	if err := c.session.Start(cmdLine); err != nil {
-		c.session.Close()
-		return err
+	if cmd.Dir != "" {
+		cmdLine = shellquote.Join("cd", cmd.Dir) + "; " + cmdLine
 	}
 
-	return nil
-}
-
-func (c *WrappedCmd) Wait() error {
-	defer c.session.Close()
-	return c.session.Wait()
-}
-
-func (c *WrappedCmd) newSession() error {
-	if c.session != nil {
-		// panic since this is a programming error
-		panic("Session is already started")
-	}
-
-	var err error
-	c.session, err = c.client.sshClient.NewSession()
-	if err != nil {
-		return err
-	}
-
-	c.session.Stdin = c.cmd.Stdin
-	c.session.Stdout = c.cmd.Stdout
-	c.session.Stderr = c.cmd.Stderr
-
-	c.env = FilterEnvMap(c.cmd.Env)
-	return nil
-}
-
-func (c *WrappedCmd) getCommandLine() string {
-	cmdLine := shellquote.Join(c.cmd.Args...)
-
-	if c.cmd.Dir != "" {
-		cmdLine = shellquote.Join("cd", c.cmd.Dir) + "; " + cmdLine
-	}
-
-	// session.setEnv doesn't work if AcceptEnv isn't set on
+	// SendEnv doesn't work if AcceptEnv isn't set on
 	// the SSH server, so we have to hack together an export
 	// string instead.
-	if len(c.env) > 0 {
+	// TODO(andreas): this is horrible, it exposes a bunch
+	// of sensitive variables in the process list.
+	if len(cmd.Env) > 0 {
 		exports := []string{}
-		for name, value := range c.env {
+		for _, env := range cmd.Env {
+			parts := strings.SplitN(env, "=", 2)
+			// TODO(andreas): check that parts is well-formed <name>=<value>
+			name := parts[0]
+			value := parts[1]
 			exports = append(exports, fmt.Sprintf("%s=%s", name, shellquote.Join(value)))
 		}
 		cmdLine = fmt.Sprintf("export %s; %s", strings.Join(exports, " "), cmdLine)

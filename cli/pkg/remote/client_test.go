@@ -24,8 +24,7 @@ func TestExecOutput(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	remoteCmd := client.Command("whoami")
-	output, err := remoteCmd.Output()
+	output, err := client.Command("whoami").Output()
 	require.NoError(t, err)
 
 	require.Equal(t, "root\n", string(output))
