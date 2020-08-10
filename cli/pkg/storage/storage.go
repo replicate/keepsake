@@ -22,6 +22,7 @@ type ListResult struct {
 }
 
 type Storage interface {
+	RootURL() string
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
 	PutDirectory(localPath string, storagePath string) error

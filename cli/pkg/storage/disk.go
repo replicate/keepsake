@@ -20,6 +20,10 @@ func NewDiskStorage(rootDir string) (*DiskStorage, error) {
 	}, nil
 }
 
+func (s *DiskStorage) RootURL() string {
+	return "file://" + s.rootDir
+}
+
 // Get data at path
 func (s *DiskStorage) Get(p string) ([]byte, error) {
 	data, err := ioutil.ReadFile(path.Join(s.rootDir, p))

@@ -281,7 +281,8 @@ func copyCommits(commits []*Commit) []*Commit {
 }
 
 func cachedLoadFromPath(store storage.Storage, path string, obj interface{}) error {
-	if ok := cache.GetStruct(path, obj); ok {
+	cacheKey := store.RootURL() + "/" + path
+	if ok := cache.GetStruct(cacheKey, obj); ok {
 		return nil
 	}
 	contents, err := store.Get(path)
@@ -291,5 +292,5 @@ func cachedLoadFromPath(store storage.Storage, path string, obj interface{}) err
 	if err := json.Unmarshal(contents, obj); err != nil {
 		return fmt.Errorf("Parse error: %s", err)
 	}
-	return cache.SetStruct(path, obj)
+	return cache.SetStruct(cacheKey, obj)
 }

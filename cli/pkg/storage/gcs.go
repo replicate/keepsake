@@ -34,6 +34,10 @@ func NewGCSStorage(bucket string) (*GCSStorage, error) {
 	}, nil
 }
 
+func (s *GCSStorage) RootURL() string {
+	return "gcs://" + s.bucketName
+}
+
 func (s *GCSStorage) Get(path string) ([]byte, error) {
 	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, path)
 	bucket := s.client.Bucket(s.bucketName)
