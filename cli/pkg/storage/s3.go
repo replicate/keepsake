@@ -48,6 +48,10 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 	return s, nil
 }
 
+func (s *S3Storage) RootURL() string {
+	return "s3://" + s.bucketName
+}
+
 // Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{

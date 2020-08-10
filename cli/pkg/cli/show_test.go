@@ -31,7 +31,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 	require.NoError(t, err)
 	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
-		Created: fixedTime,
+		Created: fixedTime.Add(-10 * time.Minute),
 		Params: map[string]*param.Value{
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
@@ -57,7 +57,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 
 	var commits = []*project.Commit{{
 		ID:           "1ccccccccc",
-		Created:      fixedTime.Add(-1 * time.Minute),
+		Created:      fixedTime.Add(-5 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.1),
@@ -66,7 +66,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 10,
 	}, {
 		ID:           "2ccccccccc",
-		Created:      fixedTime,
+		Created:      fixedTime.Add(-4 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.01),
@@ -75,7 +75,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 20,
 	}, {
 		ID:           "3ccccccccc",
-		Created:      fixedTime,
+		Created:      fixedTime.Add(-3 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.02),
@@ -84,7 +84,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Step: 20,
 	}, {
 		ID:           "4ccccccccc",
-		Created:      fixedTime,
+		Created:      fixedTime.Add(-2 * time.Minute),
 		ExperimentID: experiments[1].ID,
 		Labels: map[string]*param.Value{
 			"label-3": param.Float(0.5),
@@ -132,12 +132,12 @@ func TestShowCommit(t *testing.T) {
 	expected := `
 Commit: 3ccccccccc
 
-Created:    Mon, 02 Jan 2006 23:04:05 +08
+Created:    Mon, 02 Jan 2006 23:01:05 +08
 Step:       20
 
 Experiment
 ID:         1eeeeeeeee
-Created:    Mon, 02 Jan 2006 23:04:05 +08
+Created:    Mon, 02 Jan 2006 22:54:05 +08
 Status:     running
 Host:       10.1.1.1
 User:       andreas
@@ -188,7 +188,7 @@ func TestShowExperiment(t *testing.T) {
 	expected := `
 Experiment: 1eeeeeeeee
 
-Created:  Mon, 02 Jan 2006 23:04:05 +08
+Created:  Mon, 02 Jan 2006 22:54:05 +08
 Status:   running
 Host:     10.1.1.1
 User:     andreas
@@ -200,8 +200,8 @@ param-2:  hello
 Commits
 ID       STEP  CREATED     LABEL-1      LABEL-2
 1cccccc  10    2006-01-02  0.1          2
-3cccccc  20    2006-01-02  0.02         2
 2cccccc  20    2006-01-02  0.01 (best)  2
+3cccccc  20    2006-01-02  0.02         2
 
 To see more details about a commit, run:
   replicate show COMMIT_ID
