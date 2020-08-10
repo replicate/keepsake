@@ -37,7 +37,7 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-        // TODO(andreas): add test for case where --output-directory is omitted
+	// TODO(andreas): add test for case where --output-directory is omitted
 	if outputDir == "" {
 		outputDir, err = getSourceDir()
 		if err != nil {
