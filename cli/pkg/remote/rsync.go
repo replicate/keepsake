@@ -1,4 +1,4 @@
-package rsync
+package remote
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"path"
 
 	"replicate.ai/cli/pkg/console"
-	"replicate.ai/cli/pkg/remote"
 )
 
 // TODO(andreas): since we're not actually uploading to a consistent
@@ -23,9 +22,9 @@ import (
 const rsyncX86BinaryURL = "https://github.com/JBBgameich/rsync-static/releases/download/continuous/rsync-x86"
 const remoteRsyncTempPath = "/tmp/replicate/rsync"
 
-func UploadToTempDir(localDir string, remoteOptions *remote.Options) (remoteDir string, err error) {
+func UploadToTempDir(localDir string, remoteOptions *Options) (remoteDir string, err error) {
 	remoteDir = path.Join("/tmp/replicate/upload", uniuri.NewLen(20))
-	client, err := remote.NewClient(remoteOptions)
+	client, err := NewClient(remoteOptions)
 	if err != nil {
 		return "", err
 	}
@@ -40,7 +39,7 @@ func UploadToTempDir(localDir string, remoteOptions *remote.Options) (remoteDir 
 	return remoteDir, nil
 }
 
-func Upload(localDir string, remoteOptions *remote.Options, remoteDir string) error {
+func Upload(localDir string, remoteOptions *Options, remoteDir string) error {
 	if err := ensureLocalRsync(); err != nil {
 		return err
 	}
@@ -60,7 +59,7 @@ func Upload(localDir string, remoteOptions *remote.Options, remoteDir string) er
 	return nil
 }
 
-func rsyncCmd(localDir string, remoteOptions *remote.Options, remoteDir string, remoteRsyncPath string) *exec.Cmd {
+func rsyncCmd(localDir string, remoteOptions *Options, remoteDir string, remoteRsyncPath string) *exec.Cmd {
 	// rsync wants / suffixes
 	if !strings.HasSuffix(localDir, "/") {
 		localDir = localDir + "/"
@@ -90,7 +89,7 @@ func rsyncCmd(localDir string, remoteOptions *remote.Options, remoteDir string, 
 	return exec.Command("rsync", args...)
 }
 
-func getRemoteSpec(remoteOptions *remote.Options, remoteDir string) string {
+func getRemoteSpec(remoteOptions *Options, remoteDir string) string {
 	remoteSpec := ""
 	// FIXME (bfirsh): this could be done with -l in SSHArgs so we don't have to concatenate strings, like how Docker client does it
 	if remoteOptions.Username != "" {
@@ -100,8 +99,8 @@ func getRemoteSpec(remoteOptions *remote.Options, remoteDir string) string {
 	return remoteSpec
 }
 
-func ensureRemoteRsync(remoteOptions *remote.Options) (remoteRsyncPath string, err error) {
-	client, err := remote.NewClient(remoteOptions)
+func ensureRemoteRsync(remoteOptions *Options) (remoteRsyncPath string, err error) {
+	client, err := NewClient(remoteOptions)
 	if err != nil {
 		return "", err
 	}

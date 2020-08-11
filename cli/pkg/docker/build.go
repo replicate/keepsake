@@ -7,7 +7,6 @@ import (
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/remote"
-	"replicate.ai/cli/pkg/rsync"
 )
 
 // Build a Docker image by calling `docker build` locally or remotely over SSH
@@ -57,7 +56,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	cmd.Env = remote.FilterEnvList(os.Environ())
 	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 
-	remoteTempDir, err := rsync.UploadToTempDir(folder, remoteOptions)
+	remoteTempDir, err := remote.UploadToTempDir(folder, remoteOptions)
 	if err != nil {
 		return err
 	}
