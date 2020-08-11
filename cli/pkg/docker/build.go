@@ -17,7 +17,6 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 		"build", ".",
 		"--build-arg", "BUILDKIT_INLINE_CACHE=1",
 		"--build-arg", "BASE_IMAGE=" + baseImage,
-		"--progress", "plain",
 		"--file", "-",
 		"--tag", name,
 	}
