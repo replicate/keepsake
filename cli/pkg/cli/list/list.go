@@ -54,6 +54,9 @@ func (e *ListExperiment) LatestActivity() time.Time {
 
 func RunningExperiments(store storage.Storage, format string, allParams bool) error {
 	proj := project.NewProject(store)
+	if storage.NeedsCaching(store) {
+		console.Info("Fetching experiments from %q...", store.RootURL())
+	}
 	listExperiments, err := createListExperiments(proj)
 	if err != nil {
 		return err
@@ -76,6 +79,9 @@ func RunningExperiments(store storage.Storage, format string, allParams bool) er
 
 func Experiments(store storage.Storage, format string, allParams bool) error {
 	proj := project.NewProject(store)
+	if storage.NeedsCaching(store) {
+		console.Info("Fetching experiments from %q...", store.RootURL())
+	}
 	listExperiments, err := createListExperiments(proj)
 	if err != nil {
 		return err

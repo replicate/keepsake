@@ -111,3 +111,9 @@ func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error
 	})
 	return result, err
 }
+
+// NeedsCaching returns true if the storage is slow and needs caching
+func NeedsCaching(storage Storage) bool {
+	_, isDiskStorage := storage.(*DiskStorage)
+	return !isDiskStorage
+}
