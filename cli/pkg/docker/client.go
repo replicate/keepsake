@@ -29,9 +29,6 @@ func NewRemoteClient(options *remote.Options) (*client.Client, error) {
 	// Following the code path where host is prefixed with "ssh://" and a connhelper is made
 
 	args := options.SSHArgs()
-	if options.Username != "" {
-		args = append(args, "-l", options.Username)
-	}
 	args = append(args, "--", options.Host)
 	args = append(args, "docker", "system", "dial-stdio")
 
