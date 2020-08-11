@@ -4,7 +4,7 @@ on:
   push:
     paths: "cli/**"
     branches:
-    - master
+      - master
   pull_request:
     paths: "cli/**"
 
@@ -17,11 +17,13 @@ jobs:
         shell: bash
         working-directory: cli
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-go@v2
-      with:
-        go-version: 1.14
-    - name: "Build"
-      run: make build-all
-    - name: "Test"
-      run: make test
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: "Build"
+        run: make build-all
+      - name: "Validate"
+        run: make validate
+      - name: "Test"
+        run: make test
