@@ -1,4 +1,4 @@
-package rsync
+package remote
 
 import (
 	"io/ioutil"
@@ -8,12 +8,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"replicate.ai/cli/pkg/remote"
 )
 
 func TestUpload(t *testing.T) {
-	mockRemote, err := remote.NewMockRemote()
+	mockRemote, err := NewMockRemote()
 	require.NoError(t, err)
 	defer mockRemote.Kill() //nolint
 
@@ -27,7 +25,7 @@ func TestUpload(t *testing.T) {
 
 	remoteDir := "/tmp/upload"
 
-	options := &remote.Options{
+	options := &Options{
 		Host:        "localhost",
 		Port:        mockRemote.Port,
 		Username:    "root",
@@ -37,7 +35,7 @@ func TestUpload(t *testing.T) {
 	err = Upload(localDir, options, remoteDir)
 	require.NoError(t, err)
 
-	client, err := remote.NewClient(options)
+	client, err := NewClient(options)
 	require.NoError(t, err)
 	files, err := client.SFTP().ReadDir("/tmp/upload")
 	require.NoError(t, err)
