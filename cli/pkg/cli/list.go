@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"replicate.ai/cli/pkg/list"
+	"replicate.ai/cli/pkg/cli/list"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
 )
