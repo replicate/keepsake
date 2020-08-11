@@ -67,13 +67,14 @@ func NewRootCommand() (*cobra.Command, error) {
 	setPersistentFlags(&rootCmd)
 
 	rootCmd.AddCommand(
+		newCheckoutCommand(),
+		newDiffCommand(),
 		newFeedbackCommand(),
+		newGenerateDocsCommand(&rootCmd),
 		newListCommand(),
 		newPsCommand(),
-		newCheckoutCommand(),
 		newRunCommand(),
 		newShowCommand(),
-		newDiffCommand(),
 	)
 
 	return &rootCmd, nil

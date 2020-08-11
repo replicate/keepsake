@@ -1,0 +1,14 @@
+#!/bin/bash -e
+# make validate: Check this is a valid Git commit
+# See Makefile for full description
+DIFFS="$(git diff -- ../web/docs)"
+if [ "$DIFFS" ]; then
+    echo 'The result of "make docs" differs:'
+    echo
+    echo "$DIFFS"
+    echo
+    echo 'Run "make docs" and commit again'
+    exit 1
+fi
+
+echo "Validation successful. You're good!"

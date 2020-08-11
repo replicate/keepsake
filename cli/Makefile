@@ -140,4 +140,13 @@ strings:
 # FIXME (bfirsh): get this working again
 .PHONY: docs
 docs:
-	go run ./cmd/replicate/main.go generate-docs --docs-folder web/docs
+	go run ./cmd/replicate/main.go generate-docs --docs-folder ../web/docs
+
+# Check this is a valid Git commit
+#
+# This includes various things that we don't want to break the test suite when working
+# day-to-day, but should be run on CI. E.g. checking generated files are committed,
+# commit is signed off with Developer Certificate of Origin, etc.
+.PHONY: validate
+validate: docs
+	make/validate

@@ -18,7 +18,7 @@ import (
 func newCheckoutCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "checkout <commit-id>",
-		Short: "Check out code from a specific commit",
+		Short: "Copy files from a commit into the project directory",
 		RunE:  checkoutCommit,
 		Args:  cobra.ExactArgs(1),
 	}
