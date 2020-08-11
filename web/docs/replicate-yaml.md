@@ -3,10 +3,150 @@ id: replicate-yaml
 title: replicate.yaml reference
 ---
 
-The `replicate.yaml` file defines how Replicate trains your model. This page is a comprehensive reference for it. To get an introduction on how to write it, see the [tutorial](tutorial.md).
+The `replicate.yaml` file tells Replicate how to train your model and where to store it. This page is a comprehensive reference for it. To get an introduction on how to write it, see [working with remote machines](working-with-remote-machines.md).
+
+<!-- `replicate.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Replicate uses the location of the file to figure out where your model is located. (maybe this lives in tutorial) -->
 
 It looks a bit like this:
 
 ```yaml
-
+storage: "s3://hooli-hotdog-model"
+python: "3.8"
+metrics:
+  - name: "training_loss"
+    goal: "minimize"
+    primary: true
+  - name: "validation_accuracy"
+    goal: "maximize"
 ```
+
+## `cuda`
+
+The CUDA version to install when you use `replicate run`.
+
+By default, Replicate will attempt to pick a CUDA version based on the Tensorflow or PyTorch versions you choose. This option lets you set the version if you aren't using Tensorflow or PyTorch, or want to override it for whatever reason.
+
+For example:
+
+```yaml
+cuda: "10.2"
+```
+
+## `install`
+
+A list of commands to run to set up the Docker environment that `replicate run` runs inside. For example:
+
+```yaml
+install:
+  - "apt-get update -qq && apt-get install -yq cowsay"
+```
+
+## `install_script`
+
+The path to a script that sets up the Docker environment for `replicate run`. You can use this if you need to do something more complicated than you can do with the `install` option.
+
+For example, say you have this script, called `install.sh`:
+
+```bash
+#!/bin/bash -e
+apt-get update -qq
+apt-get install -yq cowsay
+```
+
+You would include this line in `replicate.yaml` to run this script to set up the Docker environment for `replicate run`:
+
+```yaml
+install_script: "./install.sh"
+```
+
+## `metrics`
+
+`metrics` defines what your model's metrics are. These are recorded on each commit to determine the performance of your model and which commit is considered the "best".
+
+When you call `experiment.commit()` in your training script, you can pass arbitrary arguments to it to record data. For example:
+
+```python
+experiment.commit(
+    step=step,
+    train_loss=train_loss,
+    validation_accuracy=validation_accuracy,
+    current_learning_rate=current_learning_rate,
+)
+```
+
+Some of these might just be metadata, but some of these might define how well this commit performs. For those, we specify them in `replicate.yaml` so Replicate can determine which commit in your experiment is the "best" based on some metric, and you can use that to compare your experiments.
+
+For example, for the code example above, you might use this configuration in your `replicate.yaml`:
+
+```yaml
+metrics:
+  - name: "train_loss"
+    goal: "minimize"
+    primary: true
+  - name: "validation_accuracy"
+    goal: "maximize"
+```
+
+The `metrics` option is a list, where each item has these options:
+
+- **`name`**: The name of the metric used in `experiment.commit()`.
+- **`goal`**: Either `minimize`, if small values are good, or `maximise`, if big values are good.
+- **`primary`**: If this is `true`, then Replicate will use this metric to determine which is the "best" commit in an experiment. This is shown in `replicate ls` and various other places.
+
+## `python`
+
+The Python version to use for `repicate run`, omitting the patch version \(i.e. `3.8`, not `3.8.1`\). It can take one of these values:
+
+- `2.7`
+- `3.5`
+- `3.6`
+- `3.7`
+- `3.8`
+
+For example:
+
+```yaml
+python: "3.8"
+```
+
+## `python_requirements`
+
+The path to a file which contains Python requirements to be installed in the environment for `replicate run`, in the format used by pip. By default, this is `requirements.txt`.
+
+You might want to use this if you need to define some different requirements for your Replicate environment. For example:
+
+```yaml
+python_requirements: "requirements-replicate.txt"
+```
+
+<!-- FIXME: this is an anti-pattern... we want people to be using normal requirements.txt, really... -->
+
+## `storage`
+
+The location where Replicate will store your project data (experiments, commits, etc).
+
+By default, data is stored in `.replicate/storage/` on disk relative to the location of `replicate.yaml`.
+
+It supports several different storage mechanisms:
+
+- **Local disk**: If you pass a path, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
+
+  ```yaml
+  storage: "/mnt/storage/"
+  ```
+
+- **Amazon S3**: If you use the form `s3://bucket-name`, it will store the data on S3. For example:
+
+  ```yaml
+  storage: "s3://hooli-hotdog-detector"
+  ```
+
+  You must [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and run `aws configure` to authenticate with your Amazon account before using this method.
+
+- **Google Cloud Storage**: If you use the form `gcs://bucket-name`, it will store the data on Google Cloud Storage. For example:
+
+  ```yaml
+  storage: "gcs://hooli-hotdog-detector"
+  ```
+
+  You must install the [Cloud SDK](https://cloud.google.com/sdk) and run `gcloud auth login` before using this method.
