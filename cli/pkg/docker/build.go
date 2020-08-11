@@ -53,7 +53,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	}
 
 	// Remote, via SSH
-	cmd.Env = remote.FilterEnvList(os.Environ())
+	cmd.Env = os.Environ() // the environment gets filtered later in client.WrapCommandSafeEnv
 	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 
 	remoteTempDir, err := remote.UploadToTempDir(folder, remoteOptions)
@@ -65,7 +65,10 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	if err != nil {
 		return err
 	}
-	remoteCmd := client.WrapCommand(cmd)
+	remoteCmd, err := client.WrapCommandSafeEnv(cmd)
+	if err != nil {
+		return err
+	}
 	if err := remoteCmd.Start(); err != nil {
 		return err
 	}
