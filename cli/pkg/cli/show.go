@@ -45,6 +45,9 @@ func show(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	if storage.NeedsCaching(store) {
+		console.Info("Fetching data from %q...", store.RootURL())
+	}
 	proj := project.NewProject(store)
 	result, err := proj.CommitOrExperimentFromPrefix(prefix)
 	if err != nil {
