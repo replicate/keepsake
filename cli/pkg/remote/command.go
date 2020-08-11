@@ -64,7 +64,7 @@ func (c *Client) WrapCommandSafeEnv(cmd *exec.Cmd) (*exec.Cmd, error) {
 		return nil, fmt.Errorf("Failed to write environment file on remote host: %w", err)
 	}
 	args := c.options.SSHArgs()
-	cmdLine := fmt.Sprintf("source %s && rm %s && %s", remoteEnvPath, remoteEnvPath, getCommandLine(cmd))
+	cmdLine := fmt.Sprintf("source %q && rm %q && %s", remoteEnvPath, remoteEnvPath, getCommandLine(cmd))
 	args = append(args, c.options.Host, cmdLine)
 	wrapped := exec.Command("ssh", args...)
 
