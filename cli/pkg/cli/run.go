@@ -27,7 +27,7 @@ func newRunCommand() *cobra.Command {
 	var opts runOpts
 
 	cmd := &cobra.Command{
-		Use:   "run [OPTIONS] COMMAND [ARG...]",
+		Use:   "run [flags] <command> [arg...]",
 		Short: "Run a command on a remote machine",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCommand(opts, args)

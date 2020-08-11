@@ -129,7 +129,7 @@ Run a command on a remote machine
 ### Usage
 
 ```
-replicate run [OPTIONS] COMMAND [ARG...] [flags]
+replicate run [flags] <command> [arg...]
 ```
 
 ### Flags
