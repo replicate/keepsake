@@ -92,6 +92,7 @@ replicate ls [flags]
 
 ```
   -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
+  -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -f, --format string        Output format (table/json) (default "table")
   -h, --help                 help for ls
   -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
@@ -114,6 +115,7 @@ replicate ps [flags]
 
 ```
   -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
+  -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -f, --format string        Output format (table/json) (default "table")
   -h, --help                 help for ps
   -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)

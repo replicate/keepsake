@@ -108,7 +108,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	return store
 }
 
-func TestOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
+func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
@@ -127,7 +127,7 @@ func TestOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false)
+		err = Experiments(store, FormatTable, false, new(param.Filters))
 	})
 	require.NoError(t, err)
 	expected := `
@@ -141,7 +141,7 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMM
 	require.Equal(t, expected, actual)
 }
 
-func TestOutputTableWithPrimaryMetricAllParams(t *testing.T) {
+func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
@@ -160,7 +160,7 @@ func TestOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, true)
+		err = Experiments(store, FormatTable, true, new(param.Filters))
 	})
 	require.NoError(t, err)
 	expected := `
@@ -168,6 +168,73 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PA
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
 1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+`
+	expected = expected[1:] // strip initial whitespace, added for readability
+	actual = testutil.TrimRightLines(actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestListOutputTableFilter(t *testing.T) {
+	workingDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workingDir)
+
+	conf := &config.Config{
+		Metrics: []config.Metric{{
+			Name:    "label-1",
+			Goal:    config.GoalMinimize,
+			Primary: true,
+		}, {
+			Name: "label-3",
+			Goal: config.GoalMinimize,
+		}},
+	}
+
+	store := createTestData(t, workingDir, conf)
+	filters, err := param.MakeFilters([]string{"step >= 5"})
+	require.NoError(t, err)
+
+	actual := capturer.CaptureStdout(func() {
+		err = Experiments(store, FormatTable, false, filters)
+	})
+	require.NoError(t, err)
+	expected := `
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+`
+	expected = expected[1:] // strip initial whitespace, added for readability
+	actual = testutil.TrimRightLines(actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestListOutputTableFilterRunning(t *testing.T) {
+	workingDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workingDir)
+
+	conf := &config.Config{
+		Metrics: []config.Metric{{
+			Name:    "label-1",
+			Goal:    config.GoalMinimize,
+			Primary: true,
+		}, {
+			Name: "label-3",
+			Goal: config.GoalMinimize,
+		}},
+	}
+
+	store := createTestData(t, workingDir, conf)
+	filters, err := param.MakeFilters([]string{"status = running"})
+	require.NoError(t, err)
+
+	actual := capturer.CaptureStdout(func() {
+		err = Experiments(store, FormatTable, false, filters)
+	})
+	require.NoError(t, err)
+	expected := `
+EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST COMMIT      LABEL-1  BEST COMMIT        LABEL-1
+1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02     2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -219,7 +286,7 @@ func TestListJSON(t *testing.T) {
 
 	// replicate list
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(storage, FormatJSON, true)
+		err = Experiments(storage, FormatJSON, true, new(param.Filters))
 	})
 	require.NoError(t, err)
 
