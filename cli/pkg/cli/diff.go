@@ -61,6 +61,7 @@ func heading(w *tabwriter.Writer, au aurora.Aurora, text string) {
 	fmt.Fprintf(w, "%s\t\t\n", au.Bold(text))
 }
 
+// TODO(andreas): diff command line arguments
 func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 string, prefix2 string) error {
 	com1, err := loadCommit(proj, prefix1)
 	if err != nil {

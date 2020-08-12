@@ -23,7 +23,6 @@ class Experiment:
         project_dir: str,
         created: datetime.datetime,
         params: Optional[Dict[str, Any]],
-        args: List[str],
     ):
         self.config = config
         storage_url = config["storage"]
@@ -68,6 +67,7 @@ class Experiment:
             "params": self.params,
             "user": self.get_user(),
             "host": self.get_host(),
+            "command": self.get_command(),
             "config": self.config,
         }
 
@@ -93,6 +93,9 @@ class Experiment:
             sys.stderr.write("Failed to determine external IP, got error: {}".format(e))
             return ""
 
+    def get_command(self) -> str:
+        return os.environ.get("REPLICATE_COMMAND", " ".join(sys.argv))
+
 
 def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
     options = set_option_defaults(options, {})
@@ -100,11 +103,7 @@ def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
     config = load_config(project_dir)
     created = datetime.datetime.utcnow()
     experiment = Experiment(
-        config=config,
-        project_dir=project_dir,
-        created=created,
-        params=kwargs,
-        args=sys.argv,
+        config=config, project_dir=project_dir, created=created, params=kwargs,
     )
     experiment.save()
     experiment.heartbeat.start()

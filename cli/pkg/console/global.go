@@ -1,5 +1,11 @@
 package console
 
+import (
+	"os"
+
+	"github.com/mattn/go-isatty"
+)
+
 // ConsoleInstance is the global instance of console, so we don't have to pass it around everywhere
 var ConsoleInstance *Console = &Console{
 	Color:     true,
@@ -55,4 +61,8 @@ func OutputErr(line string) {
 // DebugOutput a line to stdout. Like Output, but only when level is DebugLevel.
 func DebugOutput(line string) {
 	ConsoleInstance.DebugOutput(line)
+}
+
+func IsTTY() bool {
+	return isatty.IsTerminal(os.Stdout.Fd())
 }

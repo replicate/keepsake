@@ -53,9 +53,9 @@ if __name__ == "__main__":
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
     if use_replicate_run:
-        cmd = ["replicate", "run", "train.py"]
+        cmd = ["replicate", "run", "train.py", "--foo"]
     else:
-        cmd = ["python", "train.py"]
+        cmd = ["python", "train.py", "--foo"]
     return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()
     assert return_code == 0
 
@@ -71,6 +71,10 @@ if __name__ == "__main__":
     assert len(exp["id"]) == 64
     assert exp["params"] == {"my_param": "my-value"}
     assert exp["num_commits"] == 3
+    if use_replicate_run:
+        assert exp["command"] == "python -u train.py --foo"
+    else:
+        assert exp["command"] == "train.py --foo"
     assert len(latest["id"]) == 64
     # FIXME: now rfc3339 strings
     # assert latest["created"] > exp["created"]

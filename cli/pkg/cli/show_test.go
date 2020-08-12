@@ -36,9 +36,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
 		},
-		Host:   "10.1.1.1",
-		User:   "andreas",
-		Config: conf,
+		Command: "train.py --gamma=1.2 -x",
+		Host:    "10.1.1.1",
+		User:    "andreas",
+		Config:  conf,
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: fixedTime.Add(-1 * time.Minute),
@@ -141,6 +142,7 @@ Created:    Mon, 02 Jan 2006 22:54:05 +08
 Status:     running
 Host:       10.1.1.1
 User:       andreas
+Command:    train.py --gamma=1.2 -x
 
 Params
 param-1:    100
@@ -192,6 +194,7 @@ Created:  Mon, 02 Jan 2006 22:54:05 +08
 Status:   running
 Host:     10.1.1.1
 User:     andreas
+Command:  train.py --gamma=1.2 -x
 
 Params
 param-1:  100
