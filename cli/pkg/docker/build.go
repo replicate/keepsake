@@ -20,6 +20,10 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 		"--file", "-",
 		"--tag", name,
 	}
+	// TODO(andreas): detect if terminal supports cursor movement
+	if !console.IsTTY() {
+		args = append(args, "--progress", "plain")
+	}
 	if hasGPU {
 		args = append(args, "--build-arg", "HAS_GPU=1")
 	}

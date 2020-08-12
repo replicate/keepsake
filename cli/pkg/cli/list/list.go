@@ -34,6 +34,7 @@ type ListExperiment struct {
 	ID           string                  `json:"id"`
 	Created      time.Time               `json:"created"`
 	Params       map[string]*param.Value `json:"params"`
+	Command      string                  `json:"command"`
 	NumCommits   int                     `json:"num_commits"`
 	LatestCommit *project.Commit         `json:"latest_commit"`
 	BestCommit   *project.Commit         `json:"best_commit"`
@@ -277,6 +278,7 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 		listExperiment := ListExperiment{
 			ID:      exp.ID,
 			Params:  exp.Params,
+			Command: exp.Command,
 			Created: exp.Created,
 			Host:    exp.Host,
 			User:    exp.User,

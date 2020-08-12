@@ -46,6 +46,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
         assert "user" in actual_experiment_meta
         del actual_experiment_meta["host"]
         del actual_experiment_meta["user"]
+        del actual_experiment_meta["command"]
 
         expected_experiment_meta = {
             "id": experiment.id,

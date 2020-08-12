@@ -21,6 +21,7 @@ type Experiment struct {
 	Host    string                  `json:"host"`
 	User    string                  `json:"user"`
 	Config  *config.Config          `json:"config"`
+	Command string                  `json:"command"`
 }
 
 type NamedParam struct {
@@ -29,6 +30,7 @@ type NamedParam struct {
 }
 
 // NewExperiment creates an experiment, setting ID and Created
+// TODO(andreas): can we get rid of this function?
 func NewExperiment(params map[string]*param.Value) *Experiment {
 	return &Experiment{
 		ID:      hash.Random(),

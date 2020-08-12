@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"replicate.ai/cli/pkg/config"
+	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
@@ -30,9 +31,10 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
 		},
-		Host:   "10.1.1.1",
-		User:   "andreas",
-		Config: conf,
+		Host:    "10.1.1.1",
+		User:    "andreas",
+		Config:  conf,
+		Command: "train.py --foo bar",
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: time.Now().UTC().Add(-1 * time.Minute),
@@ -131,8 +133,8 @@ func TestOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	expected := `
 EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -164,8 +166,8 @@ func TestOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	expected := `
 EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -182,9 +184,14 @@ func TestListJSON(t *testing.T) {
 	defer os.RemoveAll(storageDir)
 
 	// Experiment no longer running
-	exp := project.NewExperiment(map[string]*param.Value{
-		"learning_rate": param.Float(0.001),
-	})
+	exp := &project.Experiment{
+		ID:      hash.Random(),
+		Created: time.Now().UTC(),
+		Params: map[string]*param.Value{
+			"learning_rate": param.Float(0.001),
+		},
+		Command: "train.py --gamma 1.2",
+	}
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
@@ -194,9 +201,14 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, com.Save(storage, workingDir))
 
 	// Experiment still running
-	exp = project.NewExperiment(map[string]*param.Value{
-		"learning_rate": param.Float(0.002),
-	})
+	exp = &project.Experiment{
+		ID:      hash.Random(),
+		Created: time.Now().UTC(),
+		Params: map[string]*param.Value{
+			"learning_rate": param.Float(0.002),
+		},
+		Command: "train.py --gamma 1.5",
+	}
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
@@ -216,11 +228,13 @@ func TestListJSON(t *testing.T) {
 	require.Equal(t, 2, len(experiments))
 
 	require.Equal(t, param.Float(0.001), experiments[0].Params["learning_rate"])
+	require.Equal(t, "train.py --gamma 1.2", experiments[0].Command)
 	require.Equal(t, 1, experiments[0].NumCommits)
 	require.Equal(t, param.Float(0.987), experiments[0].LatestCommit.Labels["accuracy"])
 	require.Equal(t, false, experiments[0].Running)
 
 	require.Equal(t, param.Float(0.002), experiments[1].Params["learning_rate"])
+	require.Equal(t, "train.py --gamma 1.5", experiments[1].Command)
 	require.Equal(t, 1, experiments[1].NumCommits)
 	require.Equal(t, param.Float(0.987), experiments[1].LatestCommit.Labels["accuracy"])
 	require.Equal(t, true, experiments[1].Running)

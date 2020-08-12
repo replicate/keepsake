@@ -170,6 +170,7 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	}
 	fmt.Fprintf(w, "Host:\t%s\n", exp.Host)
 	fmt.Fprintf(w, "User:\t%s\n", exp.User)
+	fmt.Fprintf(w, "Command:\t%s\n", exp.Command)
 
 	fmt.Fprintf(w, "\t\n")
 	fmt.Fprintf(w, "%s\t\n", au.Bold("Params"))
@@ -181,6 +182,7 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	} else {
 		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
 	}
+
 	fmt.Fprintf(w, "\t\n")
 }
 

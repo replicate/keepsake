@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -37,6 +38,7 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 	// python library to save user/host in experiment metadata
 	env = append(env, "REPLICATE_USER="+user)
 	env = append(env, "REPLICATE_HOST="+host)
+	env = append(env, "REPLICATE_COMMAND="+strings.Join(cmd, " "))
 
 	// Options for creating container
 	config := &container.Config{
