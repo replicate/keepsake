@@ -46,37 +46,50 @@ type ListExperiment struct {
 	Config *config.Config `json:"-"`
 }
 
-func RunningExperiments(store storage.Storage, format string, allParams bool) error {
-	proj := project.NewProject(store)
-	if storage.NeedsCaching(store) {
-		console.Info("Fetching experiments from %q...", store.RootURL())
+// TODO(andreas): make this safer and validate user inputs against these strings
+func (exp *ListExperiment) GetValue(name string) *param.Value {
+	if name == "started" {
+		// floating point timestamp used in sorting
+		return param.Float(float64(exp.Created.Unix()))
 	}
-	listExperiments, err := createListExperiments(proj)
-	if err != nil {
-		return err
+	if name == "step" {
+		if exp.LatestCommit != nil {
+			return param.Int(exp.LatestCommit.Step)
+		}
+		return param.Int(0)
 	}
-	running := []*ListExperiment{}
-	for _, exp := range listExperiments {
+	if name == "user" {
+		return param.String(exp.User)
+	}
+	if name == "host" {
+		return param.String(exp.Host)
+	}
+	if name == "command" {
+		return param.String(exp.Command)
+	}
+	if name == "status" {
 		if exp.Running {
-			running = append(running, exp)
+			return param.String("running")
+		}
+		return param.String("stopped")
+	}
+	if exp.BestCommit != nil {
+		if val, ok := exp.BestCommit.Labels[name]; ok {
+			return val
 		}
 	}
-
-	switch format {
-	case FormatJSON:
-		return outputJSON(running)
-	case FormatTable:
-		return outputTable(running, allParams)
+	if val, ok := exp.Params[name]; ok {
+		return val
 	}
-	return fmt.Errorf("Unknown format: %s", format)
+	return nil
 }
 
-func Experiments(store storage.Storage, format string, allParams bool) error {
+func Experiments(store storage.Storage, format string, allParams bool, filters *param.Filters) error {
 	proj := project.NewProject(store)
 	if storage.NeedsCaching(store) {
 		console.Info("Fetching experiments from %q...", store.RootURL())
 	}
-	listExperiments, err := createListExperiments(proj)
+	listExperiments, err := createListExperiments(proj, filters)
 	if err != nil {
 		return err
 	}
@@ -268,14 +281,14 @@ func getCommitHeadings(experiments []*ListExperiment) []string {
 	return slices.StringKeys(commitHeadingSet)
 }
 
-func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
+func createListExperiments(proj *project.Project, filters *param.Filters) ([]*ListExperiment, error) {
 	experiments, err := proj.Experiments()
 	if err != nil {
 		return nil, err
 	}
 	ret := []*ListExperiment{}
 	for _, exp := range experiments {
-		listExperiment := ListExperiment{
+		listExperiment := &ListExperiment{
 			ID:      exp.ID,
 			Params:  exp.Params,
 			Command: exp.Command,
@@ -284,7 +297,6 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 			User:    exp.User,
 			Config:  exp.Config,
 		}
-
 		commits, err := proj.ExperimentCommits(exp.ID)
 		if err != nil {
 			return nil, err
@@ -306,8 +318,14 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 		listExperiment.NumCommits = len(commits)
 		listExperiment.Running = running
 
-		ret = append(ret, &listExperiment)
-
+		match, err := filters.Matches(listExperiment)
+		if err != nil {
+			return nil, err
+		}
+		if !match {
+			continue
+		}
+		ret = append(ret, listExperiment)
 	}
 
 	sort.Slice(ret, func(i, j int) bool {

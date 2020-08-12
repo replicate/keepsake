@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/cli/list"
+	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
 )
@@ -22,6 +23,7 @@ func newListCommand() *cobra.Command {
 
 	addStorageURLFlag(cmd)
 	addListFormatFlags(cmd)
+	addFilterFlag(cmd)
 
 	return cmd
 }
@@ -35,11 +37,15 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	filters, err := parseFilterFlag(cmd)
+	if err != nil {
+		return err
+	}
 	store, err := storage.ForURL(storageURL)
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, allParams)
+	return list.Experiments(store, format, allParams, filters)
 }
 
 func addListFormatFlags(cmd *cobra.Command) {
@@ -63,4 +69,24 @@ func parseListFormatFlags(cmd *cobra.Command) (format string, allParams bool, er
 	}
 
 	return format, allParams, nil
+}
+
+func addFilterFlag(cmd *cobra.Command) {
+	cmd.Flags().StringArrayP("filter", "F", []string{}, "Filters (format: \"<name> <operator> <value>\")")
+}
+
+// TODO(andreas): validate filter name
+func parseFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
+	filtersStr, err := cmd.Flags().GetStringArray("filter")
+	if err != nil {
+		return nil, err
+	}
+	if len(filtersStr) > 0 {
+		filters, err := param.MakeFilters(filtersStr)
+		if err != nil {
+			return nil, err
+		}
+		return filters, nil
+	}
+	return new(param.Filters), nil
 }

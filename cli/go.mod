@@ -9,6 +9,7 @@ require (
 	github.com/GitbookIO/syncgroup v0.0.0-20181003125046-3e73b2e6a972 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/adjust/uniuri v0.0.0-20130923163420-498743145e60
+	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
 	github.com/aws/aws-sdk-go v1.33.2
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/containerd/containerd v1.3.6 // indirect
