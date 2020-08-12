@@ -1,6 +1,6 @@
 ---
 id: tutorial
-title: Tutorial
+title: First steps
 ---
 
 import Tabs from '@theme/Tabs';
