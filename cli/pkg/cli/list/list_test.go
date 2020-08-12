@@ -127,7 +127,7 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, new(param.Filters))
+		err = Experiments(store, FormatTable, false, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 	expected := `
@@ -160,7 +160,7 @@ func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, true, new(param.Filters))
+		err = Experiments(store, FormatTable, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 	expected := `
@@ -193,9 +193,10 @@ func TestListOutputTableFilter(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"step >= 5"})
 	require.NoError(t, err)
+	sorter := param.NewSorter("started")
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, filters)
+		err = Experiments(store, FormatTable, false, filters, sorter)
 	})
 	require.NoError(t, err)
 	expected := `
@@ -227,14 +228,49 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	store := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"status = running"})
 	require.NoError(t, err)
+	sorter := param.NewSorter("started")
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, filters)
+		err = Experiments(store, FormatTable, false, filters, sorter)
 	})
 	require.NoError(t, err)
 	expected := `
 EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST COMMIT      LABEL-1  BEST COMMIT        LABEL-1
 1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02     2cccccc (step 20)  0.01
+`
+	expected = expected[1:] // strip initial whitespace, added for readability
+	actual = testutil.TrimRightLines(actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestListOutputTableSort(t *testing.T) {
+	workingDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workingDir)
+
+	conf := &config.Config{
+		Metrics: []config.Metric{{
+			Name:    "label-1",
+			Goal:    config.GoalMinimize,
+			Primary: true,
+		}, {
+			Name: "label-3",
+			Goal: config.GoalMinimize,
+		}},
+	}
+
+	store := createTestData(t, workingDir, conf)
+	sorter := param.NewSorter("started-desc")
+
+	actual := capturer.CaptureStdout(func() {
+		err = Experiments(store, FormatTable, false, new(param.Filters), sorter)
+	})
+	require.NoError(t, err)
+	expected := `
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -286,7 +322,7 @@ func TestListJSON(t *testing.T) {
 
 	// replicate list
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(storage, FormatJSON, true, new(param.Filters))
+		err = Experiments(storage, FormatJSON, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 

@@ -19,7 +19,8 @@ func newPsCommand() *cobra.Command {
 
 	addStorageURLFlag(cmd)
 	addListFormatFlags(cmd)
-	addFilterFlag(cmd)
+	addListFilterFlag(cmd)
+	addListSortFlag(cmd)
 
 	return cmd
 }
@@ -33,7 +34,11 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	filters, err := parseFilterFlag(cmd)
+	filters, err := parseListFilterFlag(cmd)
+	if err != nil {
+		return err
+	}
+	sortKey, err := parseListSortFlag(cmd)
 	if err != nil {
 		return err
 	}
@@ -42,5 +47,5 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, allParams, filters)
+	return list.Experiments(store, format, allParams, filters, sortKey)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/araddon/dateparse"
 )
 
-type Filterable interface {
+type ValueGetter interface {
 	GetValue(name string) *Value
 }
 
@@ -70,7 +70,7 @@ func (fs *Filters) appendParsed(s string) error {
 	return nil
 }
 
-func (fs *Filters) Matches(obj Filterable) (bool, error) {
+func (fs *Filters) Matches(obj ValueGetter) (bool, error) {
 	for _, f := range fs.filters {
 		match, err := f.matches(obj)
 		if err != nil {
@@ -83,7 +83,7 @@ func (fs *Filters) Matches(obj Filterable) (bool, error) {
 	return true, nil
 }
 
-func (f *filter) matches(obj Filterable) (bool, error) {
+func (f *filter) matches(obj ValueGetter) (bool, error) {
 	value := obj.GetValue(f.name)
 	if value == nil {
 		return f.value.IsNone() && f.operator == OperatorEqual, nil
