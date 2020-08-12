@@ -95,6 +95,7 @@ replicate ls [flags]
   -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -f, --format string        Output format (table/json) (default "table")
   -h, --help                 help for ls
+  -S, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
   -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
@@ -118,6 +119,7 @@ replicate ps [flags]
   -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -f, --format string        Output format (table/json) (default "table")
   -h, --help                 help for ps
+  -S, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
   -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)

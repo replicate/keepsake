@@ -84,7 +84,7 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 	return nil
 }
 
-func Experiments(store storage.Storage, format string, allParams bool, filters *param.Filters) error {
+func Experiments(store storage.Storage, format string, allParams bool, filters *param.Filters, sorter *param.Sorter) error {
 	proj := project.NewProject(store)
 	if storage.NeedsCaching(store) {
 		console.Info("Fetching experiments from %q...", store.RootURL())
@@ -93,6 +93,10 @@ func Experiments(store storage.Storage, format string, allParams bool, filters *
 	if err != nil {
 		return err
 	}
+	sort.Slice(listExperiments, func(i, j int) bool {
+		return sorter.LessThan(listExperiments[i], listExperiments[j])
+	})
+
 	switch format {
 	case FormatJSON:
 		return outputJSON(listExperiments)

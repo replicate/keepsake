@@ -23,7 +23,8 @@ func newListCommand() *cobra.Command {
 
 	addStorageURLFlag(cmd)
 	addListFormatFlags(cmd)
-	addFilterFlag(cmd)
+	addListFilterFlag(cmd)
+	addListSortFlag(cmd)
 
 	return cmd
 }
@@ -37,7 +38,11 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	filters, err := parseFilterFlag(cmd)
+	filters, err := parseListFilterFlag(cmd)
+	if err != nil {
+		return err
+	}
+	sortKey, err := parseListSortFlag(cmd)
 	if err != nil {
 		return err
 	}
@@ -45,7 +50,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, allParams, filters)
+	return list.Experiments(store, format, allParams, filters, sortKey)
 }
 
 func addListFormatFlags(cmd *cobra.Command) {
@@ -71,12 +76,12 @@ func parseListFormatFlags(cmd *cobra.Command) (format string, allParams bool, er
 	return format, allParams, nil
 }
 
-func addFilterFlag(cmd *cobra.Command) {
+func addListFilterFlag(cmd *cobra.Command) {
 	cmd.Flags().StringArrayP("filter", "F", []string{}, "Filters (format: \"<name> <operator> <value>\")")
 }
 
 // TODO(andreas): validate filter name
-func parseFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
+func parseListFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 	filtersStr, err := cmd.Flags().GetStringArray("filter")
 	if err != nil {
 		return nil, err
@@ -89,4 +94,16 @@ func parseFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 		return filters, nil
 	}
 	return new(param.Filters), nil
+}
+
+func addListSortFlag(cmd *cobra.Command) {
+	cmd.Flags().StringP("sort", "S", "started", "Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc")
+}
+
+func parseListSortFlag(cmd *cobra.Command) (*param.Sorter, error) {
+	sortString, err := cmd.Flags().GetString("sort")
+	if err != nil {
+		return nil, err
+	}
+	return param.NewSorter(sortString), nil
 }

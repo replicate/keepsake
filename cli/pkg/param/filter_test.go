@@ -11,6 +11,7 @@ func TestParseTypesGood(t *testing.T) {
 		input    string
 		expected filter
 	}{
+		{"foo=0.001", filter{"foo", OperatorEqual, Float(0.001)}},
 		{"foo = bar", filter{"foo", OperatorEqual, String("bar")}},
 		{"f = bar", filter{"f", OperatorEqual, String("bar")}},
 		{" foo=bar ", filter{"foo", OperatorEqual, String("bar")}},
