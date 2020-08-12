@@ -45,13 +45,6 @@ type ListExperiment struct {
 	Config *config.Config `json:"-"`
 }
 
-func (e *ListExperiment) LatestActivity() time.Time {
-	if e.LatestCommit != nil {
-		return e.LatestCommit.Created
-	}
-	return e.Created
-}
-
 func RunningExperiments(store storage.Storage, format string, allParams bool) error {
 	proj := project.NewProject(store)
 	if storage.NeedsCaching(store) {
@@ -316,7 +309,7 @@ func createListExperiments(proj *project.Project) ([]*ListExperiment, error) {
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].LatestActivity().Before(ret[j].LatestActivity())
+		return ret[i].Created.Before(ret[j].Created)
 	})
 
 	return ret, nil
