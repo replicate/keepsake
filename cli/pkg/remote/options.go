@@ -90,5 +90,9 @@ func (o *Options) SSHArgs() []string {
 	// TODO: lower log level?
 	args = append(args, "-o", "LogLevel=ERROR")
 
+	// When you pass a command to OpenSSH, it disables TTYs. This enables them.
+	// It will only enable TTYs if the local stdin is a TTY, so it's safe to pass to rsync and Docker.
+	args = append(args, "-t")
+
 	return args
 }
