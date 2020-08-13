@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.check_output(
-            ["replicate", "list", "--format=json"], cwd=tmpdir, env=env,
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
         )
     )
     assert len(experiments) == 1
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # test that --storage-url works
     experiments2 = json.loads(
         subprocess.check_output(
-            ["replicate", "list", "--format=json", "--storage-url=" + storage],
+            ["replicate", "list", "--json", "--storage-url=" + storage],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
         )

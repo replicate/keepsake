@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.check_output(
-            ["replicate", "list", "--format=json"], cwd=tmpdir, env=env,
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
         )
     )
     assert len(experiments) == 1
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     running = json.loads(
         subprocess.check_output(
-            ["replicate", "ps", "--format=json"], cwd=tmpdir, env=env,
+            ["replicate", "ps", "--json"], cwd=tmpdir, env=env,
         )
     )
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     time.sleep(31)  # TODO(andreas): speed this up to make CI faster
     experiments = json.loads(
         subprocess.check_output(
-            ["replicate", "list", "--format=json"], cwd=tmpdir, env=env,
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
         )
     )
     assert len(experiments) == 1
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     running = json.loads(
         subprocess.check_output(
-            ["replicate", "ps", "--format=json"], cwd=tmpdir, env=env,
+            ["replicate", "ps", "--json"], cwd=tmpdir, env=env,
         )
     )
     assert len(running) == 0

@@ -18,7 +18,7 @@ func getAurora() aurora.Aurora {
 }
 
 func addStorageURLFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("storage-url", "s", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
+	cmd.Flags().StringP("storage-url", "S", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
 }
 
 // getStorageURLFromConfigOrFlag uses --storage-url if it exists,

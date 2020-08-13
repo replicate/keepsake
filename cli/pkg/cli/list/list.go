@@ -18,8 +18,12 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
-const FormatJSON = "json"
-const FormatTable = "table"
+type Format int
+
+const (
+	FormatJSON = iota
+	FormatTable
+)
 
 const valueMaxLength = 10
 const valueTruncate = 5
@@ -84,7 +88,7 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 	return nil
 }
 
-func Experiments(store storage.Storage, format string, allParams bool, filters *param.Filters, sorter *param.Sorter) error {
+func Experiments(store storage.Storage, format Format, allParams bool, filters *param.Filters, sorter *param.Sorter) error {
 	proj := project.NewProject(store)
 	if storage.NeedsCaching(store) {
 		console.Info("Fetching experiments from %q...", store.RootURL())
@@ -103,7 +107,7 @@ func Experiments(store storage.Storage, format string, allParams bool, filters *
 	case FormatTable:
 		return outputTable(listExperiments, allParams)
 	}
-	return fmt.Errorf("Unknown format: %s", format)
+	panic(fmt.Sprintf("Unknown format: %d", format))
 }
 
 func outputJSON(experiments []*ListExperiment) error {
