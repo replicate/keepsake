@@ -152,7 +152,7 @@ where <operator> can be
 	}
 
 	// TODO(andreas): this is a hack since we don't have a "time" parameter type. we should perhaps add that
-	if f.name == "created" {
+	if f.name == "started" {
 		t, err := dateparse.ParseLocal(value)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse created time, got error: %s", err)
