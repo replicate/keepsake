@@ -143,10 +143,10 @@ It supports several different storage mechanisms:
 
   You must [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and run `aws configure` to authenticate with your Amazon account before using this method.
 
-- **Google Cloud Storage**: If you use the form `gcs://bucket-name`, it will store the data on Google Cloud Storage. For example:
+- **Google Cloud Storage**: If you use the form `gs://bucket-name`, it will store the data on Google Cloud Storage. For example:
 
   ```yaml
-  storage: "gcs://hooli-hotdog-detector"
+  storage: "gs://hooli-hotdog-detector"
   ```
 
   You must install the [Cloud SDK](https://cloud.google.com/sdk) and run `gcloud auth login` before using this method.

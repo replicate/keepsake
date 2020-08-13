@@ -35,7 +35,7 @@ func NewGCSStorage(bucket string) (*GCSStorage, error) {
 }
 
 func (s *GCSStorage) RootURL() string {
-	return "gcs://" + s.bucketName
+	return "gs://" + s.bucketName
 }
 
 func (s *GCSStorage) Get(path string) ([]byte, error) {
