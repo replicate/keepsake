@@ -136,7 +136,7 @@ Create `requirements.txt` to define our requirements:
 <CodeBlock className="txt" metastring='title="requirements.txt"'>
 {`replicate==`+config.customFields.version+`
 scikit-learn==0.23.1
-torch==1.5.1
+torch==1.4.0
 `}</CodeBlock>
  
 
