@@ -24,8 +24,7 @@ func (c *Client) WrapCommand(cmd *exec.Cmd) *exec.Cmd {
 	// SendEnv doesn't work if AcceptEnv isn't set on
 	// the SSH server, so we have to hack together an export
 	// string instead.
-	// TODO(andreas): this is horrible, it exposes a bunch
-	// of sensitive variables in the process list.
+	// TODO: is there a better way to do this?
 	if len(cmd.Env) > 0 {
 		exports := []string{}
 		for _, env := range cmd.Env {
@@ -53,6 +52,7 @@ func (c *Client) WrapCommand(cmd *exec.Cmd) *exec.Cmd {
 // WrapCommandExternalEnv writes environment variables to a temporary
 // on the remote host. Before running the remote command, the
 // temporary file is sourced, then immediately deleted.
+// FIXME (bfirsh): this is no longer used, so remove if we turn out not to use it
 func (c *Client) WrapCommandSafeEnv(cmd *exec.Cmd) (*exec.Cmd, error) {
 	remoteEnvPath := path.Join("/tmp", uniuri.New()+".sh")
 	envFile, err := c.sftpClient.Create(remoteEnvPath)

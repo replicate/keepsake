@@ -46,6 +46,7 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 
 	// Local
 	if remoteOptions == nil {
+		// Pass through entire env, because "docker build" needs some basic envvars set
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
 		cmd.Dir = folder
@@ -56,8 +57,10 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	}
 
 	// Remote, via SSH
-	cmd.Env = os.Environ() // the environment gets filtered later in client.WrapCommandSafeEnv
-	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
+
+	// SSH runs this command inside a shell so it will have basic envvars set, so just
+	// set the additional envvars we want
+	cmd.Env = []string{"DOCKER_BUILDKIT=1"}
 
 	remoteTempDir, err := remote.UploadToTempDir(folder, remoteOptions)
 	if err != nil {
@@ -68,10 +71,8 @@ func Build(remoteOptions *remote.Options, folder string, dockerfile string, name
 	if err != nil {
 		return err
 	}
-	remoteCmd, err := client.WrapCommandSafeEnv(cmd)
-	if err != nil {
-		return err
-	}
+	// Docker build just writes to stderr -- this how it checks if it should show progress
+	remoteCmd := client.WrapCommand(cmd)
 	if err := remoteCmd.Start(); err != nil {
 		return err
 	}
