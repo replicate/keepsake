@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VERSION := 0.0.1
+VERSION := 0.1.3
 PLATFORMS := darwin linux windows
 ARCHITECTURES := 386 amd64
 GOOS := $(shell go env GOOS)
@@ -117,16 +117,6 @@ pre-commit: check-fmt vet lint
 .PHONY: bump-version
 bump-version:
 	script/bump-version
-
-.PHONY: release
-release:
-	# TODO: check you haven't got a dirty checkout
-	git checkout master
-	git pull
-	git commit -m "Bump to version $(VERSION)" Makefile
-	git tag "v$(VERSION)"
-	git push
-	git push --tags
 
 .PHONY: cover-profile
 cover-profile: vet lint
