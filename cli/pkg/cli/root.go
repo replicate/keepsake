@@ -40,8 +40,11 @@ func NewRootCommand() (*cobra.Command, error) {
 
 	rootCmd := cobra.Command{
 		Use:   "replicate",
-		Short: "Reproducible packaging for maching learning models.",
-		// Long: ``, <-- TODO
+		Short: "Version control for machine learning",
+		// TODO: append getting started link to end of help text?
+		Long: `Replicate: Version control for machine learning.
+
+To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 
 		Version:       global.Version,
 		SilenceErrors: true,
