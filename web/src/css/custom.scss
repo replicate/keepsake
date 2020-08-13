@@ -8,16 +8,15 @@
 /* You can override the default Infima variables here. */
 /* https://v2.docusaurus.io/docs/styling-layout */
 :root {
-  --ifm-color-primary: #555555;
-  --ifm-color-primary-dark: #4d4d4d;
-  --ifm-color-primary-darker: #484848;
-  --ifm-color-primary-darkest: #3b3b3b;
-  --ifm-color-primary-light: #5e5e5e;
-  --ifm-color-primary-lighter: #626262;
-  --ifm-color-primary-lightest: #6e6e6e;
+  --ifm-color-primary: #158467;
+  --ifm-color-primary-dark: #13775d;
+  --ifm-color-primary-darker: #127058;
+  --ifm-color-primary-darkest: #0f5c48;
+  --ifm-color-primary-light: #179171;
+  --ifm-color-primary-lighter: #189876;
+  --ifm-color-primary-lightest: #1bac86;
   --ifm-code-font-size: 90%;
   --ifm-font-size-base: 16px;
-  --ifm-link-decoration: underline;
 }
 
 .docusaurus-highlight-code-line {
