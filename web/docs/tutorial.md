@@ -180,7 +180,7 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 ## Experiments and commits
 
-By default, the calls to the `replicate` Python library have saved your experiments to the `.replicate` directory inside your project. You can use `replicate list` to list them:
+The calls to the `replicate` Python library have saved your experiments locally, similar to how Git works. You can use `replicate list` to list them:
 
 ```shell-session
 $ replicate list
