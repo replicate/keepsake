@@ -113,7 +113,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--learning_rate", type=float, default=0.01)
     parser.add_argument("--num_epochs", type=int, default=100)
-    train(**vars(parser.parse_args()))
+    args = parser.parse_args()
+    train(args.learning_rate, args.num_epochs)
 ```
 
 Notice there are two statements in this training code that call Replicate, highlighted.
@@ -122,7 +123,7 @@ The first is `replicate.init()`. This creates an **experiment**, which represent
 
 The second is `experiment.commit()`. This creates a **commit** within the experiment, which saves the exact state of the filesystem at that point (code, weights, Tensorboard logs, etc), along with some metrics you pass to the function.
 
-An experiment will typically contain multiple commits to save the progress of your training script over time, and they're typically done on every epoch after where you might save your model file.
+An experiment will typically contain multiple commits to save the progress of your training script over time. You'll usually commit just after you've saved your model weights or some other artifact, at the end of an epoch or every few iterations.
 
 ## Install the dependencies
 
@@ -131,12 +132,12 @@ Before we start training, we need to install the Python packages that the model 
 Create `requirements.txt` to define our requirements:
 
 ```txt title="requirements.txt"
-https://storage.googleapis.com/replicate-python-dev/replicate-0.0.9.tar.gz
+https://storage.googleapis.com/replicate-python-dev/replicate-0.0.12.tar.gz
 scikit-learn==0.23.1
 torch==1.5.1
 ```
 
-Then, install the Python requirements inside a Virtualenv:
+Then, install the Python requirements inside a [Virtualenv](https://virtualenv.pypa.io/en/latest/):
 
 ```shell-session
 virtualenv venv
@@ -176,7 +177,7 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 ## Experiments and commits
 
-By default, the calls to the `replicate` Python library have saved your experiments to your local disk. You can use `replicate list` to list them:
+By default, the calls to the `replicate` Python library have saved your experiments to the `.replicate` directory inside your project. You can use `replicate list` to list them:
 
 ```shell-session
 $ replicate list
@@ -197,6 +198,7 @@ Created:  Thu, 06 Aug 2020 11:55:54 PDT
 Status:   stopped
 Host:     107.133.144.125
 User:     ben
+Command:  train.py
 
 Params
 learning_rate:  0.01
@@ -233,6 +235,7 @@ Created:  Thu, 06 Aug 2020 11:55:54 PDT
 Status:   stopped
 Host:     107.133.144.125
 User:     ben
+Command:  train.py
 
 Params
 learning_rate:  0.01
@@ -257,7 +260,7 @@ Let's compare the last commits from the two experiments we ran:
 $ replicate diff c9f a7c
 ═══╡ "c9f" is an experiment, picking the latest commit
 ═══╡ "a7c" is an experiment, picking the latest commit
-Checkpoint:               d4fb0d3                   1f0865c
+Commit:                   d4fb0d3                   1f0865c
 Experiment:               c9f380d                   a7cd781
 
 Params

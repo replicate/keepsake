@@ -192,9 +192,9 @@ def train(**params):
 
               <CodeBlock className="shell-session">
                 {`$ replicate ls
-EXPERIMENT   HOST         STATUS     BEST COMMIT
-e510303      10.52.2.23   finished   49668cb (val_loss=0.1484)
-9e97e07      10.52.7.11   finished   41f0c60 (val_loss=0.1989)`}
+EXPERIMENT   HOST         STATUS    BEST COMMIT
+e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
+9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
               </CodeBlock>
             </div>
             <div className={classnames(`col col--6`)}>
@@ -206,7 +206,7 @@ e510303      10.52.2.23   finished   49668cb (val_loss=0.1484)
               </p>
               <CodeBlock className="shell-session">
                 {`$ replicate diff 49668cb 41f0c60
-Checkpoint:       49668cb     41f0c60
+Commit:           49668cb     41f0c60
 Experiment:       e510303     9e97e07
 
 Params

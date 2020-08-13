@@ -34,7 +34,7 @@ If an experiment ID is passed, it will pick the best commit from that experiment
 }
 
 func diffCommits(cmd *cobra.Command, args []string) error {
-	// TODO(andreas): generalize to >2 commits/checkpoints
+	// TODO(andreas): generalize to >2 commits/experiments
 
 	prefix1 := args[0]
 	prefix2 := args[1]
@@ -83,7 +83,7 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	// min width for 3 columns in 78 char terminal
 	w := tabwriter.NewWriter(out, 78/3, 8, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Checkpoint:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
+	fmt.Fprintf(w, "Commit:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
 	fmt.Fprintf(w, "Experiment:\t%s\t%s\n", com1.ShortExperimentID(), com2.ShortExperimentID())
 
 	br(w)
