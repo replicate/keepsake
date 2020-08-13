@@ -31,7 +31,7 @@ replicate checkout <commit-id> [flags]
   -f, --force                     Force checkout without prompt, even if the directory is not empty
   -h, --help                      help for checkout
   -o, --output-directory string   Output directory (defaults to working directory or directory with replicate.yaml in it)
-  -s, --storage-url string        Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
+  -S, --storage-url string        Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
   -D, --source-directory string   Local source directory
@@ -53,7 +53,7 @@ replicate diff <id> <id> [flags]
 
 ```
   -h, --help                 help for diff
-  -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
+  -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
   -D, --source-directory string   Local source directory
@@ -92,11 +92,11 @@ replicate ls [flags]
 
 ```
   -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
-  -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
-  -f, --format string        Output format (table/json) (default "table")
+  -f, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -h, --help                 help for ls
-  -S, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
-  -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
+      --json                 Print output in JSON format
+  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
+  -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
   -D, --source-directory string   Local source directory
@@ -116,11 +116,11 @@ replicate ps [flags]
 
 ```
   -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
-  -F, --filter stringArray   Filters (format: "<name> <operator> <value>")
-  -f, --format string        Output format (table/json) (default "table")
+  -f, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -h, --help                 help for ps
-  -S, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
-  -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
+      --json                 Print output in JSON format
+  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
+  -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
   -D, --source-directory string   Local source directory
@@ -162,7 +162,7 @@ replicate show <experiment-or-commit-id> [flags]
 
 ```
   -h, --help                 help for show
-  -s, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
+  -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                     Display color in output (default true)
   -D, --source-directory string   Local source directory

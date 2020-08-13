@@ -1,14 +1,10 @@
 package cli
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/cli/list"
 	"replicate.ai/cli/pkg/param"
-	"replicate.ai/cli/pkg/slices"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -54,30 +50,31 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 }
 
 func addListFormatFlags(cmd *cobra.Command) {
-	cmd.Flags().StringP("format", "f", "table", "Output format (table/json)")
+	cmd.Flags().Bool("json", false, "Print output in JSON format")
 	cmd.Flags().BoolP("all-params", "p", false, "Output all experiment params (by default, outputs only parameters that change between experiments)")
 }
 
-func parseListFormatFlags(cmd *cobra.Command) (format string, allParams bool, err error) {
-	format, err = cmd.Flags().GetString("format")
+func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams bool, err error) {
+	json, err := cmd.Flags().GetBool("json")
 	if err != nil {
-		return "", false, err
+		return 0, false, err
 	}
-	validFormats := []string{list.FormatJSON, list.FormatTable}
-	if !slices.ContainsString(validFormats, format) {
-		return "", false, fmt.Errorf("%s is not a valid format. Valid formats are: %s", format, strings.Join(validFormats, ", "))
+	if json {
+		format = list.FormatJSON
+	} else {
+		format = list.FormatTable
 	}
 
 	allParams, err = cmd.Flags().GetBool("all-params")
 	if err != nil {
-		return "", false, err
+		return 0, false, err
 	}
 
 	return format, allParams, nil
 }
 
 func addListFilterFlag(cmd *cobra.Command) {
-	cmd.Flags().StringArrayP("filter", "F", []string{}, "Filters (format: \"<name> <operator> <value>\")")
+	cmd.Flags().StringArrayP("filter", "f", []string{}, "Filters (format: \"<name> <operator> <value>\")")
 }
 
 // TODO(andreas): validate filter name
@@ -97,7 +94,7 @@ func parseListFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 }
 
 func addListSortFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("sort", "S", "started", "Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc")
+	cmd.Flags().StringP("sort", "s", "started", "Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc")
 }
 
 func parseListSortFlag(cmd *cobra.Command) (*param.Sorter, error) {
