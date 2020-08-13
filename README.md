@@ -6,6 +6,14 @@ Version control for machine learning.
 
 ## Contributing
 
+## Release
+
+```
+make release VERSION=<version>
+```
+
+This will push a new tag, which will trigger the "Release" Github action.
+
 ## Project structure
 
 ## VSCode development environment

@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: "Build, Test, & Release"
+    runs-on: ubuntu-latest
+    env:
+      # replace with I_AM_A_MACHINE envvar when that exists
+      REPLICATE_NO_ANALYTICS: "1"
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Setup gcloud
+        if: github.event_name != 'pull_request'
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '270.0.0'
+          service_account_email: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      - name: Build CLI
+        run: cd cli && make build-all
+      - name: Build Python
+        run: cd python && make build
+      - name: Set version
+        run: |
+          echo "::set-env name=version::$(./release/linux/amd64/replicate --version | cut -f3 -d' ')"
+      - name: Push CLI
+        run: |
+          gsutil -m rsync -r release/ gs://replicate-public/cli/$version
+          gsutil -m rsync -r release/ gs://replicate-public/cli/latest
+      - name: Push Python
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
+          packages_dir: custom-dir/
