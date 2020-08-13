@@ -82,7 +82,6 @@ func runCommand(opts runOpts, args []string) (err error) {
 		return err
 	}
 	console.Debug("Using directory: %s", sourceDir)
-	console.Info("Building Docker image...")
 
 	hostCUDADriverVersion := ""
 	if remoteOptions != nil {
@@ -103,6 +102,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 	}
 	hasGPU := hostCUDADriverVersion != ""
 
+	console.Info("Building Docker image...")
 	baseImage, err := build.GetBaseImage(conf, sourceDir, hostCUDADriverVersion)
 	if err != nil {
 		return err
