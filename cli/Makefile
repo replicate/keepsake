@@ -148,5 +148,5 @@ docs:
 # day-to-day, but should be run on CI. E.g. checking generated files are committed,
 # commit is signed off with Developer Certificate of Origin, etc.
 .PHONY: validate
-validate: docs
+validate: assets docs
 	make/validate
