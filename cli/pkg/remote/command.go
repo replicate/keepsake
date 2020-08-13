@@ -2,6 +2,7 @@ package remote
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -44,8 +45,8 @@ func (c *Client) WrapCommand(cmd *exec.Cmd) *exec.Cmd {
 	wrapped.Stdin = cmd.Stdin
 	wrapped.Stdout = cmd.Stdout
 	wrapped.Stderr = cmd.Stderr
-	wrapped.Env = FilterEnvList(cmd.Env)
-
+	// Environment passed to local `ssh` command, not to command running on remote machine
+	wrapped.Env = os.Environ()
 	return wrapped
 }
 
