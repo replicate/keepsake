@@ -3,8 +3,10 @@ id: tutorial
 title: First steps
 ---
 
+import CodeBlock from "@theme/CodeBlock";
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import config from '../docusaurus.config.js';
 
 If you like to **learn by doing**, this guide will help you learn how Replicate works by building a simple model.
 
@@ -131,11 +133,12 @@ Before we start training, we need to install the Python packages that the model 
 
 Create `requirements.txt` to define our requirements:
 
-```txt title="requirements.txt"
-https://storage.googleapis.com/replicate-python-dev/replicate-0.0.12.tar.gz
+<CodeBlock className="txt" metastring='title="requirements.txt"'>
+{`replicate==`+config.customFields.version+`
 scikit-learn==0.23.1
 torch==1.5.1
-```
+`}</CodeBlock>
+ 
 
 Then, install the Python requirements inside a [Virtualenv](https://virtualenv.pypa.io/en/latest/):
 
