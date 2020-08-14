@@ -1,7 +1,5 @@
 .PHONY: release
-release: guard-VERSION
-	verify-clean-master
-	bump-version
+release: check-version-var verify-clean-master bump-version
 	git commit -m "Bump to version $(VERSION)" Makefile
 	git tag "v$(VERSION)"
 	git push
@@ -20,12 +18,6 @@ verify-clean-master:
 	git checkout master
 	git pull origin master
 
-guard-%:
-    @ if [ "${${*}}" = "" ]; then \
-	echo "Environment variable $* not set"; \
-	exit 1; \
-    fi
-
 .PHONY: release-python
 manually-release-python:
 	cd python && \
@@ -39,3 +31,7 @@ manually-release-cli:
 	$(MAKE) build-all && \
 	gsutil cp -r release/ "gs://replicate-public/cli/$VERSION" && \
 	gsutil cp -r release/ "gs://replicate-public/cli/latest"
+
+.PHONY: check-version-var
+check-version-var:
+	test $(VERSION)

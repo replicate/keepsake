@@ -74,5 +74,5 @@ if __name__ == "__main__":
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "train.py", rand]
+    expected_paths = ["replicate.yaml", "requirements.txt", "train.py", rand]
     assert set(actual_paths) == set(expected_paths)
