@@ -44,6 +44,9 @@ if __name__ == "__main__":
     main()
 """
         )
+    # TODO: upload Python library
+    with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
+        f.write("replicate==0.1.3")
 
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
@@ -53,9 +56,7 @@ if __name__ == "__main__":
     assert return_code == 0
 
     experiments = json.loads(
-        subprocess.check_output(
-            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
-        )
+        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
     )
     assert len(experiments) == 1
 
