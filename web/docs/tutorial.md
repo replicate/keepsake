@@ -178,7 +178,7 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 ## Experiments and commits
 
-The calls to the `replicate` Python library have saved your experiments locally, similar to how Git works. You can use `replicate list` to list them:
+The calls to the `replicate` Python library have saved your experiments locally. You can use `replicate list` to list them:
 
 ```shell-session
 $ replicate list
@@ -187,12 +187,18 @@ c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
 a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
 ```
 
+:::note
+Similar to how Git works, all this data is in your working directory, so you'll only see experiments from the model you're working on.
+
+If you want to poke around, the data is inside `.replicate/`.
+:::
+
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
 
-To list the commits within these experiments, you can use `replicate show`:
+To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f` with an experiment ID from your output of `replicate list`:
 
 ```shell-session
-$ replicate show c9f
+$ replicate show c9f380d
 Experiment: c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
 
 Created:  Thu, 06 Aug 2020 11:55:54 PDT
@@ -217,11 +223,7 @@ c811301  3     6 hours ago  0.63333   1.0138
 d4fb0d3  99    6 hours ago  1         0.1176
 ```
 
-:::note
-Notice you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
-:::
-
-You can also use `replicate show` on commits to get all the information about it:
+You can also use `replicate show` on commits to get all the information about it. Run this, replacing `d4f` with a commit ID from the experiment:
 
 ```shell-session
 $ replicate show d4f
@@ -248,19 +250,15 @@ loss:      0.11759971082210541
 ```
 
 :::note
-Similar to how Git works, all this data is in the current directory, so you'll only see experiments from the model you're working on.
-
-If you want to poke around, the data is inside `.replicate/` in your working directory.
+Notice you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
 :::
 
 ## Compare commits
 
-Let's compare the last commits from the two experiments we ran:
+Let's compare the last commits from the two experiments we ran. Run this, replacing `d4fb0d3` and `1f0865c` with the two commit IDs from the `LATEST COMMIT` column in `replicate ls`:
 
 ```shell-session
-$ replicate diff c9f a7c
-═══╡ "c9f" is an experiment, picking the latest commit
-═══╡ "a7c" is an experiment, picking the latest commit
+$ replicate diff d4fb0d3 1f0865c
 Commit:                   d4fb0d3                   1f0865c
 Experiment:               c9f380d                   a7cd781
 
@@ -275,16 +273,16 @@ loss:                     0.11759971082210541       0.056485891342163086
 `replicate diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Replicate is aware of: params, metrics, dependencies, and so on.
 
 :::note
-`replicate diff` compares **commits**, because that is the thing that actually has all the results. When you pass an experiment ID, it picks the best or latest commit from that experiment.
+`replicate diff` compares **commits**, because that is the thing that actually has all the results.
 
-If you want to compare specific commits, you can pass the commit ID.
+You can also pass an experiment ID, and it will pick the best or latest commit from that experiment.
 :::
 
 ## Check out a commit
 
 At some point you might want to get back to some point in the past. Maybe you've run a bunch of experiments in parallel, and you want to choose one that works best. Or, perhaps you've gone down a line of exploration and it's not working, so you want to get back to where you were a week ago.
 
-The `replicate checkout` command will the files the commit and copy them into your working directory. For example:
+The `replicate checkout` command will copy the files from a commit into your working directory. Run this, replacing `d4fb0d3` with a commit ID you passed to `replicate diff`:
 
 ```shell-session
 $ replicate checkout d4fb0d3
@@ -303,7 +301,7 @@ $ ls -lh model.pth
 -rw-r--r--  1 ben  staff   8.3K Aug  7 16:42 model.pth
 ```
 
-This is useful for getting the trained model out of an experiment from the past, but **it also copies all of the code from that commit**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment so you can commit it to Git.
+This is useful for getting the trained model out of an experiment from the past, but **it also copies all of the code from that commit**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment.
 
 **This means you don't have to remember to commit to Git when you're running experiments.** Just try a bunch of things, then when you've found something that works, use Replicate to get back to the exact code that produced those results and formally commit it to Git.
 
@@ -313,7 +311,7 @@ Neat, huh? Replicate is keeping track of everything in the background so you don
 
 With these tools, let's recap what the workflow looks like:
 
-- Add `experiment = replicate.init()` and `experiment.commit()` to our training code.
+- Add `experiment = replicate.init()` and `experiment.commit()` to your training code.
 - Run several experiments by running the training script as usual, with changes to the hyperparameters or code.
 - See the results of our experiments with `replicate ls` and `replicate show`.
 - Compare the differences between experiments with `replicate diff`.
