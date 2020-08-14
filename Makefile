@@ -30,7 +30,7 @@ manually-release-python:
 manually-release-cli:
 	cd cli && \
 	$(MAKE) build-all && \
-	gsutil cp -r release/ "gs://replicate-public/cli/$VERSION" && \
+	gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" && \
 	gsutil cp -r release/ "gs://replicate-public/cli/latest"
 
 .PHONY: check-version-var
