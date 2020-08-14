@@ -20,7 +20,10 @@ storage: {storage}
             )
         )
     with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
-        f.write("torch==1.4.0")
+        f.write("""
+torch==1.4.0
+replicate
+""")
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
         f.write(
             """

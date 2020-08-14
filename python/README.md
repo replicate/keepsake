@@ -56,7 +56,6 @@ This will build an egg in `dist/`.
 
     - `python/setup.py`
     - `cli/raw-assets/Dockerfile`
-    - `cli/pkg/build/build_test.go`
 
 2.  Build the assets:
 

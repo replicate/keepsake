@@ -85,7 +85,7 @@ CMD cat /foo.txt
 
 	cmd := client.Command("docker", "run", "-i", "--rm", name)
 	require.NoError(t, err)
-	out, err := cmd.CombinedOutput()
+	out, err := cmd.Output()
 	require.NoError(t, err)
 	require.Equal(t, text, string(out))
 }

@@ -55,9 +55,6 @@ RUN apt-get install -y ffmpeg
 COPY "requirements.txt" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
-# FIXME: temporary, until this is on pypi or we find a better temporary spot
-RUN pip install https://storage.googleapis.com/replicate-python-dev/replicate-0.0.12.tar.gz
-
 COPY . /code
 WORKDIR /code
 `
