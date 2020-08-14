@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VERSION := 0.1.4
+VERSION := 0.1.5
 PLATFORMS := darwin linux windows
 ARCHITECTURES := 386 amd64
 GOOS := $(shell go env GOOS)
