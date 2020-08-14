@@ -34,11 +34,11 @@ jobs:
           echo "::set-env name=version::$(./release/linux/amd64/replicate --version | cut -f3 -d' ')"
       - name: Push CLI
         run: |
-          gsutil -m rsync -r release/ gs://replicate-public/cli/$version
-          gsutil -m rsync -r release/ gs://replicate-public/cli/latest
+          gsutil -m rsync -r cli/release/ gs://replicate-public/cli/$version
+          gsutil -m rsync -r cli/release/ gs://replicate-public/cli/latest
       - name: Push Python
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: custom-dir/
+          packages_dir: python/dist
