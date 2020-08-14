@@ -71,11 +71,11 @@ If you're following along from [the tutorial](tutorial.md), run `python train.py
 
 A common pattern for training is to copy the code you are working on locally to a remote GPU machine, and then start the training job. Then, when it's finished, copy the results and artifacts back to your local machine or cloud storage.
 
-Replicate makes this pattern really easy. It can run training jobs anywhere SSH where Docker is installed that you can log into via SSH.
+Replicate makes this pattern really easy. It can run training jobs anywhere Docker is installed that you can log into via SSH.
 
 ### Create a training machine
 
-The first step is to create a machine to run training jobs. If you're already got a machine that you can access via SSH, you're already sorted. Otherwise, you need to create a cloud GPU instance.
+The first step is to create a machine to run training jobs. If you're already got a machine that you can access via SSH, you're good to go. Otherwise, you need to create a cloud GPU instance.
 
 <Tabs
 groupId="cloud-service"
@@ -128,7 +128,7 @@ Next, we need to tell Replicate what version of Python you want to use. Add this
 python: "3.8"
 ```
 
-You can now use `replicate run` to run a training job on a remote machine. The only two requirements are the machine has Docker installed on it, and you can log into it with SSH.
+You can now use `replicate run` to run a training job on a remote machine. The only two requirements are that the machine has Docker installed on it, and you can log into it with SSH.
 
 Run this, replacing `EXTERNAL_IP` with the IP address of the machine:
 
