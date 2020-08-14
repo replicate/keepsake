@@ -12,6 +12,7 @@ release: guard-VERSION
 bump-version:
 	sed -E -i '' "s/VERSION := .+/VERSION := $(VERSION)/" cli/Makefile
 	sed -E -i '' 's/version=".+"/version="$(VERSION)"/' python/setup.py
+	sed -E -i '' 's/version: ".+"/version: "$(VERSION)"/' web/docusaurus.config.js
 
 .PHONY: verify-clean-master
 verify-clean-master:

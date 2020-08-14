@@ -1,6 +1,9 @@
 module.exports = {
   title: "Replicate",
-  url: "https://your-docusaurus-test-site.com",
+  url: "https://beta.replicate.ai",
+  customFields: {
+    version: "0.1.3",
+  },
   baseUrl: "/",
   favicon: "img/favicon.ico",
   organizationName: "facebook", // Usually your GitHub org/user name.
