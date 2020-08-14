@@ -1,5 +1,6 @@
 .PHONY: release
 release: check-version-var verify-clean-master bump-version
+	git add cli/Makefile python/setup.py web/docusaurus.config.js
 	git commit -m "Bump to version $(VERSION)" Makefile
 	git tag "v$(VERSION)"
 	git push
