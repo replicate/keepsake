@@ -7,11 +7,8 @@ on:
 
 jobs:
   release:
-    name: "Build, Test, & Release"
+    name: "Build & Release"
     runs-on: ubuntu-latest
-    env:
-      # replace with I_AM_A_MACHINE envvar when that exists
-      REPLICATE_NO_ANALYTICS: "1"
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-go@v2
@@ -25,7 +22,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '270.0.0'
+          version: "270.0.0"
           service_account_email: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
           service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       - name: Build CLI

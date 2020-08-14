@@ -28,19 +28,3 @@ Then, run the benchmarks:
 You can run specific benchmarks with the `BENCH` variable. For example:
 
     make benchmark BENCH="BenchmarkReplicateListOnDisk"
-
-## Release new version
-
-Check your Git working directory is clean:
-
-    $ git checkout master
-    $ git pull
-    $ git status
-
-Then, bump the version:
-
-    $ make bump-version
-
-Then, run this script to create the release commit and tags and push them:
-
-    $ make release

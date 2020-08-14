@@ -114,10 +114,6 @@ check-new-version:
 .PHONY: pre-commit
 pre-commit: check-fmt vet lint
 
-.PHONY: bump-version
-bump-version:
-	script/bump-version
-
 .PHONY: cover-profile
 cover-profile: vet lint
 	go test -timeout 1200s -coverprofile=/tmp/replicate-cover-profile.out ./...
