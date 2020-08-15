@@ -18,13 +18,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: Setup gcloud
-        if: github.event_name != 'pull_request'
+      - name: Setup GCP credentials
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: "270.0.0"
-          service_account_email: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
-          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          version: '290.0.1'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
       - name: Build CLI
         run: cd cli && make build-all
       - name: Build Python
