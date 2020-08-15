@@ -31,7 +31,7 @@ jobs:
         run: cd python && make build
       - name: Set version
         run: |
-          echo "::set-env name=version::$(./release/linux/amd64/replicate --version | cut -f3 -d' ')"
+          echo "::set-env name=version::$(./cli/release/linux/amd64/replicate --version | cut -f3 -d' ')"
       - name: Push CLI
         run: |
           gsutil -m rsync -r cli/release/ gs://replicate-public/cli/$version
