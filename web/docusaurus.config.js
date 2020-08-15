@@ -2,7 +2,7 @@ module.exports = {
   title: "Replicate",
   url: "https://beta.replicate.ai",
   customFields: {
-    version: "0.1.7",
+    version: "0.1.8",
   },
   baseUrl: "/",
   favicon: "img/favicon.ico",

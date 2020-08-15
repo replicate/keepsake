@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 # fmt: off
 setuptools.setup(
     name="replicate",
-    version="0.1.7",
+    version="0.1.8",
     author="",
     author_email="",
     description="",
