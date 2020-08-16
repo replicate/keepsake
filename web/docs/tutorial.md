@@ -180,10 +180,10 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 ## Experiments and commits
 
-The calls to the `replicate` Python library have saved your experiments locally. You can use `replicate list` to list them:
+The calls to the `replicate` Python library have saved your experiments locally. You can use `replicate ls` to list them:
 
 ```shell-session
-$ replicate list
+$ replicate ls
 EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
 c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
 a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
@@ -197,7 +197,7 @@ If you want to poke around at the internal data, it is inside `.replicate/`. It'
 
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
 
-To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f` with an experiment ID from your output of `replicate list`:
+To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f` with an experiment ID from your output of `replicate ls`:
 
 ```shell-session
 $ replicate show c9f380d
