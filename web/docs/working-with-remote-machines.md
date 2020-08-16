@@ -29,6 +29,8 @@ values={[
 }>
 <TabItem value="gcp">
 
+### Log in to Google Cloud
+
 To store data on Google Cloud Storage, you first need to [install the Google Cloud SDK](https://cloud.google.com/sdk/docs) if you haven't already. Then, run `gcloud init` and follow its instructions:
 
 - Log in to your Google account when prompted.
@@ -41,7 +43,9 @@ Next, run this, because Cloud SDK needs you to log in a second time to let other
 gcloud auth application-default login
 ```
 
-Then, create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[username]` with your name, or some other unique string:
+### Point Replicate at Google Cloud
+
+Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[username]` with your name, or some other unique string:
 
 ```yaml
 storage: "gs://replicate-[username]-iris-classifier"
