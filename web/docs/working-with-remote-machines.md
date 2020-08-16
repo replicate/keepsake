@@ -15,9 +15,9 @@ Replicate makes it really easy to work with multiple training machines. It lets 
 
 ## Store data on cloud storage
 
-By default, Replicate stores your experiments and commits in `.replicate/storage/` in the same directory as `replicate.yaml` on your local disk.
+By default, Replicate stores your experiments and commits in `.replicate/storage/` in your working directory. You can also store this data on cloud storage, like Google Cloud Storage or Amazon S3.
 
-This means you can run Replicate on a training instance in the cloud or on real hardware, and the results will be stored in a central location. When you run `replicate ls` on your local machine, it will list all of the experiments that have run on any training machine, so you can easily compare between them and checkout the results.
+This means you can train on several machines and the results will be stored in a central location. When you run `replicate ls` on your local machine, it will list all of the experiments that have run anywhere, so you can easily compare between them and download the results.
 
 <Tabs
 groupId="cloud-service"
