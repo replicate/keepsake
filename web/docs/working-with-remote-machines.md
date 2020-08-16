@@ -69,7 +69,19 @@ storage: "s3://replicate-[username]-iris-classifier"
 
 Now, when you run your training script, calling `experiment.commit()` will upload all your working directory and commit metadata to this Google Cloud Storage bucket.
 
-If you're following along from [the tutorial](tutorial.md), run `python train.py` again. When you run `replicate ls`, it will list experiments from the bucket.
+:::note
+Replicate will automatically create the bucket for you if it doesn't exist.
+:::
+
+If you're following along from [the tutorial](tutorial.md), run `python train.py` again. This time it will save your experiments to the Google Cloud bucket. (It takes a second to save each commit, so press `Ctrl-C` after a few epochs if you don't want to wait.)
+
+Now, when you run `replicate ls`, it will list experiments from the bucket.
+
+:::note
+You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to Google Cloud, it will no longer list your local experiments.
+
+It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
+:::
 
 ## Train on remote machines
 
