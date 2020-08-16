@@ -144,7 +144,7 @@ Then, install the Python requirements inside a [Virtualenv](https://virtualenv.p
 
 ```shell-session
 virtualenv venv
-. venv/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
