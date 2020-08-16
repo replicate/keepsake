@@ -320,7 +320,7 @@ func TestListJSON(t *testing.T) {
 	})
 	require.NoError(t, com.Save(storage, workingDir))
 
-	// replicate list
+	// replicate ls
 	actual := capturer.CaptureStdout(func() {
 		err = Experiments(storage, FormatJSON, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})
