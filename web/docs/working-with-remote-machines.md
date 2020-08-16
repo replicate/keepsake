@@ -146,7 +146,7 @@ python: "3.8"
 
 You can now use `replicate run` to run a training job on a remote machine. The only two requirements are that the machine has Docker installed on it, and you can log into it with SSH.
 
-Run this, replacing `EXTERNAL_IP` with the IP address of the machine:
+Run this on your local machine, replacing `EXTERNAL_IP` with the IP address of the machine:
 
 ```shell-session
 $ replicate run -H EXTERNAL_IP python train.py
@@ -164,7 +164,13 @@ Epoch 98, train loss: 0.119, validation accuracy: 1.000
 Epoch 99, train loss: 0.118, validation accuracy: 1.000
 ```
 
-When it's finished, you should see the experiment show up in `replicate ls`:
+:::note
+If there is a "connection refused" error, wait a few minutes. The Google Cloud server takes some time to start up.
+:::
+
+Replicate copies the code from your local machine to the training server, builds a Docker image with the correct CUDA version, then starts your training script.
+
+When it's finished, run `replicate ls` on your local machine, and you should see the experiment from the training server show up:
 
 ```shell-session
 $ replicate ls
@@ -172,7 +178,7 @@ EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST COMMIT    
 274a9ec     3 minutes ago      stopped  34.75.189.211    ben   911cf2b (step 99)  0.1176  911cf2b (step 99)  0.1176
 ```
 
-You can create as many experiments as you like on as many machines as you like, and they'll all show up in one place.
+Because you're storing the experiment data on cloud storage, you can create as many experiments as you like on as many machines as you like, and they'll all show up in one place.
 
 If you want to get the results of the experiment, run `replicate checkout`, like you did in [the first part of the tutorial](tutorial.md#check-out-a-commit).
 
