@@ -190,9 +190,9 @@ a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
 ```
 
 :::note
-Similar to how Git works, all this data is in your working directory, so you'll only see experiments from the model you're working on.
+Similar to how Git works, all this data is in your working directory. Replicate only lists experiments in the current working directory, so you'll only see experiments from the model you're working on.
 
-If you want to poke around, the data is inside `.replicate/`.
+If you want to poke around at the internal data, it is inside `.replicate/`. It's not something you'd do day to day, but there's no magic going on – everything's right there as files and plain JSON.
 :::
 
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
