@@ -117,13 +117,15 @@ if __name__ == "__main__":
     train(args.learning_rate, args.num_epochs)
 ```
 
-Notice there are two statements in this training code that call Replicate, highlighted.
+Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
 
-The first is `replicate.init()`. This creates an **experiment**, which represents the training run. This is called just once in your training script at the start so you can pass your hyperparameters.
+The first is `replicate.init()`. This creates an **experiment**, which represents the training run. This is called once at the start so you can pass your hyperparameters.
 
-The second is `experiment.commit()`. This creates a **commit** within the experiment, which saves the exact state of the filesystem at that point (code, weights, Tensorboard logs, etc), along with some metrics you pass to the function.
+The second is `experiment.commit()`. This creates a **commit** within the experiment, which saves the filesystem at that point and any metrics you pass to the function.
 
-An experiment will typically contain multiple commits to save the progress of your training script over time. You'll usually commit just after you've saved your model weights or some other artifact, at the end of an epoch or every few iterations.
+**Each commit is a complete snapshot of the filesystem at that point.** All your code, weights, Tensorboard logs, and so on are all saved. This means once you've found that precise checkpoint that produces the best results, you can get back to that point.
+
+**Each experiment contains multiple commits.** You typically save your model periodically during training, because the best result isn't necessarily the most recent one. You commit to Replicate just after you save your model, so it can keep track of these versions for you.
 
 ## Install the dependencies
 
