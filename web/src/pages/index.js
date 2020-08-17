@@ -131,14 +131,12 @@ function Home() {
           <div className="row padding-vert--lg">
             <div className={classnames(`col col--6`)}>
               <h2>Step 1: Add Replicate to your training code</h2>
-              <CodeBlock
-                className="python"
-                metastring='title="train.py" {5,12}'
-              >
+              <CodeBlock className="python">
                 {`import torch
 import replicate
 
 def train(**params):
+    # highlight-next-line
     experiment = replicate.init(**params)
     model = Model()
 
@@ -146,6 +144,7 @@ def train(**params):
         # ...
 
         torch.save(model, "model.torch")
+        # highlight-next-line
         experiment.commit(**metrics)`}
               </CodeBlock>
             </div>
