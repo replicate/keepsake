@@ -8,7 +8,9 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import config from '../docusaurus.config.js';
 
-This guide will help you learn how Replicate works by building a simple model.
+If you like to **learn by doing**, this guide will help you learn how Replicate works by building a simple model. This guide will help you learn how Replicate works by building a simple model.
+
+If you prefer to **learn concepts first**, take a look at [our guide about how Replicate works](how-it-works).
 
 ## Install Replicate
 
