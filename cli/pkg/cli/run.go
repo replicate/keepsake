@@ -88,11 +88,11 @@ func runCommand(opts runOpts, args []string) (err error) {
 	if remoteOptions != nil {
 		remoteClient, err := remote.NewClient(remoteOptions)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error creating remote client: %w", err)
 		}
 		hostCUDADriverVersion, err = remoteClient.GetCUDADriverVersion()
 		if err != nil {
-			return err
+			return fmt.Errorf("Error getting CUDA driver version: %w", err)
 		}
 
 		if hostCUDADriverVersion == "" {
