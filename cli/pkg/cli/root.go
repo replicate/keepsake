@@ -71,6 +71,7 @@ To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 
 	rootCmd.AddCommand(
 		newCheckoutCommand(),
+		newDeleteCommand(),
 		newDiffCommand(),
 		newFeedbackCommand(),
 		newGenerateDocsCommand(&rootCmd),

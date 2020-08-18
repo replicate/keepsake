@@ -73,6 +73,18 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 	return body, nil
 }
 
+func (s *S3Storage) Delete(path string) error {
+	console.Debug("Deleting s3://%s/%s...", s.bucketName, path)
+	iter := s3manager.NewDeleteListIterator(s.svc, &s3.ListObjectsInput{
+		Bucket: &s.bucketName,
+		Prefix: &path,
+	})
+	if err := s3manager.NewBatchDeleteWithClient(s.svc).Delete(aws.BackgroundContext(), iter); err != nil {
+		return fmt.Errorf("Failed to delete s3://%s/%s: %w", s.bucketName, path, err)
+	}
+	return nil
+}
+
 // Put data at path
 func (s *S3Storage) Put(path string, data []byte) error {
 	uploader := s3manager.NewUploader(s.sess)

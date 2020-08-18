@@ -214,6 +214,20 @@ func (p *Project) commitIDsFromPrefix(prefix string) []string {
 	return matchingIDs
 }
 
+func (p *Project) DeleteCommit(com *Commit) error {
+	if err := p.store.Delete(com.StorageDir()); err != nil {
+		return err
+	}
+	return p.store.Delete(com.MetadataPath())
+}
+
+func (p *Project) DeleteExperiment(exp *Experiment) error {
+	if err := p.store.Delete(exp.HeartbeatPath()); err != nil {
+		return err
+	}
+	return p.store.Delete(exp.MetadataPath())
+}
+
 func (p *Project) experimentIDsFromPrefix(prefix string) []string {
 	if !p.hasLoaded {
 		panic("Logical error, project has not loaded")

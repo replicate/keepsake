@@ -64,6 +64,14 @@ func (c *Commit) ShortExperimentID() string {
 	return c.ExperimentID[:7]
 }
 
+func (c *Commit) MetadataPath() string {
+	return "metadata/commits/" + c.ID + ".json"
+}
+
+func (c *Commit) StorageDir() string {
+	return "commits/" + c.ID
+}
+
 func listCommits(store storage.Storage) ([]*Commit, error) {
 	paths, err := store.List("metadata/commits/")
 	if err != nil {

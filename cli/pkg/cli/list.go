@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/cli/list"
@@ -52,6 +54,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 func addListFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("json", false, "Print output in JSON format")
 	cmd.Flags().BoolP("all-params", "p", false, "Output all experiment params (by default, outputs only parameters that change between experiments)")
+	cmd.Flags().BoolP("quiet", "q", false, "Only print experiment IDs")
 }
 
 func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams bool, err error) {
@@ -65,9 +68,23 @@ func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams boo
 		format = list.FormatTable
 	}
 
+	quiet, err := cmd.Flags().GetBool("quiet")
+	if err != nil {
+		return 0, false, err
+	}
+	if quiet && format == list.FormatJSON {
+		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --json")
+	}
+
 	allParams, err = cmd.Flags().GetBool("all-params")
 	if err != nil {
 		return 0, false, err
+	}
+	if quiet && allParams {
+		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --all-params")
+	}
+	if quiet {
+		format = list.FormatQuiet
 	}
 
 	return format, allParams, nil

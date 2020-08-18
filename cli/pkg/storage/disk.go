@@ -64,6 +64,15 @@ func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 	return nil
 }
 
+// Delete deletes path. If path is a directory, it recursively deletes
+// all everything under path
+func (s *DiskStorage) Delete(pathToDelete string) error {
+	if err := os.RemoveAll(path.Join(s.rootDir, pathToDelete)); err != nil {
+		return fmt.Errorf("Failed to delete %s/%s: %w", s.rootDir, pathToDelete, err)
+	}
+	return nil
+}
+
 // List files in a path non-recursively
 //
 // Returns a list of paths, prefixed with the given path, that can be passed straight to Get().

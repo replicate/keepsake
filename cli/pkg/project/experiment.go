@@ -68,6 +68,14 @@ func (e *Experiment) ShortID() string {
 	return e.ID[:7]
 }
 
+func (e *Experiment) MetadataPath() string {
+	return "metadata/experiments/" + e.ID + ".json"
+}
+
+func (e *Experiment) HeartbeatPath() string {
+	return "metadata/heartbeats/" + e.ID + ".json"
+}
+
 func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	paths, err := store.List("metadata/experiments/")
 	if err != nil {
