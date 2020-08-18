@@ -2,9 +2,13 @@ package remote
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os/exec"
+	"strings"
 
 	"github.com/pkg/sftp"
+
+	"replicate.ai/cli/pkg/console"
 )
 
 type Client struct {
@@ -21,6 +25,7 @@ func NewClient(options *Options) (*Client, error) {
 	}
 
 	var err error
+	// FIXME (bfirsh): do we want to create an SFTP client for each SSH client? this could be done lazily in SFTP()
 	c.sftpClient, err = makeSFTPClient(options)
 	if err != nil {
 		return nil, err
@@ -63,6 +68,10 @@ func makeSFTPClient(options *Options) (*sftp.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	stderr, err := sshCmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO(andreas): what happens if the connection is interrupted?
 	// TODO(andreas): handle cmd.Stderr
@@ -70,5 +79,14 @@ func makeSFTPClient(options *Options) (*sftp.Client, error) {
 		// TODO(andreas): more actionable error message
 		return nil, fmt.Errorf("Failed to establish SSH connection to %s: %w", options.Host, err)
 	}
-	return sftp.NewClientPipe(rd, wr)
+	client, err := sftp.NewClientPipe(rd, wr)
+	if err != nil {
+		stderrOut, _ := ioutil.ReadAll(stderr)
+		// TODO(bfirsh): make a nice error type for this
+		if len(stderrOut) > 0 {
+			console.Error(strings.TrimSpace(string(stderrOut)))
+		}
+		return nil, err
+	}
+	return client, nil
 }
