@@ -50,7 +50,7 @@ if __name__ == "__main__":
         )
     # TODO: upload Python library
     with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
-        f.write("replicate==0.1.3")
+        f.write("replicate==0.1.8")
 
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]

@@ -23,6 +23,7 @@ type Format int
 const (
 	FormatJSON = iota
 	FormatTable
+	FormatQuiet
 )
 
 const valueMaxLength = 10
@@ -106,8 +107,17 @@ func Experiments(store storage.Storage, format Format, allParams bool, filters *
 		return outputJSON(listExperiments)
 	case FormatTable:
 		return outputTable(listExperiments, allParams)
+	case FormatQuiet:
+		return outputQuiet(listExperiments)
 	}
 	panic(fmt.Sprintf("Unknown format: %d", format))
+}
+
+func outputQuiet(experiments []*ListExperiment) error {
+	for _, exp := range experiments {
+		fmt.Println(exp.ID)
+	}
+	return nil
 }
 
 func outputJSON(experiments []*ListExperiment) error {

@@ -27,6 +27,7 @@ type Storage interface {
 	Put(path string, data []byte) error
 	PutDirectory(localPath string, storagePath string) error
 	GetDirectory(storagePath string, localPath string) error
+	Delete(path string) error
 
 	// List files in a path non-recursively
 	//
