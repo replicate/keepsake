@@ -2,3 +2,145 @@
 id: how-it-works
 title: How it works
 ---
+
+Replicate is similar to a version control system used for code: it records versions of machine learning models.
+
+Machine learning is a lot more than just code, though. It consists of a training script that has some inputs and outputs (code, trained weights, hyperparameters, training data, etc). The thing you want to version in machine learning is each execution of this script.
+
+So, **Replicate versions the execution of a training script and its inputs and outputs**, not just some files.
+
+## Architecture
+
+The versioning is embedded directly in your training script with a **Python library**:
+
+```python title="train.py"
+import torch
+import replicate
+
+def train(**params):
+    # highlight-next-line
+    experiment = replicate.init(**params)
+    model = Model()
+
+    for epoch in range(params["num_epochs"]):
+        # ...
+
+        torch.save(model, "model.torch")
+        # highlight-next-line
+        experiment.commit(**metrics)
+```
+
+By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.
+
+These two lines will record:
+
+- The code used to run the training script
+- The hyperparameters
+- Python version, Python package versions, PyTorch/Tensorflow version
+- Any files produced on each iteration – weights, Tensorboard logs, etc.
+- Metrics on each iteration
+
+All of this versioned data is put in **storage**, which by default is the `.replicate/storage/` directory in the same directory as your code. You can also store this data on cloud storage, such as Amazon S3 or Google Cloud Storage. [The format of this data is explained further below.](#data-storage)
+
+The versioned data is accessed with the **command-line interface**. It consists of various commands for inspecting the data and getting it out:
+
+```shell-session
+$ replicate ls
+EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
+c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
+a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
+
+$ replicate checkout d4fb0d3
+═══╡ Copying the code and weights from d4fb0d3 into the current directory...
+```
+
+Replicate has been intentionally designed command-line first so you can integrate it with scripts and continuous integration systems.
+
+## Concepts
+
+### Experiments
+
+The core concept in Replicate is the **experiment**. It represents a run of your training script, and tracks the _inputs_ to the training process so you can figure out how a model was trained.
+
+You create an experiment by calling `replicate.init()` in the Python library. Any arguments you pass are recorded as hyperparameters, then it automatically records some other data:
+
+<!-- TODO: add this when we save code in init() -->
+<!-- - The files in the current directory, so you have a copy of the training code -->
+
+- The Python version
+- The version of any Python packages used (including PyTorch and Tensorflow)
+- The user who started the training script
+- The host where the training script is running
+
+### Commits
+
+Within experiments are **commits**. They each represent a version of the _outputs_ of the training process. Conceptually, you can think of them like commits in a version control system: each one is a particular version of your machine learning model.
+
+You create a commit by calling `experiment.commit()`. Any arguments passed are recorded as metrics, then it also automatically saves a copy of the entire current directory, including your training code and weight files.
+
+### Projects
+
+A **project** represents your model and all its experiments, allowing you to group your experiments based on what model you're working on.
+
+It is tied to the directory that your model is in, similar to the idea of a repository in a version control system.
+
+## Data storage
+
+Projects are just stored as plain files. There's nothing magical going on.
+
+They can be stored on:
+
+- The local filesystem, in `.replicate/storage/` in your project's directory
+- Amazon S3
+- Google Cloud Storage
+
+The location is defined by setting the [`storage` option in `replicate.yaml`](replicate-yaml.md#storage). For example:
+
+```yaml
+storage: "s3://hooli-hotdog-detector"
+```
+
+This is the directory structure of a project:
+
+- `commits/<commit id>/` – The files in your project's directory at the point in time you created a commit, including source code and weight files.
+- `metadata/commits/<commit id>.json` – A JSON file containing all the metadata about a commit, include a pointer to the experiment ID it is part of.
+- `metadata/experiments/<experiment id>.json` – A JSON file containing all the metadata about an experiment.
+- `metadata/heartbeats/<experiment id>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
+
+## Remote execution
+
+Training is often run on remote GPU machines, rather than your local development machine.
+
+A common pattern is to copy the code you are working on to a remote machine and start the training job. Then, when it's finished, copy the results and artifacts back to your local machine or cloud storage.
+
+Replicate has a command called `replicate run` that makes this pattern really easy. It will:
+
+- Log in to a machine with SSH
+- Copy over your code
+- Build a Docker image with your Python dependencies and the correct CUDA version
+- Run your training script
+- Upload the results to cloud storage so you can access them from your development machine
+
+It looks something like this:
+
+```shell-session
+$ replicate run -H EXTERNAL_IP python train.py
+═══╡ Found CUDA driver on remote host: 418.87.01
+═══╡ Building Docker image...
+[+] Building 181.7s (12/12) FINISHED
+...
+═══╡ Running 'python train.py'...
+Epoch 0, train loss: 1.184, validation accuracy: 0.333
+Epoch 1, train loss: 1.117, validation accuracy: 0.333
+Epoch 2, train loss: 1.061, validation accuracy: 0.467
+...
+Epoch 97, train loss: 0.121, validation accuracy: 1.000
+Epoch 98, train loss: 0.119, validation accuracy: 1.000
+Epoch 99, train loss: 0.118, validation accuracy: 1.000
+
+$ replicate ls
+EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST COMMIT      LOSS    BEST COMMIT        LOSS
+274a9ec     3 minutes ago      stopped  34.75.189.211    ben   911cf2b (step 99)  0.1176  911cf2b (step 99)  0.1176
+```
+
+[See the working with remote machines tutorial](working-with-remote-machines.md) for more information.

@@ -211,7 +211,7 @@ We haven't finished the Amazon EC2 section yet, sorry! Switch back to the "Googl
 You might want to take a look at:
 
 - [Some of our example models](example-models)
-<!-- - [How Replicate works under the hood](how-it-works.md) -->
+- [How Replicate works under the hood](how-it-works.md)
 - [The `replicate.yaml` reference](replicate-yaml.md)
 
 If something doesn't make sense, doesn't work, or you just have some questions, please email us: [team@replicate.ai](mailto:team@replicate.ai). We love hearing from you!
