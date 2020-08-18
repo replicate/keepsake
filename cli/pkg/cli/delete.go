@@ -11,10 +11,10 @@ import (
 func newDeleteCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <experiment-or-commit-id> [experiment-or-commit-id...]",
-		Short: "Delete experiment(s) or commit(s)",
-		Long: `Delete experiment(s) or commit(s)
+		Short: "Delete experiments or commits",
+		Long: `Delete experiments or commits.
 
-To delete experiments or commits, pass any number of IDs (or a prefixes).
+To delete experiments or commits, pass any number of IDs (or prefixes).
 `,
 		RunE: deleteExperimentOrCommit,
 		Args: cobra.MinimumNArgs(1),
