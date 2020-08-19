@@ -21,4 +21,13 @@ if [ "$DIFFS" ]; then
     exit 1
 fi
 
+DIFFS="$(git diff -- go.mod go.sum)"
+if [ "$DIFFS" ]; then
+    echo 'The result of "make mod-tidy" differs:'
+    echo
+    echo "$DIFFS"
+    echo
+    echo 'Run "make mod-tidy" and commit again'
+    exit 1
+fi
 echo "Validation successful. You're good!"
