@@ -8,7 +8,7 @@ This is the reference for the Replicate CLI commands. You can also see this in t
 ## Commands
 
 * [`replicate checkout`](#replicate-checkout) – Copy files from a commit into the project directory
-* [`replicate delete`](#replicate-delete) – Delete experiment(s) or commit(s)
+* [`replicate delete`](#replicate-delete) – Delete experiments or commits
 * [`replicate diff`](#replicate-diff) – Compare two experiments or commits
 * [`replicate feedback`](#replicate-feedback) – Submit feedback to the team!
 * [`replicate ls`](#replicate-ls) – List experiments in this project
@@ -40,9 +40,9 @@ replicate checkout <commit-id> [flags]
 ```
 ## `replicate delete`
 
-Delete experiment(s) or commit(s)
+Delete experiments or commits.
 
-To delete experiments or commits, pass any number of IDs (or a prefixes).
+To delete experiments or commits, pass any number of IDs (or prefixes).
 
 
 ### Usage

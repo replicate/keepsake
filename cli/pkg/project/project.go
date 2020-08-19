@@ -216,16 +216,26 @@ func (p *Project) commitIDsFromPrefix(prefix string) []string {
 
 func (p *Project) DeleteCommit(com *Commit) error {
 	if err := p.store.Delete(com.StorageDir()); err != nil {
-		return err
+		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
+		console.Warn("Failed to delete commit storage directory %s: %s", com.StorageDir(), err)
 	}
-	return p.store.Delete(com.MetadataPath())
+	if err := p.store.Delete(com.MetadataPath()); err != nil {
+		// TODO(andreas): return err if com.MetadataPath() exists but some other error occurs
+		console.Warn("Failed to delete commit metadata file %s: %s", com.MetadataPath(), err)
+	}
+	return nil
 }
 
 func (p *Project) DeleteExperiment(exp *Experiment) error {
 	if err := p.store.Delete(exp.HeartbeatPath()); err != nil {
-		return err
+		// TODO(andreas): return err if exp.HeartbeatPath() exists but some other error occurs
+		console.Warn("Failed to delete heartbeat file %s: %s", exp.HeartbeatPath(), err)
 	}
-	return p.store.Delete(exp.MetadataPath())
+	if err := p.store.Delete(exp.MetadataPath()); err != nil {
+		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
+		console.Warn("Failed to delete experiment metadata file %s: %s", exp.MetadataPath(), err)
+	}
+	return nil
 }
 
 func (p *Project) experimentIDsFromPrefix(prefix string) []string {
