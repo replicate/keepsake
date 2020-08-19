@@ -102,10 +102,9 @@ lint:
 fmt: install-goimports
 	goimports --local replicate.ai -w -d .
 
-.PHONY: clean-deps
-clean-deps:
+.PHONY: mod-tidy
+mod-tidy:
 	go mod tidy
-	go mod verify
 
 .PHONY: check-new-version
 check-new-version:
@@ -133,6 +132,8 @@ docs:
 # This includes various things that we don't want to break the test suite when working
 # day-to-day, but should be run on CI. E.g. checking generated files are committed,
 # commit is signed off with Developer Certificate of Origin, etc.
+#
+# TODO (bfirsh): this should probably be moved to top-level Makefile
 .PHONY: validate
-validate: assets docs
+validate: assets docs mod-tidy
 	make/validate
