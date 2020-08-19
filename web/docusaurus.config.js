@@ -57,6 +57,7 @@ module.exports = {
     },
     prism: {
       additionalLanguages: ["shell-session"],
+      theme: require("prism-react-renderer/themes/oceanicNext"),
     },
   },
   presets: [

@@ -26,14 +26,19 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
-/* HACK: this should be overriden in javascript somewhere, I think.. */
-.codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-,
-.codeBlockContent_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
-  font-size: 80%;
-}
+/*
+HACK: shell-session code blocks
 
-/* shell-session code blocks */
-.codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
+Unfortunately there's no way to select this in prism-react-renderer themes.
+See https://github.com/FormidableLabs/prism-react-renderer/issues/40
+
+Nor is there a way to add it to theme/CodeBlock/styles.module.scss because
+css-modules adds prefixes which prism doesn't have.
+
+Trying to just add some damn CSS to a modern frontend app is Kafka-esque.
+So, fuckit, use this blunt global instrument:
+*/
+.token-line {
   .command {
     font-weight: bold;
     color: white;
