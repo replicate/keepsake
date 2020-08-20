@@ -7,7 +7,7 @@ import pytest  # type: ignore
 
 
 @pytest.mark.parametrize(
-    "storage_backend", ["gcs", "s3", "file"],
+    "storage_backend", ["gcs", "s3", pytest.param("file", marks=pytest.mark.fast)],
 )
 def test_checkout(storage_backend, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)

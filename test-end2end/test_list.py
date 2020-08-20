@@ -11,7 +11,7 @@ import pytest  # type: ignore
         ("s3", False),
         ("file", False),
         ("file", True),
-        ("undefined", False),
+        pytest.param("undefined", False, marks=pytest.mark.fast),
     ],
 )
 def test_list(storage_backend, use_replicate_run, tmpdir, temp_bucket, tmpdir_factory):
