@@ -58,4 +58,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--learning_rate", type=float, default=0.01)
     parser.add_argument("--num_epochs", type=int, default=100)
-    train(**vars(parser.parse_args()))
+    args = parser.parse_args()
+    train(args.learning_rate, args.num_epochs)
