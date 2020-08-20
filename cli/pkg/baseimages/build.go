@@ -24,9 +24,10 @@ type Builder interface {
 }
 
 type DockerfileParams struct {
-	BaseImage      string
-	PythonVersion  Python
-	PythonPackages string
+	BaseImage         string
+	PythonVersion     Python
+	PythonPackages    string
+	AdditionalPipArgs string
 }
 
 func BuildBaseImages(builder Builder, project string, registry string, version string, waitTime time.Duration) error {
@@ -100,56 +101,57 @@ func BuildBaseImages(builder Builder, project string, registry string, version s
 	// images we built above
 	for _, meta := range metas {
 		for _, py := range meta.PythonVersions() {
-			cuda := meta.GetCUDA()
-			cuDNN := meta.GetCuDNN()
-			ubuntu := LatestUbuntuForCUDA[cuda]
+			for _, cuda := range meta.GetCUDAs() {
+				cuDNN := meta.GetCuDNN()
+				ubuntu := LatestUbuntuForCUDA[cuda]
 
-			// first, build gpu image
-			pythonCUDACuDNNUbuntu := PythonCUDACuDNNUbuntu{
-				Python: py,
-				CUDA:   cuda,
-				CuDNN:  cuDNN,
-				Ubuntu: ubuntu,
-			}
-			gpuBaseImage, ok := gpuBaseImages[pythonCUDACuDNNUbuntu]
-			if !ok {
-				return fmt.Errorf("No base image for %v", pythonCUDACuDNNUbuntu)
-			}
+				// first, build gpu image
+				pythonCUDACuDNNUbuntu := PythonCUDACuDNNUbuntu{
+					Python: py,
+					CUDA:   cuda,
+					CuDNN:  cuDNN,
+					Ubuntu: ubuntu,
+				}
+				gpuBaseImage, ok := gpuBaseImages[pythonCUDACuDNNUbuntu]
+				if !ok {
+					return fmt.Errorf("No base image for %v", pythonCUDACuDNNUbuntu)
+				}
 
-			gpuImage := BaseImage{
-				Registry:      registry,
-				Project:       project,
-				Version:       version,
-				Python:        py,
-				Ubuntu:        ubuntu,
-				FrameworkMeta: meta,
-				CUDA:          cuda,
-				CuDNN:         cuDNN,
-			}
-			if !builder.ImageExists(gpuImage.RepositoryName()) {
-				go buildImageWithPythonPackages(builder, &wg, gpuBaseImage.RepositoryName(), meta.GPUPackages(), py, gpuImage.RepositoryName())
-				wg.Add(1)
-				time.Sleep(waitTime)
-			}
+				gpuImage := BaseImage{
+					Registry:      registry,
+					Project:       project,
+					Version:       version,
+					Python:        py,
+					Ubuntu:        ubuntu,
+					FrameworkMeta: meta,
+					CUDA:          cuda,
+					CuDNN:         cuDNN,
+				}
+				if !builder.ImageExists(gpuImage.RepositoryName()) {
+					go buildImageWithPythonPackages(builder, &wg, gpuBaseImage.RepositoryName(), meta.GPUPackages(cuda), meta.GPUAdditionalPipArgs(cuda), py, gpuImage.RepositoryName())
+					wg.Add(1)
+					time.Sleep(waitTime)
+				}
 
-			// then, build cpu image
-			pythonUbuntu := PythonUbuntu{py, ubuntu}
-			cpuBaseImage, ok := cpuBaseImages[pythonUbuntu]
-			if !ok {
-				return fmt.Errorf("No base image for %v", pythonUbuntu)
-			}
-			cpuImage := BaseImage{
-				Registry:      registry,
-				Project:       project,
-				Version:       version,
-				Python:        py,
-				Ubuntu:        ubuntu,
-				FrameworkMeta: meta,
-			}
-			if !builder.ImageExists(cpuImage.RepositoryName()) {
-				go buildImageWithPythonPackages(builder, &wg, cpuBaseImage.RepositoryName(), meta.CPUPackages(), py, cpuImage.RepositoryName())
-				wg.Add(1)
-				time.Sleep(waitTime)
+				// then, build cpu image
+				pythonUbuntu := PythonUbuntu{py, ubuntu}
+				cpuBaseImage, ok := cpuBaseImages[pythonUbuntu]
+				if !ok {
+					return fmt.Errorf("No base image for %v", pythonUbuntu)
+				}
+				cpuImage := BaseImage{
+					Registry:      registry,
+					Project:       project,
+					Version:       version,
+					Python:        py,
+					Ubuntu:        ubuntu,
+					FrameworkMeta: meta,
+				}
+				if !builder.ImageExists(cpuImage.RepositoryName()) {
+					go buildImageWithPythonPackages(builder, &wg, cpuBaseImage.RepositoryName(), meta.CPUPackages(), nil, py, cpuImage.RepositoryName())
+					wg.Add(1)
+					time.Sleep(waitTime)
+				}
 			}
 		}
 	}
@@ -173,13 +175,19 @@ func buildImageWithoutPythonPackages(builder Builder, wg *sync.WaitGroup, osImag
 	wg.Done()
 }
 
-func buildImageWithPythonPackages(builder Builder, wg *sync.WaitGroup, baseImage string, packages []string, py Python, image string) {
+func buildImageWithPythonPackages(builder Builder, wg *sync.WaitGroup, baseImage string, packages []string, additionalPipArgs []string, py Python, image string) {
 	if builder.Verbose() {
 		console.Info("Building image: %s", image)
 	}
+	additionalPipArgString := ""
+	if additionalPipArgs != nil {
+		// TODO(andreas): shellescape if additionalPipArgs ever needs it
+		additionalPipArgString = strings.Join(additionalPipArgs, " ")
+	}
 	params := DockerfileParams{
-		BaseImage:      baseImage,
-		PythonPackages: strings.Join(packages, " "),
+		BaseImage:         baseImage,
+		PythonPackages:    strings.Join(packages, " "),
+		AdditionalPipArgs: additionalPipArgString,
 	}
 	if err := buildImage(builder, "baseimages-packages.Dockerfile", params, image); err != nil {
 		console.Warn(err.Error())

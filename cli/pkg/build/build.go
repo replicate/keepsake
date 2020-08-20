@@ -99,22 +99,26 @@ func GetBaseImage(conf *config.Config, sourceDir string, hostCUDADriverVersion s
 }
 
 func getCUDAVersion(conf *config.Config, frameworkMeta baseimages.FrameworkMeta, hostCUDADriverVersion string) (baseimages.CUDA, baseimages.CuDNN, error) {
+	var confCUDA baseimages.CUDA
+	if conf.CUDA != "" {
+		confCUDA = baseimages.CUDA(conf.CUDA)
+		driverCompatible, err := baseimages.CUDADriverIsCompatible(confCUDA, hostCUDADriverVersion)
+		if err != nil {
+			return "", "", err
+		}
+		if !driverCompatible {
+			return "", "", cudaCompatibilityError(confCUDA, hostCUDADriverVersion)
+		}
+	}
+
 	if frameworkMeta == nil {
 		// if no framework is specified, use cuda from config
 		// or the latest cuda version compatible with the host
 
-		if conf.CUDA != "" {
-			cuda := baseimages.CUDA(conf.CUDA)
-			driverCompatible, err := baseimages.CUDADriverIsCompatible(cuda, hostCUDADriverVersion)
-			if err != nil {
-				return "", "", err
-			}
-			if !driverCompatible {
-				return "", "", cudaCompatibilityError(cuda, hostCUDADriverVersion)
-			}
-			cuDNN := baseimages.LatestCuDNNForCUDA[cuda]
+		if confCUDA != "" {
+			cuDNN := baseimages.LatestCuDNNForCUDA[confCUDA]
 
-			return cuda, cuDNN, nil
+			return confCUDA, cuDNN, nil
 		}
 
 		cuda, err := baseimages.LatestCUDAForDriverVersion(hostCUDADriverVersion)
@@ -127,26 +131,24 @@ func getCUDAVersion(conf *config.Config, frameworkMeta baseimages.FrameworkMeta,
 
 		return cuda, cuDNN, nil
 	}
+
 	// if a framework is specified, automatically use the matching
 	// cuda version
-
-	cuda := frameworkMeta.GetCUDA()
-	cuDNN := frameworkMeta.GetCuDNN()
-
-	// ensure cuda version in config matches the
-	// framework's compatible cuda version
-	if conf.CUDA != "" && cuda != baseimages.CUDA(conf.CUDA) {
-		return "", "", fmt.Errorf("%s==%s requires CUDA %s", frameworkMeta.Name(), frameworkMeta.Version(), cuda)
+	if confCUDA != "" {
+		if baseimages.FrameworkSupportsCUDA(frameworkMeta, confCUDA) {
+			return confCUDA, frameworkMeta.GetCuDNN(), nil
+		}
+		return "", "", fmt.Errorf("CUDA %s is not supported by %s==%s", confCUDA, frameworkMeta.Name(), frameworkMeta.Version())
 	}
 
-	// ensure cuda version is compatible with host
-	driverCompatible, err := baseimages.CUDADriverIsCompatible(cuda, hostCUDADriverVersion)
+	// get the latest cuda version for the framework that's
+	// supported by the host, or raise an error if no cuda version
+	// is compatible with this framework/host combination
+	cuda, err := baseimages.LatestSupportedCUDA(frameworkMeta, hostCUDADriverVersion)
 	if err != nil {
 		return "", "", err
 	}
-	if !driverCompatible {
-		return "", "", cudaCompatibilityError(cuda, hostCUDADriverVersion)
-	}
+	cuDNN := frameworkMeta.GetCuDNN()
 
 	return cuda, cuDNN, err
 }

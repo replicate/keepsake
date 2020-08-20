@@ -28,7 +28,7 @@ func TestGenerateDockerfile(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
 
-	err = ioutil.WriteFile(path.Join(tmpDir, "requirements.txt"), []byte("tensorflow==2.2.0"), 0644)
+	err = ioutil.WriteFile(path.Join(tmpDir, "requirements.txt"), []byte("tensorflow==2.3.0"), 0644)
 	require.NoError(t, err)
 	err = os.Mkdir(path.Join(tmpDir, "install"), 0755)
 	require.NoError(t, err)
@@ -75,13 +75,13 @@ torch==1.2.0
 `
 	torchWithBadVersion := `torch==bad`
 
-	tf220 := baseimages.TensorflowMeta{
-		TF:           "2.2.0",
-		TFCPUPackage: "tensorflow==2.2.0",
-		TFGPUPackage: "tensorflow==2.2.0",
+	tf230 := baseimages.TensorflowMeta{
+		TF:           "2.3.0",
+		TFCPUPackage: "tensorflow==2.3.0",
+		TFGPUPackage: "tensorflow==2.3.0",
 		CUDA:         baseimages.CUDA10_1,
 		CuDNN:        baseimages.CuDNN7,
-		Pythons:      []baseimages.Python{baseimages.Py35, baseimages.Py37, baseimages.Py38},
+		Pythons:      []baseimages.Python{baseimages.Py35, baseimages.Py36, baseimages.Py37, baseimages.Py38},
 	}
 	tf210 := baseimages.TensorflowMeta{
 		TF:           "2.1.0",
@@ -89,14 +89,15 @@ torch==1.2.0
 		TFGPUPackage: "tensorflow==2.1.0",
 		CUDA:         baseimages.CUDA10_1,
 		CuDNN:        baseimages.CuDNN7,
-		Pythons:      []baseimages.Python{baseimages.Py37, baseimages.Py27},
+		Pythons:      []baseimages.Python{baseimages.Py27, baseimages.Py35, baseimages.Py36, baseimages.Py37},
 	}
 	torch120 := baseimages.PyTorchMeta{
-		Torch:       "1.2.0",
-		TorchVision: "0.4.0",
-		CUDA:        baseimages.CUDA10_0,
-		CuDNN:       baseimages.CuDNN7,
-		Pythons:     []baseimages.Python{baseimages.Py37, baseimages.Py36, baseimages.Py27},
+		Torch:             "1.2.0",
+		TorchVision:       "0.4.0",
+		DefaultCUDA:       baseimages.CUDA10_0,
+		CuDNN:             baseimages.CuDNN7,
+		Pythons:           []baseimages.Python{baseimages.Py27, baseimages.Py36, baseimages.Py37},
+		OtherCUDASuffixes: map[baseimages.CUDA]string{baseimages.CUDA9_2: "+cu92"},
 	}
 
 	for _, tt := range []struct {
@@ -105,7 +106,7 @@ torch==1.2.0
 		isError      bool
 	}{
 		{noFramework, nil, false},
-		{tfNoVersion, tf220, false},
+		{tfNoVersion, tf230, false},
 		{tfWithVersion, tf210, false},
 		{torchWithVersion, torch120, false},
 		{torchWithBadVersion, nil, true},
@@ -145,7 +146,8 @@ func TestGetCUDAVersion(t *testing.T) {
 		{"", "", "", "450.0", baseimages.CUDA10_2, baseimages.CuDNN8, false},
 		{"", "", "", "250.0", "", "", true},
 		{"", baseimages.PyTorch, "1.4.0", "450.0", baseimages.CUDA10_1, baseimages.CuDNN7, false},
-		{"", baseimages.PyTorch, "1.4.0", "400.0", "", "", true},
+		{"", baseimages.PyTorch, "1.4.0", "400.0", baseimages.CUDA9_2, baseimages.CuDNN7, false},
+		{"", baseimages.PyTorch, "1.4.0", "392.0", "", "", true},
 		{"10.1", baseimages.PyTorch, "1.4.0", "450.0", baseimages.CUDA10_1, baseimages.CuDNN7, false},
 		{"10.2", baseimages.PyTorch, "1.4.0", "450.0", "", "", true},
 		{"10.1", "", "", "450.0", baseimages.CUDA10_1, baseimages.CuDNN7, false},
@@ -163,7 +165,7 @@ func TestGetCUDAVersion(t *testing.T) {
 
 		cuda, cuDNN, err := getCUDAVersion(conf, frameworkMeta, tt.hostCUDADriverVersion)
 		if tt.isError {
-			require.Error(t, err)
+			require.Error(t, err, "Expected error: %s", tt)
 		} else {
 			require.NoError(t, err)
 		}
@@ -214,7 +216,11 @@ torch==1.5.0
 
 		baseImage, err := GetBaseImage(conf, tmpDir, tt.hostCUDADriverVersion)
 		if tt.isError {
-			require.Error(t, err)
+			baseImageRepo := ""
+			if baseImage != nil {
+				baseImageRepo = baseImage.RepositoryName()
+			}
+			require.Error(t, err, "Expected error, got %s: %+v", baseImageRepo, tt)
 		} else {
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, baseImage.RepositoryName())

@@ -22,5 +22,5 @@ func TestCountBaseImages(t *testing.T) {
 	b := &CountBuilder{}
 	err := BuildBaseImages(b, "project", "registry", "0.1", 0)
 	require.NoError(t, err)
-	require.Equal(t, 315, int(b.count))
+	require.Equal(t, 391, int(b.count))
 }

@@ -2,6 +2,7 @@ package baseimages
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -48,6 +49,10 @@ type Python string
 // CUDA version
 type CUDA string
 
+func (c CUDA) Version() string {
+	return string(c)
+}
+
 // CuDNN version
 type CuDNN string
 
@@ -92,10 +97,11 @@ type PythonUbuntu struct {
 type FrameworkMeta interface {
 	Name() string
 	Version() string
-	GetCUDA() CUDA
+	GetCUDAs() []CUDA
 	GetCuDNN() CuDNN
 	CPUPackages() []string
-	GPUPackages() []string
+	GPUPackages(cuda CUDA) []string
+	GPUAdditionalPipArgs(cuda CUDA) []string
 	FrameworkString() string
 	PythonVersions() []Python
 }
@@ -113,12 +119,16 @@ func (c TensorflowMeta) CPUPackages() []string {
 	return []string{c.TFCPUPackage}
 }
 
-func (c TensorflowMeta) GPUPackages() []string {
+func (c TensorflowMeta) GPUPackages(cuda CUDA) []string {
 	return []string{c.TFGPUPackage}
 }
 
-func (c TensorflowMeta) GetCUDA() CUDA {
-	return c.CUDA
+func (c TensorflowMeta) GPUAdditionalPipArgs(cuda CUDA) []string {
+	return nil
+}
+
+func (c TensorflowMeta) GetCUDAs() []CUDA {
+	return []CUDA{c.CUDA}
 }
 
 func (c TensorflowMeta) GetCuDNN() CuDNN {
@@ -142,11 +152,12 @@ func (c TensorflowMeta) Version() string {
 }
 
 type PyTorchMeta struct {
-	Torch       string
-	TorchVision string
-	CUDA        CUDA
-	CuDNN       CuDNN
-	Pythons     []Python
+	Torch             string
+	TorchVision       string
+	DefaultCUDA       CUDA
+	CuDNN             CuDNN
+	Pythons           []Python
+	OtherCUDASuffixes map[CUDA]string
 }
 
 func (c PyTorchMeta) CPUPackages() []string {
@@ -156,12 +167,33 @@ func (c PyTorchMeta) CPUPackages() []string {
 	}
 }
 
-func (c PyTorchMeta) GPUPackages() []string {
-	return c.CPUPackages()
+func (c PyTorchMeta) GPUPackages(cuda CUDA) []string {
+	if cuda == c.DefaultCUDA {
+		return c.CPUPackages()
+	}
+	suffix := c.OtherCUDASuffixes[cuda]
+	return []string{
+		fmt.Sprintf("torch==%s%s", c.Torch, suffix),
+		fmt.Sprintf("torchvision==%s%s", c.TorchVision, suffix),
+	}
 }
 
-func (c PyTorchMeta) GetCUDA() CUDA {
-	return c.CUDA
+func (c PyTorchMeta) GPUAdditionalPipArgs(cuda CUDA) []string {
+	if cuda == c.DefaultCUDA {
+		return nil
+	}
+	return []string{"-f", "https://download.pytorch.org/whl/torch_stable.html"}
+}
+
+func (c PyTorchMeta) GetCUDAs() []CUDA {
+	cudas := []CUDA{c.DefaultCUDA}
+	if c.OtherCUDASuffixes == nil {
+		return cudas
+	}
+	for cuda := range c.OtherCUDASuffixes {
+		cudas = append(cudas, cuda)
+	}
+	return cudas
 }
 
 func (c PyTorchMeta) GetCuDNN() CuDNN {
@@ -193,71 +225,73 @@ var (
 		Py27,
 	}
 
-	// from https://www.tensorflow.org/install/source#tested_build_configurations,
+	// from https://www.tensorflow.org/install/source#gpu
 	// though some python versions are actually missing when you
 	// try to install tensorflow. e.g. py3.6.11 doesn't have a
 	// pypi candidate for tensorflow==2.2.0 on linux
 	TensorflowMetas = []TensorflowMeta{
-		{"2.2.0", "tensorflow==2.2.0", "tensorflow==2.2.0", CUDA10_1, CuDNN7, []Python{Py35, Py37, Py38}},
-		{"2.1.0", "tensorflow==2.1.0", "tensorflow==2.1.0", CUDA10_1, CuDNN7, []Python{Py37, Py27}},
-		{"2.0.1", "tensorflow==2.0.1", "tensorflow==2.0.1", CUDA10_0, CuDNN7, []Python{Py37}},
+		{"2.3.0", "tensorflow==2.3.0", "tensorflow==2.3.0", CUDA10_1, CuDNN7, []Python{Py35, Py36, Py37, Py38}},
+		{"2.2.0", "tensorflow==2.2.0", "tensorflow==2.2.0", CUDA10_1, CuDNN7, []Python{Py35, Py36, Py37, Py38}},
+		{"2.1.0", "tensorflow==2.1.0", "tensorflow==2.1.0", CUDA10_1, CuDNN7, []Python{Py27, Py35, Py36, Py37}},
+		{"2.0.1", "tensorflow==2.0.1", "tensorflow==2.0.1", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}},
 		{"2.0.0", "tensorflow==2.0.0", "tensorflow==2.0.0", CUDA10_0, CuDNN7, []Python{Py37, Py27}},
 		{"1.15.2", "tensorflow==1.15.2", "tensorflow-gpu==1.15.2", CUDA10_0, CuDNN7, []Python{Py37}},
-		{"1.15.0", "tensorflow==1.15.0", "tensorflow-gpu==1.15.0", CUDA10_0, CuDNN7, []Python{Py37, Py27}},
-		{"1.14.0", "tensorflow==1.14.0", "tensorflow-gpu==1.14.0", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
-		{"1.13.2", "tensorflow==1.13.2", "tensorflow-gpu==1.13.2", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
-		{"1.13.1", "tensorflow==1.13.1", "tensorflow-gpu==1.13.1", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
-		{"1.12.3", "tensorflow==1.12.3", "tensorflow-gpu==1.12.3", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.12.2", "tensorflow==1.12.2", "tensorflow-gpu==1.12.2", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.12.0", "tensorflow==1.12.0", "tensorflow-gpu==1.12.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.11.0", "tensorflow==1.11.0", "tensorflow-gpu==1.11.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.10.1", "tensorflow==1.10.1", "tensorflow-gpu==1.10.1", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.10.0", "tensorflow==1.10.0", "tensorflow-gpu==1.10.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.9.0", "tensorflow==1.9.0", "tensorflow-gpu==1.9.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.8.0", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.7.1", "tensorflow==1.7.1", "tensorflow-gpu==1.7.1", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.7.0", "tensorflow==1.7.0", "tensorflow-gpu==1.7.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.6.0", "tensorflow==1.6.0", "tensorflow-gpu==1.6.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.5.1", "tensorflow==1.5.1", "tensorflow-gpu==1.5.1", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.5.0", "tensorflow==1.5.0", "tensorflow-gpu==1.5.0", CUDA9_0, CuDNN7, []Python{Py36, Py35, Py27}},
-		{"1.4.1", "tensorflow==1.4.1", "tensorflow-gpu==1.4.1", CUDA8_0, CuDNN6, []Python{Py36, Py35, Py27}},
-		{"1.4.0", "tensorflow==1.4.0", "tensorflow-gpu==1.4.0", CUDA8_0, CuDNN6, []Python{Py36, Py35, Py27}},
-		{"1.3.0", "tensorflow==1.3.0", "tensorflow-gpu==1.3.0", CUDA8_0, CuDNN6, []Python{Py36, Py35, Py27}},
-		{"1.2.1", "tensorflow==1.2.1", "tensorflow-gpu==1.2.1", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"1.2.0", "tensorflow==1.2.0", "tensorflow-gpu==1.2.0", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"1.1.0", "tensorflow==1.1.0", "tensorflow-gpu==1.1.0", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"1.0.1", "tensorflow==1.0.1", "tensorflow-gpu==1.0.1", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"1.0.0", "tensorflow==1.0.0", "tensorflow-gpu==1.0.0", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"0.12.1", "tensorflow==0.12.1", "tensorflow-gpu==0.12.1", CUDA8_0, CuDNN5, []Python{Py36, Py35, Py27}},
-		{"0.12.0", "tensorflow==0.12.0", "tensorflow-gpu==0.12.0", CUDA8_0, CuDNN5, []Python{Py35, Py27}},
+		{"1.15.0", "tensorflow==1.15.0", "tensorflow-gpu==1.15.0", CUDA10_0, CuDNN7, []Python{Py27, Py37}},
+		{"1.14.0", "tensorflow==1.14.0", "tensorflow-gpu==1.14.0", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}},
+		{"1.13.2", "tensorflow==1.13.2", "tensorflow-gpu==1.13.2", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}},
+		{"1.13.1", "tensorflow==1.13.1", "tensorflow-gpu==1.13.1", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}},
+		{"1.12.3", "tensorflow==1.12.3", "tensorflow-gpu==1.12.3", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.12.2", "tensorflow==1.12.2", "tensorflow-gpu==1.12.2", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.12.0", "tensorflow==1.12.0", "tensorflow-gpu==1.12.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.11.0", "tensorflow==1.11.0", "tensorflow-gpu==1.11.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.10.1", "tensorflow==1.10.1", "tensorflow-gpu==1.10.1", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.10.0", "tensorflow==1.10.0", "tensorflow-gpu==1.10.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.9.0", "tensorflow==1.9.0", "tensorflow-gpu==1.9.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.8.0", "tensorflow==1.8.0", "tensorflow-gpu==1.8.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.7.1", "tensorflow==1.7.1", "tensorflow-gpu==1.7.1", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.7.0", "tensorflow==1.7.0", "tensorflow-gpu==1.7.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.6.0", "tensorflow==1.6.0", "tensorflow-gpu==1.6.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.5.1", "tensorflow==1.5.1", "tensorflow-gpu==1.5.1", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.5.0", "tensorflow==1.5.0", "tensorflow-gpu==1.5.0", CUDA9_0, CuDNN7, []Python{Py27, Py35, Py36}},
+		{"1.4.1", "tensorflow==1.4.1", "tensorflow-gpu==1.4.1", CUDA8_0, CuDNN6, []Python{Py27, Py35, Py36}},
+		{"1.4.0", "tensorflow==1.4.0", "tensorflow-gpu==1.4.0", CUDA8_0, CuDNN6, []Python{Py27, Py35, Py36}},
+		{"1.3.0", "tensorflow==1.3.0", "tensorflow-gpu==1.3.0", CUDA8_0, CuDNN6, []Python{Py27, Py35, Py36}},
+		{"1.2.1", "tensorflow==1.2.1", "tensorflow-gpu==1.2.1", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"1.2.0", "tensorflow==1.2.0", "tensorflow-gpu==1.2.0", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"1.1.0", "tensorflow==1.1.0", "tensorflow-gpu==1.1.0", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"1.0.1", "tensorflow==1.0.1", "tensorflow-gpu==1.0.1", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"1.0.0", "tensorflow==1.0.0", "tensorflow-gpu==1.0.0", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"0.12.1", "tensorflow==0.12.1", "tensorflow-gpu==0.12.1", CUDA8_0, CuDNN5, []Python{Py27, Py35, Py36}},
+		{"0.12.0", "tensorflow==0.12.0", "tensorflow-gpu==0.12.0", CUDA8_0, CuDNN5, []Python{Py27, Py35}},
 	}
 
 	PyTorchMetas = []PyTorchMeta{
-		{"1.5.1", "0.6.1", CUDA10_2, CuDNN7, []Python{Py38, Py37, Py36}},
-		{"1.5.0", "0.6.0", CUDA10_2, CuDNN7, []Python{Py38, Py37, Py36}},
-		{"1.4.0", "0.5.0", CUDA10_1, CuDNN7, []Python{Py38, Py37, Py36, Py27}},
-		{"1.2.0", "0.4.0", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py27}},
-		{"1.1.0", "0.3.0", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py27}},
-		{"1.0.1", "0.2.2", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
-		{"1.0.0", "0.2.1", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
+		{"1.6.0", "0.7.0", CUDA10_2, CuDNN7, []Python{Py36, Py37, Py38}, map[CUDA]string{CUDA10_1: "+cu101", CUDA9_2: "+cu92"}},
+		{"1.5.1", "0.6.1", CUDA10_2, CuDNN7, []Python{Py36, Py37, Py38}, map[CUDA]string{CUDA10_1: "+cu101", CUDA9_2: "+cu92"}},
+		{"1.5.0", "0.6.0", CUDA10_2, CuDNN7, []Python{Py36, Py37, Py38}, map[CUDA]string{CUDA10_1: "+cu101", CUDA9_2: "+cu92"}},
+		{"1.4.0", "0.5.0", CUDA10_1, CuDNN7, []Python{Py27, Py36, Py37, Py38}, map[CUDA]string{CUDA9_2: "+cu92"}},
+		{"1.2.0", "0.4.0", CUDA10_0, CuDNN7, []Python{Py27, Py36, Py37}, map[CUDA]string{CUDA9_2: "+cu92"}},
+		{"1.1.0", "0.3.0", CUDA10_0, CuDNN7, []Python{Py27, Py36, Py37}, nil},
+		{"1.0.1", "0.2.2", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}, nil},
+		{"1.0.0", "0.2.1", CUDA10_0, CuDNN7, []Python{Py27, Py35, Py36, Py37}, nil},
 	}
 
 	CUDAImages = map[CUDACuDNNUbuntu]string{
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN8, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN8, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_1, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_1, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_0, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_0, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_2, CuDNN7, Ubuntu18_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA9_2, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_1, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN6, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN5, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04",
+		{CUDA10_2, CuDNN8, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04",
+		{CUDA10_2, CuDNN8, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu16.04",
+		{CUDA10_2, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04",
+		{CUDA10_2, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu16.04",
+		{CUDA10_1, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04",
+		{CUDA10_1, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04",
+		{CUDA10_0, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04",
+		{CUDA10_0, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04",
+		{CUDA9_2, CuDNN7, Ubuntu18_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04",
+		{CUDA9_2, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu16.04",
+		{CUDA9_1, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04",
+		{CUDA9_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN6, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN5, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04",
 	}
 
 	// from https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
@@ -367,6 +401,43 @@ func LatestCUDAForDriverVersion(driverVersion string) (CUDA, error) {
 		}
 	}
 	return "", fmt.Errorf("No compatible CUDA version found for CUDA driver version %s. Please upgrade to a more recent CUDA driver", driverVersion)
+}
+
+func FrameworkSupportsCUDA(frameworkMeta FrameworkMeta, cuda CUDA) bool {
+	for _, c := range frameworkMeta.GetCUDAs() {
+		if cuda == c {
+			return true
+		}
+	}
+	return false
+}
+
+func LatestSupportedCUDA(frameworkMeta FrameworkMeta, driverVersion string) (CUDA, error) {
+	cudas := frameworkMeta.GetCUDAs()
+	// sort framework cuda versions in descending order
+	sort.Slice(cudas, func(i, j int) bool {
+		iVersion, err := version.NewVersion(cudas[i].Version())
+		if err != nil {
+			panic("Could not parse CUDA version " + cudas[i].Version())
+		}
+		jVersion, err := version.NewVersion(cudas[j].Version())
+		if err != nil {
+			panic("Could not parse CUDA version " + cudas[j].Version())
+		}
+		return iVersion.GreaterThan(jVersion) // desc
+	})
+
+	// return the highest cuda version that is compatible
+	for _, cuda := range cudas {
+		isCompatible, err := CUDADriverIsCompatible(cuda, driverVersion)
+		if err != nil {
+			return "", err
+		}
+		if isCompatible {
+			return cuda, nil
+		}
+	}
+	return "", fmt.Errorf("CUDA driver version %s is not compatible with %s==%s", driverVersion, frameworkMeta.Name(), frameworkMeta.Version()) // TODO(andreas): make this error message more actionable
 }
 
 func LatestFrameworkVersion(framework string) string {
