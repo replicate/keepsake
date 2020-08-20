@@ -42,7 +42,7 @@ def main():
     experiment = replicate.init(my_param="my-value")
 
     for step in range(3):
-        experiment.commit(step=step)
+        experiment.commit(path=".", step=step)
 
 if __name__ == "__main__":
     main()

@@ -33,9 +33,9 @@ pip install replicate
 
 Create and return an experiment.
 
-Any keyword arguments will be recorded as hyperparameters. The experiment will be saved to storage, with the hyperparameters you pass and various other automatically generated metadata.
+The entire working directory will be saved to storage to save a copy of the code. Any keyword arguments will be recorded as hyperparameters.
 
-To determine the storage location, this method will look for `replicate.yaml` file in the working directory. [Learn more in the reference documentation.](replicate-yaml.md)
+To determine the storage location, this method will read `replicate.yaml` file in the working directory and use the `storage` option. [Learn more in the reference documentation.](replicate-yaml.md)
 
 For example:
 
@@ -44,16 +44,18 @@ For example:
 >>> experiment = replicate.init(learning_rate=0.01)
 ```
 
-#### `experiment.commit(**labels)`
+#### `experiment.commit(path, **labels)`
 
 Create a commit within an experiment.
 
-When this is called, Replicate takes a copy of the working directory and uploads it to storage. Any keyword arguments passed to the function will also be recorded.
+The given `path`, relative to the working directory, will be uploaded to storage. It can be either a directory or a single file. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
+
+Any keyword arguments passed to the function will also be recorded.
 
 You can add more information about these keyword arguments in `replicate.yaml` to define which ones are metrics that determine the performance of your model, and what success is for that metric. [See the `replicate.yaml` documentation for more information.](replicate-yaml.md#metrics).
 
 For example:
 
 ```python
->>> experiment.commit(step=5, train_loss=0.425, train_accuracy=0.749)
+>>> experiment.commit(path="weights/", step=5, train_loss=0.425, train_accuracy=0.749)
 ```

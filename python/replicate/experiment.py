@@ -43,15 +43,27 @@ class Experiment:
             "metadata/experiments/{}.json".format(self.id),
             json.dumps(self.get_metadata(), indent=2),
         )
+        # This is intentionally after uploading the metadata file.
+        # When you upload an object to a GCS bucket that doesn't exist, the upload of
+        # the first object creates the bucket.
+        # If you upload lots of objects in parallel to a bucket that doesn't exist, it
+        # causes a race condition, throwing 404s.
+        # Hence, uploading the single metadata file is done first.
+        self.storage.put_directory("experiments/{}/".format(self.id), self.project_dir)
 
     def commit(
-        self, step: Optional[int] = None, options: Optional[Any] = None, **kwargs
+        self,
+        path: Optional[str],  # this requires an explicit path=None to not save source
+        step: Optional[int] = None,
+        options: Optional[Any] = None,
+        **kwargs
     ) -> Commit:
         options = set_option_defaults(options, {})
         created = datetime.datetime.utcnow()
         commit = Commit(
             experiment=self,
             project_dir=self.project_dir,
+            path=path,
             created=created,
             step=step,
             labels=kwargs,

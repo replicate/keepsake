@@ -27,7 +27,7 @@ def train(**params):
 
         torch.save(model, "model.torch")
         # highlight-next-line
-        experiment.commit(**metrics)
+        experiment.commit(path="model.torch", **metrics)
 ```
 
 By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.
@@ -64,9 +64,7 @@ The core concept in Replicate is the **experiment**. It represents a run of your
 
 You create an experiment by calling `replicate.init()` in the Python library. Any arguments you pass are recorded as hyperparameters, then it automatically records some other data:
 
-<!-- TODO: add this when we save code in init() -->
-<!-- - The files in the current directory, so you have a copy of the training code -->
-
+- The files in the current directory, so you have a copy of the training code
 - The Python version
 - The version of any Python packages used (including PyTorch and Tensorflow)
 - The user who started the training script
@@ -76,7 +74,7 @@ You create an experiment by calling `replicate.init()` in the Python library. An
 
 Within experiments are **commits**. They each represent a version of the _outputs_ of the training process. Conceptually, you can think of them like commits in a version control system: each one is a particular version of your machine learning model.
 
-You create a commit by calling `experiment.commit()`. Any arguments passed are recorded as metrics, then it also automatically saves a copy of the entire current directory, including your training code and weight files.
+You create a commit by calling `experiment.commit()`. It takes the argument `path`, which is the path to any files or directories you want to be saved, such as your trained weights. Any other arguments are recorded as metrics.
 
 ### Projects
 
@@ -102,10 +100,11 @@ storage: "s3://hooli-hotdog-detector"
 
 This is the directory structure of a project:
 
-- `commits/<commit id>/` – The files in your project's directory at the point in time you created a commit, including source code and weight files.
-- `metadata/commits/<commit id>.json` – A JSON file containing all the metadata about a commit, include a pointer to the experiment ID it is part of.
-- `metadata/experiments/<experiment id>.json` – A JSON file containing all the metadata about an experiment.
-- `metadata/heartbeats/<experiment id>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
+- `experiments/<experiment ID>/` – The files in your project's directory when an experiment was created, such as your source code.
+- `commits/<commit ID>/` – The files saved when you create a commit, such as your trained weights.
+- `metadata/commits/<commit ID>.json` – A JSON file containing all the metadata about a commit, include a pointer to the experiment ID it is part of.
+- `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment.
+- `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
 
 ## Remote execution
 

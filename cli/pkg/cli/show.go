@@ -76,6 +76,7 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 
 	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
 	fmt.Fprintf(w, "Created:\t%s\n", com.Created.In(timezone).Format(time.RFC1123))
+	fmt.Fprintf(w, "Path:\t%s\n", com.Path)
 	fmt.Fprintf(w, "Step:\t%d\n", com.Step)
 
 	fmt.Fprintf(w, "\t\n")

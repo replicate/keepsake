@@ -20,10 +20,12 @@ storage: {storage}
             )
         )
     with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
-        f.write("""
+        f.write(
+            """
 torch==1.4.0
 replicate
-""")
+"""
+        )
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
         f.write(
             """
@@ -35,7 +37,7 @@ def main():
     experiment = replicate.init()
     num_gpus = torch.cuda.device_count()
     time.sleep(1)
-    experiment.commit(step=1, num_gpus=num_gpus)
+    experiment.commit(path=".", step=1, num_gpus=num_gpus)
 
 if __name__ == "__main__":
     main()
@@ -66,30 +68,24 @@ if __name__ == "__main__":
     assert proc.returncode == 0
 
     experiments = json.loads(
-        subprocess.check_output(
-            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
-        )
+        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
     )
     assert len(experiments) == 1
 
     exp = experiments[0]
     latest = exp["latest_commit"]
-    assert latest["labels"] == {"num_gpus": 1}
+    assert latest["labels"]["num_gpus"] == 1
     assert exp["running"]
 
     running = json.loads(
-        subprocess.check_output(
-            ["replicate", "ps", "--json"], cwd=tmpdir, env=env,
-        )
+        subprocess.check_output(["replicate", "ps", "--json"], cwd=tmpdir, env=env,)
     )
 
     assert running == experiments
 
     time.sleep(31)  # TODO(andreas): speed this up to make CI faster
     experiments = json.loads(
-        subprocess.check_output(
-            ["replicate", "list", "--json"], cwd=tmpdir, env=env,
-        )
+        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
     )
     assert len(experiments) == 1
 
@@ -97,8 +93,6 @@ if __name__ == "__main__":
     assert not exp["running"]
 
     running = json.loads(
-        subprocess.check_output(
-            ["replicate", "ps", "--json"], cwd=tmpdir, env=env,
-        )
+        subprocess.check_output(["replicate", "ps", "--json"], cwd=tmpdir, env=env,)
     )
     assert len(running) == 0

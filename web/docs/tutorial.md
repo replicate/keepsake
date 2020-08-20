@@ -62,11 +62,9 @@ Then, copy and paste this code into `train.py`:
 
 Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
 
-The first is `replicate.init()`. This creates an **experiment**, which represents the training run. This is called once at the start so you can pass your hyperparameters.
+The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of your code.
 
-The second is `experiment.commit()`. This creates a **commit** within the experiment, which saves the filesystem at that point and any metrics you pass to the function.
-
-**Each commit is a complete snapshot of the filesystem at that point.** All your code, weights, Tensorboard logs, and so on are all saved. This means once you've found that precise checkpoint that produces the best results, you can get back to that point.
+The second is `experiment.commit()`. This creates a **commit** within the experiment. The commit saves the metrics at that point, and makes a copy of the weights and any other artifacts.
 
 **Each experiment contains multiple commits.** You typically save your model periodically during training, because the best result isn't necessarily the most recent one. You commit to Replicate just after you save your model, so it can keep track of these versions for you.
 
@@ -138,7 +136,9 @@ Similar to how Git works, all this data is in your working directory. Replicate 
 If you want to poke around at the internal data, it is inside `.replicate/`. It's not something you'd do day to day, but there's no magic going on – everything's right there as files and plain JSON.
 :::
 
-As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit is the thing which actually contains the code and weights.
+As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. They store a copy of the code as it was when the script was started.
+
+Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit contains your weights, Tensorflow logs, and any other artifacts you want to save.
 
 To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f` with an experiment ID from your output of `replicate ls`:
 
@@ -176,6 +176,7 @@ Commit: d4fb0d38114453337fb936a0c65cad63872f89e73c4e9161b666d59260848824
 
 Created:  Thu, 06 Aug 2020 11:55:55 PDT
 Step:     99
+Path:     weights.pth
 
 Experiment
 ID:       c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
@@ -227,7 +228,7 @@ You can also pass an experiment ID, and it will pick the best or latest commit f
 
 At some point you might want to get back to some point in the past. Maybe you've run a bunch of experiments in parallel, and you want to choose one that works best. Or, perhaps you've gone down a line of exploration and it's not working, so you want to get back to where you were a week ago.
 
-The `replicate checkout` command will copy the files from a commit into your working directory. Run this, replacing `d4fb0d3` with a commit ID you passed to `replicate diff`:
+The `replicate checkout` command will copy the code and weights from a commit into your working directory. Run this, replacing `d4fb0d3` with a commit ID you passed to `replicate diff`:
 
 ```shell-session
 $ replicate checkout d4fb0d3
@@ -246,7 +247,7 @@ $ ls -lh model.pth
 -rw-r--r--  1 ben  staff   8.3K Aug  7 16:42 model.pth
 ```
 
-This is useful for getting the trained model out of an experiment from the past, but **it also copies all of the code from that commit**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment.
+This is useful for getting the trained model out of a commit, but **it also copies all of the code from the experiment that commit is part of**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment.
 
 **This means you don't have to remember to commit to Git when you're running experiments.** Just try a bunch of things, then when you've found something that works, use Replicate to get back to the exact code that produced those results and formally commit it to Git.
 

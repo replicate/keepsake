@@ -56,7 +56,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
         }
         assert actual_experiment_meta == expected_experiment_meta
 
-        commit = experiment.commit(step=10, loss=1.1, baz="qux")
+        commit = experiment.commit(path=".", step=10, loss=1.1, baz="qux")
 
         actual_commit_meta = s3_read_json(
             temp_bucket, os.path.join("metadata", "commits", commit.id + ".json"),
@@ -68,6 +68,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "experiment_id": experiment.id,
             "step": 10,
             "labels": {"loss": 1.1, "baz": "qux"},
+            "path": ".",
         }
         assert actual_commit_meta == expected_commit_meta
 

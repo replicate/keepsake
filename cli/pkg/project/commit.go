@@ -19,6 +19,7 @@ type Commit struct {
 	ExperimentID string                  `json:"experiment_id"`
 	Labels       map[string]*param.Value `json:"labels"`
 	Step         int                     `json:"step"`
+	Path         string                  `json:"path"`
 }
 
 // NewCommit creates a commit

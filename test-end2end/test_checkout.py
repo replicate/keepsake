@@ -38,15 +38,14 @@ import replicate
 
 def main():
     experiment = replicate.init()
-    experiment.commit()
+    with open("weights", "w") as fh:
+        fh.write("42 lbs")
+    experiment.commit(path="weights")
 
 if __name__ == "__main__":
     main()
 """
         )
-    # TODO: upload Python library
-    with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
-        f.write("replicate==0.1.3")
 
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
@@ -71,8 +70,11 @@ if __name__ == "__main__":
     with open(os.path.join(output_dir, rand, rand)) as f:
         assert f.read() == rand
 
+    with open(os.path.join(output_dir, "weights")) as f:
+        assert f.read() == "42 lbs"
+
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "requirements.txt", "train.py", rand]
+    expected_paths = ["replicate.yaml", "train.py", "weights", rand]
     assert set(actual_paths) == set(expected_paths)
