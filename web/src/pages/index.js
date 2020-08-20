@@ -145,7 +145,7 @@ def train(**params):
 
         torch.save(model, "model.torch")
         # highlight-next-line
-        experiment.commit(**metrics)`}
+        experiment.commit(path="model.torch", **metrics)`}
               </CodeBlock>
             </div>
             <div className={classnames(`col col--6`)}>
