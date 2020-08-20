@@ -107,6 +107,10 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	}
 
 	// TODO(andreas): empty directory before getting new contents
+	if err := store.GetDirectory(path.Join("experiments", com.ExperimentID), outputDir); err != nil {
+		return err
+	}
+	// Overlay commit on top of experiment
 	if err := store.GetDirectory(path.Join("commits", com.ID), outputDir); err != nil {
 		return err
 	}

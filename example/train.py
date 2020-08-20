@@ -42,16 +42,16 @@ def train(learning_rate, num_epochs):
         with torch.no_grad():
             model.eval()
             output = model(val_features)
-            accuracy = (output.argmax(1) == val_labels).float().sum() / len(val_labels)
+            acc = (output.argmax(1) == val_labels).float().sum() / len(val_labels)
 
         print(
             "Epoch {}, train loss: {:.3f}, validation accuracy: {:.3f}".format(
-                epoch, loss.item(), accuracy
+                epoch, loss.item(), acc
             )
         )
         torch.save(model, "model.pth")
         # highlight-next-line
-        experiment.commit(step=epoch, loss=loss.item(), accuracy=accuracy)
+        experiment.commit(path="model.pth", step=epoch, loss=loss.item(), accuracy=acc)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import sys
 import datetime
 import hashlib
+import os
 import json
 import random
 from typing import Optional, Dict, Any
@@ -12,6 +13,8 @@ from .storage import Storage
 
 # this slows down import replicate considerably, but is probably fine
 # since the framework is probably loaded/about to be loaded anyway
+# FIXME (bfirsh): if the user has both tensorflow and numpy installed, then
+# they'll unnecessarily loading both.
 # fmt: off
 try:
     import numpy as np  # type: ignore
@@ -56,6 +59,7 @@ class Commit(object):
     def __init__(
         self,
         experiment,  # can't type annotate due to circular import
+        path: Optional[str],
         project_dir: str,
         created: datetime.datetime,
         step: Optional[int],
@@ -63,6 +67,7 @@ class Commit(object):
     ):
         self.experiment = experiment
         self.project_dir = project_dir
+        self.path = path
         self.created = created
         self.step = step
         self.labels = labels
@@ -73,11 +78,20 @@ class Commit(object):
         self.validate_labels()
 
     def save(self, storage: Storage):
-        storage.put_directory("commits/{}/".format(self.id), self.project_dir)
+        if self.path is not None:
+            source_path = os.path.join(self.project_dir, self.path)
+            destination_path = os.path.join("commits", self.id, self.path)
+            if os.path.isfile(source_path):
+                with open(os.path.join(source_path), "rb") as fh:
+                    data = fh.read()
+                storage.put(destination_path, data)
+            else:
+                storage.put_directory(destination_path, source_path)
         obj = {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
             "experiment_id": self.experiment.id,
+            "path": self.path,
             "labels": self.labels,
         }
         if self.step is not None:

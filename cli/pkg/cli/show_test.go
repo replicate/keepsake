@@ -60,6 +60,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		ID:           "1ccccccccc",
 		Created:      fixedTime.Add(-5 * time.Minute),
 		ExperimentID: experiments[0].ID,
+		Path:         "data",
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.1),
 			"label-2": param.Int(2),
@@ -69,6 +70,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		ID:           "2ccccccccc",
 		Created:      fixedTime.Add(-4 * time.Minute),
 		ExperimentID: experiments[0].ID,
+		Path:         "data",
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.01),
 			"label-2": param.Int(2),
@@ -78,6 +80,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		ID:           "3ccccccccc",
 		Created:      fixedTime.Add(-3 * time.Minute),
 		ExperimentID: experiments[0].ID,
+		Path:         "data",
 		Labels: map[string]*param.Value{
 			"label-1": param.Float(0.02),
 			"label-2": param.Int(2),
@@ -87,6 +90,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		ID:           "4ccccccccc",
 		Created:      fixedTime.Add(-2 * time.Minute),
 		ExperimentID: experiments[1].ID,
+		Path:         "data",
 		Labels: map[string]*param.Value{
 			"label-3": param.Float(0.5),
 		},
@@ -134,6 +138,7 @@ func TestShowCommit(t *testing.T) {
 Commit: 3ccccccccc
 
 Created:    Mon, 02 Jan 2006 23:01:05 +08
+Path:       data
 Step:       20
 
 Experiment
