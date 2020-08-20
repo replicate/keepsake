@@ -88,6 +88,19 @@ function Home() {
   const { siteConfig = {} } = context;
   return (
     <Layout title="" description="">
+      <div
+        style={{
+          padding: "10px",
+          backgroundColor: "#EEE",
+          textAlign: "center",
+        }}
+      >
+        <strong>
+          While we work out the kinks, please don't share this yet.
+        </strong>{" "}
+        But, if you know someone who would particularly like it,{" "}
+        <a href="mailto:team@replicate.ai">let us know</a>. :)
+      </div>
       <header className={classnames("hero", styles.heroBanner)}>
         <div className="container">
           <h1 className="hero__title">{siteConfig.title}</h1>
