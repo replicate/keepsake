@@ -11,10 +11,12 @@ import (
 	"replicate.ai/cli/pkg/build"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/docker"
+	"replicate.ai/cli/pkg/global"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/netutils"
 	"replicate.ai/cli/pkg/remote"
 	"replicate.ai/cli/pkg/settings"
+	"replicate.ai/cli/pkg/storage"
 )
 
 type runOpts struct {
@@ -48,9 +50,25 @@ func newRunCommand() *cobra.Command {
 }
 
 func runCommand(opts runOpts, args []string) (err error) {
+	conf, sourceDir, err := loadConfig()
+	if err != nil {
+		return err
+	}
+	console.Debug("Using directory: %s", sourceDir)
+
+	// User input checks
+	if opts.host != "" {
+		scheme, _, err := storage.SplitURL(conf.Storage)
+		if err != nil {
+			return err
+		}
+		if scheme == storage.SchemeDisk {
+			return fmt.Errorf("You can't run commands on remote machines with local disk storage.\n\nSet the 'storage' option in replicate.yaml to an s3:// or gs:// URL.\n\nSee the docs for more information: " + global.WebURL + "/docs/working-with-remote-machines")
+		}
+	}
+
 	var remoteOptions *remote.Options
 	var dockerClient *client.Client
-
 	if opts.host == "" {
 		// Local mode
 		dockerClient, err = docker.NewLocalClient()
@@ -77,12 +95,6 @@ func runCommand(opts runOpts, args []string) (err error) {
 	// to Python library or something.
 	jobID := hash.Random()
 	containerName := "replicate-" + jobID
-
-	conf, sourceDir, err := loadConfig()
-	if err != nil {
-		return err
-	}
-	console.Debug("Using directory: %s", sourceDir)
 
 	hostCUDADriverVersion := ""
 	if remoteOptions != nil {
