@@ -34,6 +34,8 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 
 	env := remote.FilterEnvList(os.Environ())
 
+	env = append(env, "PYTHONUNBUFFERED=1")
+
 	// REPLICATE_USER and REPLICATE_HOST is used by the replicate
 	// python library to save user/host in experiment metadata
 	env = append(env, "REPLICATE_USER="+user)
