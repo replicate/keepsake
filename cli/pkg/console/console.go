@@ -4,6 +4,7 @@ package console
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/logrusorgru/aurora"
@@ -81,6 +82,7 @@ func (c *Console) log(level Level, msg string, v ...interface{}) {
 	}
 
 	prompt := "═══╡ "
+	continuationPrompt := "   │ "
 
 	if c.Color {
 		color := aurora.Faint
@@ -92,15 +94,22 @@ func (c *Console) log(level Level, msg string, v ...interface{}) {
 			color = aurora.Red
 		}
 		prompt = color(prompt).String()
+		continuationPrompt = color(continuationPrompt).String()
 	}
 
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	formattedMsg := fmt.Sprintf(msg, v...)
-	if c.Color && level == DebugLevel {
-		formattedMsg = aurora.Faint(formattedMsg).String()
+	for i, line := range strings.Split(formattedMsg, "\n") {
+		if c.Color && level == DebugLevel {
+			line = aurora.Faint(line).String()
+		}
+		if i == 0 {
+			line = prompt + line
+		} else {
+			line = continuationPrompt + line
+		}
+		fmt.Fprintln(os.Stderr, line)
 	}
-
-	fmt.Fprintln(os.Stderr, prompt+formattedMsg)
 }
