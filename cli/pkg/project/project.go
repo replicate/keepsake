@@ -231,6 +231,10 @@ func (p *Project) DeleteExperiment(exp *Experiment) error {
 		// TODO(andreas): return err if exp.HeartbeatPath() exists but some other error occurs
 		console.Warn("Failed to delete heartbeat file %s: %s", exp.HeartbeatPath(), err)
 	}
+	if err := p.store.Delete(exp.StorageDir()); err != nil {
+		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
+		console.Warn("Failed to delete commit storage directory %s: %s", exp.StorageDir(), err)
+	}
 	if err := p.store.Delete(exp.MetadataPath()); err != nil {
 		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
 		console.Warn("Failed to delete experiment metadata file %s: %s", exp.MetadataPath(), err)
