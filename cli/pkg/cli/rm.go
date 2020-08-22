@@ -8,16 +8,18 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
-func newDeleteCommand() *cobra.Command {
+func newRmCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete <experiment-or-commit-id> [experiment-or-commit-id...]",
-		Short: "Delete experiments or commits",
-		Long: `Delete experiments or commits.
+		Use:   "rm <experiment-or-commit-id> [experiment-or-commit-id...]",
+		Short: "Remove experiments or commits",
+		Long: `Remove experiments or commits.
 
-To delete experiments or commits, pass any number of IDs (or prefixes).
+To remove experiments or commits, pass any number of IDs (or prefixes).
 `,
-		RunE: deleteExperimentOrCommit,
-		Args: cobra.MinimumNArgs(1),
+		RunE:       rmExperimentOrCommit,
+		Args:       cobra.MinimumNArgs(1),
+		Aliases:    []string{"delete"},
+		SuggestFor: []string{"remove"},
 	}
 
 	addStorageURLFlag(cmd)
@@ -25,7 +27,7 @@ To delete experiments or commits, pass any number of IDs (or prefixes).
 	return cmd
 }
 
-func deleteExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
+func rmExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
 	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
@@ -45,12 +47,12 @@ func deleteExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
 			return err
 		}
 		if comOrExp.Commit != nil {
-			console.Info("Deleting commit %s...", comOrExp.Commit.ID)
+			console.Info("Removing commit %s...", comOrExp.Commit.ID)
 			if err := proj.DeleteCommit(comOrExp.Commit); err != nil {
 				return err
 			}
 		} else {
-			console.Info("Deleting experiment %s and its commits...", comOrExp.Experiment.ID)
+			console.Info("Removing experiment %s and its commits...", comOrExp.Experiment.ID)
 			commits, err := proj.ExperimentCommits(comOrExp.Experiment.ID)
 			if err != nil {
 				return err
