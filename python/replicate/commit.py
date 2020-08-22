@@ -79,15 +79,6 @@ class Commit(object):
         self.validate_labels()
 
     def save(self, storage: Storage):
-        if self.path is not None:
-            source_path = os.path.join(self.project_dir, self.path)
-            destination_path = os.path.join("commits", self.id, self.path)
-            if os.path.isfile(source_path):
-                with open(os.path.join(source_path), "rb") as fh:
-                    data = fh.read()
-                storage.put(destination_path, data)
-            else:
-                storage.put_directory(destination_path, source_path)
         obj = {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
@@ -101,6 +92,16 @@ class Commit(object):
             "metadata/commits/{}.json".format(self.id),
             json.dumps(obj, indent=2, cls=CustomJSONEncoder),
         )
+        # FIXME (bfirsh): this will cause partial commits if process quits half way through put_directory
+        if self.path is not None:
+            source_path = os.path.join(self.project_dir, self.path)
+            destination_path = os.path.join("commits", self.id, self.path)
+            if os.path.isfile(source_path):
+                with open(os.path.join(source_path), "rb") as fh:
+                    data = fh.read()
+                storage.put(destination_path, data)
+            else:
+                storage.put_directory(destination_path, source_path)
 
     def validate_labels(self):
         metrics = self.experiment.config.get("metrics", [])

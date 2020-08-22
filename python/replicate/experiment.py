@@ -49,6 +49,7 @@ class Experiment:
         # If you upload lots of objects in parallel to a bucket that doesn't exist, it
         # causes a race condition, throwing 404s.
         # Hence, uploading the single metadata file is done first.
+        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_directory
         self.storage.put_directory("experiments/{}/".format(self.id), self.project_dir)
 
     def commit(
