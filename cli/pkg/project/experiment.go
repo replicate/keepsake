@@ -76,6 +76,10 @@ func (e *Experiment) HeartbeatPath() string {
 	return "metadata/heartbeats/" + e.ID + ".json"
 }
 
+func (e *Experiment) StorageDir() string {
+	return "experiments/" + e.ID
+}
+
 func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	paths, err := store.List("metadata/experiments/")
 	if err != nil {

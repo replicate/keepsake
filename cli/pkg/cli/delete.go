@@ -50,7 +50,16 @@ func deleteExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
 				return err
 			}
 		} else {
-			console.Info("Deleting experiment %s...", comOrExp.Experiment.ID)
+			console.Info("Deleting experiment %s and its commits...", comOrExp.Experiment.ID)
+			commits, err := proj.ExperimentCommits(comOrExp.Experiment.ID)
+			if err != nil {
+				return err
+			}
+			for _, commit := range commits {
+				if err := proj.DeleteCommit(commit); err != nil {
+					return err
+				}
+			}
 			if err := proj.DeleteExperiment(comOrExp.Experiment); err != nil {
 				return err
 			}
