@@ -169,7 +169,7 @@ func (c PyTorchMeta) GetCuDNN() CuDNN {
 }
 
 func (c PyTorchMeta) FrameworkString() string {
-	return fmt.Sprintf("pytorch%s", c.Torch)
+	return fmt.Sprintf("pytorch%s", c.Version())
 }
 
 func (c PyTorchMeta) Name() string {
@@ -184,6 +184,14 @@ func (c PyTorchMeta) Version() string {
 	return c.Torch
 }
 
+func (c *PyTorchMeta) versionSansCUDA() string {
+	if strings.Contains(c.Torch, "+") {
+		parts := strings.SplitN(c.Torch, "+", 2)
+		return parts[0]
+	}
+	return c.Torch
+}
+
 var (
 	PythonVersions = []Python{
 		Py38,
@@ -193,11 +201,12 @@ var (
 		Py27,
 	}
 
-	// from https://www.tensorflow.org/install/source#tested_build_configurations,
+	// from https://www.tensorflow.org/install/source#gpu
 	// though some python versions are actually missing when you
 	// try to install tensorflow. e.g. py3.6.11 doesn't have a
 	// pypi candidate for tensorflow==2.2.0 on linux
 	TensorflowMetas = []TensorflowMeta{
+		{"2.3.0", "tensorflow==2.3.0", "tensorflow==2.3.0", CUDA10_1, CuDNN7, []Python{Py35, Py37, Py38}},
 		{"2.2.0", "tensorflow==2.2.0", "tensorflow==2.2.0", CUDA10_1, CuDNN7, []Python{Py35, Py37, Py38}},
 		{"2.1.0", "tensorflow==2.1.0", "tensorflow==2.1.0", CUDA10_1, CuDNN7, []Python{Py37, Py27}},
 		{"2.0.1", "tensorflow==2.0.1", "tensorflow==2.0.1", CUDA10_0, CuDNN7, []Python{Py37}},
@@ -233,9 +242,17 @@ var (
 	}
 
 	PyTorchMetas = []PyTorchMeta{
+		{"1.6.0", "0.7.0", CUDA10_2, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.6.0+cu101", "0.7.0+cu101", CUDA10_1, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.6.0+cu92", "0.7.0+cu92", CUDA9_2, CuDNN7, []Python{Py38, Py37, Py36}},
 		{"1.5.1", "0.6.1", CUDA10_2, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.5.1+cu101", "0.6.1+cu101", CUDA10_1, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.5.1+cu92", "0.6.1+cu92", CUDA9_2, CuDNN7, []Python{Py38, Py37, Py36}},
 		{"1.5.0", "0.6.0", CUDA10_2, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.5.0+cu101", "0.6.0+cu101", CUDA10_1, CuDNN7, []Python{Py38, Py37, Py36}},
+		{"1.5.0+cu92", "0.6.0+cu92", CUDA9_2, CuDNN7, []Python{Py38, Py37, Py36}},
 		{"1.4.0", "0.5.0", CUDA10_1, CuDNN7, []Python{Py38, Py37, Py36, Py27}},
+		{"1.4.0+cu92", "0.5.0+cu92", CUDA9_2, CuDNN7, []Python{Py38, Py37, Py36, Py27}},
 		{"1.2.0", "0.4.0", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py27}},
 		{"1.1.0", "0.3.0", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py27}},
 		{"1.0.1", "0.2.2", CUDA10_0, CuDNN7, []Python{Py37, Py36, Py35, Py27}},
@@ -243,21 +260,21 @@ var (
 	}
 
 	CUDAImages = map[CUDACuDNNUbuntu]string{
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN8, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN8, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_2, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_1, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_1, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA10_0, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA10_0, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_2, CuDNN7, Ubuntu18_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04",
-		CUDACuDNNUbuntu{CUDA9_2, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_1, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA9_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN6, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04",
-		CUDACuDNNUbuntu{CUDA8_0, CuDNN5, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04",
+		{CUDA10_2, CuDNN8, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04",
+		{CUDA10_2, CuDNN8, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn8-devel-ubuntu16.04",
+		{CUDA10_2, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04",
+		{CUDA10_2, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.2-cudnn7-devel-ubuntu16.04",
+		{CUDA10_1, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04",
+		{CUDA10_1, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04",
+		{CUDA10_0, CuDNN7, Ubuntu18_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04",
+		{CUDA10_0, CuDNN7, Ubuntu16_04}: "nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04",
+		{CUDA9_2, CuDNN7, Ubuntu18_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04",
+		{CUDA9_2, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.2-cudnn7-devel-ubuntu16.04",
+		{CUDA9_1, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04",
+		{CUDA9_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN7, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN6, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04",
+		{CUDA8_0, CuDNN5, Ubuntu16_04}:  "nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04",
 	}
 
 	// from https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
@@ -376,4 +393,49 @@ func LatestFrameworkVersion(framework string) string {
 
 func LatestUbuntu() Ubuntu {
 	return Ubuntu18_04
+}
+
+func CudaCompatibilityError(requestedCUDA CUDA, hostCUDADriverVersion string, frameworkMeta FrameworkMeta) error {
+	supportedCUDA, err := LatestCUDAForDriverVersion(hostCUDADriverVersion)
+	if err != nil {
+		return err
+	}
+	defaultErr := fmt.Errorf(`CUDA %s is not compatible with your host's CUDA driver version %s.
+The latest supported CUDA version is %s.
+
+Please refer to https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver for the correct driver version.`, requestedCUDA, supportedCUDA, hostCUDADriverVersion)
+	if frameworkMeta == nil {
+		return defaultErr
+	}
+	if torchMeta, ok := frameworkMeta.(PyTorchMeta); ok {
+		compatibleTorchMeta := cudaCompatiblePyTorchMeta(torchMeta, requestedCUDA)
+		if compatibleTorchMeta == nil {
+			return fmt.Errorf(`pytorch==%s requires at least CUDA version %s.
+Your host's CUDA driver version %s supports CUDA version %s and below.
+
+Please refer to https://pytorch.org/ and https://pytorch.org/get-started/previous-versions/ for PyTorch/CUDA compatibility, and https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver for information on CUDA driver versions`, torchMeta.versionSansCUDA(), torchMeta.CUDA, hostCUDADriverVersion, supportedCUDA)
+		}
+		return fmt.Errorf(`pytorch==%s requires at least CUDA version %s.
+Your host's CUDA driver version %s supports CUDA version %s and below.
+To use pytorch %s with CUDA %s, change the pytorch version to pytorch==%s.
+
+Please refer to https://pytorch.org/ and https://pytorch.org/get-started/previous-versions/ for PyTorch/CUDA compatibility, and https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver for information on CUDA driver versions`, torchMeta.versionSansCUDA(), torchMeta.CUDA, hostCUDADriverVersion, supportedCUDA, torchMeta.versionSansCUDA(), torchMeta.CUDA, compatibleTorchMeta.Torch)
+	}
+	if tfMeta, ok := frameworkMeta.(TensorflowMeta); ok {
+		return fmt.Errorf(`tensorflow==%s requires at least CUDA version %s.
+Your host's CUDA driver version %s supports CUDA version %s and below.
+
+Please refer to https://www.tensorflow.org/install/source#gpu for TensorFlow/CUDA compatibility, and https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver for information on CUDA driver versions`, tfMeta.Version(), tfMeta.CUDA, hostCUDADriverVersion, supportedCUDA)
+	}
+
+	return defaultErr
+}
+
+func cudaCompatiblePyTorchMeta(torchMeta PyTorchMeta, cuda CUDA) *PyTorchMeta {
+	for _, t := range PyTorchMetas {
+		if t.versionSansCUDA() == torchMeta.versionSansCUDA() && t.CUDA == cuda {
+			return &t
+		}
+	}
+	return nil
 }

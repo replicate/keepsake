@@ -110,7 +110,7 @@ func getCUDAVersion(conf *config.Config, frameworkMeta baseimages.FrameworkMeta,
 				return "", "", err
 			}
 			if !driverCompatible {
-				return "", "", cudaCompatibilityError(cuda, hostCUDADriverVersion)
+				return "", "", baseimages.CudaCompatibilityError(cuda, hostCUDADriverVersion, nil)
 			}
 			cuDNN := baseimages.LatestCuDNNForCUDA[cuda]
 
@@ -145,7 +145,7 @@ func getCUDAVersion(conf *config.Config, frameworkMeta baseimages.FrameworkMeta,
 		return "", "", err
 	}
 	if !driverCompatible {
-		return "", "", cudaCompatibilityError(cuda, hostCUDADriverVersion)
+		return "", "", baseimages.CudaCompatibilityError(cuda, hostCUDADriverVersion, frameworkMeta)
 	}
 
 	return cuda, cuDNN, err
@@ -188,8 +188,4 @@ func getFrameworkMeta(frameworkName string, version string) (baseimages.Framewor
 		return nil, err
 	}
 	return meta, nil
-}
-
-func cudaCompatibilityError(requestedCUDA baseimages.CUDA, hostCUDADriverVersion string) error {
-	return fmt.Errorf("CUDA %s is not compatible with your host's CUDA driver version %s.\nPlease refer to https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver for the correct driver version.", requestedCUDA, hostCUDADriverVersion)
 }
