@@ -74,11 +74,12 @@ torch==1.2.0
 
 `
 	torchWithBadVersion := `torch==bad`
+	torchWithCudaVersion := `torch==1.6.0+cu92`
 
-	tf220 := baseimages.TensorflowMeta{
-		TF:           "2.2.0",
-		TFCPUPackage: "tensorflow==2.2.0",
-		TFGPUPackage: "tensorflow==2.2.0",
+	tf230 := baseimages.TensorflowMeta{
+		TF:           "2.3.0",
+		TFCPUPackage: "tensorflow==2.3.0",
+		TFGPUPackage: "tensorflow==2.3.0",
 		CUDA:         baseimages.CUDA10_1,
 		CuDNN:        baseimages.CuDNN7,
 		Pythons:      []baseimages.Python{baseimages.Py35, baseimages.Py37, baseimages.Py38},
@@ -90,6 +91,13 @@ torch==1.2.0
 		CUDA:         baseimages.CUDA10_1,
 		CuDNN:        baseimages.CuDNN7,
 		Pythons:      []baseimages.Python{baseimages.Py37, baseimages.Py27},
+	}
+	torch160cu92 := baseimages.PyTorchMeta{
+		Torch:       "1.6.0+cu92",
+		TorchVision: "0.7.0+cu92",
+		CUDA:        baseimages.CUDA9_2,
+		CuDNN:       baseimages.CuDNN7,
+		Pythons:     []baseimages.Python{baseimages.Py38, baseimages.Py37, baseimages.Py36},
 	}
 	torch120 := baseimages.PyTorchMeta{
 		Torch:       "1.2.0",
@@ -105,10 +113,11 @@ torch==1.2.0
 		isError      bool
 	}{
 		{noFramework, nil, false},
-		{tfNoVersion, tf220, false},
+		{tfNoVersion, tf230, false},
 		{tfWithVersion, tf210, false},
 		{torchWithVersion, torch120, false},
 		{torchWithBadVersion, nil, true},
+		{torchWithCudaVersion, torch160cu92, false},
 	} {
 		tmpDir, err := files.TempDir("test")
 		require.NoError(t, err)
