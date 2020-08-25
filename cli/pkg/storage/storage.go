@@ -8,6 +8,8 @@ import (
 	"regexp"
 )
 
+var maxWorkers = 128
+
 type Scheme string
 
 const (
