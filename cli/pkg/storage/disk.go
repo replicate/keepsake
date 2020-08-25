@@ -95,6 +95,32 @@ func (s *DiskStorage) List(p string) ([]string, error) {
 	return result, nil
 }
 
+func (s *DiskStorage) ListRecursive(results chan<- ListResult, folder string) {
+	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			relPath, err := filepath.Rel(s.rootDir, path)
+			if err != nil {
+				return err
+			}
+			results <- ListResult{Path: relPath}
+		}
+		return nil
+	})
+	if err != nil {
+		// If directory does not exist, treat this as empty. This is consistent with how blob storage
+		// would behave
+		if os.IsNotExist(err) {
+			close(results)
+			return
+		}
+		results <- ListResult{Error: err}
+	}
+	close(results)
+}
+
 func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {

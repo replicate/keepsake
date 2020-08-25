@@ -190,6 +190,10 @@ func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
 	return nil
 }
 
+func (s *S3Storage) ListRecursive(results chan<- ListResult, dir string) {
+	s.listRecursive(results, dir, func(_ string) bool { return true })
+}
+
 func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
