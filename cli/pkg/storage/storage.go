@@ -38,6 +38,9 @@ type Storage interface {
 	// If path does not exist, an empty list will be returned.
 	List(path string) ([]string, error)
 
+	// List files in a path recursively
+	ListRecursive(results chan<- ListResult, folder string)
+
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 

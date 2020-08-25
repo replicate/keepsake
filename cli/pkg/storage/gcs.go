@@ -109,6 +109,11 @@ func (s *GCSStorage) List(dir string) ([]string, error) {
 	return results, nil
 }
 
+// List files in a path recursively
+func (s *GCSStorage) ListRecursive(results chan<- ListResult, dir string) {
+	s.listRecursive(results, dir, func(_ string) bool { return true })
+}
+
 func (s *GCSStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
