@@ -15,9 +15,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
 
+	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
@@ -70,44 +69,37 @@ func createLotsOfFiles(b *testing.B, dir string) {
 func createLotsOfExperiments(workingDir string, storage storage.Storage, numExperiments int) error {
 	numCommits := 50
 
-	maxWorkers := int64(25)
+	maxWorkers := 25
+	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
-	group, ctx := errgroup.WithContext(context.Background())
-	group.Go(func() error {
-		sem := semaphore.NewWeighted(maxWorkers)
-
-		for i := 0; i < numExperiments; i++ {
-			if err := sem.Acquire(ctx, 1); err != nil {
-				return err
-			}
-			group.Go(func() error {
-				defer sem.Release(1)
-
-				exp := project.NewExperiment(map[string]*param.Value{
-					"learning_rate": param.Float(0.001),
-				})
-				if err := exp.Save(storage); err != nil {
-					return fmt.Errorf("Error saving experiment: %w", err)
-				}
-
-				if err := project.CreateHeartbeat(storage, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
-					return fmt.Errorf("Error creating heartbeat: %w", err)
-				}
-
-				for j := 0; j < numCommits; j++ {
-					com := project.NewCommit(exp.ID, map[string]*param.Value{
-						"accuracy": param.Float(0.987),
-					})
-					if err := com.Save(storage, workingDir); err != nil {
-						return fmt.Errorf("Error saving commit: %w", err)
-					}
-				}
-				return nil
+	for i := 0; i < numExperiments; i++ {
+		err := queue.Go(func() error {
+			exp := project.NewExperiment(map[string]*param.Value{
+				"learning_rate": param.Float(0.001),
 			})
+			if err := exp.Save(storage); err != nil {
+				return fmt.Errorf("Error saving experiment: %w", err)
+			}
+
+			if err := project.CreateHeartbeat(storage, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
+				return fmt.Errorf("Error creating heartbeat: %w", err)
+			}
+
+			for j := 0; j < numCommits; j++ {
+				com := project.NewCommit(exp.ID, map[string]*param.Value{
+					"accuracy": param.Float(0.987),
+				})
+				if err := com.Save(storage, workingDir); err != nil {
+					return fmt.Errorf("Error saving commit: %w", err)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
 		}
-		return nil
-	})
-	return group.Wait()
+	}
+	return queue.Wait()
 }
 
 func BenchmarkReplicateDisk(b *testing.B) {

@@ -10,10 +10,9 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
 	"google.golang.org/api/iterator"
 
+	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
 )
 
@@ -62,7 +61,7 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 // all everything under path
 func (s *GCSStorage) Delete(path string) error {
 	console.Debug("Deleting gs://%s/%s...", s.bucketName, path)
-	err := s.applyRecursive(path, 128, func(obj *storage.ObjectHandle) error {
+	err := s.applyRecursive(path, func(obj *storage.ObjectHandle) error {
 		return obj.Delete(context.TODO())
 	})
 	if err != nil {
@@ -144,7 +143,7 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, folder string, fil
 
 // GetDirectory recursively copies storageDir to localDir
 func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
-	err := s.applyRecursive(storageDir, int64(128), func(obj *storage.ObjectHandle) error {
+	err := s.applyRecursive(storageDir, func(obj *storage.ObjectHandle) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
 		reader, err := obj.NewReader(context.TODO())
 		if err != nil {
@@ -181,9 +180,9 @@ func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
 	return nil
 }
 
-func (s *GCSStorage) applyRecursive(dir string, concurrency int64, fn func(obj *storage.ObjectHandle) error) error {
-	sem := semaphore.NewWeighted(concurrency)
-	group, ctx := errgroup.WithContext(context.Background())
+func (s *GCSStorage) applyRecursive(dir string, fn func(obj *storage.ObjectHandle) error) error {
+	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
+
 	bucket := s.client.Bucket(s.bucketName)
 	it := bucket.Objects(context.TODO(), &storage.Query{
 		Prefix: dir,
@@ -197,17 +196,13 @@ func (s *GCSStorage) applyRecursive(dir string, concurrency int64, fn func(obj *
 			return err
 		}
 
-		if err := sem.Acquire(ctx, 1); err != nil {
-			return err
-		}
-		group.Go(func() error {
-			defer sem.Release(1)
+		err = queue.Go(func() error {
 			obj := bucket.Object(attrs.Name)
 			return fn(obj)
 		})
+		if err != nil {
+			return err
+		}
 	}
-	if err := group.Wait(); err != nil {
-		return err
-	}
-	return nil
+	return queue.Wait()
 }

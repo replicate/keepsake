@@ -15,9 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/semaphore"
 
+	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
 )
 
@@ -105,38 +104,29 @@ func (s *S3Storage) PutDirectory(localPath string, storagePath string) error {
 		return err
 	}
 
-	maxWorkers := int64(128)
+	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
-	group, ctx := errgroup.WithContext(context.Background())
-	group.Go(func() error {
-		sem := semaphore.NewWeighted(maxWorkers)
-
-		for _, file := range files {
-			if err := sem.Acquire(ctx, 1); err != nil {
+	for _, file := range files {
+		err := queue.Go(func() error {
+			data, err := ioutil.ReadFile(file.Source)
+			if err != nil {
 				return err
 			}
 
-			group.Go(func() error {
-				defer sem.Release(1)
-
-				data, err := ioutil.ReadFile(file.Source)
-				if err != nil {
-					return err
-				}
-
-				uploader := s3manager.NewUploader(s.sess)
-				_, err = uploader.Upload(&s3manager.UploadInput{
-					Bucket: aws.String(s.bucketName),
-					Key:    aws.String(file.Dest),
-					Body:   bytes.NewReader(data),
-				})
-				return err
+			uploader := s3manager.NewUploader(s.sess)
+			_, err = uploader.Upload(&s3manager.UploadInput{
+				Bucket: aws.String(s.bucketName),
+				Key:    aws.String(file.Dest),
+				Body:   bytes.NewReader(data),
 			})
+			return err
+		})
+		if err != nil {
+			return err
 		}
-		return nil
-	})
+	}
 
-	return group.Wait()
+	return queue.Wait()
 }
 
 // GetDirectory recursively copies storageDir to localDir
