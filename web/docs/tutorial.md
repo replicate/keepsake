@@ -134,6 +134,8 @@ a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
 Similar to how Git works, all this data is in your working directory. Replicate only lists experiments in the current working directory, so you'll only see experiments from the model you're working on.
 
 If you want to poke around at the internal data, it is inside `.replicate/`. It's not something you'd do day to day, but there's no magic going on – everything's right there as files and plain JSON.
+
+You probably want to add this file to `.gitignore`, if you're using Git. This directory changes often and contains large files, which is why we're using Replicate.
 :::
 
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. They store a copy of the code as it was when the script was started.
