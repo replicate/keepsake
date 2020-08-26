@@ -64,7 +64,7 @@ Notice there are two highlighted lines that call Replicate. They don't affect th
 
 The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of your code.
 
-The second is `experiment.commit()`. This creates a **commit** within the experiment. The commit saves the metrics at that point, and makes a copy of the weights and any other artifacts.
+The second is `experiment.commit()`. This creates a **commit** within the experiment. The commit saves the metrics at that point, and makes a copy of the file or directory you pass to it, which could include weights and any other artifacts.
 
 **Each experiment contains multiple commits.** You typically save your model periodically during training, because the best result isn't necessarily the most recent one. You commit to Replicate just after you save your model, so it can keep track of these versions for you.
 
