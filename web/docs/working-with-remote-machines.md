@@ -85,9 +85,11 @@ It is easy to migrate locations, if you ever need to, because Replicate just sto
 
 ## Train on remote machines
 
-A common pattern for training is to copy the code you are working on locally to a remote GPU machine, and then start the training job. Then, when it's finished, copy the results and artifacts back to your local machine or cloud storage.
+Anywhere your training script runs, Replicate will keep track of it. Now, with the `storage` option set in `replicate.yaml`, you can run your training script on a remote training machine and Replicate will keep track of it in cloud storage.
 
-Replicate makes this pattern really easy. It can run training jobs anywhere Docker is installed that you can log into via SSH.
+However, to do this, you may need to copy code from your local development machine to the training machine. And, you need to install Python dependencies to make it work. And, you might need to wrestle with CUDA drivers.
+
+Replicate has a shortcut that makes this really easy. It will copy the code onto the training machine, build a Docker image to create a reproducible environment for your training, then start the training script inside. It works on any machine with SSH and Docker.
 
 ### Create a training machine
 
