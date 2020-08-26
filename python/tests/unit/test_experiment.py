@@ -21,7 +21,7 @@ def test_init_and_commit(temp_workdir):
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
-    experiment = replicate.init(learning_rate=0.002)
+    experiment = replicate.init(learning_rate=0.002, disable_heartbeat=True)
 
     assert len(experiment.id) == 64
     with open(
@@ -82,6 +82,8 @@ def test_init_and_commit(temp_workdir):
 
 def test_heartbeat(temp_workdir):
     experiment = replicate.init()
+    # Don't write heartbeat
+    experiment.heartbeat.kill()
     assert experiment.heartbeat.path == "metadata/heartbeats/{}.json".format(
         experiment.id
     )
