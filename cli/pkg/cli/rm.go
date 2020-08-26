@@ -5,7 +5,6 @@ import (
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/project"
-	"replicate.ai/cli/pkg/storage"
 )
 
 func newRmCommand() *cobra.Command {
@@ -28,11 +27,11 @@ To remove experiments or commits, pass any number of IDs (or prefixes).
 }
 
 func rmExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := storage.ForURL(storageURL)
+	store, err := getStorage(storageURL, sourceDir)
 	if err != nil {
 		return err
 	}

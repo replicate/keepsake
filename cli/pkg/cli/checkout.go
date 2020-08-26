@@ -12,7 +12,6 @@ import (
 	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/interact"
 	"replicate.ai/cli/pkg/project"
-	"replicate.ai/cli/pkg/storage"
 )
 
 func newCheckoutCommand() *cobra.Command {
@@ -50,11 +49,11 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := storage.ForURL(storageURL)
+	store, err := getStorage(storageURL, sourceDir)
 	if err != nil {
 		return err
 	}

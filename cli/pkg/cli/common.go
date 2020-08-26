@@ -9,7 +9,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/config"
+	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/global"
+	"replicate.ai/cli/pkg/storage"
 )
 
 func getAurora() aurora.Aurora {
@@ -55,4 +57,26 @@ func getSourceDir() (string, error) {
 		return "", err
 	}
 	return sourceDir, nil
+}
+
+// getStorage returns the project's storage, with caching if needed
+// This is not in storage package so we can do user interface stuff around syncing
+func getStorage(storageURL, sourceDir string) (storage.Storage, error) {
+	store, err := storage.ForURL(storageURL)
+	if err != nil {
+		return nil, err
+	}
+	// sourceDir might be "" if you use --storage-url option
+	if storage.NeedsCaching(store) && sourceDir != "" {
+		console.Info("Fetching new data from %q...", store.RootURL())
+		store, err = storage.NewCachedMetadataStorage(store, sourceDir)
+		if err != nil {
+			return nil, err
+		}
+		cachedStore := store.(*storage.CachedStorage)
+		if err := cachedStore.SyncCache(); err != nil {
+			return nil, err
+		}
+	}
+	return store, nil
 }

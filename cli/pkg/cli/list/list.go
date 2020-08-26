@@ -91,9 +91,6 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 
 func Experiments(store storage.Storage, format Format, allParams bool, filters *param.Filters, sorter *param.Sorter) error {
 	proj := project.NewProject(store)
-	if storage.NeedsCaching(store) {
-		console.Info("Fetching experiments from %q...", store.RootURL())
-	}
 	listExperiments, err := createListExperiments(proj, filters)
 	if err != nil {
 		return err
