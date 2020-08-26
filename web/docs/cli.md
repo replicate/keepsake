@@ -7,23 +7,23 @@ This is the reference for the Replicate CLI commands. You can also see this in t
 
 ## Commands
 
-* [`replicate checkout`](#replicate-checkout) – Copy files from a commit into the project directory
-* [`replicate diff`](#replicate-diff) – Compare two experiments or commits
+* [`replicate checkout`](#replicate-checkout) – Copy files from a checkpoint into the project directory
+* [`replicate diff`](#replicate-diff) – Compare two experiments or checkpoints
 * [`replicate feedback`](#replicate-feedback) – Submit feedback to the team!
 * [`replicate ls`](#replicate-ls) – List experiments in this project
 * [`replicate ps`](#replicate-ps) – List running experiments in this project
-* [`replicate rm`](#replicate-rm) – Remove experiments or commits
+* [`replicate rm`](#replicate-rm) – Remove experiments or checkpoint
 * [`replicate run`](#replicate-run) – Run a command on a remote machine
-* [`replicate show`](#replicate-show) – View information about an experiment or commit
+* [`replicate show`](#replicate-show) – View information about an experiment or checkpoint
 
 ## `replicate checkout`
 
-Copy files from a commit into the project directory
+Copy files from a checkpoint into the project directory
 
 ### Usage
 
 ```
-replicate checkout <commit-id> [flags]
+replicate checkout <checkpoint ID> [flags]
 ```
 
 ### Flags
@@ -40,14 +40,14 @@ replicate checkout <commit-id> [flags]
 ```
 ## `replicate diff`
 
-Compare two experiments or commits.
+Compare two experiments or checkpoints.
 
-If an experiment ID is passed, it will pick the best commit from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest commit.
+If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest checkpoint.
 
 ### Usage
 
 ```
-replicate diff <id> <id> [flags]
+replicate diff <ID> <ID> [flags]
 ```
 
 ### Flags
@@ -131,15 +131,15 @@ replicate ps [flags]
 ```
 ## `replicate rm`
 
-Remove experiments or commits.
+Remove experiments or checkpoints.
 
-To remove experiments or commits, pass any number of IDs (or prefixes).
+To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 
 
 ### Usage
 
 ```
-replicate rm <experiment-or-commit-id> [experiment-or-commit-id...] [flags]
+replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [flags]
 ```
 
 ### Flags
@@ -176,12 +176,12 @@ replicate run [flags] <command> [arg...]
 ```
 ## `replicate show`
 
-View information about an experiment or commit
+View information about an experiment or checkpoint
 
 ### Usage
 
 ```
-replicate show <experiment-or-commit-id> [flags]
+replicate show <experiment or checkpoint ID> [flags]
 ```
 
 ### Flags

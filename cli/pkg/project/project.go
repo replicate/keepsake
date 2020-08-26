@@ -15,12 +15,12 @@ import (
 // Project is essentially a data access object for retrieving
 // metadata objects
 type Project struct {
-	store             storage.Storage
-	commitsByID       map[string]*Commit
-	experimentsByID   map[string]*Experiment
-	heartbeatsByExpID map[string]*Heartbeat
-	commitsByExpID    map[string][]*Commit
-	hasLoaded         bool
+	store              storage.Storage
+	checkpointsByID    map[string]*Checkpoint
+	experimentsByID    map[string]*Experiment
+	heartbeatsByExpID  map[string]*Heartbeat
+	checkpointsByExpID map[string][]*Checkpoint
+	hasLoaded          bool
 }
 
 func NewProject(store storage.Storage) *Project {
@@ -55,41 +55,41 @@ func (p *Project) Experiments() ([]*Experiment, error) {
 	return experiments, nil
 }
 
-// ExperimentCommits returns all commits for a particular experiment
-func (p *Project) ExperimentCommits(experimentID string) ([]*Commit, error) {
+// ExperimentCheckpoints returns all checkpoints for a particular experiment
+func (p *Project) ExperimentCheckpoints(experimentID string) ([]*Checkpoint, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
-	commits, ok := p.commitsByExpID[experimentID]
+	checkpoints, ok := p.checkpointsByExpID[experimentID]
 	if !ok {
-		return []*Commit{}, nil
+		return []*Checkpoint{}, nil
 	}
-	sort.Slice(commits, func(i, j int) bool {
-		return commits[i].Created.Before(commits[j].Created)
+	sort.Slice(checkpoints, func(i, j int) bool {
+		return checkpoints[i].Created.Before(checkpoints[j].Created)
 	})
-	return commits, nil
+	return checkpoints, nil
 }
 
-// ExperimentLatestCommit returns the latest commit for an experiment
-func (p *Project) ExperimentLatestCommit(experimentID string) (*Commit, error) {
+// ExperimentLatestCheckpoint returns the latest checkpoint for an experiment
+func (p *Project) ExperimentLatestCheckpoint(experimentID string) (*Checkpoint, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
-	commits, ok := p.commitsByExpID[experimentID]
-	if !ok || len(commits) == 0 {
+	checkpoints, ok := p.checkpointsByExpID[experimentID]
+	if !ok || len(checkpoints) == 0 {
 		return nil, nil
 	}
-	commits = copyCommits(commits)
-	sort.Slice(commits, func(i, j int) bool {
-		return commits[i].Created.Before(commits[j].Created)
+	checkpoints = copyCheckpoints(checkpoints)
+	sort.Slice(checkpoints, func(i, j int) bool {
+		return checkpoints[i].Created.Before(checkpoints[j].Created)
 	})
-	return commits[len(commits)-1], nil
+	return checkpoints[len(checkpoints)-1], nil
 }
 
-// ExperimentBestCommit returns the best commit for an experiment
+// ExperimentBestCheckpoint returns the best checkpoint for an experiment
 // according to the primary metric, or nil if primary metric is not
-// defined or if none of the commits have the primary metric defined
-func (p *Project) ExperimentBestCommit(experimentID string) (*Commit, error) {
+// defined or if none of the checkpoints have the primary metric defined
+func (p *Project) ExperimentBestCheckpoint(experimentID string) (*Checkpoint, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
@@ -106,15 +106,15 @@ func (p *Project) ExperimentBestCommit(experimentID string) (*Commit, error) {
 	if primaryMetric == nil {
 		return nil, nil
 	}
-	commits, ok := p.commitsByExpID[experimentID]
-	if !ok || len(commits) == 0 {
+	checkpoints, ok := p.checkpointsByExpID[experimentID]
+	if !ok || len(checkpoints) == 0 {
 		return nil, nil
 	}
-	commits = copyCommits(commits)
+	checkpoints = copyCheckpoints(checkpoints)
 
-	sort.Slice(commits, func(i, j int) bool {
-		iVal, iOK := commits[i].Labels[primaryMetric.Name]
-		jVal, jOK := commits[j].Labels[primaryMetric.Name]
+	sort.Slice(checkpoints, func(i, j int) bool {
+		iVal, iOK := checkpoints[i].Labels[primaryMetric.Name]
+		jVal, jOK := checkpoints[j].Labels[primaryMetric.Name]
 		if !iOK {
 			return true
 		}
@@ -135,9 +135,9 @@ func (p *Project) ExperimentBestCommit(experimentID string) (*Commit, error) {
 			return greater
 		}
 	})
-	best := commits[len(commits)-1]
+	best := checkpoints[len(checkpoints)-1]
 
-	// if the last (best) commit in the sorted list doesn't have
+	// if the last (best) checkpoint in the sorted list doesn't have
 	// a value for the primary metric, none of them do
 	if _, ok := best.Labels[primaryMetric.Name]; !ok {
 		return nil, nil
@@ -159,54 +159,54 @@ func (p *Project) ExperimentIsRunning(experimentID string) (bool, error) {
 	return heartbeat.IsRunning(), nil
 }
 
-// CommitFromPrefix returns a commit given the prefix of the commit ID
-func (p *Project) CommitFromPrefix(prefix string) (*Commit, error) {
+// CheckpointFromPrefix returns a checkpoint given the prefix of the checkpoint ID
+func (p *Project) CheckpointFromPrefix(prefix string) (*Checkpoint, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
-	matchingIDs := p.commitIDsFromPrefix(prefix)
+	matchingIDs := p.checkpointIDsFromPrefix(prefix)
 	if len(matchingIDs) == 0 {
-		return nil, fmt.Errorf("Commit not found: %s", prefix)
+		return nil, fmt.Errorf("Checkpoint not found: %s", prefix)
 	}
 	if len(matchingIDs) > 1 {
-		return nil, fmt.Errorf("Prefix is ambiguous: %s (%d matching commits)", prefix, len(matchingIDs))
+		return nil, fmt.Errorf("Prefix is ambiguous: %s (%d matching checkpoints)", prefix, len(matchingIDs))
 	}
-	return p.commitsByID[matchingIDs[0]], nil
+	return p.checkpointsByID[matchingIDs[0]], nil
 }
 
-type CommitOrExperiment struct {
-	Commit     *Commit
+type CheckpointOrExperiment struct {
+	Checkpoint *Checkpoint
 	Experiment *Experiment
 }
 
-// CommitOrExperimentFromPrefix returns a commit/experiment given a
+// CheckpointOrExperimentFromPrefix returns a checkpoint/experiment given a
 // prefix. This is a single function so we can detect ambiguities
-// across both commits and experiments.
-func (p *Project) CommitOrExperimentFromPrefix(prefix string) (*CommitOrExperiment, error) {
+// across both checkpoints and experiments.
+func (p *Project) CheckpointOrExperimentFromPrefix(prefix string) (*CheckpointOrExperiment, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
-	matchingCommitIDs := p.commitIDsFromPrefix(prefix)
+	matchingCheckpointIDs := p.checkpointIDsFromPrefix(prefix)
 	matchingExperimentIDs := p.experimentIDsFromPrefix(prefix)
-	numMatches := len(matchingCommitIDs) + len(matchingExperimentIDs)
+	numMatches := len(matchingCheckpointIDs) + len(matchingExperimentIDs)
 	if numMatches == 0 {
-		return nil, fmt.Errorf("Commit/experiment not found: %s", prefix)
+		return nil, fmt.Errorf("Checkpoint/experiment not found: %s", prefix)
 	}
 	if numMatches > 1 {
-		return nil, fmt.Errorf("Prefix is ambiguous: %s (%d matching commits/experiments)", prefix, numMatches)
+		return nil, fmt.Errorf("Prefix is ambiguous: %s (%d matching checkpoints/experiments)", prefix, numMatches)
 	}
-	if len(matchingCommitIDs) == 1 {
-		return &CommitOrExperiment{Commit: p.commitsByID[matchingCommitIDs[0]]}, nil
+	if len(matchingCheckpointIDs) == 1 {
+		return &CheckpointOrExperiment{Checkpoint: p.checkpointsByID[matchingCheckpointIDs[0]]}, nil
 	}
-	return &CommitOrExperiment{Experiment: p.experimentsByID[matchingExperimentIDs[0]]}, nil
+	return &CheckpointOrExperiment{Experiment: p.experimentsByID[matchingExperimentIDs[0]]}, nil
 }
 
-func (p *Project) commitIDsFromPrefix(prefix string) []string {
+func (p *Project) checkpointIDsFromPrefix(prefix string) []string {
 	if !p.hasLoaded {
 		panic("Logical error, project has not loaded")
 	}
 	matchingIDs := []string{}
-	for id := range p.commitsByID {
+	for id := range p.checkpointsByID {
 		if strings.HasPrefix(id, prefix) {
 			matchingIDs = append(matchingIDs, id)
 		}
@@ -214,14 +214,14 @@ func (p *Project) commitIDsFromPrefix(prefix string) []string {
 	return matchingIDs
 }
 
-func (p *Project) DeleteCommit(com *Commit) error {
+func (p *Project) DeleteCheckpoint(com *Checkpoint) error {
 	if err := p.store.Delete(com.StorageDir()); err != nil {
 		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
-		console.Warn("Failed to delete commit storage directory %s: %s", com.StorageDir(), err)
+		console.Warn("Failed to delete checkpoint storage directory %s: %s", com.StorageDir(), err)
 	}
 	if err := p.store.Delete(com.MetadataPath()); err != nil {
 		// TODO(andreas): return err if com.MetadataPath() exists but some other error occurs
-		console.Warn("Failed to delete commit metadata file %s: %s", com.MetadataPath(), err)
+		console.Warn("Failed to delete checkpoint metadata file %s: %s", com.MetadataPath(), err)
 	}
 	return nil
 }
@@ -233,7 +233,7 @@ func (p *Project) DeleteExperiment(exp *Experiment) error {
 	}
 	if err := p.store.Delete(exp.StorageDir()); err != nil {
 		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
-		console.Warn("Failed to delete commit storage directory %s: %s", exp.StorageDir(), err)
+		console.Warn("Failed to delete checkpoint storage directory %s: %s", exp.StorageDir(), err)
 	}
 	if err := p.store.Delete(exp.MetadataPath()); err != nil {
 		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
@@ -266,7 +266,7 @@ func (p *Project) ensureLoaded() error {
 	if err != nil {
 		return err
 	}
-	commits, err := listCommits(p.store)
+	checkpoints, err := listCheckpoints(p.store)
 	if err != nil {
 		return err
 	}
@@ -275,36 +275,36 @@ func (p *Project) ensureLoaded() error {
 		heartbeats = []*Heartbeat{}
 		console.Warn("Failed to load heartbeats: %s", err)
 	}
-	p.setObjects(experiments, commits, heartbeats)
+	p.setObjects(experiments, checkpoints, heartbeats)
 	p.hasLoaded = true
 	return nil
 }
 
-func (p *Project) setObjects(experiments []*Experiment, commits []*Commit, heartbeats []*Heartbeat) {
+func (p *Project) setObjects(experiments []*Experiment, checkpoints []*Checkpoint, heartbeats []*Heartbeat) {
 	p.experimentsByID = map[string]*Experiment{}
 	for _, exp := range experiments {
 		p.experimentsByID[exp.ID] = exp
 	}
-	p.commitsByID = map[string]*Commit{}
-	for _, com := range commits {
-		p.commitsByID[com.ID] = com
+	p.checkpointsByID = map[string]*Checkpoint{}
+	for _, com := range checkpoints {
+		p.checkpointsByID[com.ID] = com
 	}
 	p.heartbeatsByExpID = map[string]*Heartbeat{}
 	for _, hb := range heartbeats {
 		p.heartbeatsByExpID[hb.ExperimentID] = hb
 	}
-	p.commitsByExpID = map[string][]*Commit{}
-	for _, com := range commits {
-		if p.commitsByExpID[com.ExperimentID] == nil {
-			p.commitsByExpID[com.ExperimentID] = []*Commit{}
+	p.checkpointsByExpID = map[string][]*Checkpoint{}
+	for _, com := range checkpoints {
+		if p.checkpointsByExpID[com.ExperimentID] == nil {
+			p.checkpointsByExpID[com.ExperimentID] = []*Checkpoint{}
 		}
-		p.commitsByExpID[com.ExperimentID] = append(p.commitsByExpID[com.ExperimentID], com)
+		p.checkpointsByExpID[com.ExperimentID] = append(p.checkpointsByExpID[com.ExperimentID], com)
 	}
 }
 
-func copyCommits(commits []*Commit) []*Commit {
-	copied := make([]*Commit, len(commits))
-	copy(copied, commits)
+func copyCheckpoints(checkpoints []*Checkpoint) []*Checkpoint {
+	copied := make([]*Checkpoint, len(checkpoints))
+	copy(copied, checkpoints)
 	return copied
 }
 

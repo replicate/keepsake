@@ -9,13 +9,13 @@ import (
 
 func newRmCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rm <experiment-or-commit-id> [experiment-or-commit-id...]",
-		Short: "Remove experiments or commits",
-		Long: `Remove experiments or commits.
+		Use:   "rm <experiment or checkpoint ID> [experiment or checkpoint ID...]",
+		Short: "Remove experiments or checkpoint",
+		Long: `Remove experiments or checkpoints.
 
-To remove experiments or commits, pass any number of IDs (or prefixes).
+To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 `,
-		RunE:       rmExperimentOrCommit,
+		RunE:       removeExperimentOrCheckpoint,
 		Args:       cobra.MinimumNArgs(1),
 		Aliases:    []string{"delete"},
 		SuggestFor: []string{"remove"},
@@ -26,7 +26,7 @@ To remove experiments or commits, pass any number of IDs (or prefixes).
 	return cmd
 }
 
-func rmExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
+func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
@@ -41,23 +41,23 @@ func rmExperimentOrCommit(cmd *cobra.Command, prefixes []string) error {
 	}
 
 	for _, prefix := range prefixes {
-		comOrExp, err := proj.CommitOrExperimentFromPrefix(prefix)
+		comOrExp, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 		if err != nil {
 			return err
 		}
-		if comOrExp.Commit != nil {
-			console.Info("Removing commit %s...", comOrExp.Commit.ID)
-			if err := proj.DeleteCommit(comOrExp.Commit); err != nil {
+		if comOrExp.Checkpoint != nil {
+			console.Info("Removing checkpoint %s...", comOrExp.Checkpoint.ID)
+			if err := proj.DeleteCheckpoint(comOrExp.Checkpoint); err != nil {
 				return err
 			}
 		} else {
-			console.Info("Removing experiment %s and its commits...", comOrExp.Experiment.ID)
-			commits, err := proj.ExperimentCommits(comOrExp.Experiment.ID)
+			console.Info("Removing experiment %s and its checkpoints...", comOrExp.Experiment.ID)
+			checkpoints, err := proj.ExperimentCheckpoints(comOrExp.Experiment.ID)
 			if err != nil {
 				return err
 			}
-			for _, commit := range commits {
-				if err := proj.DeleteCommit(commit); err != nil {
+			for _, checkpoint := range checkpoints {
+				if err := proj.DeleteCheckpoint(checkpoint); err != nil {
 					return err
 				}
 			}

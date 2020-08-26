@@ -56,7 +56,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		require.NoError(t, exp.Save(store))
 	}
 
-	var commits = []*project.Commit{{
+	var checkpoints = []*project.Checkpoint{{
 		ID:           "1ccccccccc",
 		Created:      fixedTime.Add(-5 * time.Minute),
 		ExperimentID: experiments[0].ID,
@@ -96,7 +96,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		},
 		Step: 5,
 	}}
-	for _, com := range commits {
+	for _, com := range checkpoints {
 		require.NoError(t, com.Save(store, workingDir))
 	}
 
@@ -106,7 +106,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 	return store
 }
 
-func TestShowCommit(t *testing.T) {
+func TestShowCheckpoint(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
@@ -124,18 +124,18 @@ func TestShowCommit(t *testing.T) {
 
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
-	result, err := proj.CommitOrExperimentFromPrefix("3cc")
+	result, err := proj.CheckpointOrExperimentFromPrefix("3cc")
 	require.NoError(t, err)
-	require.NotNil(t, result.Commit)
+	require.NotNil(t, result.Checkpoint)
 
 	out := new(bytes.Buffer)
 	au := aurora.NewAurora(false)
-	err = showCommit(au, out, proj, result.Commit)
+	err = showCheckpoint(au, out, proj, result.Checkpoint)
 	require.NoError(t, err)
 	actual := out.String()
 
 	expected := `
-Commit: 3ccccccccc
+Checkpoint: 3ccccccccc
 
 Created:    Mon, 02 Jan 2006 23:01:05 +08
 Path:       data
@@ -182,7 +182,7 @@ func TestShowExperiment(t *testing.T) {
 
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
-	result, err := proj.CommitOrExperimentFromPrefix("1eee")
+	result, err := proj.CheckpointOrExperimentFromPrefix("1eee")
 	require.NoError(t, err)
 	require.NotNil(t, result.Experiment)
 
@@ -205,14 +205,14 @@ Params
 param-1:  100
 param-2:  hello
 
-Commits
+Checkpoints
 ID       STEP  CREATED     LABEL-1      LABEL-2
 1cccccc  10    2006-01-02  0.1          2
 2cccccc  20    2006-01-02  0.01 (best)  2
 3cccccc  20    2006-01-02  0.02         2
 
-To see more details about a commit, run:
-  replicate show COMMIT_ID
+To see more details about a checkpoint, run:
+  replicate show <checkpoint ID>
 `
 	// remove initial newline
 	expected = expected[1:]

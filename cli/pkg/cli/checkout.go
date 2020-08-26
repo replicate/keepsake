@@ -16,9 +16,9 @@ import (
 
 func newCheckoutCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "checkout <commit-id>",
-		Short: "Copy files from a commit into the project directory",
-		RunE:  checkoutCommit,
+		Use:   "checkout <checkpoint ID>",
+		Short: "Copy files from a checkpoint into the project directory",
+		RunE:  checkoutCheckpoint,
 		Args:  cobra.ExactArgs(1),
 	}
 
@@ -29,7 +29,7 @@ func newCheckoutCommand() *cobra.Command {
 	return cmd
 }
 
-func checkoutCommit(cmd *cobra.Command, args []string) error {
+func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	prefix := args[0]
 
 	outputDir, err := cmd.Flags().GetString("output-directory")
@@ -77,7 +77,7 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	}
 
 	proj := project.NewProject(store)
-	com, err := proj.CommitFromPrefix(prefix)
+	com, err := proj.CheckpointFromPrefix(prefix)
 	if err != nil {
 		return err
 	}
@@ -109,8 +109,8 @@ func checkoutCommit(cmd *cobra.Command, args []string) error {
 	if err := store.GetDirectory(path.Join("experiments", com.ExperimentID), outputDir); err != nil {
 		return err
 	}
-	// Overlay commit on top of experiment
-	if err := store.GetDirectory(path.Join("commits", com.ID), outputDir); err != nil {
+	// Overlay checkpoint on top of experiment
+	if err := store.GetDirectory(path.Join("checkpoints", com.ID), outputDir); err != nil {
 		return err
 	}
 	fmt.Println()

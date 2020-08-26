@@ -56,21 +56,22 @@ def test_s3_experiment(temp_bucket, tmpdir):
         }
         assert actual_experiment_meta == expected_experiment_meta
 
-        commit = experiment.commit(path=".", step=10, loss=1.1, baz="qux")
+        checkpoint = experiment.checkpoint(path=".", step=10, loss=1.1, baz="qux")
 
-        actual_commit_meta = s3_read_json(
-            temp_bucket, os.path.join("metadata", "commits", commit.id + ".json"),
+        actual_checkpoint_meta = s3_read_json(
+            temp_bucket,
+            os.path.join("metadata", "checkpoints", checkpoint.id + ".json"),
         )
 
-        expected_commit_meta = {
-            "id": commit.id,
-            "created": commit.created.isoformat() + "Z",
+        expected_checkpoint_meta = {
+            "id": checkpoint.id,
+            "created": checkpoint.created.isoformat() + "Z",
             "experiment_id": experiment.id,
             "step": 10,
             "labels": {"loss": 1.1, "baz": "qux"},
             "path": ".",
         }
-        assert actual_commit_meta == expected_commit_meta
+        assert actual_checkpoint_meta == expected_checkpoint_meta
 
     finally:
         os.chdir(current_workdir)

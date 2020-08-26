@@ -36,16 +36,16 @@ type Metric struct {
 }
 
 type ListExperiment struct {
-	ID           string                  `json:"id"`
-	Created      time.Time               `json:"created"`
-	Params       map[string]*param.Value `json:"params"`
-	Command      string                  `json:"command"`
-	NumCommits   int                     `json:"num_commits"`
-	LatestCommit *project.Commit         `json:"latest_commit"`
-	BestCommit   *project.Commit         `json:"best_commit"`
-	User         string                  `json:"user"`
-	Host         string                  `json:"host"`
-	Running      bool                    `json:"running"`
+	ID               string                  `json:"id"`
+	Created          time.Time               `json:"created"`
+	Params           map[string]*param.Value `json:"params"`
+	Command          string                  `json:"command"`
+	NumCheckpoints   int                     `json:"num_checkpoints"`
+	LatestCheckpoint *project.Checkpoint     `json:"latest_checkpoint"`
+	BestCheckpoint   *project.Checkpoint     `json:"best_checkpoint"`
+	User             string                  `json:"user"`
+	Host             string                  `json:"host"`
+	Running          bool                    `json:"running"`
 
 	// exclude config from json output
 	Config *config.Config `json:"-"`
@@ -58,8 +58,8 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 		return param.Float(float64(exp.Created.Unix()))
 	}
 	if name == "step" {
-		if exp.LatestCommit != nil {
-			return param.Int(exp.LatestCommit.Step)
+		if exp.LatestCheckpoint != nil {
+			return param.Int(exp.LatestCheckpoint.Step)
 		}
 		return param.Int(0)
 	}
@@ -78,8 +78,8 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 		}
 		return param.String("stopped")
 	}
-	if exp.BestCommit != nil {
-		if val, ok := exp.BestCommit.Labels[name]; ok {
+	if exp.BestCheckpoint != nil {
+		if val, ok := exp.BestCheckpoint.Labels[name]; ok {
 			return val
 		}
 	}
@@ -134,7 +134,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 	}
 
 	expHeadings := getExperimentHeadings(experiments, !allParams)
-	commitHeadings := getCommitHeadings(experiments)
+	checkpointHeadings := getCheckpointHeadings(experiments)
 
 	// does any experiment have a primary metric?
 	hasPrimaryMetric := false
@@ -148,11 +148,11 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
 	keys = append(keys, upper(expHeadings)...)
-	keys = append(keys, "LATEST COMMIT")
-	keys = append(keys, upper(commitHeadings)...)
+	keys = append(keys, "LATEST CHECKPOINT")
+	keys = append(keys, upper(checkpointHeadings)...)
 	if hasPrimaryMetric {
-		keys = append(keys, "BEST COMMIT")
-		keys = append(keys, upper(commitHeadings)...)
+		keys = append(keys, "BEST CHECKPOINT")
+		keys = append(keys, upper(checkpointHeadings)...)
 	}
 
 	for i, key := range keys {
@@ -191,35 +191,35 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 			fmt.Fprintf(tw, "\t")
 		}
 
-		latestCommit := ""
-		if exp.LatestCommit != nil {
-			latestCommit = fmt.Sprintf("%s (step %s)", exp.LatestCommit.ShortID(), strconv.Itoa(exp.LatestCommit.Step))
+		latestCheckpoint := ""
+		if exp.LatestCheckpoint != nil {
+			latestCheckpoint = fmt.Sprintf("%s (step %s)", exp.LatestCheckpoint.ShortID(), strconv.Itoa(exp.LatestCheckpoint.Step))
 		}
-		fmt.Fprintf(tw, "%s\t", latestCommit)
+		fmt.Fprintf(tw, "%s\t", latestCheckpoint)
 
-		// latest commit labels
-		for _, heading := range commitHeadings {
+		// latest checkpoint labels
+		for _, heading := range checkpointHeadings {
 			val := ""
-			if exp.LatestCommit != nil {
-				if v, ok := exp.LatestCommit.Labels[heading]; ok {
+			if exp.LatestCheckpoint != nil {
+				if v, ok := exp.LatestCheckpoint.Labels[heading]; ok {
 					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
 			fmt.Fprintf(tw, "%s\t", val)
 		}
 
-		bestCommit := ""
+		bestCheckpoint := ""
 
-		if exp.BestCommit != nil {
-			bestCommit = fmt.Sprintf("%s (step %s)", exp.BestCommit.ShortID(), strconv.Itoa(exp.BestCommit.Step))
+		if exp.BestCheckpoint != nil {
+			bestCheckpoint = fmt.Sprintf("%s (step %s)", exp.BestCheckpoint.ShortID(), strconv.Itoa(exp.BestCheckpoint.Step))
 		}
-		fmt.Fprintf(tw, "%s\t", bestCommit)
+		fmt.Fprintf(tw, "%s\t", bestCheckpoint)
 
-		// best commit labels
-		for _, heading := range commitHeadings {
+		// best checkpoint labels
+		for _, heading := range checkpointHeadings {
 			val := ""
-			if exp.BestCommit != nil {
-				if v, ok := exp.BestCommit.Labels[heading]; ok {
+			if exp.BestCheckpoint != nil {
+				if v, ok := exp.BestCheckpoint.Labels[heading]; ok {
 					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
@@ -270,10 +270,10 @@ func getExperimentHeadings(experiments []*ListExperiment, onlyChangedParams bool
 	return slices.StringKeys(expHeadingSet)
 }
 
-// get commit labels that are also defined as metrics in config
-func getCommitHeadings(experiments []*ListExperiment) []string {
+// get checkpoint labels that are also defined as metrics in config
+func getCheckpointHeadings(experiments []*ListExperiment) []string {
 	metricNameSet := map[string]bool{}
-	commitHeadingSet := map[string]bool{}
+	checkpointHeadingSet := map[string]bool{}
 
 	for _, exp := range experiments {
 		if exp.Config == nil {
@@ -284,16 +284,16 @@ func getCommitHeadings(experiments []*ListExperiment) []string {
 		}
 	}
 	for _, exp := range experiments {
-		if exp.LatestCommit != nil {
-			for key := range exp.LatestCommit.Labels {
+		if exp.LatestCheckpoint != nil {
+			for key := range exp.LatestCheckpoint.Labels {
 				if _, ok := metricNameSet[key]; ok {
-					commitHeadingSet[key] = true
+					checkpointHeadingSet[key] = true
 				}
 			}
 		}
 	}
 
-	return slices.StringKeys(commitHeadingSet)
+	return slices.StringKeys(checkpointHeadingSet)
 }
 
 func createListExperiments(proj *project.Project, filters *param.Filters) ([]*ListExperiment, error) {
@@ -312,15 +312,15 @@ func createListExperiments(proj *project.Project, filters *param.Filters) ([]*Li
 			User:    exp.User,
 			Config:  exp.Config,
 		}
-		commits, err := proj.ExperimentCommits(exp.ID)
+		checkpoints, err := proj.ExperimentCheckpoints(exp.ID)
 		if err != nil {
 			return nil, err
 		}
-		latest, err := proj.ExperimentLatestCommit(exp.ID)
+		latest, err := proj.ExperimentLatestCheckpoint(exp.ID)
 		if err != nil {
 			return nil, err
 		}
-		best, err := proj.ExperimentBestCommit(exp.ID)
+		best, err := proj.ExperimentBestCheckpoint(exp.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -328,9 +328,9 @@ func createListExperiments(proj *project.Project, filters *param.Filters) ([]*Li
 		if err != nil {
 			return nil, err
 		}
-		listExperiment.LatestCommit = latest
-		listExperiment.BestCommit = best
-		listExperiment.NumCommits = len(commits)
+		listExperiment.LatestCheckpoint = latest
+		listExperiment.BestCheckpoint = best
+		listExperiment.NumCheckpoints = len(checkpoints)
 		listExperiment.Running = running
 
 		match, err := filters.Matches(listExperiment)

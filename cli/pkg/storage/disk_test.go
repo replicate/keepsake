@@ -113,15 +113,15 @@ func TestDiskListRecursive(t *testing.T) {
 	storage, err := NewDiskStorage(dir)
 	require.NoError(t, err)
 	results := make(chan ListResult)
-	go storage.ListRecursive(results, "commits")
+	go storage.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
 
 	// Lists stuff!
-	require.NoError(t, storage.Put("commits/abc123.json", []byte("yep")))
+	require.NoError(t, storage.Put("checkpoints/abc123.json", []byte("yep")))
 	require.NoError(t, storage.Put("experiments/def456.json", []byte("nope")))
 	results = make(chan ListResult)
-	go storage.ListRecursive(results, "commits")
-	require.Equal(t, ListResult{Path: "commits/abc123.json"}, <-results)
+	go storage.ListRecursive(results, "checkpoints")
+	require.Equal(t, ListResult{Path: "checkpoints/abc123.json"}, <-results)
 	require.Empty(t, <-results)
 }
 
@@ -134,7 +134,7 @@ func TestDiskMatchFilenamesRecursive(t *testing.T) {
 	storage, err := NewDiskStorage(dir)
 	require.NoError(t, err)
 	results := make(chan ListResult)
-	go storage.MatchFilenamesRecursive(results, "commits", "replicate-metadata.json")
+	go storage.MatchFilenamesRecursive(results, "checkpoints", "replicate-metadata.json")
 	v := <-results
 	require.Empty(t, v)
 }

@@ -70,9 +70,9 @@ func createLotsOfFiles(b *testing.B, dir string) {
 	}
 }
 
-// Create lots of experiments and commits
+// Create lots of experiments and checkpoints
 func createLotsOfExperiments(workingDir string, storage storage.Storage, numExperiments int) error {
-	numCommits := 50
+	numCheckpoints := 50
 
 	maxWorkers := 25
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
@@ -90,12 +90,12 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 				return fmt.Errorf("Error creating heartbeat: %w", err)
 			}
 
-			for j := 0; j < numCommits; j++ {
-				com := project.NewCommit(exp.ID, map[string]*param.Value{
+			for j := 0; j < numCheckpoints; j++ {
+				com := project.NewCheckpoint(exp.ID, map[string]*param.Value{
 					"accuracy": param.Float(0.987),
 				})
 				if err := com.Save(storage, workingDir); err != nil {
-					return fmt.Errorf("Error saving commit: %w", err)
+					return fmt.Errorf("Error saving checkpoint: %w", err)
 				}
 			}
 			return nil

@@ -40,7 +40,7 @@ func TestDiffSameExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Commit:                   2cccccc                   3cccccc
+Checkpoint:               2cccccc                   3cccccc
 Experiment:               1eeeeee                   1eeeeee
 
 Params
@@ -84,7 +84,7 @@ func TestDiffDifferentExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Commit:                   2cccccc                   4cccccc
+Checkpoint:               2cccccc                   4cccccc
 Experiment:               1eeeeee                   2eeeeee
 
 Params

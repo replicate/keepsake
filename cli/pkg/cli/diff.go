@@ -17,12 +17,12 @@ import (
 
 func newDiffCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "diff <id> <id>",
-		Short: "Compare two experiments or commits",
-		Long: `Compare two experiments or commits.
+		Use:   "diff <ID> <ID>",
+		Short: "Compare two experiments or checkpoints",
+		Long: `Compare two experiments or checkpoints.
 
-If an experiment ID is passed, it will pick the best commit from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest commit.`,
-		RunE: diffCommits,
+If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest checkpoint.`,
+		RunE: diffCheckpoints,
 		Args: cobra.ExactArgs(2),
 	}
 
@@ -32,8 +32,8 @@ If an experiment ID is passed, it will pick the best commit from that experiment
 	return cmd
 }
 
-func diffCommits(cmd *cobra.Command, args []string) error {
-	// TODO(andreas): generalize to >2 commits/experiments
+func diffCheckpoints(cmd *cobra.Command, args []string) error {
+	// TODO(andreas): generalize to >2 checkpoints/experiments
 
 	prefix1 := args[0]
 	prefix2 := args[1]
@@ -62,11 +62,11 @@ func heading(w *tabwriter.Writer, au aurora.Aurora, text string) {
 
 // TODO(andreas): diff command line arguments
 func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 string, prefix2 string) error {
-	com1, err := loadCommit(proj, prefix1)
+	com1, err := loadCheckpoint(proj, prefix1)
 	if err != nil {
 		return err
 	}
-	com2, err := loadCommit(proj, prefix2)
+	com2, err := loadCheckpoint(proj, prefix2)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	// min width for 3 columns in 78 char terminal
 	w := tabwriter.NewWriter(out, 78/3, 8, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Commit:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
+	fmt.Fprintf(w, "Checkpoint:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
 	fmt.Fprintf(w, "Experiment:\t%s\t%s\n", com1.ShortExperimentID(), com2.ShortExperimentID())
 
 	br(w)
@@ -168,39 +168,39 @@ func paramMapToStringMap(params map[string]*param.Value) map[string]string {
 	return result
 }
 
-// loadCommit returns a commit given a prefix. If the prefix matches a
-// commit, that is returned. If the prefix matches an experiment, it
-// returns the best commit if a primary metric is defined in config,
-// otherwise the latest commit.
-func loadCommit(proj *project.Project, prefix string) (*project.Commit, error) {
-	obj, err := proj.CommitOrExperimentFromPrefix(prefix)
+// loadCheckpoint returns a checkpoint given a prefix. If the prefix matches a
+// checkpoint, that is returned. If the prefix matches an experiment, it
+// returns the best checkpoint if a primary metric is defined in config,
+// otherwise the latest checkpoint.
+func loadCheckpoint(proj *project.Project, prefix string) (*project.Checkpoint, error) {
+	obj, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return nil, err
 	}
-	if obj.Commit != nil {
-		return obj.Commit, nil
+	if obj.Checkpoint != nil {
+		return obj.Checkpoint, nil
 	}
 	exp := obj.Experiment
 	if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
-		console.Info("%q matches an experiment, picking the best commit", prefix)
-		commit, err := proj.ExperimentBestCommit(exp.ID)
+		console.Info("%q matches an experiment, picking the best checkpoint", prefix)
+		checkpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
 		if err != nil {
 			return nil, err
 		}
-		if commit == nil {
-			return nil, fmt.Errorf("Could not pick best commit for experiment %q: it does not have any commits or the commits are missing the primary metric.", exp.ShortID())
+		if checkpoint == nil {
+			return nil, fmt.Errorf("Could not pick best checkpoint for experiment %q: it does not have any checkpoints or the checkpoints are missing the primary metric.", exp.ShortID())
 		}
-		return commit, nil
+		return checkpoint, nil
 	}
-	console.Info("%q is an experiment, picking the latest commit", prefix)
-	commit, err := proj.ExperimentLatestCommit(exp.ID)
+	console.Info("%q is an experiment, picking the latest checkpoint", prefix)
+	checkpoint, err := proj.ExperimentLatestCheckpoint(exp.ID)
 	if err != nil {
 		return nil, err
 	}
-	if commit == nil {
-		return nil, fmt.Errorf("Could not pick best commit for experiment %q: it does not have any commits.", exp.ShortID())
+	if checkpoint == nil {
+		return nil, fmt.Errorf("Could not pick best checkpoint for experiment %q: it does not have any checkpoints.", exp.ShortID())
 	}
-	return commit, nil
+	return checkpoint, nil
 }
 
 // mapString takes two maps of strings and returns a single map with two values

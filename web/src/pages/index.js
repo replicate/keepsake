@@ -39,7 +39,7 @@ const features = [
         </p>
         {/* <p>
           Add <code>experiment = replicate.init()</code> to your code to start
-          an experiment, then call <code>experiment.commit()</code> to save the
+          an experiment, then call <code>experiment.checkpoint()</code> to save the
           exact state of your training at that point. That's it.
         </p> */}
       </>
@@ -158,7 +158,7 @@ def train(**params):
 
         torch.save(model, "model.torch")
         # highlight-next-line
-        experiment.commit(path="model.torch", **metrics)`}
+        experiment.checkpoint(path="model.torch", **metrics)`}
               </CodeBlock>
             </div>
             <div className={classnames(`col col--6`)}>
@@ -204,7 +204,7 @@ def train(**params):
 
               <CodeBlock className="shell-session">
                 {`$ replicate ls
-EXPERIMENT   HOST         STATUS    BEST COMMIT
+EXPERIMENT   HOST         STATUS    BEST CHECKPOINT
 e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
               </CodeBlock>
@@ -218,7 +218,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
               </p>
               <CodeBlock className="shell-session">
                 {`$ replicate diff 49668cb 41f0c60
-Commit:           49668cb     41f0c60
+Checkpoint:       49668cb     41f0c60
 Experiment:       e510303     9e97e07
 
 Params
@@ -238,8 +238,8 @@ val_accuracy:     0.9607      0.9411`}
               <p>
                 There's no need to carefully commit everything to Git. Replicate
                 lets you get back to any point you called{" "}
-                <code>experiment.commit()</code>, so you can commit to Git once
-                you've found something that works.
+                <code>experiment.checkpoint()</code>, so you can commit to Git
+                once you've found something that works.
               </p>
               <CodeBlock className="shell-session">
                 {`$ replicate checkout f81069d
@@ -259,13 +259,13 @@ $ git commit -am "Use hinge loss"`}
               </p>
               <CodeBlock className="shell-session">
                 {`$ replicate run -H 10.52.63.24 python train.py
----| Checking 10.52.63.24 is set up correctly...
+═══╡ Checking 10.52.63.24 is set up correctly...
 ✔️ NVIDIA drivers 361.93 installed.
 ✔️ 2x NVIDIA K80 GPUs found.
 ✔️ CUDA 10.1 installed.
----| Copying code...
----| Building Docker image...
----| Running 'python train.py' as experiment 35354d3...
+═══╡ Copying code...
+═══╡ Building Docker image...
+═══╡ Running 'python train.py' as experiment 35354d3...
 `}
               </CodeBlock>
             </div>

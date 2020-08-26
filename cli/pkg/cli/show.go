@@ -23,8 +23,8 @@ var timezone = time.Local
 
 func newShowCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show <experiment-or-commit-id>",
-		Short: "View information about an experiment or commit",
+		Use:   "show <experiment or checkpoint ID>",
+		Short: "View information about an experiment or checkpoint",
 		RunE:  show,
 		Args:  cobra.ExactArgs(1),
 	}
@@ -49,20 +49,20 @@ func show(cmd *cobra.Command, args []string) error {
 		console.Info("Fetching data from %q...", store.RootURL())
 	}
 	proj := project.NewProject(store)
-	result, err := proj.CommitOrExperimentFromPrefix(prefix)
+	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err
 	}
 
 	au := getAurora()
 
-	if result.Commit != nil {
-		return showCommit(au, os.Stdout, proj, result.Commit)
+	if result.Checkpoint != nil {
+		return showCheckpoint(au, os.Stdout, proj, result.Checkpoint)
 	}
 	return showExperiment(au, os.Stdout, proj, result.Experiment)
 }
 
-func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *project.Commit) error {
+func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, com *project.Checkpoint) error {
 	exp, err := proj.ExperimentByID(com.ExperimentID)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 		return err
 	}
 
-	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold((fmt.Sprintf("Commit: %s", com.ID)))))
+	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold((fmt.Sprintf("Checkpoint: %s", com.ID)))))
 
 	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
 	fmt.Fprintf(w, "Created:\t%s\n", com.Created.In(timezone).Format(time.RFC1123))
@@ -86,7 +86,7 @@ func showCommit(au aurora.Aurora, out io.Writer, proj *project.Project, com *pro
 
 	writeExperimentCommon(au, w, exp, experimentRunning)
 
-	if err := writeCommitMetrics(au, w, proj, com); err != nil {
+	if err := writeCheckpointMetrics(au, w, proj, com); err != nil {
 		return err
 	}
 
@@ -108,13 +108,13 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 		return err
 	}
 
-	fmt.Fprintf(out, "%s\n", au.Bold("Commits"))
+	fmt.Fprintf(out, "%s\n", au.Bold("Checkpoints"))
 
-	commits, err := proj.ExperimentCommits(exp.ID)
+	checkpoints, err := proj.ExperimentCheckpoints(exp.ID)
 	if err != nil {
 		return err
 	}
-	bestCommit, err := proj.ExperimentBestCommit(exp.ID)
+	bestCheckpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
 	if err != nil {
 		return err
 	}
@@ -127,8 +127,8 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	cw := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
 	headings := []string{"ID", "STEP", "CREATED"}
 	// FIXME(bfirsh): labels might change during experiment
-	if len(commits) != 0 {
-		for label := range commits[0].Labels {
+	if len(checkpoints) != 0 {
+		for label := range checkpoints[0].Labels {
 			labelNames = append(labelNames, label)
 		}
 		// TODO: put primary first
@@ -139,12 +139,12 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	}
 	fmt.Fprintf(cw, "%s\n", strings.Join(headings, "\t"))
 
-	for _, commit := range commits {
-		columns := []string{commit.ShortID(), strconv.Itoa(commit.Step), console.FormatTime(commit.Created)}
+	for _, checkpoint := range checkpoints {
+		columns := []string{checkpoint.ShortID(), strconv.Itoa(checkpoint.Step), console.FormatTime(checkpoint.Created)}
 		for _, label := range labelNames {
-			val := commit.Labels[label]
+			val := checkpoint.Labels[label]
 			s := val.ShortString(10, 5)
-			if bestCommit != nil && bestCommit.ID == commit.ID && primaryMetric != nil && primaryMetric.Name == label {
+			if bestCheckpoint != nil && bestCheckpoint.ID == checkpoint.ID && primaryMetric != nil && primaryMetric.Name == label {
 				// TODO (bfirsh): this could be done more elegantly with some formatting
 				s += " (best)"
 			}
@@ -157,8 +157,8 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	}
 
 	fmt.Fprintf(out, "\n")
-	fmt.Fprintf(out, "To see more details about a commit, run:\n")
-	fmt.Fprintf(out, "  replicate show COMMIT_ID\n")
+	fmt.Fprintf(out, "To see more details about a checkpoint, run:\n")
+	fmt.Fprintf(out, "  replicate show <checkpoint ID>\n")
 	return nil
 }
 
@@ -187,7 +187,7 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	fmt.Fprintf(w, "\t\n")
 }
 
-func writeCommitMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Commit) error {
+func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Checkpoint) error {
 	exp, err := proj.ExperimentByID(com.ExperimentID)
 	if err != nil {
 		return err

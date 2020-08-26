@@ -61,12 +61,12 @@ install_script: "./install.sh"
 
 ## `metrics`
 
-`metrics` defines what your model's metrics are. These are recorded on each commit to determine the performance of your model and which commit is considered the "best".
+`metrics` defines what your model's metrics are. These are recorded on each checkpoint to determine the performance of your model and which checkpoint is considered the "best".
 
-When you call `experiment.commit()` in your training script, you can pass arbitrary arguments to it to record data. For example:
+When you call `experiment.checkpoint()` in your training script, you can pass arbitrary arguments to it to record data. For example:
 
 ```python
-experiment.commit(
+experiment.checkpoint(
     step=step,
     train_loss=train_loss,
     validation_accuracy=validation_accuracy,
@@ -74,7 +74,7 @@ experiment.commit(
 )
 ```
 
-Some of these might just be metadata, but some of these might define how well this commit performs. For those, we specify them in `replicate.yaml` so Replicate can determine which commit in your experiment is the "best" based on some metric, and you can use that to compare your experiments.
+Some of these might just be metadata, but some of these might define how well this checkpoint performs. For those, we specify them in `replicate.yaml` so Replicate can determine which checkpoint in your experiment is the "best" based on some metric, and you can use that to compare your experiments.
 
 For example, for the code example above, you might use this configuration in your `replicate.yaml`:
 
@@ -89,9 +89,9 @@ metrics:
 
 The `metrics` option is a list, where each item has these options:
 
-- **`name`**: The name of the metric used in `experiment.commit()`.
+- **`name`**: The name of the metric used in `experiment.checkpoint()`.
 - **`goal`**: Either `minimize`, if small values are good, or `maximise`, if big values are good.
-- **`primary`**: If this is `true`, then Replicate will use this metric to determine which is the "best" commit in an experiment. This is shown in `replicate ls` and various other places.
+- **`primary`**: If this is `true`, then Replicate will use this metric to determine which is the "best" checkpoint in an experiment. This is shown in `replicate ls` and various other places.
 
 ## `python`
 
@@ -123,7 +123,7 @@ python_requirements: "requirements-replicate.txt"
 
 ## `storage`
 
-The location where Replicate will store your project data (experiments, commits, etc).
+The location where Replicate will store your project data (experiments, checkpoints, etc).
 
 By default, data is stored in `.replicate/storage/` on disk relative to the location of `replicate.yaml`.
 

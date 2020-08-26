@@ -17,7 +17,7 @@ def temp_workdir():
         os.chdir(orig_cwd)
 
 
-def test_init_and_commit(temp_workdir):
+def test_init_and_checkpoint(temp_workdir):
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
@@ -34,50 +34,63 @@ def test_init_and_commit(temp_workdir):
     with open(".replicate/storage/experiments/{}/train.py".format(experiment.id)) as fh:
         assert fh.read() == "print(1 + 1)"
 
-    # commit with a file
+    # checkpoint with a file
     with open("weights", "w") as fh:
         fh.write("1.2kg")
 
-    commit = experiment.commit(path="weights", step=1, validation_loss=0.123)
+    checkpoint = experiment.checkpoint(path="weights", step=1, validation_loss=0.123)
 
-    assert len(commit.id) == 64
-    with open(".replicate/storage/metadata/commits/{}.json".format(commit.id)) as fh:
+    assert len(checkpoint.id) == 64
+    with open(
+        ".replicate/storage/metadata/checkpoints/{}.json".format(checkpoint.id)
+    ) as fh:
         metadata = json.load(fh)
-    assert metadata["id"] == commit.id
+    assert metadata["id"] == checkpoint.id
     assert metadata["step"] == 1
     assert metadata["labels"] == {"validation_loss": 0.123}
     assert metadata["experiment_id"] == experiment.id
-    with open(".replicate/storage/commits/{}/weights".format(commit.id)) as fh:
+    with open(".replicate/storage/checkpoints/{}/weights".format(checkpoint.id)) as fh:
         assert fh.read() == "1.2kg"
     assert (
-        os.path.exists(".replicate/storage/commits/{}/train.py".format(commit.id))
+        os.path.exists(
+            ".replicate/storage/checkpoints/{}/train.py".format(checkpoint.id)
+        )
         is False
     )
 
-    # commit with a directory
+    # checkpoint with a directory
     os.mkdir("data")
     with open("data/weights", "w") as fh:
         fh.write("1.3kg")
 
-    commit = experiment.commit(path="data", step=1, validation_loss=0.123)
+    checkpoint = experiment.checkpoint(path="data", step=1, validation_loss=0.123)
 
-    with open(".replicate/storage/commits/{}/data/weights".format(commit.id)) as fh:
+    with open(
+        ".replicate/storage/checkpoints/{}/data/weights".format(checkpoint.id)
+    ) as fh:
         assert fh.read() == "1.3kg"
     assert (
-        os.path.exists(".replicate/storage/commits/{}/train.py".format(commit.id))
+        os.path.exists(
+            ".replicate/storage/checkpoints/{}/train.py".format(checkpoint.id)
+        )
         is False
     )
 
-    # commit with no path
-    commit = experiment.commit(path=None, step=1, validation_loss=0.123)
-    with open(".replicate/storage/metadata/commits/{}.json".format(commit.id)) as fh:
+    # checkpoint with no path
+    checkpoint = experiment.checkpoint(path=None, step=1, validation_loss=0.123)
+    with open(
+        ".replicate/storage/metadata/checkpoints/{}.json".format(checkpoint.id)
+    ) as fh:
         metadata = json.load(fh)
-    assert metadata["id"] == commit.id
-    assert os.path.exists(".replicate/storage/commits/{}".format(commit.id)) is False
+    assert metadata["id"] == checkpoint.id
+    assert (
+        os.path.exists(".replicate/storage/checkpoints/{}".format(checkpoint.id))
+        is False
+    )
 
-    # commit requires path option
+    # checkpoint requires path option
     with pytest.raises(TypeError, match="missing 1 required positional argument"):
-        commit = experiment.commit()
+        checkpoint = experiment.checkpoint()
 
 
 def test_heartbeat(temp_workdir):

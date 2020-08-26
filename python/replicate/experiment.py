@@ -7,7 +7,7 @@ import json
 import sys
 from typing import Dict, Any, Optional, List
 
-from .commit import Commit
+from .checkpoint import Checkpoint
 from .config import load_config
 from .hash import random_hash
 from .metadata import rfc3339_datetime
@@ -54,16 +54,16 @@ class Experiment:
         # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_directory
         self.storage.put_directory("experiments/{}/".format(self.id), self.project_dir)
 
-    def commit(
+    def checkpoint(
         self,
         path: Optional[str],  # this requires an explicit path=None to not save source
         step: Optional[int] = None,
         options: Optional[Any] = None,
         **kwargs
-    ) -> Commit:
+    ) -> Checkpoint:
         options = set_option_defaults(options, {})
         created = datetime.datetime.utcnow()
-        commit = Commit(
+        checkpoint = Checkpoint(
             experiment=self,
             project_dir=self.project_dir,
             path=path,
@@ -71,10 +71,10 @@ class Experiment:
             step=step,
             labels=kwargs,
         )
-        commit.save(self.storage)
+        checkpoint.save(self.storage)
         if not self.disable_heartbeat:
             self.heartbeat.ensure_running()
-        return commit
+        return checkpoint
 
     def get_metadata(self) -> Dict[str, Any]:
         return {
