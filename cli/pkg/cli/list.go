@@ -7,7 +7,6 @@ import (
 
 	"replicate.ai/cli/pkg/cli/list"
 	"replicate.ai/cli/pkg/param"
-	"replicate.ai/cli/pkg/storage"
 )
 
 func newListCommand() *cobra.Command {
@@ -28,7 +27,7 @@ func newListCommand() *cobra.Command {
 }
 
 func listExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -44,7 +43,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	store, err := storage.ForURL(storageURL)
+	store, err := getStorage(storageURL, sourceDir)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 
 	"replicate.ai/cli/pkg/cli/list"
 	"replicate.ai/cli/pkg/param"
-	"replicate.ai/cli/pkg/storage"
 )
 
 func newPsCommand() *cobra.Command {
@@ -26,7 +25,7 @@ func newPsCommand() *cobra.Command {
 }
 
 func listRunningExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -43,7 +42,7 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	filters.SetExclusive("status", param.OperatorEqual, param.String("running"))
-	store, err := storage.ForURL(storageURL)
+	store, err := getStorage(storageURL, sourceDir)
 	if err != nil {
 		return err
 	}

@@ -55,12 +55,8 @@ func replicateList(b *testing.B, workingDir string, numExperiments int) {
 	// TODO: check first line is reasonable
 }
 
-// HACK: remove global replicate cache
-// This will be the local metadata cache, when that exists
-func removeCache(b *testing.B) {
-	homeDir, err := os.UserHomeDir()
-	require.NoError(b, err)
-	cachePath := path.Join(homeDir, ".cache", "replicate")
+func removeCache(b *testing.B, workingDir string) {
+	cachePath := path.Join(workingDir, ".replicate", "metadata-cache")
 	require.NoError(b, os.RemoveAll(cachePath))
 }
 
@@ -184,54 +180,54 @@ func BenchmarkReplicateS3(b *testing.B) {
 	storage, err := storage.NewS3Storage(bucketName)
 	require.NoError(b, err)
 
-	err = createLotsOfExperiments(workingDir, storage, 1)
+	err = createLotsOfExperiments(workingDir, storage, 5)
 	require.NoError(b, err)
 
-	b.Run("list first run with 1 experiments", func(b *testing.B) {
+	b.Run("list first run with 5 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 1)
-			removeCache(b)
+			replicateList(b, workingDir, 5)
+			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 1)
-	b.Run("list second run with 1 experiments", func(b *testing.B) {
+	replicateList(b, workingDir, 5)
+	b.Run("list second run with 5 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 1)
+			replicateList(b, workingDir, 5)
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 1)
+	err = createLotsOfExperiments(workingDir, storage, 5)
 	require.NoError(b, err)
 
-	b.Run("list first run with 2 experiments", func(b *testing.B) {
+	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 2)
-			removeCache(b)
+			replicateList(b, workingDir, 10)
+			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 2)
-	b.Run("list second run with 2 experiments", func(b *testing.B) {
+	replicateList(b, workingDir, 10)
+	b.Run("list second run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 2)
+			replicateList(b, workingDir, 10)
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 1)
+	err = createLotsOfExperiments(workingDir, storage, 5)
 	require.NoError(b, err)
 
-	b.Run("list first run with 3 experiments", func(b *testing.B) {
+	b.Run("list first run with 15 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 3)
-			removeCache(b)
+			replicateList(b, workingDir, 15)
+			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 3)
-	b.Run("list second run with 3 experiments", func(b *testing.B) {
+	replicateList(b, workingDir, 15)
+	b.Run("list second run with 15 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 3)
+			replicateList(b, workingDir, 15)
 		}
 	})
 }

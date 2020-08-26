@@ -13,7 +13,6 @@ import (
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/param"
 	"replicate.ai/cli/pkg/project"
-	"replicate.ai/cli/pkg/storage"
 )
 
 func newDiffCommand() *cobra.Command {
@@ -39,11 +38,11 @@ func diffCommits(cmd *cobra.Command, args []string) error {
 	prefix1 := args[0]
 	prefix2 := args[1]
 
-	storageURL, _, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := storage.ForURL(storageURL)
+	store, err := getStorage(storageURL, sourceDir)
 	if err != nil {
 		return err
 	}
