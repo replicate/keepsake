@@ -59,6 +59,7 @@ Then, copy and paste this code into `train.py`:
 <CodeBlock className="python" metastring='title="train.py"'>
 {require('!!raw-loader!../../example/train.py').default}
 </CodeBlock>
+ 
 
 Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
 
@@ -142,7 +143,7 @@ As a reminder, this is a list of **experiments** which represents runs of the `t
 
 Within experiments are **commits**, which are created every time you call `experiment.commit()` in your training script. The commit contains your weights, Tensorflow logs, and any other artifacts you want to save.
 
-To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f` with an experiment ID from your output of `replicate ls`:
+To list the commits within these experiments, you can use `replicate show`. Run this, replacing `c9f380d` with an experiment ID from your output of `replicate ls`:
 
 ```shell-session
 $ replicate show c9f380d
