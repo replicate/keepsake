@@ -12,6 +12,7 @@ def train(learning_rate, num_epochs):
     # highlight-next-line
     experiment = replicate.init(learning_rate=learning_rate, num_epochs=num_epochs)
 
+    print("Downloading data set...")
     iris = load_iris()
     train_features, val_features, train_labels, val_labels = train_test_split(
         iris.data,
