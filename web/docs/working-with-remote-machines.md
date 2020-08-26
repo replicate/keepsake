@@ -45,10 +45,10 @@ gcloud auth application-default login
 
 ### Point Replicate at Google Cloud
 
-Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[username]` with your name, or some other unique string:
+Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[your username]` with your name, or some other unique string:
 
 ```yaml
-storage: "gs://replicate-[username]-iris-classifier"
+storage: "gs://replicate-[your username]-iris-classifier"
 ```
 
 </TabItem>
@@ -58,10 +58,10 @@ We haven't written a full guide to setting up S3 yet, so this assumes some knowl
 
 To store data on Amazon S3, first set the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` with your access key and secret. You'll probably want to use an IAM user with limited permissions.
 
-Then, create `replicate.yaml` with this content, replacing `[username]` with your name, or some other unique string:
+Then, create `replicate.yaml` with this content, replacing `[your username]` with your name, or some other unique string:
 
 ```yaml
-storage: "s3://replicate-[username]-iris-classifier"
+storage: "s3://replicate-[your username]-iris-classifier"
 ```
 
 </TabItem>
