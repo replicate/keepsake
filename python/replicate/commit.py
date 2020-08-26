@@ -11,27 +11,28 @@ from .metadata import rfc3339_datetime
 from .storage import Storage
 
 
-# this slows down import replicate considerably, but is probably fine
-# since the framework is probably loaded/about to be loaded anyway
-# FIXME (bfirsh): if the user has both tensorflow and numpy installed, then
-# they'll unnecessarily loading both.
+# We load numpy but not torch or tensorflow because numpy loads very fast and
+# they're probably using it anyway
 # fmt: off
 try:
     import numpy as np  # type: ignore
     has_numpy = True
 except ImportError:
     has_numpy = False
-try:
-    import torch  # type: ignore
-    has_torch = True
-except ImportError:
-    has_torch = False
-try:
-    import tensorflow as tf  # type: ignore
-    has_tensorflow = True
-except ImportError:
-    has_tensorflow = False
 # fmt: on
+
+# Tensorflow takes a solid 10 seconds to import on a modern Macbook Pro, so instead of importing,
+# do this instead
+def _is_tensorflow_tensor(obj):
+    # e.g. __module__='tensorflow.python.framework.ops', __name__='EagerTensor'
+    return (
+        obj.__class__.__module__.split(".")[0] == "tensorflow"
+        and "Tensor" in obj.__class__.__name__
+    )
+
+
+def _is_torch_tensor(obj):
+    return (obj.__class__.__module__, obj.__class__.__name__) == ("torch", "Tensor")
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -43,9 +44,9 @@ class CustomJSONEncoder(json.JSONEncoder):
                 return float(obj)
             elif isinstance(obj, np.ndarray):
                 return obj.tolist()
-        if has_torch and isinstance(obj, torch.Tensor):
+        if _is_torch_tensor(obj):
             return obj.detach().tolist()
-        if has_tensorflow and isinstance(obj, tf.Tensor):
+        if _is_tensorflow_tensor(obj):
             return obj.numpy().tolist()
         print(type(obj))
         return json.JSONEncoder.default(self, obj)
