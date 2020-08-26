@@ -5,7 +5,7 @@ title: Example models
 
 The best way to learn is by example, so here are some examples of models using Replicate:
 
-- [iris-classifier](https://github.com/replicate/iris-classifier) – The model used in [the tutorial](tutorial.md)
+- [iris-classifier](https://github.com/replicate/replicate/tree/master/example) – The model used in [the tutorial](tutorial.md)
 - _more soon!_
 
 <!-- - [movie-recommendations](https://github.com/replicate/movie-recommendations) – A model that recommends movies. -->
