@@ -21,11 +21,12 @@ type DockerfileParams struct {
 	PythonRequirements    string
 	Install               []string
 	InstallScript         string
+	DevPythonSource       string
 }
 
 // GenerateDockerfile generates a Dockerfile from a template,
 // based on a replicate config
-func GenerateDockerfile(conf *config.Config, sourceDir string) (string, error) {
+func GenerateDockerfile(conf *config.Config, sourceDir, devPythonSource string) (string, error) {
 	hasPythonRequirements, err := files.FileExists(path.Join(sourceDir, conf.PythonRequirements))
 	if err != nil {
 		return "", err
@@ -47,6 +48,7 @@ func GenerateDockerfile(conf *config.Config, sourceDir string) (string, error) {
 		PythonRequirements:    conf.PythonRequirements,
 		Install:               conf.Install,
 		InstallScript:         conf.InstallScript,
+		DevPythonSource:       devPythonSource,
 	}
 	contents := assets.MustAsset("Dockerfile")
 	tmpl, err := template.New("Dockerfile").Parse(string(contents))

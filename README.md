@@ -8,11 +8,13 @@ Version control for machine learning.
 
 ## Release
 
+This will release both the CLI and Python package:
+
 ```
 make release VERSION=<version>
 ```
 
-This will push a new tag, which will trigger the "Release" Github action.
+It pushes a new tag, which will trigger the "Release" Github action.
 
 ## Project structure
 

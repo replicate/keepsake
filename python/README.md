@@ -44,27 +44,21 @@ FIXME (bfirsh): document where to put keys
 
 This will make `import replicate` work anywhere on your machine, symlinked to this directory so it updates as you code.
 
+## Use development Python library for `replicate run`
+
+It is difficult to use the development version of the Python library when running inside `replicate run` on a remote machine.
+
+The CLI has a `REPLICATE_DEV_PYTHON_SOURCE` environment variable that will make it upload that directory and `pip install` it as part of the Docker build. For example, replacing path to the path this README is in:
+
+    REPLICATE_DEV_PYTHON_SOURCE=/absolute/path/to/replicate/python replicate run python train.py
+
+Now the Python library in this directory is installed in the `replicate run` environment.
+
 ## Build package
 
 This will build an egg in `dist/`.
 
     $ python setup.py bdist_egg
-
-## Release package
-
-1.  Update the version string in these files:
-
-    - `python/setup.py`
-    - `cli/raw-assets/Dockerfile`
-
-2.  Build the assets:
-
-        $ make assets
-
-3.  Commit this change ("Release Python x.y.z")
-4.  Run this, which will build a tarball of the current version push it to `gs://replicate-python-dev/`:
-
-        $ make release
 
 ## Format source code
 

@@ -23,7 +23,6 @@ storage: {storage}
         f.write(
             """
 torch==1.4.0
-replicate
 """
         )
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
@@ -46,6 +45,9 @@ if __name__ == "__main__":
 
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
+    env["REPLICATE_DEV_PYTHON_SOURCE"] = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "../python"
+    )
     env["AWS_ACCESS_KEY_ID"] = gpu_instance.aws_access_key_id
     env["AWS_SECRET_ACCESS_KEY"] = gpu_instance.aws_secret_access_key
 

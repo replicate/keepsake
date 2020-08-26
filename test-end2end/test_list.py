@@ -48,12 +48,12 @@ if __name__ == "__main__":
     main()
 """
         )
-    # TODO: upload Python library
-    with open(os.path.join(tmpdir, "requirements.txt"), "w") as f:
-        f.write("replicate==0.1.8")
 
     env = os.environ
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
+    env["REPLICATE_DEV_PYTHON_SOURCE"] = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "../python"
+    )
 
     if use_replicate_run:
         cmd = ["replicate", "run", "train.py", "--foo"]

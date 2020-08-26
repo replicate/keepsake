@@ -35,7 +35,7 @@ func TestGenerateDockerfile(t *testing.T) {
 	err = ioutil.WriteFile(path.Join(tmpDir, "install/script.sh"), []byte("apt-get install -y cowsay"), 0644)
 	require.NoError(t, err)
 
-	dockerfile, err := GenerateDockerfile(conf, tmpDir)
+	dockerfile, err := GenerateDockerfile(conf, tmpDir, "")
 	require.NoError(t, err)
 
 	expected := `ARG BASE_IMAGE
@@ -54,6 +54,7 @@ RUN apt-get install -y ffmpeg
 
 COPY "requirements.txt" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
+
 
 COPY . /code
 WORKDIR /code
