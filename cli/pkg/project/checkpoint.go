@@ -2,7 +2,6 @@ package project
 
 import (
 	"encoding/json"
-	"path"
 	"sort"
 	"time"
 
@@ -12,8 +11,8 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
-// Commit is a snapshot of an experiment's filesystem
-type Commit struct {
+// Checkpoint is a snapshot of an experiment's filesystem
+type Checkpoint struct {
 	ID           string                  `json:"id"`
 	Created      time.Time               `json:"created"`
 	ExperimentID string                  `json:"experiment_id"`
@@ -22,10 +21,10 @@ type Commit struct {
 	Path         string                  `json:"path"`
 }
 
-// NewCommit creates a commit
-func NewCommit(experimentID string, labels map[string]*param.Value) *Commit {
+// NewCheckpoint creates a checkpoint
+func NewCheckpoint(experimentID string, labels map[string]*param.Value) *Checkpoint {
 	// FIXME (bfirsh): content addressable (also in Python)
-	return &Commit{
+	return &Checkpoint{
 		ID:           hash.Random(),
 		Created:      time.Now().UTC(),
 		ExperimentID: experimentID,
@@ -33,9 +32,9 @@ func NewCommit(experimentID string, labels map[string]*param.Value) *Commit {
 	}
 }
 
-// Save a commit, with a copy of the filesystem
-func (c *Commit) Save(st storage.Storage, workingDir string) error {
-	err := st.PutDirectory(workingDir, path.Join("commits", c.ID))
+// Save a checkpoint, with a copy of the filesystem
+func (c *Checkpoint) Save(st storage.Storage, workingDir string) error {
+	err := st.PutDirectory(workingDir, c.StorageDir())
 	if err != nil {
 		return err
 	}
@@ -43,10 +42,10 @@ func (c *Commit) Save(st storage.Storage, workingDir string) error {
 	if err != nil {
 		return err
 	}
-	return st.Put(path.Join("metadata", "commits", c.ID+".json"), data)
+	return st.Put(c.MetadataPath(), data)
 }
 
-func (c *Commit) SortedLabels() []*NamedParam {
+func (c *Checkpoint) SortedLabels() []*NamedParam {
 	ret := []*NamedParam{}
 	for k, v := range c.Labels {
 		ret = append(ret, &NamedParam{Name: k, Value: v})
@@ -57,35 +56,35 @@ func (c *Commit) SortedLabels() []*NamedParam {
 	return ret
 }
 
-func (c *Commit) ShortID() string {
+func (c *Checkpoint) ShortID() string {
 	return c.ID[:7]
 }
 
-func (c *Commit) ShortExperimentID() string {
+func (c *Checkpoint) ShortExperimentID() string {
 	return c.ExperimentID[:7]
 }
 
-func (c *Commit) MetadataPath() string {
-	return "metadata/commits/" + c.ID + ".json"
+func (c *Checkpoint) MetadataPath() string {
+	return "metadata/checkpoints/" + c.ID + ".json"
 }
 
-func (c *Commit) StorageDir() string {
-	return "commits/" + c.ID
+func (c *Checkpoint) StorageDir() string {
+	return "checkpoints/" + c.ID
 }
 
-func listCommits(store storage.Storage) ([]*Commit, error) {
-	paths, err := store.List("metadata/commits/")
+func listCheckpoints(store storage.Storage) ([]*Checkpoint, error) {
+	paths, err := store.List("metadata/checkpoints/")
 	if err != nil {
 		return nil, err
 	}
-	commits := []*Commit{}
+	checkpoints := []*Checkpoint{}
 	for _, p := range paths {
-		com := new(Commit)
+		com := new(Checkpoint)
 		if err := cachedLoadFromPath(store, p, com); err == nil {
-			commits = append(commits, com)
+			checkpoints = append(checkpoints, com)
 		} else {
 			console.Warn("Failed to load metadata from %q: %s", p, err)
 		}
 	}
-	return commits, nil
+	return checkpoints, nil
 }

@@ -27,7 +27,7 @@ def train(**params):
 
         torch.save(model, "model.torch")
         # highlight-next-line
-        experiment.commit(path="model.torch", **metrics)
+        experiment.checkpoint(path="model.torch", **metrics)
 ```
 
 By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.
@@ -46,7 +46,7 @@ The versioned data is accessed with the **command-line interface**. It consists 
 
 ```shell-session
 $ replicate ls
-EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST COMMIT
+EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST CHECKPOINT
 c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
 a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
 
@@ -70,11 +70,11 @@ You create an experiment by calling `replicate.init()` in the Python library. An
 - The user who started the training script
 - The host where the training script is running
 
-### Commits
+### Checkpoints
 
-Within experiments are **commits**. They each represent a version of the _outputs_ of the training process. Conceptually, you can think of them like commits in a version control system: each one is a particular version of your machine learning model.
+Within experiments are **checkpoints**. They each represent a version of the _outputs_ of the training process. Conceptually, you can think of them like commits in a version control system: each one is a particular version of your machine learning model.
 
-You create a commit by calling `experiment.commit()`. It takes the argument `path`, which is the path to any files or directories you want to be saved, such as your trained weights. Any other arguments are recorded as metrics.
+You create a checkpoint by calling `experiment.checkpoint()`. It takes the argument `path`, which is the path to any files or directories you want to be saved, such as your trained weights. Any other arguments are recorded as metrics.
 
 ### Projects
 
@@ -100,9 +100,9 @@ storage: "s3://hooli-hotdog-detector"
 
 This is the directory structure of a project:
 
+- `checkpoints/<checkpoint ID>/` – The files saved when you create a checkpoint, such as your trained weights.
 - `experiments/<experiment ID>/` – The files in your project's directory when an experiment was created, such as your source code.
-- `commits/<commit ID>/` – The files saved when you create a commit, such as your trained weights.
-- `metadata/commits/<commit ID>.json` – A JSON file containing all the metadata about a commit, include a pointer to the experiment ID it is part of.
+- `metadata/checkpoints/<checkpoints ID>.json` – A JSON file containing all the metadata about a checkpoint, include a pointer to the experiment ID it is part of.
 - `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment.
 - `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
 
@@ -138,7 +138,7 @@ Epoch 98, train loss: 0.119, validation accuracy: 1.000
 Epoch 99, train loss: 0.118, validation accuracy: 1.000
 
 $ replicate ls
-EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST COMMIT      LOSS    BEST COMMIT        LOSS
+EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST CHECKPOINT  LOSS    BEST CHECKPOINT    LOSS
 274a9ec     3 minutes ago      stopped  34.75.189.211    ben   911cf2b (step 99)  0.1176  911cf2b (step 99)  0.1176
 ```
 

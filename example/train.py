@@ -52,7 +52,9 @@ def train(learning_rate, num_epochs):
         )
         torch.save(model, "model.pth")
         # highlight-next-line
-        experiment.commit(path="model.pth", step=epoch, loss=loss.item(), accuracy=acc)
+        experiment.checkpoint(
+            path="model.pth", step=epoch, loss=loss.item(), accuracy=acc
+        )
 
 
 if __name__ == "__main__":

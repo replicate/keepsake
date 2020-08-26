@@ -42,7 +42,7 @@ def main():
     experiment = replicate.init(my_param="my-value")
 
     for step in range(3):
-        experiment.commit(path=".", step=step)
+        experiment.checkpoint(path=".", step=step)
 
 if __name__ == "__main__":
     main()
@@ -68,10 +68,10 @@ if __name__ == "__main__":
     assert len(experiments) == 1
 
     exp = experiments[0]
-    latest = exp["latest_commit"]
+    latest = exp["latest_checkpoint"]
     assert len(exp["id"]) == 64
     assert exp["params"] == {"my_param": "my-value"}
-    assert exp["num_commits"] == 3
+    assert exp["num_checkpoints"] == 3
     if use_replicate_run:
         assert exp["command"] == "python -u train.py --foo"
     else:
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # test that --storage-url works
     experiments2 = json.loads(
         subprocess.check_output(
-            ["replicate", "list", "--json", "--storage-url=" + storage],
+            ["replicate", "ls", "--json", "--storage-url=" + storage],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
         )

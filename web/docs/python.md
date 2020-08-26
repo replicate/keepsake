@@ -6,7 +6,7 @@ title: Python library reference
 import CodeBlock from "@theme/CodeBlock";
 import config from '../docusaurus.config.js';
 
-The Replicate Python library is used to create experiments and commits in your training script.
+The Replicate Python library is used to create experiments and checkpoints in your training script.
 
 This page is a comprehensive reference for it. To get an introduction on how to use it, see [the tutorial](tutorial.md).
 
@@ -19,7 +19,7 @@ You can install the library by adding it to your `requirements.txt` file:
 `}</CodeBlock>
  
 
-We recommend putting it in a file and committing it to Git so other people who use your code will have it installed automatically.
+It's a good idea to put it in a file and commit it to Git so other people who use your code will have it installed automatically.
 
 You can also use pip if you are installing it locally:
 
@@ -44,9 +44,9 @@ For example:
 >>> experiment = replicate.init(learning_rate=0.01)
 ```
 
-#### `experiment.commit(path, **labels)`
+#### `experiment.checkpoint(path, **labels)`
 
-Create a commit within an experiment.
+Create a checkpoint within an experiment.
 
 The given `path`, relative to the working directory, will be uploaded to storage. It can be either a directory or a single file. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
 
@@ -57,5 +57,5 @@ You can add more information about these keyword arguments in `replicate.yaml` t
 For example:
 
 ```python
->>> experiment.commit(path="weights/", step=5, train_loss=0.425, train_accuracy=0.749)
+>>> experiment.checkpoint(path="weights/", step=5, train_loss=0.425, train_accuracy=0.749)
 ```

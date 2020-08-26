@@ -40,7 +40,7 @@ def main():
     experiment = replicate.init()
     with open("weights", "w") as fh:
         fh.write("42 lbs")
-    experiment.commit(path="weights")
+    experiment.checkpoint(path="weights")
 
 if __name__ == "__main__":
     main()
@@ -55,12 +55,12 @@ if __name__ == "__main__":
     assert return_code == 0
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
+        subprocess.check_output(["replicate", "ls", "--json"], cwd=tmpdir, env=env,)
     )
     assert len(experiments) == 1
 
     exp = experiments[0]
-    latest_id = exp["latest_commit"]["id"]
+    latest_id = exp["latest_checkpoint"]["id"]
 
     output_dir = str(tmpdir_factory.mktemp("output"))
     subprocess.check_output(

@@ -52,7 +52,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Commit(object):
+class Checkpoint(object):
     """
     A snapshot of a training job -- the working directory plus any metadata.
     """
@@ -89,13 +89,13 @@ class Commit(object):
         if self.step is not None:
             obj["step"] = self.step
         storage.put(
-            "metadata/commits/{}.json".format(self.id),
+            "metadata/checkpoints/{}.json".format(self.id),
             json.dumps(obj, indent=2, cls=CustomJSONEncoder),
         )
-        # FIXME (bfirsh): this will cause partial commits if process quits half way through put_directory
+        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_directory
         if self.path is not None:
             source_path = os.path.join(self.project_dir, self.path)
-            destination_path = os.path.join("commits", self.id, self.path)
+            destination_path = os.path.join("checkpoints", self.id, self.path)
             if os.path.isfile(source_path):
                 with open(os.path.join(source_path), "rb") as fh:
                     data = fh.read()
@@ -112,7 +112,7 @@ class Commit(object):
         missing_keys = metric_keys - label_keys
         if missing_keys:
             print(
-                "Warning: You specified these metrics in replicate.yaml, but they are missing in your call to replicate.commit(): {}".format(
+                "Warning: You specified these metrics in replicate.yaml, but they are missing in your call to replicate.checkpoint(): {}".format(
                     ", ".join(missing_keys)
                 ),
                 file=sys.stderr,

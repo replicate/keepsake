@@ -62,7 +62,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		require.NoError(t, exp.Save(store))
 	}
 
-	var commits = []*project.Commit{{
+	var checkpoints = []*project.Checkpoint{{
 		ID:           "1ccccccccc",
 		Created:      time.Now().UTC().Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
@@ -98,7 +98,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		},
 		Step: 5,
 	}}
-	for _, com := range commits {
+	for _, com := range checkpoints {
 		require.NoError(t, com.Save(store, workingDir))
 	}
 
@@ -131,7 +131,7 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
 1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
@@ -164,7 +164,7 @@ func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
 1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
@@ -200,7 +200,7 @@ func TestListOutputTableFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
 1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 `
@@ -235,7 +235,7 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST COMMIT      LABEL-1  BEST COMMIT        LABEL-1
+EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST CHECKPOINT  LABEL-1  BEST CHECKPOINT    LABEL-1
 1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02     2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
@@ -267,7 +267,7 @@ func TestListOutputTableSort(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST COMMIT      LABEL-1  LABEL-3  BEST COMMIT        LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
 1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
 2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
@@ -298,7 +298,7 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
-	com := project.NewCommit(exp.ID, map[string]*param.Value{
+	com := project.NewCheckpoint(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))
@@ -315,7 +315,7 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
-	com = project.NewCommit(exp.ID, map[string]*param.Value{
+	com = project.NewCheckpoint(exp.ID, map[string]*param.Value{
 		"accuracy": param.Float(0.987),
 	})
 	require.NoError(t, com.Save(storage, workingDir))
@@ -332,13 +332,13 @@ func TestListJSON(t *testing.T) {
 
 	require.Equal(t, param.Float(0.001), experiments[0].Params["learning_rate"])
 	require.Equal(t, "train.py --gamma 1.2", experiments[0].Command)
-	require.Equal(t, 1, experiments[0].NumCommits)
-	require.Equal(t, param.Float(0.987), experiments[0].LatestCommit.Labels["accuracy"])
+	require.Equal(t, 1, experiments[0].NumCheckpoints)
+	require.Equal(t, param.Float(0.987), experiments[0].LatestCheckpoint.Labels["accuracy"])
 	require.Equal(t, false, experiments[0].Running)
 
 	require.Equal(t, param.Float(0.002), experiments[1].Params["learning_rate"])
 	require.Equal(t, "train.py --gamma 1.5", experiments[1].Command)
-	require.Equal(t, 1, experiments[1].NumCommits)
-	require.Equal(t, param.Float(0.987), experiments[1].LatestCommit.Labels["accuracy"])
+	require.Equal(t, 1, experiments[1].NumCheckpoints)
+	require.Equal(t, param.Float(0.987), experiments[1].LatestCheckpoint.Labels["accuracy"])
 	require.Equal(t, true, experiments[1].Running)
 }

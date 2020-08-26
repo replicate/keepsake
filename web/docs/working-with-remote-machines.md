@@ -15,7 +15,7 @@ Replicate makes it really easy to work with multiple training machines. It lets 
 
 ## Store data on cloud storage
 
-By default, Replicate stores your experiments and commits in `.replicate/storage/` in your working directory. You can also store this data on cloud storage, like Google Cloud Storage or Amazon S3.
+By default, Replicate stores your experiments and checkpoints in `.replicate/storage/` in your working directory. You can also store this data on cloud storage, like Google Cloud Storage or Amazon S3.
 
 This means you can train on several machines and the results will be stored in a central location. When you run `replicate ls` on your local machine, it will list all of the experiments that have run anywhere, so you can easily compare between them and download the results.
 
@@ -67,13 +67,13 @@ storage: "s3://replicate-[your username]-iris-classifier"
 </TabItem>
 </Tabs>
 
-Now, when you run your training script, calling `experiment.commit()` will upload all your working directory and commit metadata to this Google Cloud Storage bucket.
+Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this Google Cloud Storage bucket.
 
 :::note
 Replicate will automatically create the bucket for you if it doesn't exist.
 :::
 
-If you're following along from [the tutorial](tutorial.md), run `python train.py` again. This time it will save your experiments to the Google Cloud bucket. (It takes a second to save each commit, so press `Ctrl-C` after a few epochs if you don't want to wait.)
+If you're following along from [the tutorial](tutorial.md), run `python train.py` again. This time it will save your experiments to the Google Cloud bucket. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
 
 Now, when you run `replicate ls`, it will list experiments from the bucket.
 
@@ -176,13 +176,13 @@ When it's finished, run `replicate ls` on your local machine, and you should see
 
 ```shell-session
 $ replicate ls
-EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST COMMIT      LOSS    BEST COMMIT        LOSS
+EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST CHECKPOINT  LOSS    BEST CHECKPOINT    LOSS
 274a9ec     3 minutes ago      stopped  34.75.189.211    ben   911cf2b (step 99)  0.1176  911cf2b (step 99)  0.1176
 ```
 
 Because you're storing the experiment data on cloud storage, you can create as many experiments as you like on as many machines as you like, and they'll all show up in one place.
 
-If you want to get the results of the experiment, run `replicate checkout`, like you did in [the first part of the tutorial](tutorial.md#check-out-a-commit).
+If you want to get the results of the experiment, run `replicate checkout`, like you did in [the first part of the tutorial](tutorial.md#check-out-a-checkpoint).
 
 ## Stop your training machine
 

@@ -33,7 +33,7 @@ def main():
     experiment = replicate.init(my_param="my-value")
 
     for step in range(3):
-        experiment.commit(path=".", step=step)
+        experiment.checkpoint(path=".", step=step)
 
 if __name__ == "__main__":
     main()
@@ -51,16 +51,16 @@ if __name__ == "__main__":
         subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env)
     )
     assert len(experiments) == 1
-    assert experiments[0]["num_commits"] == 3
+    assert experiments[0]["num_checkpoints"] == 3
 
-    commit_id = experiments[0]["latest_commit"]["id"]
-    subprocess.run(["replicate", "delete", commit_id], cwd=tmpdir, env=env)
+    checkpoint_id = experiments[0]["latest_checkpoint"]["id"]
+    subprocess.run(["replicate", "delete", checkpoint_id], cwd=tmpdir, env=env)
 
     experiments = json.loads(
         subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env)
     )
     assert len(experiments) == 1
-    assert experiments[0]["num_commits"] == 2
+    assert experiments[0]["num_checkpoints"] == 2
 
     subprocess.run(["replicate", "delete", experiments[0]["id"]], cwd=tmpdir, env=env)
 
