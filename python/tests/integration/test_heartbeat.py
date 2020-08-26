@@ -29,6 +29,8 @@ def test_heartbeat_running(tmpdir):
     heartbeat.ensure_running()
     assert heartbeat.is_alive()
 
+    heartbeat.kill()
+
 
 def test_heartbeat_write(tmpdir):
     tmpdir = str(tmpdir)
@@ -59,3 +61,5 @@ def test_heartbeat_write(tmpdir):
     new_last_heartbeat = dateutil.parser.parse(obj["last_heartbeat"])
 
     assert t1 < last_heartbeat < t2 < new_last_heartbeat
+
+    heartbeat.kill()

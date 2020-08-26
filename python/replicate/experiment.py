@@ -23,6 +23,7 @@ class Experiment:
         project_dir: str,
         created: datetime.datetime,
         params: Optional[Dict[str, Any]],
+        disable_heartbeat: bool = False,
     ):
         self.config = config
         storage_url = config["storage"]
@@ -32,6 +33,7 @@ class Experiment:
         self.params = params
         self.id = random_hash()
         self.created = created
+        self.disable_heartbeat = disable_heartbeat
         self.heartbeat = Heartbeat(
             experiment_id=self.id,
             storage_url=storage_url,
@@ -70,7 +72,8 @@ class Experiment:
             labels=kwargs,
         )
         commit.save(self.storage)
-        self.heartbeat.ensure_running()
+        if not self.disable_heartbeat:
+            self.heartbeat.ensure_running()
         return commit
 
     def get_metadata(self) -> Dict[str, Any]:
@@ -110,16 +113,23 @@ class Experiment:
         return os.environ.get("REPLICATE_COMMAND", " ".join(sys.argv))
 
 
-def init(options: Optional[Dict[str, Any]] = None, **kwargs) -> Experiment:
+def init(
+    options: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs
+) -> Experiment:
     options = set_option_defaults(options, {})
     project_dir = get_project_dir()
     config = load_config(project_dir)
     created = datetime.datetime.utcnow()
     experiment = Experiment(
-        config=config, project_dir=project_dir, created=created, params=kwargs,
+        config=config,
+        project_dir=project_dir,
+        created=created,
+        params=kwargs,
+        disable_heartbeat=disable_heartbeat,
     )
     experiment.save()
-    experiment.heartbeat.start()
+    if not disable_heartbeat:
+        experiment.heartbeat.start()
     return experiment
 
 
