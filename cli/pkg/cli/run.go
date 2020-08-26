@@ -2,10 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"os/user"
+	"path"
 	"strings"
 
 	"github.com/docker/docker/client"
+	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
 
 	"replicate.ai/cli/pkg/build"
@@ -120,8 +123,26 @@ func runCommand(opts runOpts, args []string) (err error) {
 	if err != nil {
 		return err
 	}
+
+	// In development, put development Python package inside Docker image
+	devPythonSource := os.Getenv("REPLICATE_DEV_PYTHON_SOURCE")
+	devPythonSourceTmpdir := ""
+	if devPythonSource != "" {
+		console.Info("Using Python library from %s", devPythonSource)
+		// Python source needs to be inside source dir so it gets uploaded and is
+		// in build context. It also can't be inside anything that doesn't
+		// get rsynced (e.g. .replicate)
+		devPythonSourceTmpdir = ".tmp-dev-python-source"
+		if err := os.RemoveAll(path.Join(sourceDir, devPythonSourceTmpdir)); err != nil {
+			return err
+		}
+		if err := copy.Copy(devPythonSource, path.Join(sourceDir, devPythonSourceTmpdir)); err != nil {
+			return fmt.Errorf("Failed to copy REPLICATE_DEV_PYTHON_SOURCE: %w", err)
+		}
+	}
+
 	console.Debug("Using base image: %s", baseImage.RepositoryName())
-	dockerfile, err := build.GenerateDockerfile(conf, sourceDir)
+	dockerfile, err := build.GenerateDockerfile(conf, sourceDir, devPythonSourceTmpdir)
 	if err != nil {
 		return err
 	}
