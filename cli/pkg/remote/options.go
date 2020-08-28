@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mitchellh/go-homedir"
 	"replicate.ai/cli/pkg/files"
 )
 
@@ -63,7 +64,7 @@ func (o *Options) SSHArgs() []string {
 		}
 	}
 	for _, keyPath := range DefaultPrivateKeys() {
-		absPath, err := files.ExpandUser(keyPath)
+		absPath, err := homedir.Expand(keyPath)
 		if err != nil {
 			panic("default private key has an error")
 		}

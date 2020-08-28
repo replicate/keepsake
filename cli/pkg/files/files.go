@@ -5,8 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
-	"strings"
 )
 
 const tempFolder = "/tmp/replicate"
@@ -28,17 +26,6 @@ func IsDir(dirPath string) (bool, error) {
 		return false, err
 	}
 	return file.Mode().IsDir(), nil
-}
-
-func ExpandUser(filePath string) (string, error) {
-	if strings.HasPrefix(filePath, "~") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		return path.Join(home, filePath[1:]), nil
-	}
-	return filePath, nil
 }
 
 func TempDir(prefix string) (string, error) {
