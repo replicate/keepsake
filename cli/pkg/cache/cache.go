@@ -3,10 +3,9 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path"
 
 	"github.com/GitbookIO/diskache"
+	"github.com/mitchellh/go-homedir"
 
 	"replicate.ai/cli/pkg/console"
 )
@@ -21,12 +20,12 @@ func Instance() (*Cache, error) {
 	if instance != nil {
 		return instance, nil
 	}
-	homeDir, err := os.UserHomeDir()
+	dir, err := homedir.Expand("~/.cache/replicate")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to determine home directory, got error: %s", err)
 	}
 	dc, err := diskache.New(&diskache.Opts{
-		Directory: path.Join(homeDir, ".cache", "replicate"),
+		Directory: dir,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create disk cache, got error: %s", err)
