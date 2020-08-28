@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/logrusorgru/aurora"
+	"github.com/mitchellh/go-wordwrap"
 )
 
 // Console represents a standardized interface for console UI. It is designed to abstract:
@@ -75,8 +76,6 @@ func (c *Console) DebugOutput(line string) {
 }
 
 func (c *Console) log(level Level, msg string, v ...interface{}) {
-	// TODO (bfirsh): handle msg with multiple lines
-
 	if level < c.Level {
 		return
 	}
@@ -84,6 +83,21 @@ func (c *Console) log(level Level, msg string, v ...interface{}) {
 	prompt := "═══╡ "
 	continuationPrompt := "   │ "
 
+	formattedMsg := fmt.Sprintf(msg, v...)
+
+	// Word wrap
+	width, err := GetWidth()
+	if err != nil {
+		Debug("error getting width of terminal: %s", err)
+	} else if width > 30 {
+		// Only do word wrapping for terminals 30 chars or wider. Anything smaller and the terminal
+		// is probably resized really small for some reason, and when the user resizes it to be big
+		// again then we want the text to flow sensibly instead of having one word per line, or
+		// whatever. This also makes width-len(prompt) always be positive.
+		formattedMsg = wordwrap.WrapString(formattedMsg, uint(width)-uint(len(prompt)))
+	}
+
+	// Add color after word wrapping so naive length of prompt is correct
 	if c.Color {
 		color := aurora.Faint
 		if level == WarnLevel {
@@ -100,7 +114,6 @@ func (c *Console) log(level Level, msg string, v ...interface{}) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	formattedMsg := fmt.Sprintf(msg, v...)
 	for i, line := range strings.Split(formattedMsg, "\n") {
 		if c.Color && level == DebugLevel {
 			line = aurora.Faint(line).String()
