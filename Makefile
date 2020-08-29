@@ -29,7 +29,7 @@ manually-release-python:
 .PHONY: release-cli
 manually-release-cli:
 	cd cli && \
-	$(MAKE) build-all && \
+	$(MAKE) build-all ENVIRONMENT=production && \
 	gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" && \
 	gsutil cp -r release/ "gs://replicate-public/cli/latest"
 
