@@ -35,6 +35,8 @@ func replicate(b *testing.B, arg ...string) string {
 	cmd := exec.Command(binPath, arg...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "REPLICATE_NO_ANALYTICS=1")
 	if err := cmd.Run(); err != nil {
 		fmt.Println(stdout.String())
 		fmt.Println(stderr.String())

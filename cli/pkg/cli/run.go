@@ -18,7 +18,6 @@ import (
 	"replicate.ai/cli/pkg/hash"
 	"replicate.ai/cli/pkg/netutils"
 	"replicate.ai/cli/pkg/remote"
-	"replicate.ai/cli/pkg/settings"
 	"replicate.ai/cli/pkg/storage"
 )
 
@@ -203,13 +202,9 @@ func parseMounts(mountStrings []string) ([]docker.Mount, error) {
 }
 
 func getUser() (string, error) {
-	userSettings, err := settings.LoadUserSettings()
-	if err != nil || userSettings.Email == "" {
-		u, err := user.Current()
-		if err != nil {
-			return "", fmt.Errorf("Failed to determine current user, got error: %w", err)
-		}
-		return u.Username, nil
+	u, err := user.Current()
+	if err != nil {
+		return "", fmt.Errorf("Failed to determine current user, got error: %w", err)
 	}
-	return userSettings.Email, nil
+	return u.Username, nil
 }

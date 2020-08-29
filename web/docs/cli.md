@@ -7,6 +7,7 @@ This is the reference for the Replicate CLI commands. You can also see this in t
 
 ## Commands
 
+* [`replicate analytics`](#replicate-analytics) – Enable or disable analytics
 * [`replicate checkout`](#replicate-checkout) – Copy files from a checkpoint into the project directory
 * [`replicate diff`](#replicate-diff) – Compare two experiments or checkpoints
 * [`replicate feedback`](#replicate-feedback) – Submit feedback to the team!
@@ -16,6 +17,25 @@ This is the reference for the Replicate CLI commands. You can also see this in t
 * [`replicate run`](#replicate-run) – Run a command on a remote machine
 * [`replicate show`](#replicate-show) – View information about an experiment or checkpoint
 
+## `replicate analytics`
+
+Enable or disable analytics
+
+### Usage
+
+```
+replicate analytics <on|off> [flags]
+```
+
+### Flags
+
+```
+  -h, --help   help for analytics
+
+      --color                     Display color in output (default true)
+  -D, --source-directory string   Local source directory
+  -v, --verbose                   Verbose output
+```
 ## `replicate checkout`
 
 Copy files from a checkpoint into the project directory
