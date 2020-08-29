@@ -3,7 +3,6 @@ package cli
 import (
 	"os"
 	"path"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -11,33 +10,9 @@ import (
 	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/global"
-	"replicate.ai/cli/pkg/settings"
 )
 
 func NewRootCommand() (*cobra.Command, error) {
-	reportAnalytics := os.Getenv("REPLICATE_NO_ANALYTICS") == ""
-
-	userSettings, err := settings.LoadUserSettings()
-	if err != nil {
-		return nil, err
-	}
-
-	// On first launch, ask user for email
-	if console.IsTerminal() && userSettings.Email == "" && reportAnalytics {
-		if userSettings.Email, err = analytics.RunOnboarding(); err != nil {
-			return nil, err
-		}
-		if err := userSettings.Save(); err != nil {
-			return nil, err
-		}
-	}
-
-	analyticsClient := analytics.NewClient(&analytics.Config{
-		Email: userSettings.Email,
-		// FIXME (bfirsh): use different key for development so we don't get junk data
-		SegmentKey: "MKaYmSZ2hW6P8OegI9g0sufjZeUh28g7",
-	})
-
 	rootCmd := cobra.Command{
 		Use:   "replicate",
 		Short: "Version control for machine learning",
@@ -55,21 +30,17 @@ To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 			}
 			console.SetColor(global.Color)
 
-			if reportAnalytics {
-				analyticsClient.Track("Run Command", map[string]string{
-					"command": cmd.Name(),
-					"args":    strings.Join(args, " "),
-					"rawArgs": strings.Join(os.Args, " "),
-				})
+			if err := analytics.TrackCommand(cmd.Name()); err != nil {
+				console.Debug("analytics error: %s", err)
 			}
 		},
 		PersistentPostRun: func(cmd *cobra.Command, args []string) {
-			analyticsClient.Close()
 		},
 	}
 	setPersistentFlags(&rootCmd)
 
 	rootCmd.AddCommand(
+		newAnalyticsCommand(),
 		newCheckoutCommand(),
 		newRmCommand(),
 		newDiffCommand(),

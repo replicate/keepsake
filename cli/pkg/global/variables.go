@@ -14,9 +14,14 @@ var ReplicateDownloadURLs = map[string]string{
 	"windows": "https://storage.googleapis.com/replicate-public/cli/latest/windows/amd64/replicate",
 	"darwin":  "https://storage.googleapis.com/replicate-public/cli/latest/darwin/amd64/replicate",
 }
+var SegmentKey = "MKaYmSZ2hW6P8OegI9g0sufjZeUh28g7"
 
 func init() {
 	if Environment == "development" {
 		Version += "-dev"
+	}
+
+	if Environment == "production" {
+		SegmentKey = "Fc5GClhPBLfevDXCdCJbYZuPQ1sujxEk"
 	}
 }
