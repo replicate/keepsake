@@ -21,12 +21,12 @@ jobs:
       - name: Setup GCP credentials
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '290.0.1'
+          version: "290.0.1"
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
       - name: Build CLI
-        run: cd cli && make build-all
+        run: cd cli && make build-all ENVIRONMENT=production
       - name: Build Python
         run: cd python && make build
       - name: Set version

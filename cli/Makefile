@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 
 VERSION := 0.1.13
+ENVIRONMENT := development
 PLATFORMS := darwin linux windows
 ARCHITECTURES := 386 amd64
 GOOS := $(shell go env GOOS)
@@ -15,7 +16,7 @@ ASSETS_PACKAGE := assets
 ASSETS_DIR := pkg/$(ASSETS_PACKAGE)
 ASSETS_INPUT := raw-assets
 
-LDFLAGS := -ldflags "-X replicate.ai/cli/pkg/global.Version=$(VERSION) -w"
+LDFLAGS := -ldflags "-X replicate.ai/cli/pkg/global.Version=$(VERSION) -X replicate.ai/cli/pkg/global.Environment=$(ENVIRONMENT) -w"
 
 export GO111MODULE = on
 
