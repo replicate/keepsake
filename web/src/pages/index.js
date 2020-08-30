@@ -95,11 +95,11 @@ function Home() {
           textAlign: "center",
         }}
       >
-        <strong>
-          While we work out the kinks, please don't share this yet.
-        </strong>{" "}
-        But, if you know someone who would particularly like it,{" "}
-        <a href="mailto:team@replicate.ai">let us know</a>. :)
+        <strong>Welcome to the Replicate private beta!</strong> It's ready to
+        use for real work, but expect the odd rough edge.
+        <br />
+        If you know somebody else who would like to use it, email us:{" "}
+        <a href="mailto:team@replicate.ai">team@replicate.ai</a>
       </div>
       <header className={classnames("hero", styles.heroBanner)}>
         <div className="container">
