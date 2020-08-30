@@ -8,7 +8,9 @@ import pytest  # type: ignore
     "storage_backend,use_replicate_run",
     [
         ("gcs", False),
+        ("gcs", True),
         ("s3", False),
+        ("s3", True),
         ("file", False),
         ("file", True),
         pytest.param("undefined", False, marks=pytest.mark.fast),
@@ -56,7 +58,7 @@ if __name__ == "__main__":
     )
 
     if use_replicate_run:
-        cmd = ["replicate", "run", "train.py", "--foo"]
+        cmd = ["replicate", "run", "-v", "train.py", "--foo"]
     else:
         cmd = ["python", "train.py", "--foo"]
     return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()

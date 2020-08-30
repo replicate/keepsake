@@ -114,6 +114,14 @@ func (s *CachedStorage) RootURL() string {
 	return s.storage.RootURL()
 }
 
+func (s *CachedStorage) RootExists() (bool, error) {
+	return s.storage.RootExists()
+}
+
+func (s *CachedStorage) PrepareRunEnv() ([]string, error) {
+	return s.storage.PrepareRunEnv()
+}
+
 func (s *CachedStorage) SyncCache() error {
 	console.Debug("Syncing %s/%s to %s/%s", s.storage.RootURL(), s.cachePrefix, s.cacheStorage.RootURL(), s.cachePrefix)
 	return Sync(s.storage, s.cachePrefix, s.cacheStorage, s.cachePrefix)

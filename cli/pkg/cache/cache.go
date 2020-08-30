@@ -54,6 +54,18 @@ func Get(key string) (data []byte, ok bool) {
 	return c.dc.Get(key)
 }
 
+func SetString(key string, s string) error {
+	return Set(key, []byte(s))
+}
+
+func GetString(key string) (s string, ok bool) {
+	data, ok := Get(key)
+	if !ok {
+		return "", false
+	}
+	return string(data), true
+}
+
 func SetStruct(key string, v interface{}) error {
 	data, err := json.Marshal(v)
 	if err != nil {

@@ -135,7 +135,16 @@ func runCommand(opts runOpts, args []string) (err error) {
 		if err := os.RemoveAll(path.Join(sourceDir, devPythonSourceTmpdir)); err != nil {
 			return err
 		}
-		if err := copy.Copy(devPythonSource, path.Join(sourceDir, devPythonSourceTmpdir)); err != nil {
+		options := copy.Options{
+			// skip .tox folder since it can be very big
+			Skip: func(src string) (bool, error) {
+				if strings.Contains(src, "/.tox/") {
+					return true, nil
+				}
+				return false, nil
+			},
+		}
+		if err := copy.Copy(devPythonSource, path.Join(sourceDir, devPythonSourceTmpdir), options); err != nil {
 			return fmt.Errorf("Failed to copy REPLICATE_DEV_PYTHON_SOURCE: %w", err)
 		}
 	}
@@ -182,8 +191,17 @@ func runCommand(opts runOpts, args []string) (err error) {
 		return err
 	}
 
+	store, err := getStorage(conf.Storage, sourceDir)
+	if err != nil {
+		return err
+	}
+	env, err := store.PrepareRunEnv()
+	if err != nil {
+		return err
+	}
+
 	console.Info("Running '%v'...", strings.Join(args, " "))
-	return docker.Run(dockerClient, containerName, args, mounts, hasGPU, username, host, conf.Storage)
+	return docker.Run(dockerClient, containerName, args, mounts, hasGPU, username, host, conf.Storage, env)
 }
 
 func parseMounts(mountStrings []string) ([]docker.Mount, error) {

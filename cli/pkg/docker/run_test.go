@@ -29,7 +29,7 @@ func TestRunMounts(t *testing.T) {
 	require.NoError(t, exec.Command("docker", "pull", "alpine").Run())
 
 	out := capturer.CaptureStdout(func() {
-		err = Run(dockerClient, "alpine", []string{"cat", "/mounted/hello.txt"}, mounts, false, "user", "host", "s3://storage-bucket")
+		err = Run(dockerClient, "alpine", []string{"cat", "/mounted/hello.txt"}, mounts, false, "user", "host", "s3://storage-bucket", []string{})
 	})
 	require.NoError(t, err)
 	require.Equal(t, "hello\n", out)
