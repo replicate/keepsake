@@ -1,10 +1,17 @@
+import tempfile
+import json
+import sys
+import base64
+import binascii
 import os
 import asyncio
-from typing import AnyStr, Optional, Generator, Set
+from typing import AnyStr, Optional, Generator, Set, Tuple
 import aiohttp
 from gcloud.aio.storage import Storage as AioStorage  # type: ignore
 from google.cloud import storage  # type: ignore
 from google.api_core import exceptions  # type: ignore
+from google.auth.credentials import Credentials  # type: ignore
+from google.oauth2 import service_account  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError
@@ -15,6 +22,7 @@ class GCSStorage(Storage):
         self.bucket_name = bucket
         self.client: Optional[storage.Client] = None
         self.concurrency = concurrency
+        self.temp_service_account_path: Optional[str] = None
 
     def get(self, path: str) -> bytes:
         """
@@ -32,6 +40,7 @@ class GCSStorage(Storage):
         Save directory to path
         """
         loop = asyncio.get_event_loop()
+        loop.set_debug(True)
         # TODO(andreas): handle exceptions
         loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
 
@@ -40,11 +49,14 @@ class GCSStorage(Storage):
     ):
         put_tasks = set()
         async with aiohttp.ClientSession() as session:
-            storage = AioStorage(session=session)
+            storage = self._get_async_client(session=session)
             for relative_path, data in self.walk_directory_data(dir_to_store):
                 remote_path = os.path.join(path, relative_path)
 
-                put_task = loop.create_task(
+                # put_task = loop.create_task(
+                #    storage.upload(self.bucket_name, remote_path, data)
+                # )
+                put_task = asyncio.ensure_future(
                     storage.upload(self.bucket_name, remote_path, data)
                 )
 
@@ -56,7 +68,8 @@ class GCSStorage(Storage):
                         put_tasks, return_when=asyncio.FIRST_COMPLETED
                     )
                     for task in new_tasks:
-                        put_tasks.add(loop.create_task(task))
+                        # put_tasks.add(loop.create_task(task))
+                        put_tasks.add(task)
 
             await asyncio.wait(put_tasks)
 
@@ -73,17 +86,43 @@ class GCSStorage(Storage):
         blob = bucket.blob(path)
         blob.upload_from_string(data)
 
-    def get_client(self) -> storage.Client:
+    def _get_client(self) -> storage.Client:
         if self.client is None:
-            self.client = storage.Client()
+            project, credentials = self._get_project_and_client_credentials()
+            if project is None:
+                return storage.Client()
+            else:
+                self.client = storage.Client(project=project, credentials=credentials)
         return self.client
+
+    def _get_async_client(self, session: aiohttp.ClientSession) -> AioStorage:
+        # we need to save a service account file since AioStorage
+        # needs that. but we only do that if the script has been
+        # started from the replicate command line, in which case it'll
+        # have environment variables that get parsed by
+        # self._get_service_account_key().
+        if self.temp_service_account_path is None:
+            key_json = self._get_service_account_key()
+            if key_json is not None:
+                tmp = tempfile.NamedTemporaryFile(
+                    delete=False, prefix="replicate-service-account-", suffix=".json"
+                )
+                self.temp_service_account_path = tmp.name
+                tmp.close()
+
+                with open(self.temp_service_account_path, "w") as f:
+                    f.write(key_json.decode())
+        client = AioStorage(
+            session=session, service_file=self.temp_service_account_path
+        )
+        return client
 
     def bucket(self) -> storage.Bucket:
         """
         Return a GCS storage.Bucket object. If the bucket doesn't
         exist, it's automatically created.
         """
-        client = self.get_client()
+        client = self._get_client()
         try:
             return client.get_bucket(self.bucket_name)
         except exceptions.NotFound:
@@ -97,3 +136,36 @@ class GCSStorage(Storage):
     def list(self, path: str) -> Generator[ListFileInfo, None, None]:
         # TODO
         pass
+
+    def _get_service_account_key(self) -> Optional[bytes]:
+        key_b64 = os.environ.get("REPLICATE_GCP_SERVICE_ACCOUNT_KEY")
+        if key_b64 is None:
+            return None
+        try:
+            key_json = base64.standard_b64decode(key_b64)
+        except binascii.Error as e:
+            # TODO(andreas): fail hard here?
+            # TODO(andreas): actual logging facility
+            sys.stderr.write(
+                "Failed to decode service account key from base-64: {}".format(e)
+            )
+            return None
+
+        return key_json
+
+    def _get_project_and_client_credentials(
+        self,
+    ) -> Tuple[Optional[str], Optional[Credentials]]:
+        key_json = self._get_service_account_key()
+        if key_json is None:
+            return None, None
+
+        try:
+            info = json.loads(key_json)
+        except json.JSONDecodeError as e:
+            # TODO(andreas): fail hard here?
+            sys.stderr.write("Failed to decode service account key JSON: {}".format(e))
+            return None, None
+
+        project = os.environ.get("REPLICATE_GCP_PROJECT")
+        return project, service_account.Credentials.from_service_account_info(info)

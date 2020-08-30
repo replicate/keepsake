@@ -25,6 +25,7 @@ type ListResult struct {
 
 type Storage interface {
 	RootURL() string
+	RootExists() (bool, error)
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
 	PutDirectory(localPath string, storagePath string) error
@@ -42,6 +43,10 @@ type Storage interface {
 	ListRecursive(results chan<- ListResult, folder string)
 
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
+
+	// PrepareRunEnv prepares a replicate run, returning a list of
+	// environment variables
+	PrepareRunEnv() ([]string, error)
 }
 
 // SplitURL splits a storage URL into <scheme>://<path>

@@ -28,12 +28,12 @@ type Mount struct {
 // Run runs a Docker container from imageName with cmd
 // TODO: this could do with a configuration struct
 // TODO(andreas): this function is getting really unwieldy and has lots of responsibilities, let's refactor
-func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []Mount, hasGPU bool, user string, host string, storageURL string) error {
+func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []Mount, hasGPU bool, user string, host string, storageURL string, env []string) error {
 	// use same name for both container and image
 	containerName := imageName
 
-	env := remote.FilterEnvList(os.Environ())
-
+	osEnv := remote.FilterEnvList(os.Environ())
+	env = append(env, osEnv...)
 	env = append(env, "PYTHONUNBUFFERED=1")
 
 	// REPLICATE_USER and REPLICATE_HOST is used by the replicate

@@ -51,6 +51,21 @@ func (s *S3Storage) RootURL() string {
 	return "s3://" + s.bucketName
 }
 
+func (s *S3Storage) RootExists() (bool, error) {
+	_, err := s.svc.HeadBucket(&s3.HeadBucketInput{
+		Bucket: &s.bucketName,
+	})
+	if err == nil {
+		return true, nil
+	}
+	if ee, ok := err.(awserr.Error); ok {
+		if ee.Code() == s3.ErrCodeNoSuchBucket {
+			return false, nil
+		}
+	}
+	return false, err
+}
+
 // Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{
@@ -223,6 +238,10 @@ func (s *S3Storage) List(dir string) ([]string, error) {
 		return true
 	})
 	return results, err
+}
+
+func (s *S3Storage) PrepareRunEnv() ([]string, error) {
+	return []string{}, nil
 }
 
 func CreateS3Bucket(region, bucket string) (err error) {

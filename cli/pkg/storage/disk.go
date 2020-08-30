@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/otiai10/copy"
+
+	"replicate.ai/cli/pkg/files"
 )
 
 type DiskStorage struct {
@@ -22,6 +24,10 @@ func NewDiskStorage(rootDir string) (*DiskStorage, error) {
 
 func (s *DiskStorage) RootURL() string {
 	return "file://" + s.rootDir
+}
+
+func (s *DiskStorage) RootExists() (bool, error) {
+	return files.FileExists(s.rootDir)
 }
 
 // Get data at path
@@ -154,4 +160,8 @@ func (s *DiskStorage) GetDirectory(storageDir string, localDir string) error {
 		return fmt.Errorf("Failed to copy directory from %s to %s, got error: %w", storageDir, localDir, err)
 	}
 	return nil
+}
+
+func (s *DiskStorage) PrepareRunEnv() ([]string, error) {
+	return []string{}, nil
 }
