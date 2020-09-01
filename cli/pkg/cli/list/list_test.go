@@ -66,35 +66,35 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		ID:           "1ccccccccc",
 		Created:      time.Now().UTC().Add(-1 * time.Minute),
 		ExperimentID: experiments[0].ID,
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.1),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.1),
+			"metric-2": param.Int(2),
 		},
 		Step: 10,
 	}, {
 		ID:           "2ccccccccc",
 		Created:      time.Now().UTC(),
 		ExperimentID: experiments[0].ID,
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.01),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.01),
+			"metric-2": param.Int(2),
 		},
 		Step: 20,
 	}, {
 		ID:           "3ccccccccc",
 		Created:      time.Now().UTC(),
 		ExperimentID: experiments[0].ID,
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.02),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.02),
+			"metric-2": param.Int(2),
 		},
 		Step: 20,
 	}, {
 		ID:           "4ccccccccc",
 		Created:      time.Now().UTC(),
 		ExperimentID: experiments[1].ID,
-		Labels: map[string]*param.Value{
-			"label-3": param.Float(0.5),
+		Metrics: map[string]*param.Value{
+			"metric-3": param.Float(0.5),
 		},
 		Step: 5,
 	}}
@@ -115,11 +115,11 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -148,11 +148,11 @@ func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -181,11 +181,11 @@ func TestListOutputTableFilter(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -216,11 +216,11 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -250,11 +250,11 @@ func TestListOutputTableSort(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -333,12 +333,12 @@ func TestListJSON(t *testing.T) {
 	require.Equal(t, param.Float(0.001), experiments[0].Params["learning_rate"])
 	require.Equal(t, "train.py --gamma 1.2", experiments[0].Command)
 	require.Equal(t, 1, experiments[0].NumCheckpoints)
-	require.Equal(t, param.Float(0.987), experiments[0].LatestCheckpoint.Labels["accuracy"])
+	require.Equal(t, param.Float(0.987), experiments[0].LatestCheckpoint.Metrics["accuracy"])
 	require.Equal(t, false, experiments[0].Running)
 
 	require.Equal(t, param.Float(0.002), experiments[1].Params["learning_rate"])
 	require.Equal(t, "train.py --gamma 1.5", experiments[1].Command)
 	require.Equal(t, 1, experiments[1].NumCheckpoints)
-	require.Equal(t, param.Float(0.987), experiments[1].LatestCheckpoint.Labels["accuracy"])
+	require.Equal(t, param.Float(0.987), experiments[1].LatestCheckpoint.Metrics["accuracy"])
 	require.Equal(t, true, experiments[1].Running)
 }

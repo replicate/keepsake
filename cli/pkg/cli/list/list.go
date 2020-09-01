@@ -79,7 +79,7 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 		return param.String("stopped")
 	}
 	if exp.BestCheckpoint != nil {
-		if val, ok := exp.BestCheckpoint.Labels[name]; ok {
+		if val, ok := exp.BestCheckpoint.Metrics[name]; ok {
 			return val
 		}
 	}
@@ -124,7 +124,7 @@ func outputJSON(experiments []*ListExperiment) error {
 }
 
 // output something like (TODO: this is getting very wide)
-// experiment  started             status   host      user     param-1  latest   step  label-1  best     step  label-1
+// experiment  started             status   host      user     param-1  latest   step  metric-1  best     step  metric-1
 // 1eeeeee     10 seconds ago      running  10.1.1.1  andreas  100      3cccccc  20    0.02     2cccccc  20    0.01
 // 2eeeeee     about a second ago  stopped  10.1.1.2  andreas  200      4cccccc  5              N/A
 func outputTable(experiments []*ListExperiment, allParams bool) error {
@@ -201,7 +201,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		for _, heading := range checkpointHeadings {
 			val := ""
 			if exp.LatestCheckpoint != nil {
-				if v, ok := exp.LatestCheckpoint.Labels[heading]; ok {
+				if v, ok := exp.LatestCheckpoint.Metrics[heading]; ok {
 					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
@@ -219,7 +219,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		for _, heading := range checkpointHeadings {
 			val := ""
 			if exp.BestCheckpoint != nil {
-				if v, ok := exp.BestCheckpoint.Labels[heading]; ok {
+				if v, ok := exp.BestCheckpoint.Metrics[heading]; ok {
 					val = v.ShortString(valueMaxLength, valueTruncate)
 				}
 			}
@@ -285,7 +285,7 @@ func getCheckpointHeadings(experiments []*ListExperiment) []string {
 	}
 	for _, exp := range experiments {
 		if exp.LatestCheckpoint != nil {
-			for key := range exp.LatestCheckpoint.Labels {
+			for key := range exp.LatestCheckpoint.Metrics {
 				if _, ok := metricNameSet[key]; ok {
 					checkpointHeadingSet[key] = true
 				}

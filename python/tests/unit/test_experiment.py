@@ -47,7 +47,7 @@ def test_init_and_checkpoint(temp_workdir):
         metadata = json.load(fh)
     assert metadata["id"] == checkpoint.id
     assert metadata["step"] == 1
-    assert metadata["labels"] == {"validation_loss": 0.123}
+    assert metadata["metrics"] == {"validation_loss": 0.123}
     assert metadata["experiment_id"] == experiment.id
     with open(".replicate/storage/checkpoints/{}/weights".format(checkpoint.id)) as fh:
         assert fh.read() == "1.2kg"

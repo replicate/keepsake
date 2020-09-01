@@ -68,7 +68,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "created": checkpoint.created.isoformat() + "Z",
             "experiment_id": experiment.id,
             "step": 10,
-            "labels": {"loss": 1.1, "baz": "qux"},
+            "metrics": {"loss": 1.1, "baz": "qux"},
             "path": ".",
         }
         assert actual_checkpoint_meta == expected_checkpoint_meta

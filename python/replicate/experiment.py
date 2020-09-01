@@ -58,18 +58,28 @@ class Experiment:
         self,
         path: Optional[str],  # this requires an explicit path=None to not save source
         step: Optional[int] = None,
-        options: Optional[Any] = None,
-        **kwargs
+        metrics: Optional[map[str, Any]] = None,
+        primary_metric: Optional[Tuple[str, str]] = None,
     ) -> Checkpoint:
-        options = set_option_defaults(options, {})
         created = datetime.datetime.utcnow()
+        if primary_metric is not None:
+            if len(primary_metric) != 2:
+                raise ValueError(
+                    "primary_metric must be a tuple of (name, goal), where name corresponds to a metric key, and goal is either 'maximize' or 'minimize'"
+                )
+            primary_metric_name, primary_metric_goal = primary_metric
+        else:
+            primary_metric_name = primary_metric_goal = None
+
         checkpoint = Checkpoint(
             experiment=self,
             project_dir=self.project_dir,
             path=path,
             created=created,
             step=step,
-            labels=kwargs,
+            metrics=metrics,
+            primary_metric_name=primary_metric_name,
+            primary_metric_goal=primary_metric_goal,
         )
         checkpoint.save(self.storage)
         if not self.disable_heartbeat:
@@ -114,9 +124,8 @@ class Experiment:
 
 
 def init(
-    options: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs
+    disable_heartbeat: bool = False, params: Optional[Dict[str, Any]] = None
 ) -> Experiment:
-    options = set_option_defaults(options, {})
     project_dir = get_project_dir()
     config = load_config(project_dir)
     created = datetime.datetime.utcnow()
@@ -124,7 +133,7 @@ def init(
         config=config,
         project_dir=project_dir,
         created=created,
-        params=kwargs,
+        params=params,
         disable_heartbeat=disable_heartbeat,
     )
     experiment.save()
