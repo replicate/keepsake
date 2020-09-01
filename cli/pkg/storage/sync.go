@@ -18,8 +18,8 @@ import (
 // - checking mtime
 // - make better use of the channel to list files, so it can start to copy while it's paginating
 func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPath string) error {
-	# FIXME: This causes an extra unnecessary request on every run on command
-	# Instead, storage should throw NotExistError (or a new suitable error) and we should catch that
+	// FIXME: This causes an extra unnecessary request on every run on command
+	// Instead, storage should throw NotExistError (or a new suitable error) and we should catch that
 	rootExists, err := sourceStorage.RootExists()
 	if err != nil {
 		return err
