@@ -40,7 +40,6 @@ class GCSStorage(Storage):
         Save directory to path
         """
         loop = asyncio.get_event_loop()
-        loop.set_debug(True)
         # TODO(andreas): handle exceptions
         loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
 
@@ -53,9 +52,6 @@ class GCSStorage(Storage):
             for relative_path, data in self.walk_directory_data(dir_to_store):
                 remote_path = os.path.join(path, relative_path)
 
-                # put_task = loop.create_task(
-                #    storage.upload(self.bucket_name, remote_path, data)
-                # )
                 put_task = asyncio.ensure_future(
                     storage.upload(self.bucket_name, remote_path, data)
                 )
@@ -68,7 +64,6 @@ class GCSStorage(Storage):
                         put_tasks, return_when=asyncio.FIRST_COMPLETED
                     )
                     for task in new_tasks:
-                        # put_tasks.add(loop.create_task(task))
                         put_tasks.add(task)
 
             await asyncio.wait(put_tasks)
