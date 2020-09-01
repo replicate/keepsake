@@ -124,12 +124,6 @@ gcloud compute instances create \
 
 Make a note of the value underneath `EXTERNAL_IP`. You'll need that in the next section.
 
-:::note
-If you're using Google Cloud Storage to store your data, it will only work on instances that you have started with the `--scopes=default,storage-rw` option, as we have done here
-
-This is because we don't pass Google Cloud auth credentials to remote machines yet. We're working on fixing this – stay tuned!
-:::
-
 </TabItem>
 <TabItem value="aws">
 
