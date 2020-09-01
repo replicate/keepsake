@@ -64,19 +64,23 @@ class Checkpoint(object):
         project_dir: str,
         created: datetime.datetime,
         step: Optional[int],
-        labels: Dict[str, Any],
+        metrics: Dict[str, Any],
+        primary_metric_name: str,
+        primary_metric_goal: str,
     ):
         self.experiment = experiment
         self.project_dir = project_dir
         self.path = path
         self.created = created
         self.step = step
-        self.labels = labels
+        self.metrics = metrics
+        self.primary_metric_name = primary_metric_name
+        self.primary_metric_goal = primary_metric_goal
 
         # TODO (bfirsh): content addressable id
         self.id = random_hash()
 
-        self.validate_labels()
+        self.validate_metrics()
 
     def save(self, storage: Storage):
         obj = {
@@ -84,7 +88,11 @@ class Checkpoint(object):
             "created": rfc3339_datetime(self.created),
             "experiment_id": self.experiment.id,
             "path": self.path,
-            "labels": self.labels,
+            "metrics": self.metrics,
+            "primary_metric": {
+                "name": self.primary_metric_name,
+                "goal": self.primary_metric_goal,
+            },
         }
         if self.step is not None:
             obj["step"] = self.step
@@ -103,17 +111,18 @@ class Checkpoint(object):
             else:
                 storage.put_directory(destination_path, source_path)
 
-    def validate_labels(self):
-        metrics = self.experiment.config.get("metrics", [])
-        metric_keys = set(
-            filter(lambda x: x, [metric.get("name") for metric in metrics])
-        )
-        label_keys = set(self.labels.keys())
-        missing_keys = metric_keys - label_keys
-        if missing_keys:
-            print(
-                "Warning: You specified these metrics in replicate.yaml, but they are missing in your call to replicate.checkpoint(): {}".format(
-                    ", ".join(missing_keys)
-                ),
-                file=sys.stderr,
+    def validate_metrics(self):
+        if self.primary_metric_name not in self.metrics:
+            # TODO(andreas): proper logging
+            # TODO(andreas): fail hard here?
+            sys.stderr.write(
+                "Warning: Primary metric {} is not defined in metrics\n".format(
+                    self.primary_metric_name
+                )
+            )
+        if self.primary_metric_goal.lower() not in ("maximize", "minimize"):
+            sys.stderr.write(
+                "Warning: Primary metric goal {} must be either 'maximize' or 'minimize'\n".format(
+                    self.primary_metric_goal
+                )
             )

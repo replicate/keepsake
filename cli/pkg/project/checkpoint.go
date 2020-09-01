@@ -11,14 +11,25 @@ import (
 	"replicate.ai/cli/pkg/storage"
 )
 
+type MetricGoal string
+
+const (
+	GoalMaximize MetricGoal = "maximize"
+	GoalMinimize MetricGoal = "minimize"
+)
+
 // Checkpoint is a snapshot of an experiment's filesystem
 type Checkpoint struct {
-	ID           string                  `json:"id"`
-	Created      time.Time               `json:"created"`
-	ExperimentID string                  `json:"experiment_id"`
-	Labels       map[string]*param.Value `json:"labels"`
-	Step         int                     `json:"step"`
-	Path         string                  `json:"path"`
+	ID            string                  `json:"id"`
+	Created       time.Time               `json:"created"`
+	ExperimentID  string                  `json:"experiment_id"`
+	Metrics       map[string]*param.Value `json:"labels"`
+	Step          int                     `json:"step"`
+	Path          string                  `json:"path"`
+	PrimaryMetric struct {
+		Name string     `json:"name"`
+		Goal MetricGoal `json:"goal"`
+	} `json:"primary_metric"`
 }
 
 // NewCheckpoint creates a checkpoint
@@ -28,7 +39,7 @@ func NewCheckpoint(experimentID string, labels map[string]*param.Value) *Checkpo
 		ID:           hash.Random(),
 		Created:      time.Now().UTC(),
 		ExperimentID: experimentID,
-		Labels:       labels,
+		Metrics:      labels,
 	}
 }
 
@@ -45,9 +56,9 @@ func (c *Checkpoint) Save(st storage.Storage, workingDir string) error {
 	return st.Put(c.MetadataPath(), data)
 }
 
-func (c *Checkpoint) SortedLabels() []*NamedParam {
+func (c *Checkpoint) SortedMetrics() []*NamedParam {
 	ret := []*NamedParam{}
-	for k, v := range c.Labels {
+	for k, v := range c.Metrics {
 		ret = append(ret, &NamedParam{Name: k, Value: v})
 	}
 	sort.Slice(ret, func(i, j int) bool {

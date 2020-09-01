@@ -95,12 +95,12 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	if exp1.HasMetrics() || exp2.HasMetrics() {
 		heading(w, au, "Metrics")
 		for _, metric := range exp1.Config.Metrics {
-			if value, ok := com1.Labels[metric.Name]; ok {
+			if value, ok := com1.Metrics[metric.Name]; ok {
 				metrics1[metric.Name] = value
 			}
 		}
 		for _, metric := range exp2.Config.Metrics {
-			if value, ok := com2.Labels[metric.Name]; ok {
+			if value, ok := com2.Metrics[metric.Name]; ok {
 				metrics2[metric.Name] = value
 			}
 		}
@@ -108,15 +108,15 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 		br(w)
 	}
 
-	heading(w, au, "Labels")
+	heading(w, au, "Metrics")
 	labels1 := map[string]*param.Value{}
 	labels2 := map[string]*param.Value{}
-	for name, label := range com1.Labels {
+	for name, label := range com1.Metrics {
 		if _, ok := metrics1[name]; !ok {
 			labels1[name] = label
 		}
 	}
-	for name, label := range com2.Labels {
+	for name, label := range com2.Metrics {
 		if _, ok := metrics2[name]; !ok {
 			labels2[name] = label
 		}

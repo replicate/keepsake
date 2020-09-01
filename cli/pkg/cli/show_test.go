@@ -61,9 +61,9 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Created:      fixedTime.Add(-5 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Path:         "data",
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.1),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.1),
+			"metric-2": param.Int(2),
 		},
 		Step: 10,
 	}, {
@@ -71,9 +71,9 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Created:      fixedTime.Add(-4 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Path:         "data",
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.01),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.01),
+			"metric-2": param.Int(2),
 		},
 		Step: 20,
 	}, {
@@ -81,9 +81,9 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Created:      fixedTime.Add(-3 * time.Minute),
 		ExperimentID: experiments[0].ID,
 		Path:         "data",
-		Labels: map[string]*param.Value{
-			"label-1": param.Float(0.02),
-			"label-2": param.Int(2),
+		Metrics: map[string]*param.Value{
+			"metric-1": param.Float(0.02),
+			"metric-2": param.Int(2),
 		},
 		Step: 20,
 	}, {
@@ -91,8 +91,8 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Created:      fixedTime.Add(-2 * time.Minute),
 		ExperimentID: experiments[1].ID,
 		Path:         "data",
-		Labels: map[string]*param.Value{
-			"label-3": param.Float(0.5),
+		Metrics: map[string]*param.Value{
+			"metric-3": param.Float(0.5),
 		},
 		Step: 5,
 	}}
@@ -113,11 +113,11 @@ func TestShowCheckpoint(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -154,11 +154,11 @@ param-1:    100
 param-2:    hello
 
 Metrics
-label-1:    0.02 (primary, goal: minimize)
-label-3:    (not set) (goal: minimize)
+metric-1:    0.02 (primary, goal: minimize)
+metric-3:    (not set) (goal: minimize)
 
-Labels
-label-2:    2
+Metrics
+metric-2:    2
 
 `
 	// remove initial newline
@@ -174,7 +174,7 @@ func TestShowExperiment(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}},

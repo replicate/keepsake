@@ -113,8 +113,8 @@ func (p *Project) ExperimentBestCheckpoint(experimentID string) (*Checkpoint, er
 	checkpoints = copyCheckpoints(checkpoints)
 
 	sort.Slice(checkpoints, func(i, j int) bool {
-		iVal, iOK := checkpoints[i].Labels[primaryMetric.Name]
-		jVal, jOK := checkpoints[j].Labels[primaryMetric.Name]
+		iVal, iOK := checkpoints[i].Metrics[primaryMetric.Name]
+		jVal, jOK := checkpoints[j].Metrics[primaryMetric.Name]
 		if !iOK {
 			return true
 		}
@@ -139,7 +139,7 @@ func (p *Project) ExperimentBestCheckpoint(experimentID string) (*Checkpoint, er
 
 	// if the last (best) checkpoint in the sorted list doesn't have
 	// a value for the primary metric, none of them do
-	if _, ok := best.Labels[primaryMetric.Name]; !ok {
+	if _, ok := best.Metrics[primaryMetric.Name]; !ok {
 		return nil, nil
 	}
 

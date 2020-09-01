@@ -128,7 +128,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	headings := []string{"ID", "STEP", "CREATED"}
 	// FIXME(bfirsh): labels might change during experiment
 	if len(checkpoints) != 0 {
-		for label := range checkpoints[0].Labels {
+		for label := range checkpoints[0].Metrics {
 			labelNames = append(labelNames, label)
 		}
 		// TODO: put primary first
@@ -142,7 +142,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	for _, checkpoint := range checkpoints {
 		columns := []string{checkpoint.ShortID(), strconv.Itoa(checkpoint.Step), console.FormatTime(checkpoint.Created)}
 		for _, label := range labelNames {
-			val := checkpoint.Labels[label]
+			val := checkpoint.Metrics[label]
 			s := val.ShortString(10, 5)
 			if bestCheckpoint != nil && bestCheckpoint.ID == checkpoint.ID && primaryMetric != nil && primaryMetric.Name == label {
 				// TODO (bfirsh): this could be done more elegantly with some formatting
@@ -204,7 +204,7 @@ func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project
 
 		for _, metric := range conf.Metrics {
 			valueString := "(not set)"
-			value, ok := com.Labels[metric.Name]
+			value, ok := com.Metrics[metric.Name]
 			if ok {
 				valueString = value.String()
 			}
@@ -219,14 +219,14 @@ func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project
 		fmt.Fprintf(w, "\t\n")
 	}
 	labelNames := []string{}
-	for name := range com.Labels {
+	for name := range com.Metrics {
 		if _, ok := metricNameSet[name]; !ok {
 			labelNames = append(labelNames, name)
 		}
 	}
 	if len(labelNames) > 0 {
-		fmt.Fprintf(w, "%s\t\n", au.Bold("Labels"))
-		for _, lab := range com.SortedLabels() {
+		fmt.Fprintf(w, "%s\t\n", au.Bold("Metrics"))
+		for _, lab := range com.SortedMetrics() {
 			if _, ok := metricNameSet[lab.Name]; !ok {
 				fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
 			}

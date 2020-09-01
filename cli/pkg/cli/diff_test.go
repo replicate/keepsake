@@ -21,11 +21,11 @@ func TestDiffSameExperiment(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -47,9 +47,9 @@ Params
 (no difference)
 
 Metrics
-label-1:                  0.01                      0.02
+metric-1:                  0.01                      0.02
 
-Labels
+Metrics
 (no difference)
 
 `
@@ -65,11 +65,11 @@ func TestDiffDifferentExperiment(t *testing.T) {
 
 	conf := &config.Config{
 		Metrics: []config.Metric{{
-			Name:    "label-1",
+			Name:    "metric-1",
 			Goal:    config.GoalMinimize,
 			Primary: true,
 		}, {
-			Name: "label-3",
+			Name: "metric-3",
 			Goal: config.GoalMinimize,
 		}},
 	}
@@ -92,11 +92,11 @@ param-1:                  100                       200
 param-3:                  (not set)                 hi
 
 Metrics
-label-1:                  0.01                      (not set)
-label-3:                  (not set)                 0.5
+metric-1:                  0.01                      (not set)
+metric-3:                  (not set)                 0.5
 
-Labels
-label-2:                  2                         (not set)
+Metrics
+metric-2:                  2                         (not set)
 
 `
 	actual = testutil.TrimRightLines(actual)
