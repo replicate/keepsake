@@ -27,11 +27,6 @@ type GCSStorage struct {
 }
 
 func NewGCSStorage(bucket string) (*GCSStorage, error) {
-	projectID, err := discoverProjectID()
-	if err != nil {
-		return nil, err
-	}
-
 	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
@@ -40,7 +35,7 @@ func NewGCSStorage(bucket string) (*GCSStorage, error) {
 	return &GCSStorage{
 		bucketName: bucket,
 		client:     client,
-		projectID:  projectID,
+		projectID:  "",
 	}, nil
 }
 
@@ -220,8 +215,12 @@ func (s *GCSStorage) EnsureBucketExists() error {
 }
 
 func (s *GCSStorage) CreateBucket() error {
+	projectID, err := s.getProjectID()
+	if err != nil {
+		return err
+	}
 	bucket := s.client.Bucket(s.bucketName)
-	if err := bucket.Create(context.TODO(), s.projectID, nil); err != nil {
+	if err := bucket.Create(context.TODO(), projectID, nil); err != nil {
 		return fmt.Errorf("Failed to create bucket gs://%s: %w", s.bucketName, err)
 	}
 	return nil
@@ -239,7 +238,11 @@ func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return []string{"REPLICATE_GCP_SERVICE_ACCOUNT_KEY=" + serviceAccountKey, "REPLICATE_GCP_PROJECT=" + s.projectID}, nil
+	projectID, err := s.getProjectID()
+	if err != nil {
+		return nil, err
+	}
+	return []string{"REPLICATE_GCP_SERVICE_ACCOUNT_KEY=" + serviceAccountKey, "REPLICATE_GCP_PROJECT=" + projectID}, nil
 }
 
 // GetOrCreateServiceAccount returns a base64-encoded service account
@@ -265,6 +268,11 @@ func (s *GCSStorage) GetOrCreateServiceAccount() (serviceAccountKey string, err 
 // rights to the bucket, and returns the base64-encoded service
 // account json key
 func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error) {
+	projectID, err := s.getProjectID()
+	if err != nil {
+		return "", err
+	}
+
 	maxBucketNameLength := 30 - len("replicate") - 7 - 2
 	bucketName := s.bucketName
 	if len(bucketName) > maxBucketNameLength {
@@ -284,12 +292,12 @@ func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error
 			DisplayName: "replicate/" + s.bucketName,
 		},
 	}
-	account, err := iamService.Projects.ServiceAccounts.Create("projects/"+s.projectID, accountRequest).Do()
+	account, err := iamService.Projects.ServiceAccounts.Create("projects/"+projectID, accountRequest).Do()
 	if err != nil {
 		return "", fmt.Errorf("Failed to create Google Cloud service account: %w", err)
 	}
 
-	resource := fmt.Sprintf("projects/%s/serviceAccounts/%s", s.projectID, account.Email)
+	resource := fmt.Sprintf("projects/%s/serviceAccounts/%s", projectID, account.Email)
 	keyRequest := &iam.CreateServiceAccountKeyRequest{}
 	key, err := iamService.Projects.ServiceAccounts.Keys.Create(resource, keyRequest).Do()
 	if err != nil {
@@ -332,9 +340,20 @@ func (s *GCSStorage) applyRecursive(dir string, fn func(obj *storage.ObjectHandl
 	return queue.Wait()
 }
 
-// discoverProjectID shells out to gcloud config config-helper to get
+// getProjectID shells out to gcloud config config-helper to get
 // the project ID. This is the recommended way
 // https://github.com/googleapis/google-cloud-go/issues/707
+func (s *GCSStorage) getProjectID() (string, error) {
+	if s.projectID == "" {
+		projectID, err := discoverProjectID()
+		if err != nil {
+			return "", err
+		}
+		s.projectID = projectID
+	}
+	return s.projectID, nil
+}
+
 func discoverProjectID() (string, error) {
 	cmd := exec.Command("gcloud", "config", "config-helper", "--format=value(configuration.properties.core.project)")
 	out, err := cmd.Output()
