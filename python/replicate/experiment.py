@@ -1,5 +1,3 @@
-import urllib
-import urllib.error
 import getpass
 import os
 import datetime
@@ -97,17 +95,7 @@ class Experiment:
         host = os.environ.get("REPLICATE_HOST")
         if host is not None:
             return host
-        try:
-            external_ip = (
-                # FIXME: check this has a short timeout
-                urllib.request.urlopen("https://ident.me")
-                .read()
-                .decode("utf8")
-            )
-            return external_ip
-        except urllib.error.URLError as e:
-            sys.stderr.write("Failed to determine external IP, got error: {}".format(e))
-            return ""
+        return ""
 
     def get_command(self) -> str:
         return os.environ.get("REPLICATE_COMMAND", " ".join(sys.argv))
