@@ -133,26 +133,27 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		return nil
 	}
 
-	expHeadings := getExperimentHeadings(experiments, !allParams)
-	checkpointHeadings := getCheckpointHeadings(experiments)
+	paramsToDisplay := getParamsToDisplay(experiments, !allParams)
+	metricsToDisplay := getMetricsToDisplay(experiments)
 
 	// does any experiment have a primary metric?
-	hasPrimaryMetric := false
+	hasBestCheckpoint := false
 	for _, exp := range experiments {
-		if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
-			hasPrimaryMetric = true
+		if exp.BestCheckpoint != nil {
+			hasBestCheckpoint = true
+			break
 		}
 	}
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
-	keys = append(keys, upper(expHeadings)...)
+	keys = append(keys, upper(paramsToDisplay)...)
 	keys = append(keys, "LATEST CHECKPOINT")
-	keys = append(keys, upper(checkpointHeadings)...)
-	if hasPrimaryMetric {
+	keys = append(keys, upper(metricsToDisplay)...)
+	if hasBestCheckpoint {
 		keys = append(keys, "BEST CHECKPOINT")
-		keys = append(keys, upper(checkpointHeadings)...)
+		keys = append(keys, upper(metricsToDisplay)...)
 	}
 
 	for i, key := range keys {
@@ -184,7 +185,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		fmt.Fprintf(tw, "%s\t", exp.User)
 
 		// experiment params
-		for _, heading := range expHeadings {
+		for _, heading := range paramsToDisplay {
 			if val, ok := exp.Params[heading]; ok {
 				fmt.Fprintf(tw, "%v", val)
 			}
@@ -197,8 +198,8 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		}
 		fmt.Fprintf(tw, "%s\t", latestCheckpoint)
 
-		// latest checkpoint labels
-		for _, heading := range checkpointHeadings {
+		// latest checkpoint metrics
+		for _, heading := range metricsToDisplay {
 			val := ""
 			if exp.LatestCheckpoint != nil {
 				if v, ok := exp.LatestCheckpoint.Metrics[heading]; ok {
@@ -215,8 +216,8 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		}
 		fmt.Fprintf(tw, "%s\t", bestCheckpoint)
 
-		// best checkpoint labels
-		for _, heading := range checkpointHeadings {
+		// best checkpoint metrics
+		for _, heading := range metricsToDisplay {
 			val := ""
 			if exp.BestCheckpoint != nil {
 				if v, ok := exp.BestCheckpoint.Metrics[heading]; ok {
@@ -237,9 +238,9 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 	return nil
 }
 
-// get experiment params. if onlyChangedParams is true, only return
-// params which have changed across experiments
-func getExperimentHeadings(experiments []*ListExperiment, onlyChangedParams bool) []string {
+// Get experiment params to display in list. If onlyChangedParams is true, only return
+// params which have changed across experiments.
+func getParamsToDisplay(experiments []*ListExperiment, onlyChangedParams bool) []string {
 	expHeadingSet := map[string]bool{}
 
 	if onlyChangedParams {
@@ -270,30 +271,20 @@ func getExperimentHeadings(experiments []*ListExperiment, onlyChangedParams bool
 	return slices.StringKeys(expHeadingSet)
 }
 
-// get checkpoint labels that are also defined as metrics in config
-func getCheckpointHeadings(experiments []*ListExperiment) []string {
-	metricNameSet := map[string]bool{}
-	checkpointHeadingSet := map[string]bool{}
+// Get metrics to display for each checkpoint shown in list
+func getMetricsToDisplay(experiments []*ListExperiment) []string {
+	// TODO (bfirsh): make --all display all metrics from checkpoint
+
+	metricsToDisplay := map[string]bool{}
 
 	for _, exp := range experiments {
-		if exp.Config == nil {
+		if exp.BestCheckpoint == nil {
 			continue
 		}
-		for _, metric := range exp.Config.Metrics {
-			metricNameSet[metric.Name] = true
-		}
-	}
-	for _, exp := range experiments {
-		if exp.LatestCheckpoint != nil {
-			for key := range exp.LatestCheckpoint.Metrics {
-				if _, ok := metricNameSet[key]; ok {
-					checkpointHeadingSet[key] = true
-				}
-			}
-		}
+		metricsToDisplay[exp.BestCheckpoint.PrimaryMetric.Name] = true
 	}
 
-	return slices.StringKeys(checkpointHeadingSet)
+	return slices.StringKeys(metricsToDisplay)
 }
 
 func createListExperiments(proj *project.Project, filters *param.Filters) ([]*ListExperiment, error) {

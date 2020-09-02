@@ -5,7 +5,7 @@ import os
 import datetime
 import json
 import sys
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 
 from .checkpoint import Checkpoint
 from .config import load_config
@@ -58,18 +58,29 @@ class Experiment:
         self,
         path: Optional[str],  # this requires an explicit path=None to not save source
         step: Optional[int] = None,
-        metrics: Optional[map[str, Any]] = None,
+        metrics: Optional[Dict[str, Any]] = None,
         primary_metric: Optional[Tuple[str, str]] = None,
+        **kwargs,
     ) -> Checkpoint:
+        if kwargs:
+            # FIXME (bfirsh): remove before launch
+            raise TypeError(
+                """Metrics must now be passed as a dictionary with the 'metrics' argument.
+
+    For example: experiment.checkpoint(path=".", metrics={...})
+
+    See the docs for more information: https://beta.replicate.ai/docs/python"""
+            )
         created = datetime.datetime.utcnow()
+        # TODO(bfirsh): display warning if primary_metric changes in an experiment
+        primary_metric_name: Optional[str] = None
+        primary_metric_goal: Optional[str] = None
         if primary_metric is not None:
             if len(primary_metric) != 2:
                 raise ValueError(
                     "primary_metric must be a tuple of (name, goal), where name corresponds to a metric key, and goal is either 'maximize' or 'minimize'"
                 )
             primary_metric_name, primary_metric_goal = primary_metric
-        else:
-            primary_metric_name = primary_metric_goal = None
 
         checkpoint = Checkpoint(
             experiment=self,
@@ -124,8 +135,17 @@ class Experiment:
 
 
 def init(
-    disable_heartbeat: bool = False, params: Optional[Dict[str, Any]] = None
+    disable_heartbeat: bool = False, params: Optional[Dict[str, Any]] = None, **kwargs
 ) -> Experiment:
+    if kwargs:
+        # FIXME (bfirsh): remove before launch
+        raise TypeError(
+            """Params must now be passed as a dictionary with the 'params' argument.
+
+For example: replicate.init(params={...})
+
+See the docs for more information: https://beta.replicate.ai/docs/python"""
+        )
     project_dir = get_project_dir()
     config = load_config(project_dir)
     created = datetime.datetime.utcnow()

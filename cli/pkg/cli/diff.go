@@ -90,38 +90,9 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	printMapDiff(w, au, paramMapToStringMap(exp1.Params), paramMapToStringMap(exp2.Params))
 	br(w)
 
-	metrics1 := map[string]*param.Value{}
-	metrics2 := map[string]*param.Value{}
-	if exp1.HasMetrics() || exp2.HasMetrics() {
-		heading(w, au, "Metrics")
-		for _, metric := range exp1.Config.Metrics {
-			if value, ok := com1.Metrics[metric.Name]; ok {
-				metrics1[metric.Name] = value
-			}
-		}
-		for _, metric := range exp2.Config.Metrics {
-			if value, ok := com2.Metrics[metric.Name]; ok {
-				metrics2[metric.Name] = value
-			}
-		}
-		printMapDiff(w, au, paramMapToStringMap(metrics1), paramMapToStringMap(metrics2))
-		br(w)
-	}
-
 	heading(w, au, "Metrics")
-	labels1 := map[string]*param.Value{}
-	labels2 := map[string]*param.Value{}
-	for name, label := range com1.Metrics {
-		if _, ok := metrics1[name]; !ok {
-			labels1[name] = label
-		}
-	}
-	for name, label := range com2.Metrics {
-		if _, ok := metrics2[name]; !ok {
-			labels2[name] = label
-		}
-	}
-	printMapDiff(w, au, paramMapToStringMap(labels1), paramMapToStringMap(labels2))
+	// TODO(bfirsh): put primary metric first
+	printMapDiff(w, au, paramMapToStringMap(com1.Metrics), paramMapToStringMap(com2.Metrics))
 	br(w)
 
 	return w.Flush()
@@ -181,19 +152,21 @@ func loadCheckpoint(proj *project.Project, prefix string) (*project.Checkpoint, 
 		return obj.Checkpoint, nil
 	}
 	exp := obj.Experiment
-	if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
+
+	// First, try getting best checkpoint
+	checkpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
+	if err != nil {
+		return nil, err
+	}
+	if checkpoint != nil {
 		console.Info("%q matches an experiment, picking the best checkpoint", prefix)
-		checkpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
-		if err != nil {
-			return nil, err
-		}
-		if checkpoint == nil {
-			return nil, fmt.Errorf("Could not pick best checkpoint for experiment %q: it does not have any checkpoints or the checkpoints are missing the primary metric.", exp.ShortID())
-		}
 		return checkpoint, nil
 	}
+
+	// If there is no best checkpoint and no error, then no primary metric has been set,
+	// so fall back to picking latest checkpoint
 	console.Info("%q is an experiment, picking the latest checkpoint", prefix)
-	checkpoint, err := proj.ExperimentLatestCheckpoint(exp.ID)
+	checkpoint, err = proj.ExperimentLatestCheckpoint(exp.ID)
 	if err != nil {
 		return nil, err
 	}

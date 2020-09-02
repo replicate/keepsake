@@ -65,6 +65,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 			"metric-1": param.Float(0.1),
 			"metric-2": param.Int(2),
 		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
+		},
 		Step: 10,
 	}, {
 		ID:           "2ccccccccc",
@@ -75,6 +79,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 			"metric-1": param.Float(0.01),
 			"metric-2": param.Int(2),
 		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
+		},
 		Step: 20,
 	}, {
 		ID:           "3ccccccccc",
@@ -84,6 +92,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Metrics: map[string]*param.Value{
 			"metric-1": param.Float(0.02),
 			"metric-2": param.Int(2),
+		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
 		},
 		Step: 20,
 	}, {
@@ -111,17 +123,7 @@ func TestShowCheckpoint(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
 	result, err := proj.CheckpointOrExperimentFromPrefix("3cc")
@@ -154,11 +156,8 @@ param-1:    100
 param-2:    hello
 
 Metrics
-metric-1:    0.02 (primary, goal: minimize)
-metric-3:    (not set) (goal: minimize)
-
-Metrics
-metric-2:    2
+metric-1:   0.02 (primary, minimize)
+metric-2:   2
 
 `
 	// remove initial newline
@@ -172,14 +171,7 @@ func TestShowExperiment(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
 	result, err := proj.CheckpointOrExperimentFromPrefix("1eee")
@@ -206,7 +198,7 @@ param-1:  100
 param-2:  hello
 
 Checkpoints
-ID       STEP  CREATED     LABEL-1      LABEL-2
+ID       STEP  CREATED     METRIC-1     METRIC-2
 1cccccc  10    2006-01-02  0.1          2
 2cccccc  20    2006-01-02  0.01 (best)  2
 3cccccc  20    2006-01-02  0.02         2

@@ -64,9 +64,9 @@ class Checkpoint(object):
         project_dir: str,
         created: datetime.datetime,
         step: Optional[int],
-        metrics: Dict[str, Any],
-        primary_metric_name: str,
-        primary_metric_goal: str,
+        metrics: Optional[Dict[str, Any]],
+        primary_metric_name: Optional[str],
+        primary_metric_goal: Optional[str],
     ):
         self.experiment = experiment
         self.project_dir = project_dir
@@ -89,11 +89,16 @@ class Checkpoint(object):
             "experiment_id": self.experiment.id,
             "path": self.path,
             "metrics": self.metrics,
-            "primary_metric": {
+        }
+        if (
+            self.primary_metric_name is not None
+            and self.primary_metric_goal is not None
+        ):
+            obj["primary_metric"] = {
                 "name": self.primary_metric_name,
                 "goal": self.primary_metric_goal,
-            },
-        }
+            }
+
         if self.step is not None:
             obj["step"] = self.step
         storage.put(
@@ -112,7 +117,10 @@ class Checkpoint(object):
                 storage.put_directory(destination_path, source_path)
 
     def validate_metrics(self):
-        if self.primary_metric_name not in self.metrics:
+        if (
+            self.primary_metric_name is not None
+            and self.primary_metric_name not in self.metrics
+        ):
             # TODO(andreas): proper logging
             # TODO(andreas): fail hard here?
             sys.stderr.write(
@@ -120,7 +128,10 @@ class Checkpoint(object):
                     self.primary_metric_name
                 )
             )
-        if self.primary_metric_goal.lower() not in ("maximize", "minimize"):
+        if self.primary_metric_goal is not None and self.primary_metric_goal.lower() not in (
+            "maximize",
+            "minimize",
+        ):
             sys.stderr.write(
                 "Warning: Primary metric goal {} must be either 'maximize' or 'minimize'\n".format(
                     self.primary_metric_goal

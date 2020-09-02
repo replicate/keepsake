@@ -18,28 +18,30 @@ const (
 	GoalMinimize MetricGoal = "minimize"
 )
 
+type PrimaryMetric struct {
+	Name string     `json:"name"`
+	Goal MetricGoal `json:"goal"`
+}
+
 // Checkpoint is a snapshot of an experiment's filesystem
 type Checkpoint struct {
 	ID            string                  `json:"id"`
 	Created       time.Time               `json:"created"`
 	ExperimentID  string                  `json:"experiment_id"`
-	Metrics       map[string]*param.Value `json:"labels"`
+	Metrics       map[string]*param.Value `json:"metrics"`
 	Step          int                     `json:"step"`
 	Path          string                  `json:"path"`
-	PrimaryMetric struct {
-		Name string     `json:"name"`
-		Goal MetricGoal `json:"goal"`
-	} `json:"primary_metric"`
+	PrimaryMetric *PrimaryMetric          `json:"primary_metric"`
 }
 
 // NewCheckpoint creates a checkpoint
-func NewCheckpoint(experimentID string, labels map[string]*param.Value) *Checkpoint {
+func NewCheckpoint(experimentID string, metrics map[string]*param.Value) *Checkpoint {
 	// FIXME (bfirsh): content addressable (also in Python)
 	return &Checkpoint{
 		ID:           hash.Random(),
 		Created:      time.Now().UTC(),
 		ExperimentID: experimentID,
-		Metrics:      labels,
+		Metrics:      metrics,
 	}
 }
 

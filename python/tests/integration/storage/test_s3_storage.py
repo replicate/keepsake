@@ -35,7 +35,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
     current_workdir = os.getcwd()
     try:
         os.chdir(tmpdir)
-        experiment = replicate.init(foo="bar")
+        experiment = replicate.init(params={"foo": "bar"})
 
         actual_experiment_meta = s3_read_json(
             temp_bucket,
@@ -56,7 +56,9 @@ def test_s3_experiment(temp_bucket, tmpdir):
         }
         assert actual_experiment_meta == expected_experiment_meta
 
-        checkpoint = experiment.checkpoint(path=".", step=10, loss=1.1, baz="qux")
+        checkpoint = experiment.checkpoint(
+            path=".", step=10, metrics={"loss": 1.1, "baz": "qux"}
+        )
 
         actual_checkpoint_meta = s3_read_json(
             temp_bucket,

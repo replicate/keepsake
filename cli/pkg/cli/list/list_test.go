@@ -70,6 +70,10 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			"metric-1": param.Float(0.1),
 			"metric-2": param.Int(2),
 		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
+		},
 		Step: 10,
 	}, {
 		ID:           "2ccccccccc",
@@ -78,6 +82,10 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		Metrics: map[string]*param.Value{
 			"metric-1": param.Float(0.01),
 			"metric-2": param.Int(2),
+		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
 		},
 		Step: 20,
 	}, {
@@ -88,6 +96,10 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			"metric-1": param.Float(0.02),
 			"metric-2": param.Int(2),
 		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
+		},
 		Step: 20,
 	}, {
 		ID:           "4ccccccccc",
@@ -95,6 +107,10 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		ExperimentID: experiments[1].ID,
 		Metrics: map[string]*param.Value{
 			"metric-3": param.Float(0.5),
+		},
+		PrimaryMetric: &project.PrimaryMetric{
+			Name: "metric-1",
+			Goal: project.GoalMinimize,
 		},
 		Step: 5,
 	}}
@@ -113,16 +129,7 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
+	conf := &config.Config{}
 
 	store := createTestData(t, workingDir, conf)
 
@@ -131,10 +138,10 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -146,17 +153,7 @@ func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
@@ -164,10 +161,10 @@ func TestListOutputTableWithPrimaryMetricAllParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)            0.5
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -179,17 +176,7 @@ func TestListOutputTableFilter(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"step >= 5"})
 	require.NoError(t, err)
@@ -200,9 +187,9 @@ func TestListOutputTableFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -214,17 +201,7 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"status = running"})
 	require.NoError(t, err)
@@ -235,8 +212,8 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST CHECKPOINT  LABEL-1  BEST CHECKPOINT    LABEL-1
-1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02     2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
+1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -248,17 +225,7 @@ func TestListOutputTableSort(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createTestData(t, workingDir, conf)
 	sorter := param.NewSorter("started-desc")
 
@@ -267,9 +234,9 @@ func TestListOutputTableSort(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  LABEL-1  LABEL-3  BEST CHECKPOINT    LABEL-1  LABEL-3
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02              2cccccc (step 20)  0.01
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)            0.5
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
 `
 	expected = expected[1:] // strip initial whitespace, added for readability

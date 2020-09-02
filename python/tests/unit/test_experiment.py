@@ -21,7 +21,7 @@ def test_init_and_checkpoint(temp_workdir):
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
-    experiment = replicate.init(learning_rate=0.002, disable_heartbeat=True)
+    experiment = replicate.init(params={"learning_rate": 0.002}, disable_heartbeat=True)
 
     assert len(experiment.id) == 64
     with open(
@@ -38,7 +38,9 @@ def test_init_and_checkpoint(temp_workdir):
     with open("weights", "w") as fh:
         fh.write("1.2kg")
 
-    checkpoint = experiment.checkpoint(path="weights", step=1, validation_loss=0.123)
+    checkpoint = experiment.checkpoint(
+        path="weights", step=1, metrics={"validation_loss": 0.123}
+    )
 
     assert len(checkpoint.id) == 64
     with open(
@@ -63,7 +65,9 @@ def test_init_and_checkpoint(temp_workdir):
     with open("data/weights", "w") as fh:
         fh.write("1.3kg")
 
-    checkpoint = experiment.checkpoint(path="data", step=1, validation_loss=0.123)
+    checkpoint = experiment.checkpoint(
+        path="data", step=1, metrics={"validation_loss": 0.123}
+    )
 
     with open(
         ".replicate/storage/checkpoints/{}/data/weights".format(checkpoint.id)
@@ -77,7 +81,9 @@ def test_init_and_checkpoint(temp_workdir):
     )
 
     # checkpoint with no path
-    checkpoint = experiment.checkpoint(path=None, step=1, validation_loss=0.123)
+    checkpoint = experiment.checkpoint(
+        path=None, step=1, metrics={"validation_loss": 0.123}
+    )
     with open(
         ".replicate/storage/metadata/checkpoints/{}.json".format(checkpoint.id)
     ) as fh:
