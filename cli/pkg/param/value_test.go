@@ -77,3 +77,17 @@ func TestShortString(t *testing.T) {
 	require.Equal(t, "1.2346e+13", Float(12345678912345.6789).ShortString(10, 5))
 
 }
+
+func TestGreaterThan(t *testing.T) {
+	res, _ := Float(1.5).GreaterThan(Int(1))
+	require.True(t, res)
+	res, _ = Int(1).GreaterThan(Float(1.5))
+	require.False(t, res)
+}
+
+func TestLessThan(t *testing.T) {
+	res, _ := Float(1.5).LessThan(Int(1))
+	require.False(t, res)
+	res, _ = Int(1).LessThan(Float(1.5))
+	require.True(t, res)
+}

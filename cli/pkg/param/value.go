@@ -232,6 +232,14 @@ func (v *Value) NotEqual(other *Value) (bool, error) {
 }
 
 func (v *Value) GreaterThan(other *Value) (bool, error) {
+	// Special cases
+	if v.Type() == TypeFloat && other.Type() == TypeInt {
+		return v.FloatVal() > float64(other.IntVal()), nil
+	}
+	if v.Type() == TypeInt && other.Type() == TypeFloat {
+		return float64(v.IntVal()) > other.FloatVal(), nil
+	}
+
 	if v.Type() != other.Type() {
 		return false, fmt.Errorf("Comparing values of different types: %s and %s", v.Type(), other.Type())
 	}
@@ -261,6 +269,14 @@ func (v *Value) GreaterOrEqual(other *Value) (bool, error) {
 }
 
 func (v *Value) LessThan(other *Value) (bool, error) {
+	// Special cases
+	if v.Type() == TypeFloat && other.Type() == TypeInt {
+		return v.FloatVal() < float64(other.IntVal()), nil
+	}
+	if v.Type() == TypeInt && other.Type() == TypeFloat {
+		return float64(v.IntVal()) < other.FloatVal(), nil
+	}
+
 	if v.Type() != other.Type() {
 		return false, fmt.Errorf("Comparing values of different types: %s and %s", v.Type(), other.Type())
 	}
