@@ -72,11 +72,6 @@ class GCSStorage(Storage):
         """
         Save data to file at path
         """
-        if isinstance(data, str):
-            data_bytes = data.encode()
-        else:
-            data_bytes = data
-
         bucket = self.bucket()
         blob = bucket.blob(path)
         blob.upload_from_string(data)
