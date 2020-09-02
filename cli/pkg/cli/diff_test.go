@@ -19,17 +19,7 @@ func TestDiffSameExperiment(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
 
@@ -47,10 +37,7 @@ Params
 (no difference)
 
 Metrics
-metric-1:                  0.01                      0.02
-
-Metrics
-(no difference)
+metric-1:                 0.01                      0.02
 
 `
 	actual = testutil.TrimRightLines(actual)
@@ -63,17 +50,7 @@ func TestDiffDifferentExperiment(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
-	conf := &config.Config{
-		Metrics: []config.Metric{{
-			Name:    "metric-1",
-			Goal:    config.GoalMinimize,
-			Primary: true,
-		}, {
-			Name: "metric-3",
-			Goal: config.GoalMinimize,
-		}},
-	}
-
+	conf := &config.Config{}
 	store := createShowTestData(t, workingDir, conf)
 	proj := project.NewProject(store)
 
@@ -92,11 +69,9 @@ param-1:                  100                       200
 param-3:                  (not set)                 hi
 
 Metrics
-metric-1:                  0.01                      (not set)
-metric-3:                  (not set)                 0.5
-
-Metrics
-metric-2:                  2                         (not set)
+metric-1:                 0.01                      (not set)
+metric-2:                 2                         (not set)
+metric-3:                 (not set)                 0.5
 
 `
 	actual = testutil.TrimRightLines(actual)

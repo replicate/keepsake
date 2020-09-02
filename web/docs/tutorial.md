@@ -126,9 +126,9 @@ The calls to the `replicate` Python library have saved your experiments locally.
 
 ```shell-session
 $ replicate ls
-EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST CHECKPOINT
-c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
-a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
+EXPERIMENT  STARTED         STATUS   HOST             USER  LEARNING_RATE  LATEST CHECKPOINT  ACCURACY  BEST CHECKPOINT    ACCURACY
+f1b4d2b     13 seconds ago  stopped  107.133.144.125  ben   0.01           8ee945b (step 99)  1         8ee945b (step 99)  1
+02010f9     4 seconds ago   stopped  107.133.144.125  ben   0.2            dbcdd99 (step 99)  0.96667   2a2ed68 (step 12)  1
 ```
 
 :::note
@@ -143,59 +143,62 @@ As a reminder, this is a list of **experiments** which represents runs of the `t
 
 Within experiments are **checkpoints**, which are created every time you call `experiment.checkpoint()` in your training script. The checkpoint contains your weights, Tensorflow logs, and any other artifacts you want to save.
 
-To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `c9f380d` with an experiment ID from your output of `replicate ls`:
+To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `f1b4d2b` with an experiment ID from your output of `replicate ls`:
 
 ```shell-session
-$ replicate show c9f380d
-Experiment: c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
+$ replicate show f1b4d2b
+Experiment: f1b4d2b38044f52721c907300add177c3e12c7c6e90307b2312da8d75de1f494
 
-Created:  Thu, 06 Aug 2020 11:55:54 PDT
-Status:   stopped
-Host:     107.133.144.125
-User:     ben
-Command:  train.py
+Created:        Tue, 01 Sep 2020 21:42:22 PDT
+Status:         stopped
+Host:           107.133.144.125
+User:           ben
+Command:        train.py
 
 Params
 learning_rate:  0.01
 num_epochs:     100
 
 Checkpoints
-ID       STEP  CREATED      ACCURACY  LOSS
-862e932  0     6 hours ago  0.33333   1.1836
-dfdb97b  1     6 hours ago  0.33333   1.1173
-e3650fe  2     6 hours ago  0.46667   1.0611
-c811301  3     6 hours ago  0.63333   1.0138
+ID       STEP  CREATED             ACCURACY  LOSS
+109b73b  0     about a minute ago  0.33333   1.1836
+156d2dd  1     about a minute ago  0.33333   1.1173
+612f909  2     about a minute ago  0.46667   1.0611
+ac322e7  3     about a minute ago  0.63333   1.0138
+ebfdb6f  4     about a minute ago  0.7       0.97689
 ...
-71502b0  97    6 hours ago  1         0.12076
-7cf044a  98    6 hours ago  1         0.11915
-d4fb0d3  99    6 hours ago  1         0.1176
+d3916c4  95    about a minute ago  1         0.12417
+a109647  96    about a minute ago  1         0.12244
+ba5f308  97    about a minute ago  1         0.12076
+4c49656  98    about a minute ago  1         0.11915
+8ee945b  99    about a minute ago  1 (best)  0.1176
 ```
 
-You can also use `replicate show` on a checkpoint to get all the information about it. Run this, replacing `d4f` with a checkpoint ID from the experiment:
+You can also use `replicate show` on a checkpoint to get all the information about it. Run this, replacing `8ee` with a checkpoint ID from the experiment:
 
 ```shell-session
-$ replicate show d4f
-Checkpoint: d4fb0d38114453337fb936a0c65cad63872f89e73c4e9161b666d59260848824
+$ replicate show 8ee
+Checkpoint: 8ee945b289bb762e81027db825eb0d7d9e4b0d0a3001f6cb8ceb6aec5c00c089
 
-Created:  Thu, 06 Aug 2020 11:55:55 PDT
-Step:     99
-Path:     weights.pth
+Created:            Tue, 01 Sep 2020 21:42:23 PDT
+Path:               model.pth
+Step:               99
 
 Experiment
-ID:       c9f380d3530f5b5ba899827f137f25bcd3f81868f1416cf5c83f096ddee12530
-Created:  Thu, 06 Aug 2020 11:55:54 PDT
-Status:   stopped
-Host:     107.133.144.125
-User:     ben
-Command:  train.py
+ID:                 f1b4d2b38044f52721c907300add177c3e12c7c6e90307b2312da8d75de1f494
+Created:            Tue, 01 Sep 2020 21:42:22 PDT
+Status:             stopped
+Host:               107.133.144.125
+User:               ben
+Command:            train.py
 
 Params
-learning_rate:  0.01
-num_epochs:     100
+learning_rate:      0.01
+num_epochs:         100
 
-Labels
-accuracy:  1
-loss:      0.11759971082210541
+Metrics
+accuracy:           1 (primary, maximize)
+loss:               0.11759971082210541
 ```
 
 :::note
@@ -204,17 +207,17 @@ Notice you can pass a prefix to `replicate show`, and it'll automatically find t
 
 ## Compare checkpoints
 
-Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `d4fb0d3` and `1f0865c` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
+Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `8ee945b` and `dbcdd99` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
 
 ```shell-session
-$ replicate diff d4fb0d3 1f0865c
-Checkpoint:               d4fb0d3                   1f0865c
-Experiment:               c9f380d                   a7cd781
+$ replicate diff 8ee945b dbcdd99
+Checkpoint:               8ee945b                   dbcdd99
+Experiment:               f1b4d2b                   02010f9
 
 Params
 learning_rate:            0.01                      0.2
 
-Labels
+Metrics
 accuracy:                 1                         0.9666666388511658
 loss:                     0.11759971082210541       0.056485891342163086
 ```
@@ -234,7 +237,7 @@ At some point you might want to get back to some point in the past. Maybe you've
 The `replicate checkout` command will copy the code and weights from a checkpoint into your working directory. Run this, replacing `d4fb0d3` with a checkpoint ID you passed to `replicate diff`:
 
 ```shell-session
-$ replicate checkout d4fb0d3
+$ replicate checkout 8ee945b
 ═══╡ The directory "/Users/ben/p/tmp/iris-classifier" is not empty.
 ═══╡ This checkout may overwrite existing files. Make sure you've committed everything to Git so it's safe!
 

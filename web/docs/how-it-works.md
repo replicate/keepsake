@@ -19,7 +19,7 @@ import replicate
 
 def train(**params):
     # highlight-next-line
-    experiment = replicate.init(**params)
+    experiment = replicate.init(params=params)
     model = Model()
 
     for epoch in range(params["num_epochs"]):
@@ -27,7 +27,7 @@ def train(**params):
 
         torch.save(model, "model.torch")
         # highlight-next-line
-        experiment.checkpoint(path="model.torch", **metrics)
+        experiment.checkpoint(path="model.torch", metrics=metrics)
 ```
 
 By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.

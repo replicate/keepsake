@@ -29,11 +29,13 @@ pip install replicate
 
 ## API
 
-#### `replicate.init(**params)`
+#### `replicate.init(params)`
 
 Create and return an experiment.
 
-The entire working directory will be saved to storage to save a copy of the code. Any keyword arguments will be recorded as hyperparameters.
+It takes one argument: `params`, a dictionary of hyperparameters to record along with the experiment.
+
+The entire working directory will be saved to storage to save a copy of the code.
 
 To determine the storage location, this method will read `replicate.yaml` file in the working directory and use the `storage` option. [Learn more in the reference documentation.](replicate-yaml.md)
 
@@ -41,14 +43,19 @@ For example:
 
 ```python
 >>> import replicate
->>> experiment = replicate.init(learning_rate=0.01)
+>>> experiment = replicate.init(params={"learning_rate" 0.01})
 ```
 
-#### `experiment.checkpoint(path, **labels)`
+#### `experiment.checkpoint(path, metrics, primary_metric=None, step=None)`
 
 Create a checkpoint within an experiment.
 
-The given `path`, relative to the working directory, will be uploaded to storage. It can be either a directory or a single file. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
+It takes these arguments:
+
+- `path`: A path to a file or directory that will be uploaded to storage, relative to the working directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
+- `metrics`: A dictionary of metrics to record along with the checkpoint.
+- `primary_metric` (optional): A tuple `(name, goal)` to define one of the metrics as a primary metric to optimize. Goal can either be `minimize` or `maximize`.
+- `step` (optional): the iteration number of this checkpoint, such as epoch number. This is displayed in `replicate ls` and various other places.
 
 Any keyword arguments passed to the function will also be recorded.
 
@@ -57,5 +64,10 @@ You can add more information about these keyword arguments in `replicate.yaml` t
 For example:
 
 ```python
->>> experiment.checkpoint(path="weights/", step=5, train_loss=0.425, train_accuracy=0.749)
+>>> experiment.checkpoint(
+...   path="weights/",
+...   step=5,
+...   metrics={"train_loss": 0.425, "train_accuracy": 0.749},
+...   primary_metric=("train_accuracy", "maximize"),
+... )
 ```

@@ -36,7 +36,7 @@ def main():
     experiment = replicate.init()
     num_gpus = torch.cuda.device_count()
     time.sleep(1)
-    experiment.checkpoint(path=".", step=1, num_gpus=num_gpus)
+    experiment.checkpoint(path=".", step=1, metrics={"num_gpus": num_gpus})
 
 if __name__ == "__main__":
     main()
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     exp = experiments[0]
     latest = exp["latest_checkpoint"]
-    assert latest["labels"]["num_gpus"] == 1
+    assert latest["metrics"]["num_gpus"] == 1
     assert exp["running"]
 
     running = json.loads(

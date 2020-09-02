@@ -10,7 +10,11 @@ from torch.autograd import Variable
 
 def train(learning_rate, num_epochs):
     # highlight-next-line
-    experiment = replicate.init(learning_rate=learning_rate, num_epochs=num_epochs)
+    experiment = replicate.init(
+        # highlight-next-line
+        params={"learning_rate": learning_rate, "num_epochs": num_epochs}
+        # highlight-next-line
+    )
 
     print("Downloading data set...")
     iris = load_iris()
@@ -53,7 +57,15 @@ def train(learning_rate, num_epochs):
         torch.save(model, "model.pth")
         # highlight-next-line
         experiment.checkpoint(
-            path="model.pth", step=epoch, loss=loss.item(), accuracy=acc
+            # highlight-next-line
+            path="model.pth",
+            # highlight-next-line
+            step=epoch,
+            # highlight-next-line
+            metrics={"loss": loss.item(), "accuracy": acc},
+            # highlight-next-line
+            primary_metric=("accuracy", "maximize"),
+            # highlight-next-line
         )
 
 

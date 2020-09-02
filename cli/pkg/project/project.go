@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"replicate.ai/cli/pkg/cache"
-	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/storage"
 )
@@ -93,24 +92,19 @@ func (p *Project) ExperimentBestCheckpoint(experimentID string) (*Checkpoint, er
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
 	}
-	exp, ok := p.experimentsByID[experimentID]
-	if !ok {
-		return nil, fmt.Errorf("No experiment found with ID %s", experimentID)
-	}
-	conf := exp.Config
-	if conf == nil {
-		conf = new(config.Config)
-	}
 
-	primaryMetric := conf.PrimaryMetric()
-	if primaryMetric == nil {
-		return nil, nil
-	}
 	checkpoints, ok := p.checkpointsByExpID[experimentID]
 	if !ok || len(checkpoints) == 0 {
 		return nil, nil
 	}
 	checkpoints = copyCheckpoints(checkpoints)
+
+	// Use primary metric from first checkpoint
+	// TODO (bfirsh): warn if primary metric differs across checkpoints
+	primaryMetric := checkpoints[0].PrimaryMetric
+	if primaryMetric == nil {
+		return nil, nil
+	}
 
 	sort.Slice(checkpoints, func(i, j int) bool {
 		iVal, iOK := checkpoints[i].Metrics[primaryMetric.Name]
@@ -121,7 +115,7 @@ func (p *Project) ExperimentBestCheckpoint(experimentID string) (*Checkpoint, er
 		if !jOK {
 			return false
 		}
-		if primaryMetric.Goal == config.GoalMaximize {
+		if primaryMetric.Goal == GoalMaximize {
 			less, err := iVal.LessThan(jVal)
 			if err != nil {
 				console.Warn("Got error when comparing metrics: %s", err)

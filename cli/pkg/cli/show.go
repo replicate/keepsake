@@ -13,7 +13,6 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
-	"replicate.ai/cli/pkg/config"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/project"
 	"replicate.ai/cli/pkg/storage"
@@ -118,10 +117,6 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	if err != nil {
 		return err
 	}
-	var primaryMetric *config.Metric
-	if exp.Config != nil && exp.Config.PrimaryMetric() != nil {
-		primaryMetric = exp.Config.PrimaryMetric()
-	}
 	labelNames := []string{}
 
 	cw := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
@@ -144,7 +139,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 		for _, label := range labelNames {
 			val := checkpoint.Metrics[label]
 			s := val.ShortString(10, 5)
-			if bestCheckpoint != nil && bestCheckpoint.ID == checkpoint.ID && primaryMetric != nil && primaryMetric.Name == label {
+			if bestCheckpoint != nil && bestCheckpoint.ID == checkpoint.ID && checkpoint.PrimaryMetric.Name == label {
 				// TODO (bfirsh): this could be done more elegantly with some formatting
 				s += " (best)"
 			}
@@ -188,49 +183,18 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 }
 
 func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Checkpoint) error {
-	exp, err := proj.ExperimentByID(com.ExperimentID)
-	if err != nil {
-		return err
-	}
-	conf := exp.Config
-	if conf == nil {
-		conf = new(config.Config)
-	}
-
-	metricNameSet := map[string]bool{}
-
-	if len(conf.Metrics) > 0 {
-		fmt.Fprintf(w, "%s\t\n", au.Bold("Metrics"))
-
-		for _, metric := range conf.Metrics {
-			valueString := "(not set)"
-			value, ok := com.Metrics[metric.Name]
-			if ok {
-				valueString = value.String()
-			}
-			primaryString := ""
-			if metric.Primary {
-				primaryString = "primary, "
-			}
-			fmt.Fprintf(w, "%s:\t%s (%sgoal: %s)\n", metric.Name, valueString, primaryString, metric.Goal)
-			metricNameSet[metric.Name] = true
-		}
-
-		fmt.Fprintf(w, "\t\n")
-	}
-	labelNames := []string{}
-	for name := range com.Metrics {
-		if _, ok := metricNameSet[name]; !ok {
-			labelNames = append(labelNames, name)
-		}
-	}
-	if len(labelNames) > 0 {
-		fmt.Fprintf(w, "%s\t\n", au.Bold("Metrics"))
-		for _, lab := range com.SortedMetrics() {
-			if _, ok := metricNameSet[lab.Name]; !ok {
+	fmt.Fprintf(w, "%s\t\n", au.Bold("Metrics"))
+	metrics := com.SortedMetrics()
+	if len(metrics) > 0 {
+		for _, lab := range metrics {
+			if com.PrimaryMetric.Name == lab.Name {
+				fmt.Fprintf(w, "%s:\t%s (primary, %s)\n", lab.Name, lab.Value.String(), com.PrimaryMetric.Goal)
+			} else {
 				fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
 			}
 		}
+	} else {
+		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
 	}
 	return nil
 }
