@@ -64,7 +64,7 @@ def train(learning_rate, num_epochs):
             # highlight-next-line
             metrics={"loss": loss.item(), "accuracy": acc},
             # highlight-next-line
-            primary_metric=("accuracy", "maximize"),
+            primary_metric=("loss", "minimize"),
             # highlight-next-line
         )
 
