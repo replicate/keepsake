@@ -2,8 +2,6 @@ import re
 
 from .storage_base import Storage
 from .disk_storage import DiskStorage
-from .s3_storage import S3Storage
-from .gcs_storage import GCSStorage
 
 from ..exceptions import UnknownStorageBackend
 
@@ -17,8 +15,13 @@ def storage_for_url(url: str) -> Storage:
     scheme, path = match.groups()
 
     if scheme == "s3":
+        # lazy import to speed up import replicate
+        from .s3_storage import S3Storage
+
         return S3Storage(bucket=path)
     if scheme == "gs":
+        from .gcs_storage import GCSStorage
+
         return GCSStorage(bucket=path)
     if scheme == "file":
         return DiskStorage(root=path)
