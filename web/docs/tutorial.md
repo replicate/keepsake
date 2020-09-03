@@ -146,6 +146,7 @@ Within experiments are **checkpoints**, which are created every time you call `e
 To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `b90ad56` with an experiment ID from your output of `replicate ls`:
 
 ```shell-session
+$ replicate show b90ad56
 Experiment: b90ad56a755371548ae2ab98c9d40a85911fd6198254880e600cdf00f55a18ca
 
 Created:        Wed, 02 Sep 2020 20:44:51 PDT
@@ -209,7 +210,7 @@ Notice you can pass a prefix to `replicate show`, and it'll automatically find t
 
 Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `4941495` and `a122e85` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
 
-````shell-session
+```shell-session
 $ replicate diff 4941495 a122e85
 Checkpoint:               4941495                   a122e85
 Experiment:               b90ad56                   9cce006
@@ -244,7 +245,7 @@ $ replicate checkout 4941495
 Do you want to continue? (y/N) y
 
 ═══╡ Checked out 4941495 to "/Users/ben/p/tmp/iris-classifier"
-````
+```
 
 The model file in your working directory is now the model saved in that checkpoint:
 
