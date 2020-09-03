@@ -46,12 +46,12 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 			return err
 		}
 		if comOrExp.Checkpoint != nil {
-			console.Info("Removing checkpoint %s...", comOrExp.Checkpoint.ID)
+			console.Info("Removing checkpoint %s...", comOrExp.Checkpoint.ShortID())
 			if err := proj.DeleteCheckpoint(comOrExp.Checkpoint); err != nil {
 				return err
 			}
 		} else {
-			console.Info("Removing experiment %s and its checkpoints...", comOrExp.Experiment.ID)
+			console.Info("Removing experiment %s and its checkpoints...", comOrExp.Experiment.ShortID())
 			checkpoints, err := proj.ExperimentCheckpoints(comOrExp.Experiment.ID)
 			if err != nil {
 				return err
