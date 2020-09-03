@@ -1,0 +1,43 @@
+[tool.vendoring]
+destination = "replicate/_vendor/"
+requirements = "replicate/_vendor/vendor.txt"
+namespace = "replicate._vendor"
+
+protected-files = ["__init__.py", "README.rst", "vendor.txt"]
+patches-dir = ""
+
+[tool.vendoring.transformations]
+substitute = [
+  # FIXME: this might be neater and more reliable as a patch
+  { match='aiohttp\.ClientConnectionError', replace="replicate._vendor.aiohttp.ClientConnectionError" },
+  { match='aiohttp\.ClientPayloadError', replace="replicate._vendor.aiohttp.ClientPayloadError" },
+  { match='aiohttp\.ServerDisconnectedError', replace="replicate._vendor.aiohttp.ServerDisconnectedError" },
+  { match='get_distribution\(.+?\)\.version', replace="''" },
+]
+drop = [
+  "boto3/examples/",
+  "tests/",
+  # contains unnecessary scripts
+  # "bin/",
+  # pyyaml falls back to plain python
+  "_yaml.*.so",
+  # Google scatters these things around
+  "google_cloud_storage-1.23.0-py3.6-nspkg.pth",
+  "googleapis_common_protos-1.52.0-py3.8-nspkg.pth",
+  "gcloud_aio_auth-3.4.3-py3.8-nspkg.pth",
+  "gcloud_aio_storage-5.5.4-py3.8-nspkg.pth",
+  "google_api_core-1.22.1-py3.8-nspkg.pth",
+  "google_auth-1.21.0-py3.8-nspkg.pth",
+  "google_resumable_media-0.5.1-py3.8-nspkg.pth",
+  "protobuf-3.13.0-py3.8-nspkg.pth",
+]
+
+[tool.vendoring.typing-stubs]
+
+[tool.vendoring.license.directories]
+
+[tool.vendoring.license.fallback-urls]
+boto3-stubs = "https://raw.githubusercontent.com/vemel/mypy_boto3_builder/master/LICENSE"
+mypy-boto3-s3 = "https://raw.githubusercontent.com/vemel/mypy_boto3_builder/master/LICENSE"
+googleapis-common-protos = "https://raw.githubusercontent.com/googleapis/api-common-protos/master/LICENSE"
+protobuf = "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE"

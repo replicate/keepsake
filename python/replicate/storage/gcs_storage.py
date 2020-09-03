@@ -6,12 +6,14 @@ import binascii
 import os
 import asyncio
 from typing import AnyStr, Optional, Generator, Set, Tuple
-import aiohttp
-from gcloud.aio.storage import Storage as AioStorage  # type: ignore
-from google.cloud import storage  # type: ignore
-from google.api_core import exceptions  # type: ignore
-from google.auth.credentials import Credentials  # type: ignore
-from google.oauth2 import service_account  # type: ignore
+
+from .._vendor import aiohttp
+
+# from .._vendor.gcloud.aio.storage import Storage as AioStorage  # type: ignore
+from .._vendor.google.cloud import storage  # type: ignore
+from .._vendor.google.api_core import exceptions  # type: ignore
+from .._vendor.google.auth.credentials import Credentials  # type: ignore
+from .._vendor.google.oauth2 import service_account  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError

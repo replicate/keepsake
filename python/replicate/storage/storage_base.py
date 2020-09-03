@@ -6,7 +6,7 @@ from typing import AnyStr, Generator, Tuple
 if sys.version_info >= (3, 8):
     from typing import TypedDict
 else:
-    from typing_extensions import TypedDict
+    from .._vendor.typing_extensions import TypedDict
 
 ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
 

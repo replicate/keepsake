@@ -4,9 +4,10 @@ import os
 import asyncio
 import re
 from typing import AnyStr, Optional, Generator, Set, Any
-import aiobotocore  # type: ignore
-import boto3
-import mypy_boto3_s3 as s3
+
+from .._vendor import aiobotocore  # type: ignore
+from .._vendor import boto3
+from .._vendor import mypy_boto3_s3 as s3
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError

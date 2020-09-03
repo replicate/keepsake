@@ -1,0 +1,42 @@
+aiobotocore==1.0.7
+    aioitertools==0.7.0
+    wrapt==1.12.1
+aiohttp==3.6.2
+    async_timeout==3.0.1
+    attrs==20.1.0
+    chardet==3.0.4
+    idna==2.10
+    idna_ssl==1.1.0
+    multidict==4.7.6
+    yarl==1.5.1
+boto3-stubs[essential]==1.12.32.0
+boto3==1.12.32
+    s3transfer==0.3.3
+botocore==1.15.32
+    docutils==0.15.2
+    jmespath==0.10.0
+    python_dateutil==2.8.1
+    urllib3==1.25.10
+#gcloud-aio-storage==5.5.4
+#    gcloud_aio_auth==3.4.3
+#        backoff==1.10.0
+#        cryptography==3.1
+#        future==0.18.2
+#        PyJWT==1.7.1
+google-api-core==1.22.1
+    googleapis_common_protos==1.52.0
+    protobuf==3.13.0
+    requests==2.24.0
+    pytz==2020.1
+google-auth==1.21.0
+    cachetools==4.1.1
+    pyasn1_modules==0.2.8
+    rsa==4.6
+google-cloud-storage==1.23.0
+    google-resumable-media==0.5.1
+mypy-boto3-s3==1.14.54.0
+pyyaml==5.3.1
+# used by dateutil and others
+six==1.15.0
+typing-extensions==3.7.4.3
+certifi==2020.6.20
