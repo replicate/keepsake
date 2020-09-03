@@ -126,9 +126,9 @@ The calls to the `replicate` Python library have saved your experiments locally.
 
 ```shell-session
 $ replicate ls
-EXPERIMENT  STARTED         STATUS   HOST             USER  LEARNING_RATE  LATEST CHECKPOINT  ACCURACY  BEST CHECKPOINT    ACCURACY
-f1b4d2b     13 seconds ago  stopped  107.133.144.125  ben   0.01           8ee945b (step 99)  1         8ee945b (step 99)  1
-02010f9     4 seconds ago   stopped  107.133.144.125  ben   0.2            dbcdd99 (step 99)  0.96667   2a2ed68 (step 12)  1
+EXPERIMENT  STARTED         STATUS   HOST  USER  LEARNING_RATE  LATEST CHECKPOINT  LOSS      BEST CHECKPOINT    LOSS
+b90ad56     12 seconds ago  stopped        ben   0.01           4941495 (step 99)  0.1176    4941495 (step 99)  0.1176
+9cce006     3 seconds ago   stopped        ben   0.2            a122e85 (step 99)  0.056486  a122e85 (step 99)  0.056486
 ```
 
 :::note
@@ -143,13 +143,12 @@ As a reminder, this is a list of **experiments** which represents runs of the `t
 
 Within experiments are **checkpoints**, which are created every time you call `experiment.checkpoint()` in your training script. The checkpoint contains your weights, Tensorflow logs, and any other artifacts you want to save.
 
-To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `f1b4d2b` with an experiment ID from your output of `replicate ls`:
+To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `b90ad56` with an experiment ID from your output of `replicate ls`:
 
 ```shell-session
-$ replicate show f1b4d2b
-Experiment: f1b4d2b38044f52721c907300add177c3e12c7c6e90307b2312da8d75de1f494
+Experiment: b90ad56a755371548ae2ab98c9d40a85911fd6198254880e600cdf00f55a18ca
 
-Created:        Tue, 01 Sep 2020 21:42:22 PDT
+Created:        Wed, 02 Sep 2020 20:44:51 PDT
 Status:         stopped
 Host:           107.133.144.125
 User:           ben
@@ -160,33 +159,34 @@ learning_rate:  0.01
 num_epochs:     100
 
 Checkpoints
-ID       STEP  CREATED             ACCURACY  LOSS
-109b73b  0     about a minute ago  0.33333   1.1836
-156d2dd  1     about a minute ago  0.33333   1.1173
-612f909  2     about a minute ago  0.46667   1.0611
-ac322e7  3     about a minute ago  0.63333   1.0138
-ebfdb6f  4     about a minute ago  0.7       0.97689
+ID       STEP  CREATED        ACCURACY  LOSS
+9ed04a2  0     5 minutes ago  0.33333   1.1836
+b37e01d  1     5 minutes ago  0.33333   1.1173
+c74e9c6  2     5 minutes ago  0.46667   1.0611
+7ba5b47  3     5 minutes ago  0.63333   1.0138
+886f612  4     5 minutes ago  0.7       0.97689
+667fdba  5     5 minutes ago  0.9       0.9496
 ...
-d3916c4  95    about a minute ago  1         0.12417
-a109647  96    about a minute ago  1         0.12244
-ba5f308  97    about a minute ago  1         0.12076
-4c49656  98    about a minute ago  1         0.11915
-8ee945b  99    about a minute ago  1 (best)  0.1176
+cd1223c  95    5 minutes ago  1         0.12417
+510eb98  96    5 minutes ago  1         0.12244
+59129de  97    5 minutes ago  1         0.12076
+e301a55  98    5 minutes ago  1         0.11915
+4941495  99    5 minutes ago  1         0.1176 (best)
 ```
 
-You can also use `replicate show` on a checkpoint to get all the information about it. Run this, replacing `8ee` with a checkpoint ID from the experiment:
+You can also use `replicate show` on a checkpoint to get all the information about it. Run this, replacing `494` with a checkpoint ID from the experiment:
 
 ```shell-session
-$ replicate show 8ee
-Checkpoint: 8ee945b289bb762e81027db825eb0d7d9e4b0d0a3001f6cb8ceb6aec5c00c089
+$ replicate show 494
+Checkpoint: 49414952394edfdf7923edd6bfb4aabe5558a6276a02a71a5965e1622ee7b9fd
 
-Created:            Tue, 01 Sep 2020 21:42:23 PDT
+Created:            Wed, 02 Sep 2020 20:44:52 PDT
 Path:               model.pth
 Step:               99
 
 Experiment
-ID:                 f1b4d2b38044f52721c907300add177c3e12c7c6e90307b2312da8d75de1f494
-Created:            Tue, 01 Sep 2020 21:42:22 PDT
+ID:                 b90ad56a755371548ae2ab98c9d40a85911fd6198254880e600cdf00f55a18ca
+Created:            Wed, 02 Sep 2020 20:44:51 PDT
 Status:             stopped
 Host:               107.133.144.125
 User:               ben
@@ -197,8 +197,8 @@ learning_rate:      0.01
 num_epochs:         100
 
 Metrics
-accuracy:           1 (primary, maximize)
-loss:               0.11759971082210541
+accuracy:           1
+loss:               0.11759971082210541 (primary, minimize)
 ```
 
 :::note
@@ -207,12 +207,12 @@ Notice you can pass a prefix to `replicate show`, and it'll automatically find t
 
 ## Compare checkpoints
 
-Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `8ee945b` and `dbcdd99` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
+Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `4941495` and `a122e85` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
 
-```shell-session
-$ replicate diff 8ee945b dbcdd99
-Checkpoint:               8ee945b                   dbcdd99
-Experiment:               f1b4d2b                   02010f9
+````shell-session
+$ replicate diff 4941495 a122e85
+Checkpoint:               4941495                   a122e85
+Experiment:               b90ad56                   9cce006
 
 Params
 learning_rate:            0.01                      0.2
@@ -234,17 +234,17 @@ You can also pass an experiment ID, and it will pick the best or latest checkpoi
 
 At some point you might want to get back to some point in the past. Maybe you've run a bunch of experiments in parallel, and you want to choose one that works best. Or, perhaps you've gone down a line of exploration and it's not working, so you want to get back to where you were a week ago.
 
-The `replicate checkout` command will copy the code and weights from a checkpoint into your working directory. Run this, replacing `d4fb0d3` with a checkpoint ID you passed to `replicate diff`:
+The `replicate checkout` command will copy the code and weights from a checkpoint into your working directory. Run this, replacing `4941495` with a checkpoint ID you passed to `replicate diff`:
 
 ```shell-session
-$ replicate checkout 8ee945b
+$ replicate checkout 4941495
 ═══╡ The directory "/Users/ben/p/tmp/iris-classifier" is not empty.
 ═══╡ This checkout may overwrite existing files. Make sure you've committed everything to Git so it's safe!
 
 Do you want to continue? (y/N) y
 
-═══╡ Checked out d4fb0d3 to "/Users/ben/p/tmp/iris-classifier"
-```
+═══╡ Checked out 4941495 to "/Users/ben/p/tmp/iris-classifier"
+````
 
 The model file in your working directory is now the model saved in that checkpoint:
 
