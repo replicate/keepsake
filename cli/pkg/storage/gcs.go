@@ -9,16 +9,26 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/adjust/uniuri"
 	iam "google.golang.org/api/iam/v1"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/serviceusage/v1"
 
 	"replicate.ai/cli/pkg/cache"
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/slices"
 )
+
+const waitRefreshInterval = 500 * time.Millisecond
+
+var requiredServices = []string{
+	"storage-api.googleapis.com",
+	"iam.googleapis.com",
+}
 
 type GCSStorage struct {
 	projectID  string
@@ -268,6 +278,13 @@ func (s *GCSStorage) GetOrCreateServiceAccount() (serviceAccountKey string, err 
 // rights to the bucket, and returns the base64-encoded service
 // account json key
 func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error) {
+	if err := s.enableRequiredServices(); err != nil {
+		// only warn and move on. it's possible that the user
+		// has permissions to create service accounts, without
+		// permission to list or enable services.
+		console.Warn("%s\nIf the following Google Cloud services are not enabled, Google Storage functionality may not work: %s", err, strings.Join(requiredServices, ", "))
+	}
+
 	projectID, err := s.getProjectID()
 	if err != nil {
 		return "", err
@@ -354,6 +371,64 @@ func (s *GCSStorage) getProjectID() (string, error) {
 	return s.projectID, nil
 }
 
+func (s *GCSStorage) enableRequiredServices() error {
+	projectID, err := s.getProjectID()
+	if err != nil {
+		return err
+	}
+
+	serviceusageClient, err := serviceusage.NewService(context.TODO())
+	if err != nil {
+		return fmt.Errorf("Failed to create GCP ServiceUsage client: %w", err)
+	}
+
+	enabledServices := []string{}
+	err = serviceusageClient.Services.List("projects/"+projectID).
+		PageSize(200).
+		Filter("state:ENABLED").
+		Pages(context.TODO(), func(resp *serviceusage.ListServicesResponse) error {
+			for _, service := range resp.Services {
+				name := service.Name
+				shortName := strings.Split(name, "/services/")[1]
+				enabledServices = append(enabledServices, shortName)
+			}
+			return nil
+		})
+	if err != nil {
+		return fmt.Errorf("Failed to list enabled Google Cloud APIs: %w", err)
+	}
+
+	newServices := []string{}
+	for _, name := range requiredServices {
+		if !slices.ContainsString(enabledServices, name) {
+			newServices = append(newServices, name)
+		}
+	}
+	if len(newServices) == 0 {
+		return nil
+	}
+
+	console.Info("Enabling Google Cloud APIs: %s", strings.Join(newServices, ", "))
+
+	op, err := serviceusageClient.Services.BatchEnable("projects/"+projectID, &serviceusage.BatchEnableServicesRequest{ServiceIds: newServices}).Do()
+	if err != nil {
+		return fmt.Errorf("Failed to enable required APIs, got error: %s", err)
+	}
+	return waitForOperation(context.TODO(), func() (bool, error) {
+		op, err = serviceusageClient.Operations.Get(op.Name).Do()
+		if err != nil {
+			return false, err
+		}
+		if op.Error != nil {
+			return false, fmt.Errorf("%v", op.Error)
+		}
+		if op.Done {
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
 func discoverProjectID() (string, error) {
 	cmd := exec.Command("gcloud", "config", "config-helper", "--format=value(configuration.properties.core.project)")
 	out, err := cmd.Output()
@@ -365,4 +440,25 @@ func discoverProjectID() (string, error) {
 		return "", fmt.Errorf("Failed to determine default GCP project (using gcloud config config-helper): %w\n%s", err, stderr)
 	}
 	return strings.TrimSpace(string(out)), nil
+}
+
+func waitForOperation(ctx context.Context, isDone func() (bool, error)) error {
+	ticker := time.NewTicker(waitRefreshInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for operation to complete")
+		case <-ticker.C:
+			done, err := isDone()
+			if err != nil {
+				return fmt.Errorf("Operation failed: %s", err)
+			}
+
+			if done {
+				return nil
+			}
+		}
+	}
 }

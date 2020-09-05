@@ -9,8 +9,12 @@ import pytest
 def test_gpu_training(gpu_instance, tmpdir, temp_bucket):
     tmpdir = str(tmpdir)
 
-    storage = "s3://" + temp_bucket
+    # run the two tests in sequence, to save time setting up instances
+    run_gpu_test("s3://" + temp_bucket, gpu_instance, tmpdir, temp_bucket)
+    run_gpu_test("gs://" + temp_bucket, gpu_instance, tmpdir, temp_bucket)
 
+
+def run_gpu_test(storage, gpu_instance, tmpdir, temp_bucket):
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(
             """
