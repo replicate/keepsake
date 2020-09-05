@@ -59,6 +59,10 @@ module.exports = {
       additionalLanguages: ["shell-session"],
       theme: require("prism-react-renderer/themes/oceanicNext"),
     },
+    googleAnalytics: {
+      // Development ID by default, set this in production
+      trackingID: process.env.GOOGLE_ANALYTICS_TRACKING_ID || "UA-107304984-6",
+    },
   },
   presets: [
     [
