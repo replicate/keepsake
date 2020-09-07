@@ -282,7 +282,7 @@ func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error
 		// only warn and move on. it's possible that the user
 		// has permissions to create service accounts, without
 		// permission to list or enable services.
-		console.Warn("%s\nIf the following Google Cloud services are not enabled, Google Storage functionality may not work: %s", err, strings.Join(requiredServices, ", "))
+		console.Warn("Failed to enable Google Cloud services: %s\n\nIf the following Google Cloud services are not enabled, Google Cloud Storage may not work: %s", err, strings.Join(requiredServices, ", "))
 	}
 
 	projectID, err := s.getProjectID()
