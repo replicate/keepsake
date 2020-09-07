@@ -5,8 +5,7 @@ import asyncio
 import re
 from typing import AnyStr, Optional, Generator, Set, Any
 import aiobotocore  # type: ignore
-import boto3
-import mypy_boto3_s3 as s3
+import boto3  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError
@@ -19,7 +18,7 @@ class S3Storage(Storage):
 
     def __init__(self, bucket: str, concurrency=512):
         self.bucket_name = bucket
-        self.client: Optional[s3.Client] = None
+        self.client = None
         self.concurrency = concurrency
 
     def get(self, path: str) -> bytes:
@@ -137,7 +136,7 @@ class S3Storage(Storage):
         client = self.get_client()
         client.delete_object(Bucket=self.bucket_name, Key=path)
 
-    def get_client(self) -> s3.Client:
+    def get_client(self):
         if self.client is not None:
             return self.client
 
