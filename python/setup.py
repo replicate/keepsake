@@ -21,9 +21,7 @@ setuptools.setup(
     # and break in weird ways?
     install_requires=[
         "aiobotocore==1.0.7",
-        "boto3-stubs[essential]==1.12.32.0",
         "boto3==1.12.32",
-        "botocore==1.15.32",
         "gcloud-aio-storage==5.5.4",
         "google-cloud-storage==1.23.0",
         "pyyaml==5.3.1",
