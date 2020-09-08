@@ -7,67 +7,6 @@ import CodeBlock from "@theme/CodeBlock";
 import useBaseUrl from "@docusaurus/useBaseUrl";
 import styles from "./styles.module.css";
 
-const features = [
-  {
-    title: (
-      <>
-        Track <em>everything</em>
-      </>
-    ),
-    imageUrl: "",
-    description: (
-      <>
-        <p>
-          Code, training data, hyperparameters, weights, metrics, Tensorboard
-          logs, Python version, Python dependencies – <em>everything</em>.
-        </p>
-        <p>
-          You'll never forget how a model was trained, and you'll always be able
-          to retrain it in the future.
-        </p>
-      </>
-    ),
-  },
-  {
-    title: <>Don't change how you work</>,
-    imageUrl: "",
-    description: (
-      <>
-        <p>
-          You don't need to learn a new workflow or remember to commit anything.
-          Just work the way you want, and Replicate keeps track of it.
-        </p>
-        {/* <p>
-          Add <code>experiment = replicate.init()</code> to your code to start
-          an experiment, then call <code>experiment.checkpoint()</code> to save the
-          exact state of your training at that point. That's it.
-        </p> */}
-      </>
-    ),
-  },
-  {
-    title: <>Works remotely out of the box</>,
-    imageUrl: "",
-    description: (
-      <>
-        <p>
-          We figure you'll do most of your training on GPU machines or a cloud
-          service. Replicate makes that really simple, all controlled from your
-          laptop.
-        </p>
-        {/* <p>
-          Just point Replicate at any machine with SSH installed, prefix your
-          training script with `replicate run`, and Replicate handles the rest.
-          All your data is stored on S3.
-        </p> */}
-      </>
-    ),
-  },
-];
-
-const replicateYamlSnippet = `
-`;
-
 function Feature({ imageUrl, title, description }) {
   const imgUrl = useBaseUrl(imageUrl);
   return (
@@ -77,7 +16,7 @@ function Feature({ imageUrl, title, description }) {
           <img className={styles.featureImage} src={imgUrl} alt={title} />
         </div>
       )}
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       {description}
     </div>
   );
@@ -121,70 +60,106 @@ function Home() {
         </div>
       </header>
       <main>
-        {features && features.length && (
-          <section className={styles.features}>
-            <div className="container">
-              <div className="row">
-                {features.map((props, idx) => (
-                  <Feature key={idx} {...props} />
-                ))}
-              </div>
+        {/* Value propositions */}
+        <section className={styles.features}>
+          <div className="container">
+            <div className="row">
+              <Feature
+                title={<>Never lose anything again</>}
+                description={
+                  <p>
+                    On every training run, Replicate automatically saves
+                    hyperparameters, code, training data, weights, metrics,
+                    Python version, Python dependencies — <em>everything</em>.
+                  </p>
+                }
+              />
+
+              <Feature
+                title={<>Go back in time</>}
+                description={
+                  <p>
+                    You can get back the code and weights from any checkpoint if
+                    you need to figure out how a model was trained or commit to
+                    Git after the fact.
+                  </p>
+                }
+              />
+
+              <Feature
+                title={<>Version your models</>}
+                description={
+                  <p>
+                    All the model weights are versioned and stored on your own
+                    Amazon S3 or Google Cloud bucket, so it's really easy to
+                    feed them into production systems.
+                  </p>
+                }
+              />
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         <div className="container padding-vert--lg">
           <div className="row padding-vert--lg">
-            <div className={classnames(`col col--12`)}>
-              <h1 className="" style={{ textAlign: "center" }}>
+            <div className={classnames(`col col--8`)}>
+              <h1 className="" style={{ textAlign: "left" }}>
                 How it works
               </h1>
-            </div>
-          </div>
-          <div className="row padding-vert--lg">
-            <div className={classnames(`col col--6`)}>
-              <h2>Step 1: Add Replicate to your training code</h2>
               <CodeBlock className="python">
                 {`import torch
 import replicate
 
-def train(**params):
+def train():
     # highlight-next-line
-    experiment = replicate.init(**params)
+    # Save hyperparameters and training code
+    # highlight-next-line
+    experiment = replicate.init(params={...})
     model = Model()
 
     for epoch in range(params["num_epochs"]):
         # ...
 
-        torch.save(model, "model.torch")
+        torch.save(model, "model.pth")
         # highlight-next-line
-        experiment.checkpoint(path="model.torch", **metrics)`}
+        # Save a copy of model.pth and the metrics
+        # highlight-next-line
+        experiment.checkpoint(path="model.pth", metrics={...})`}
               </CodeBlock>
             </div>
-            <div className={classnames(`col col--6`)}>
-              <h2>Step 2: Get back to work</h2>
-              <p>
-                That's it. Everything about your experiments is now saved
-                forever:
-              </p>
-              <ul>
-                <li>Hyperparameters</li>
-                <li>Metrics</li>
-                <li>Weight files, Tensorboard logs, etc</li>
-                <li>Code, even if you didn't commit to Git</li>
-                <li>Training data (with a bit of extra configuration)</li>
-                <li>
-                  Python version, Python requirements, PyTorch/Tensorflow
-                  version
-                </li>
-              </ul>
-              <p>
-                By default this data is stored on your local filesystem, but you
-                can also store it centrally on S3 or Google Cloud Storage.
-              </p>
-            </div>
+          </div>
+          {/* Differentiators and "yeah but" rebuttals */}
+          <div className="row  padding-vert--lg">
+            <Feature
+              title={<>Don't change how you work</>}
+              description={
+                <p>
+                  Just add two lines of code and Replicate will start keeping
+                  track of everything.
+                </p>
+              }
+            />
+            <Feature
+              title={<>You're in control of your data</>}
+              description={
+                <p>
+                  All the data is stored on your own Amazon S3 or Google Cloud
+                  Bucket as plain old files.
+                </p>
+              }
+            />
+            <Feature
+              title={<>It's open source</>}
+              description={
+                <p>
+                  It's not going to stop working if a startup goes out of
+                  business. {/* lol we can work on this */}
+                </p>
+              }
+            />
           </div>
         </div>
+        {/* Use cases & "wow" moments */}
         <div className="container padding-vert--lg">
           <div className="row padding-vert--lg">
             <div className={classnames(`col col--12`)}>
@@ -195,15 +170,18 @@ def train(**params):
           </div>
           <div className="row padding-vert--lg">
             <div className={classnames(`col col--6`)}>
-              <h2 className="">See all your experiments in one place</h2>
+              <h2 className="">Throw away your spreadsheet</h2>
 
               <p>
-                If you store your data on S3, you can even see experiments that
-                were run on other machines.
+                Your experiments are all in one place, with filter and sort. The
+                data's stored on S3, you can even see experiments that were run
+                on other machines.
               </p>
 
+              {/* TODO: animate this code block with filtering and sorting! */}
+
               <CodeBlock className="shell-session">
-                {`$ replicate ls
+                {`$ replicate ls --filter "val_loss<0.2"
 EXPERIMENT   HOST         STATUS    BEST CHECKPOINT
 e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
