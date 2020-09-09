@@ -1,13 +1,19 @@
 import os
 
+MAX_SEARCH_DEPTH = 100
+
 
 def get_project_dir() -> str:
     """
     Returns the directory of the current project.
+
+    Similar to config.FindConfigPath() in CLI.
     """
-    # TODO (bfirsh): this currently is really simple and assumes you run your script in same dir as replicate.yaml.
-    # But, this fails if you run your script from any other directory for whatever reason.
-    # A better solution would be to go up the call stack until we find something non-replicate, figure out what directory
-    # it is in, then search up the directory tree until we find replicate.yaml. That way replicate.yaml always works
-    # regardless of working directory.
+    directory = os.getcwd()
+    for _ in range(MAX_SEARCH_DEPTH):
+        if os.path.exists(os.path.join(directory, "replicate.yaml")):
+            return directory
+        if directory == "/":
+            break
+        directory = os.path.dirname(directory)
     return os.getcwd()

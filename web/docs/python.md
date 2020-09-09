@@ -35,9 +35,9 @@ Create and return an experiment.
 
 It takes one argument: `params`, a dictionary of hyperparameters to record along with the experiment.
 
-The entire working directory will be saved to storage to save a copy of the code.
+The entire project directory will be saved to storage to save a copy of the code. The project directory is determined by the directory that contains `replicate.yaml`. If no `replicate.yaml` is found in any parent directories, the current working directory will be used.
 
-To determine the storage location, this method will read `replicate.yaml` file in the working directory and use the `storage` option. [Learn more in the reference documentation.](replicate-yaml.md)
+To determine where data will be stored, this method will read `replicate.yaml` file in the working directory and use the `storage` option. [Learn more in the reference documentation.](replicate-yaml.md)
 
 For example:
 
