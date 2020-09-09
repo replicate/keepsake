@@ -32,9 +32,9 @@ replicate analytics <on|off> [flags]
 ```
   -h, --help   help for analytics
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate checkout`
 
@@ -54,9 +54,9 @@ replicate checkout <checkpoint ID> [flags]
   -o, --output-directory string   Output directory (defaults to working directory or directory with replicate.yaml in it)
   -S, --storage-url string        Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate diff`
 
@@ -76,9 +76,9 @@ replicate diff <ID> <ID> [flags]
   -h, --help                 help for diff
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate feedback`
 
@@ -95,9 +95,9 @@ replicate feedback [flags]
 ```
   -h, --help   help for feedback
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate ls`
 
@@ -120,9 +120,9 @@ replicate ls [flags]
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate ps`
 
@@ -145,9 +145,9 @@ replicate ps [flags]
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate rm`
 
@@ -168,9 +168,9 @@ replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [fla
   -h, --help                 help for rm
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate run`
 
@@ -190,9 +190,9 @@ replicate run [flags] <command> [arg...]
   -i, --identity-file string   SSH private key path
   -m, --mount stringArray      Mount directories from the host to Replicate's Docker container. Format: --mount <host-directory>:<container-directory>
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```
 ## `replicate show`
 
@@ -210,7 +210,7 @@ replicate show <experiment or checkpoint ID> [flags]
   -h, --help                 help for show
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
-      --color                     Display color in output (default true)
-  -D, --source-directory string   Local source directory
-  -v, --verbose                   Verbose output
+      --color                      Display color in output (default true)
+  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -v, --verbose                    Verbose output
 ```

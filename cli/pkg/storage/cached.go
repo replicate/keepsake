@@ -39,8 +39,8 @@ func NewCachedStorage(store Storage, cachePrefix string, cacheDir string) (*Cach
 
 // NewCachedMetadataStorage returns a CachedStorage that caches the metadata/ path in
 // .replicate/metadata-cache in a source dir
-func NewCachedMetadataStorage(store Storage, sourceDir string) (*CachedStorage, error) {
-	return NewCachedStorage(store, "metadata", path.Join(sourceDir, ".replicate/metadata-cache"))
+func NewCachedMetadataStorage(store Storage, projectDir string) (*CachedStorage, error) {
+	return NewCachedStorage(store, "metadata", path.Join(projectDir, ".replicate/metadata-cache"))
 }
 
 func (s *CachedStorage) Get(p string) ([]byte, error) {

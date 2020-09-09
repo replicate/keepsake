@@ -38,11 +38,11 @@ func diffCheckpoints(cmd *cobra.Command, args []string) error {
 	prefix1 := args[0]
 	prefix2 := args[1]
 
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

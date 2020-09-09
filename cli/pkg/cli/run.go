@@ -52,11 +52,11 @@ func newRunCommand() *cobra.Command {
 }
 
 func runCommand(opts runOpts, args []string) (err error) {
-	conf, sourceDir, err := loadConfig()
+	conf, projectDir, err := loadConfig()
 	if err != nil {
 		return err
 	}
-	console.Debug("Using directory: %s", sourceDir)
+	console.Debug("Using directory: %s", projectDir)
 
 	// User input checks
 	if opts.host != "" {
@@ -118,7 +118,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 	hasGPU := hostCUDADriverVersion != ""
 
 	console.Info("Building Docker image...")
-	baseImage, err := build.GetBaseImage(conf, sourceDir, hostCUDADriverVersion)
+	baseImage, err := build.GetBaseImage(conf, projectDir, hostCUDADriverVersion)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 		// in build context. It also can't be inside anything that doesn't
 		// get rsynced (e.g. .replicate)
 		devPythonSourceTmpdir = ".tmp-dev-python-source"
-		if err := os.RemoveAll(path.Join(sourceDir, devPythonSourceTmpdir)); err != nil {
+		if err := os.RemoveAll(path.Join(projectDir, devPythonSourceTmpdir)); err != nil {
 			return err
 		}
 		options := copy.Options{
@@ -144,18 +144,18 @@ func runCommand(opts runOpts, args []string) (err error) {
 				return false, nil
 			},
 		}
-		if err := copy.Copy(devPythonSource, path.Join(sourceDir, devPythonSourceTmpdir), options); err != nil {
+		if err := copy.Copy(devPythonSource, path.Join(projectDir, devPythonSourceTmpdir), options); err != nil {
 			return fmt.Errorf("Failed to copy REPLICATE_DEV_PYTHON_SOURCE: %w", err)
 		}
 	}
 
 	console.Debug("Using base image: %s", baseImage.RepositoryName())
-	dockerfile, err := build.GenerateDockerfile(conf, sourceDir, devPythonSourceTmpdir)
+	dockerfile, err := build.GenerateDockerfile(conf, projectDir, devPythonSourceTmpdir)
 	if err != nil {
 		return err
 	}
 
-	if err := docker.Build(remoteOptions, sourceDir, dockerfile, containerName, baseImage.RepositoryName(), hasGPU); err != nil {
+	if err := docker.Build(remoteOptions, projectDir, dockerfile, containerName, baseImage.RepositoryName(), hasGPU); err != nil {
 		return err
 	}
 
@@ -191,7 +191,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 		return err
 	}
 
-	store, err := getStorage(conf.Storage, sourceDir)
+	store, err := getStorage(conf.Storage, projectDir)
 	if err != nil {
 		return err
 	}

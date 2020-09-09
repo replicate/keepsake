@@ -27,11 +27,11 @@ To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 }
 
 func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

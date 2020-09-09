@@ -7,7 +7,7 @@ var ConfigFilename = "replicate.yaml"
 var Verbose = false
 var WebURL = "https://beta.replicate.ai"
 var Color = true
-var SourceDirectory = ""
+var ProjectDirectory = ""
 var BugsEmail = "bugs@replicate.ai"
 var ReplicateDownloadURLs = map[string]string{
 	"linux":   "https://storage.googleapis.com/replicate-public/cli/latest/linux/amd64/replicate",

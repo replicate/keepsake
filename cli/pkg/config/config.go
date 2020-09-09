@@ -21,8 +21,8 @@ type Config struct {
 
 // ReadPythonRequirements returns trimmed lines of text from
 // conf.PythonRequirements, ignoring empty lines and comments
-func (conf *Config) ReadPythonRequirements(sourceDir string) (lines []string, err error) {
-	requirementsPath := path.Join(sourceDir, conf.PythonRequirements)
+func (conf *Config) ReadPythonRequirements(projectDir string) (lines []string, err error) {
+	requirementsPath := path.Join(projectDir, conf.PythonRequirements)
 	exists, err := files.FileExists(requirementsPath)
 	if err != nil {
 		return nil, err

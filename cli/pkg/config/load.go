@@ -29,10 +29,10 @@ func (e *configNotFoundError) Error() string {
 // for replicate.yaml and loads it.
 //
 // This function can also be used to discover the source dir -- it returns a
-// (config, sourceDir) tuple.
+// (config, projectDir) tuple.
 //
 // If overrideDir is passed, it uses that directory instead.
-func FindConfigInWorkingDir(overrideDir string) (conf *Config, sourceDir string, err error) {
+func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string, err error) {
 	if overrideDir != "" {
 		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilename))
 		if err != nil {
@@ -52,7 +52,7 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, sourceDir string,
 
 // FindConfig searches the given directory and any parent
 // directories for replicate.yaml, then loads it
-func FindConfig(dir string) (conf *Config, sourceDir string, err error) {
+func FindConfig(dir string) (conf *Config, projectDir string, err error) {
 	configPath, err := FindConfigPath(dir)
 	if err != nil {
 		if _, ok := err.(*configNotFoundError); ok {
