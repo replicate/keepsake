@@ -36,11 +36,11 @@ func newShowCommand() *cobra.Command {
 
 func show(cmd *cobra.Command, args []string) error {
 	prefix := args[0]
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

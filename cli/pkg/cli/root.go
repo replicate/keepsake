@@ -63,29 +63,29 @@ func ExecuteWithArgs(cmd *cobra.Command, args ...string) error {
 func setPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&global.Color, "color", true, "Display color in output")
 	// FIXME (bfirsh): this noun needs standardizing. we use the term "working directory" in some places.
-	cmd.PersistentFlags().StringVarP(&global.SourceDirectory, "source-directory", "D", "", "Local source directory")
+	cmd.PersistentFlags().StringVarP(&global.ProjectDirectory, "project-directory", "D", "", "Project directory. Default: working directory, or nearest parent with replicate.yaml")
 	cmd.PersistentFlags().BoolVarP(&global.Verbose, "verbose", "v", false, "Verbose output")
 
 }
 
-// loadConfig loads config from global.SourceDirectory if it's
+// loadConfig loads config from global.ProjectDirectory if it's
 // defined, or searches recursively from cwd. If no replicate.yaml is
 // found, it creates a default config.
-func loadConfig() (conf *config.Config, sourceDir string, err error) {
-	if global.SourceDirectory == "" {
+func loadConfig() (conf *config.Config, projectDir string, err error) {
+	if global.ProjectDirectory == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return nil, "", err
 		}
-		conf, sourceDir, err := config.FindConfig(cwd)
+		conf, projectDir, err := config.FindConfig(cwd)
 		if err != nil {
 			return nil, "", err
 		}
-		return conf, sourceDir, nil
+		return conf, projectDir, nil
 	}
-	conf, err = config.LoadConfig(path.Join(global.SourceDirectory, global.ConfigFilename))
+	conf, err = config.LoadConfig(path.Join(global.ProjectDirectory, global.ConfigFilename))
 	if err != nil {
 		return nil, "", err
 	}
-	return conf, global.SourceDirectory, nil
+	return conf, global.ProjectDirectory, nil
 }

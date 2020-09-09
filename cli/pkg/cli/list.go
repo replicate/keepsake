@@ -27,7 +27,7 @@ func newListCommand() *cobra.Command {
 }
 
 func listExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

@@ -25,7 +25,7 @@ func newPsCommand() *cobra.Command {
 }
 
 func listRunningExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	filters.SetExclusive("status", param.OperatorEqual, param.String("running"))
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

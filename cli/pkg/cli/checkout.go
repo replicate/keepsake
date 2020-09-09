@@ -38,7 +38,7 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	}
 	// TODO(andreas): add test for case where --output-directory is omitted
 	if outputDir == "" {
-		outputDir, err = getSourceDir()
+		outputDir, err = getProjectDir()
 		if err != nil {
 			return err
 		}
@@ -49,11 +49,11 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	storageURL, sourceDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, sourceDir)
+	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
 	}

@@ -25,51 +25,51 @@ func addStorageURLFlag(cmd *cobra.Command) {
 
 // getStorageURLFromConfigOrFlag uses --storage-url if it exists,
 // otherwise finds replicate.yaml recursively
-func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, sourceDir string, err error) {
+func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, projectDir string, err error) {
 	storageURL, err = cmd.Flags().GetString("storage-url")
 	if err != nil {
 		return "", "", err
 	}
 
 	if storageURL == "" {
-		conf, sourceDir, err := config.FindConfigInWorkingDir(global.SourceDirectory)
+		conf, projectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
 		if err != nil {
 			return "", "", err
 		}
-		return conf.Storage, sourceDir, nil
+		return conf.Storage, projectDir, nil
 	}
 
-	// if global.SourceDirectory == "", abs of that is cwd
+	// if global.ProjectDirectory == "", abs of that is cwd
 	// FIXME (bfirsh): this does not look up directories for replicate.yaml, so might be the wrong
-	// sourceDir. It should probably use return value of FindConfigInWorkingDir.
-	sourceDir, err = filepath.Abs(global.SourceDirectory)
+	// projectDir. It should probably use return value of FindConfigInWorkingDir.
+	projectDir, err = filepath.Abs(global.ProjectDirectory)
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s', got error: %w", global.SourceDirectory, err)
+		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s', got error: %w", global.ProjectDirectory, err)
 	}
 
-	return storageURL, sourceDir, nil
+	return storageURL, projectDir, nil
 }
 
-// getSourceDir returns the project's source directory
-func getSourceDir() (string, error) {
-	_, sourceDir, err := config.FindConfigInWorkingDir(global.SourceDirectory)
+// getProjectDir returns the project's source directory
+func getProjectDir() (string, error) {
+	_, projectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
 	if err != nil {
 		return "", err
 	}
-	return sourceDir, nil
+	return projectDir, nil
 }
 
 // getStorage returns the project's storage, with caching if needed
 // This is not in storage package so we can do user interface stuff around syncing
-func getStorage(storageURL, sourceDir string) (storage.Storage, error) {
+func getStorage(storageURL, projectDir string) (storage.Storage, error) {
 	store, err := storage.ForURL(storageURL)
 	if err != nil {
 		return nil, err
 	}
-	// sourceDir might be "" if you use --storage-url option
-	if storage.NeedsCaching(store) && sourceDir != "" {
+	// projectDir might be "" if you use --storage-url option
+	if storage.NeedsCaching(store) && projectDir != "" {
 		console.Info("Fetching new data from %q...", store.RootURL())
-		store, err = storage.NewCachedMetadataStorage(store, sourceDir)
+		store, err = storage.NewCachedMetadataStorage(store, projectDir)
 		if err != nil {
 			return nil, err
 		}
