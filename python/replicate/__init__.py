@@ -1,3 +1,3 @@
-from .experiment import init
+from .experiment import init, list
 
-__all__ = ["init"]
+__all__ = ["init", "list"]

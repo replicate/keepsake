@@ -2,6 +2,7 @@ import getpass
 import os
 import datetime
 import json
+import html
 import sys
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -148,6 +149,45 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
     if not disable_heartbeat:
         experiment.heartbeat.start()
     return experiment
+
+
+class ExperimentList(list):
+    def _repr_html_(self):
+        headings = ["id", "created", "user", "host", "params", "command"]
+        out = ["<table>"]
+        out.append("<tr>")
+        for h in headings:
+            out.append("<th>")
+            out.append(html.escape(h))
+            out.append("</th>")
+        out.append("</tr>")
+        for experiment in self:
+            out.append("<tr>")
+            for h in headings:
+                d = experiment.get(h)
+                if isinstance(d, dict):
+                    d = str(d)
+                if h == "id":
+                    d = d[:7]
+                out.append("<th>")
+                out.append(html.escape(d))
+                out.append("</th>")
+            out.append("</tr>")
+        out.append("</table>")
+        return "".join(out)
+
+
+# TODO: maybe define this in a class, then set to replicate.list in __init__.py so we're not overriding a built-in
+def list():
+    project_dir = get_project_dir()
+    config = load_config(project_dir)
+    storage_url = config["storage"]
+    storage = storage_for_url(storage_url)
+    result = ExperimentList([])
+    for info in storage.list("metadata/experiments/"):
+        # FIXME: list should return full path to match Go API
+        result.append(json.loads(storage.get("metadata/experiments/" + info["name"])))
+    return result
 
 
 def set_option_defaults(
