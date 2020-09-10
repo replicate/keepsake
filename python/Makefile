@@ -16,11 +16,25 @@ lint:
 
 .PHONY: clean
 clean:
-	rm -rf dist
+	rm -rf build dist
 
+# Build packages for the various platforms.
+# setup.py handles converting these platform names into Go platforms.
+#
+# One trick worth noting with the build system: we're building "pure" Python
+# libraries, that theoretically aren't tied to any Python runtime or platform.
+# But, handily, wheel lets us override the platform with --plat-name even when it is a pure library:
+# https://github.com/pypa/wheel/blob/730e3ae7427682435af9572126d2722adf7c438c/src/wheel/bdist_wheel.py#L237-L240
+# I'm not sure we really should be doing this, because setting platform seems to be designed
+# for non-pure modules, but what the heck, this seems to work?
+# Anyway -- I'm writing this down here because if this stops working at some point in
+# the future it's because wheel changed their logic around pure modules.
 .PHONY: build
 build: clean
-	python setup.py sdist
+	pip install wheel
+	python setup.py bdist_wheel --plat-name linux_i686
+	python setup.py bdist_wheel --plat-name linux_x86_64
+	python setup.py bdist_wheel --plat-name macosx_10_9_x86_64
 
 .PHONY: targets
 targets:

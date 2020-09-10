@@ -12,37 +12,6 @@ If you like to **learn by doing**, this guide will help you learn how Replicate 
 
 If you prefer to **learn concepts first**, take a look at [our guide about how Replicate works](how-it-works).
 
-## Install Replicate
-
-<Tabs
-groupId="operating-systems"
-defaultValue="mac"
-values={[
-{label: 'macOS', value: 'mac'},
-{label: 'Linux', value: 'linux'},
-]
-}>
-<TabItem value="mac">
-
-Run the following commands in a terminal:
-
-```shell-session
-curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/darwin/amd64/replicate
-chmod +x /usr/local/bin/replicate
-```
-
-</TabItem>
-<TabItem value="linux">
-Run the following commands in a terminal:
-
-```shell-session
-sudo curl -o /usr/local/bin/replicate https://storage.googleapis.com/replicate-public/cli/latest/linux/amd64/replicate
-sudo chmod +x /usr/local/bin/replicate
-```
-
-</TabItem>
-</Tabs>
-
 ## Write a model
 
 We're going to make a model that classifies Iris plants, trained on the [Iris dataset](https://archive.ics.uci.edu/ml/datasets/iris). It's an intentionally simple model that trains really fast, just so we can show you how Replicate works.
