@@ -1,20 +1,10 @@
 import json
 import os
-import tempfile
 import pytest  # type: ignore
 
 import replicate
 
-
-@pytest.fixture
-def temp_workdir():
-    orig_cwd = os.getcwd()
-    try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            os.chdir(tmpdir)
-            yield
-    finally:
-        os.chdir(orig_cwd)
+from .common import temp_workdir
 
 
 def test_init_and_checkpoint(temp_workdir):
