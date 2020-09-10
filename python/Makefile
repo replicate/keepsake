@@ -32,8 +32,8 @@ clean:
 .PHONY: build
 build: clean
 	pip install wheel
-	python setup.py bdist_wheel --plat-name linux_i686
-	python setup.py bdist_wheel --plat-name linux_x86_64
+	python setup.py bdist_wheel --plat-name manylinux1_i686
+	python setup.py bdist_wheel --plat-name manylinux1_x86_64
 	python setup.py bdist_wheel --plat-name macosx_10_9_x86_64
 
 .PHONY: targets

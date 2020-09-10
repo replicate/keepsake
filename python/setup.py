@@ -26,6 +26,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 PLAT_NAME_TO_BINARY = {
     "linux_i686": "linux/386/replicate",
     "linux_x86_64": "linux/amd64/replicate",
+    # "linux" is the default if no --plat-name is passed, but it is not specific
+    # enough for pypi, so define manylinux1 too
+    "manylinux1_i686": "linux/386/replicate",
+    "manylinux1_x86_64": "linux/amd64/replicate",
     "macosx_10_9_x86_64": "darwin/amd64/replicate",
 }
 
