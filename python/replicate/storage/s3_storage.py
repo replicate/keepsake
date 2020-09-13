@@ -16,8 +16,9 @@ class S3Storage(Storage):
     Stores data on Amazon S3
     """
 
-    def __init__(self, bucket: str, concurrency=512):
+    def __init__(self, bucket: str, root: str, concurrency=512):
         self.bucket_name = bucket
+        self.root = root
         self.client = None
         self.concurrency = concurrency
 
@@ -26,8 +27,9 @@ class S3Storage(Storage):
         Get data at path
         """
         client = self.get_client()
+        key = os.path.join(self.root, path)
         try:
-            obj = client.get_object(Bucket=self.bucket_name, Key=path)
+            obj = client.get_object(Bucket=self.bucket_name, Key=key)
         except client.exceptions.NoSuchKey:
             raise DoesNotExistError()
         ret = obj["Body"].read()  # type: ignore
@@ -48,7 +50,7 @@ class S3Storage(Storage):
         session = aiobotocore.get_session()
         async with session.create_client("s3") as client:
             for relative_path, body in self.walk_directory_data(dir_to_store):
-                remote_path = os.path.join(path, relative_path)
+                remote_path = os.path.join(self.root, path, relative_path)
 
                 put_task = loop.create_task(
                     client.put_object(
@@ -72,6 +74,7 @@ class S3Storage(Storage):
         """
         Save data to file at path
         """
+        key = os.path.join(self.root, path)
         if isinstance(data, str):
             data_bytes = data.encode()
         else:
@@ -79,10 +82,10 @@ class S3Storage(Storage):
 
         client = self.get_client()
         try:
-            client.put_object(Bucket=self.bucket_name, Key=path, Body=data_bytes)
+            client.put_object(Bucket=self.bucket_name, Key=key, Body=data_bytes)
         except client.exceptions.NoSuchBucket:
             self.create_bucket()
-            client.put_object(Bucket=self.bucket_name, Key=path, Body=data_bytes)
+            client.put_object(Bucket=self.bucket_name, Key=key, Body=data_bytes)
 
     def list(self, path: str) -> Generator[ListFileInfo, None, None]:
         """
@@ -92,17 +95,18 @@ class S3Storage(Storage):
 
         client = self.get_client()
         paginator = client.get_paginator("list_objects")
+        prefix = os.path.join(self.root, path)
 
-        if not path.endswith("/"):
-            path += "/"
+        if not prefix.endswith("/"):
+            prefix += "/"
 
-        if path.startswith("/"):
-            path = path[1:]
+        if prefix.startswith("/"):
+            prefix = prefix[1:]
 
-        rel_path_regex = re.compile("^" + re.escape(path))
+        rel_path_regex = re.compile("^" + re.escape(prefix))
 
         seen_dirs: Set[str] = set()
-        for result in paginator.paginate(Bucket=self.bucket_name, Prefix=path,):
+        for result in paginator.paginate(Bucket=self.bucket_name, Prefix=prefix,):
             for content in result.get("Contents", []):
                 object_path = content["Key"]
                 rel_path = rel_path_regex.sub("", object_path)
@@ -117,8 +121,9 @@ class S3Storage(Storage):
 
     def exists(self, path: str) -> bool:
         client = self.get_client()
+        key = os.path.join(self.root, path)
         try:
-            client.head_object(Bucket=self.bucket_name, Key=path)
+            client.head_object(Bucket=self.bucket_name, Key=key)
         except client.exceptions.ClientError as e:
             code = e.response.get("Error", {}).get("Code")
             if code == "404":
@@ -134,7 +139,8 @@ class S3Storage(Storage):
             raise DoesNotExistError()
 
         client = self.get_client()
-        client.delete_object(Bucket=self.bucket_name, Key=path)
+        key = os.path.join(self.root, path)
+        client.delete_object(Bucket=self.bucket_name, Key=key)
 
     def get_client(self):
         if self.client is not None:

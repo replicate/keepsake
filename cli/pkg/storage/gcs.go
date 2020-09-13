@@ -33,10 +33,11 @@ var requiredServices = []string{
 type GCSStorage struct {
 	projectID  string
 	bucketName string
+	root       string
 	client     *storage.Client
 }
 
-func NewGCSStorage(bucket string) (*GCSStorage, error) {
+func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
 	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
@@ -44,13 +45,18 @@ func NewGCSStorage(bucket string) (*GCSStorage, error) {
 
 	return &GCSStorage{
 		bucketName: bucket,
+		root:       root,
 		client:     client,
 		projectID:  "",
 	}, nil
 }
 
 func (s *GCSStorage) RootURL() string {
-	return "gs://" + s.bucketName
+	ret := "gs://" + s.bucketName
+	if s.root != "" {
+		ret += "/" + s.root
+	}
+	return ret
 }
 
 func (s *GCSStorage) RootExists() (bool, error) {
@@ -66,13 +72,14 @@ func (s *GCSStorage) RootExists() (bool, error) {
 }
 
 func (s *GCSStorage) Get(path string) ([]byte, error) {
-	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, path)
+	key := filepath.Join(s.root, path)
+	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, key)
 	bucket := s.client.Bucket(s.bucketName)
-	obj := bucket.Object(path)
+	obj := bucket.Object(key)
 	reader, err := obj.NewReader(context.TODO())
 	if err != nil {
 		if err == storage.ErrObjectNotExist {
-			return nil, &NotExistError{msg: "Get: path does not exist: " + path}
+			return nil, &NotExistError{msg: "Get: path does not exist: " + pathString}
 		}
 		return nil, fmt.Errorf("Failed to open %s, got error: %s", pathString, err)
 	}
@@ -88,12 +95,13 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 // Delete deletes path. If path is a directory, it recursively deletes
 // all everything under path
 func (s *GCSStorage) Delete(path string) error {
-	console.Debug("Deleting gs://%s/%s...", s.bucketName, path)
-	err := s.applyRecursive(path, func(obj *storage.ObjectHandle) error {
+	console.Debug("Deleting %s/%s...", s.RootURL(), path)
+	prefix := filepath.Join(s.root, path)
+	err := s.applyRecursive(prefix, func(obj *storage.ObjectHandle) error {
 		return obj.Delete(context.TODO())
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to delete gs://%s/%s: %w", s.bucketName, path, err)
+		return fmt.Errorf("Failed to delete %s/%s: %w", s.RootURL(), path, err)
 	}
 	return nil
 }
@@ -112,16 +120,17 @@ func (s *GCSStorage) PutDirectory(localPath string, storagePath string) error {
 // List files in a path non-recursively
 func (s *GCSStorage) List(dir string) ([]string, error) {
 	results := []string{}
+	prefix := filepath.Join(s.root, dir)
 
 	// prefixes must end with / and must not end with /
-	if !strings.HasSuffix(dir, "/") {
-		dir += "/"
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
 	}
-	dir = strings.TrimPrefix(dir, "/")
+	prefix = strings.TrimPrefix(prefix, "/")
 
 	bucket := s.client.Bucket(s.bucketName)
 	it := bucket.Objects(context.TODO(), &storage.Query{
-		Prefix:    dir,
+		Prefix:    prefix,
 		Delimiter: "/",
 	})
 	for {
@@ -130,9 +139,13 @@ func (s *GCSStorage) List(dir string) ([]string, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Failed to list gs://%s/%s", s.bucketName, dir)
+			return nil, fmt.Errorf("Failed to list %s/%s", s.RootURL(), dir)
 		}
-		results = append(results, attrs.Name)
+		p := attrs.Name
+		if s.root != "" {
+			p = strings.TrimPrefix(strings.TrimPrefix(p, s.root), "/")
+		}
+		results = append(results, p)
 	}
 	return results, nil
 }
@@ -148,16 +161,17 @@ func (s *GCSStorage) MatchFilenamesRecursive(results chan<- ListResult, folder s
 	})
 }
 
-func (s *GCSStorage) listRecursive(results chan<- ListResult, folder string, filter func(string) bool) {
+func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
+	prefix := filepath.Join(s.root, dir)
 	// prefixes must end with / and must not end with /
-	if !strings.HasSuffix(folder, "/") {
-		folder += "/"
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
 	}
-	folder = strings.TrimPrefix(folder, "/")
+	prefix = strings.TrimPrefix(prefix, "/")
 
 	bucket := s.client.Bucket(s.bucketName)
 	it := bucket.Objects(context.TODO(), &storage.Query{
-		Prefix: folder,
+		Prefix: prefix,
 	})
 	for {
 		attrs, err := it.Next()
@@ -166,17 +180,22 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, folder string, fil
 			break
 		}
 		if err != nil {
-			results <- ListResult{Error: fmt.Errorf("Failed to list gs://%s/%s", s.bucketName, folder)}
+			results <- ListResult{Error: fmt.Errorf("Failed to list gs://%s/%s", s.bucketName, prefix)}
 		}
 		if filter(attrs.Name) {
-			results <- ListResult{Path: attrs.Name}
+			p := attrs.Name
+			if s.root != "" {
+				p = strings.TrimPrefix(strings.TrimPrefix(p, s.root), "/")
+			}
+			results <- ListResult{Path: p}
 		}
 	}
 }
 
 // GetDirectory recursively copies storageDir to localDir
 func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
-	err := s.applyRecursive(storageDir, func(obj *storage.ObjectHandle) error {
+	prefix := filepath.Join(s.root, storageDir)
+	err := s.applyRecursive(prefix, func(obj *storage.ObjectHandle) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
 		reader, err := obj.NewReader(context.TODO())
 		if err != nil {
@@ -184,7 +203,7 @@ func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
 		}
 		defer reader.Close()
 
-		relPath, err := filepath.Rel(storageDir, obj.ObjectName())
+		relPath, err := filepath.Rel(prefix, obj.ObjectName())
 		if err != nil {
 			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", obj.ObjectName(), storageDir, err)
 		}
@@ -330,12 +349,13 @@ func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error
 	return key.PrivateKeyData, nil
 }
 
-func (s *GCSStorage) applyRecursive(dir string, fn func(obj *storage.ObjectHandle) error) error {
+// Note: prefix does not include s.root
+func (s *GCSStorage) applyRecursive(prefix string, fn func(obj *storage.ObjectHandle) error) error {
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
 	bucket := s.client.Bucket(s.bucketName)
 	it := bucket.Objects(context.TODO(), &storage.Query{
-		Prefix: dir,
+		Prefix: prefix,
 	})
 	for {
 		attrs, err := it.Next()

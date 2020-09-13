@@ -7,10 +7,17 @@ from replicate.storage.gcs_storage import GCSStorage
 from replicate.exceptions import UnknownStorageBackend
 
 
+# parallel of cli/pkg/storage/storage_test.go
+
+
 def test_implicit_disk_storage():
     storage = storage_for_url("/foo/bar")
     assert isinstance(storage, DiskStorage)
     assert storage.root == "/foo/bar"
+
+    storage = storage_for_url("foo/bar")
+    assert isinstance(storage, DiskStorage)
+    assert storage.root == "foo/bar"
 
 
 def test_disk_storage():
@@ -18,17 +25,33 @@ def test_disk_storage():
     assert isinstance(storage, DiskStorage)
     assert storage.root == "/foo/bar"
 
+    storage = storage_for_url("file://foo/bar")
+    assert isinstance(storage, DiskStorage)
+    assert storage.root == "foo/bar"
+
 
 def test_s3_storage():
     storage = storage_for_url("s3://my-bucket")
     assert isinstance(storage, S3Storage)
     assert storage.bucket_name == "my-bucket"
+    assert storage.root == ""
+
+    storage = storage_for_url("s3://my-bucket/foo")
+    assert isinstance(storage, S3Storage)
+    assert storage.bucket_name == "my-bucket"
+    assert storage.root == "foo"
 
 
 def test_gcs_storage():
     storage = storage_for_url("gs://my-bucket")
     assert isinstance(storage, GCSStorage)
     assert storage.bucket_name == "my-bucket"
+    assert storage.root == ""
+
+    storage = storage_for_url("gs://my-bucket/foo")
+    assert isinstance(storage, GCSStorage)
+    assert storage.bucket_name == "my-bucket"
+    assert storage.root == "foo"
 
 
 def test_unknown_storage():

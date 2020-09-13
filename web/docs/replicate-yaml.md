@@ -110,3 +110,5 @@ It supports several different storage mechanisms:
   ```
 
   You must install the [Cloud SDK](https://cloud.google.com/sdk) and run `gcloud auth login` before using this method.
+
+For Amazon S3 and Google Cloud Storage, you can also define a root directory inside the bucket so you can store multiple models per bucket. For example, `s3://hooli-models/hotdog-detector`. We recommend against this unless you have a good reason to – having a bucket per project allows for fine-grained access control.

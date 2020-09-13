@@ -22,11 +22,12 @@ import (
 
 type S3Storage struct {
 	bucketName string
+	root       string
 	sess       *session.Session
 	svc        *s3.S3
 }
 
-func NewS3Storage(bucket string) (*S3Storage, error) {
+func NewS3Storage(bucket, root string) (*S3Storage, error) {
 	region, err := discoverBucketRegion(bucket)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to discover AWS region for bucket %s, got error: %s", bucket, err)
@@ -34,6 +35,7 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 
 	s := &S3Storage{
 		bucketName: bucket,
+		root:       root,
 	}
 	s.sess, err = session.NewSession(&aws.Config{
 		Region:                        aws.String(region),
@@ -48,7 +50,11 @@ func NewS3Storage(bucket string) (*S3Storage, error) {
 }
 
 func (s *S3Storage) RootURL() string {
-	return "s3://" + s.bucketName
+	ret := "s3://" + s.bucketName
+	if s.root != "" {
+		ret += "/" + s.root
+	}
+	return ret
 }
 
 func (s *S3Storage) RootExists() (bool, error) {
@@ -68,9 +74,10 @@ func (s *S3Storage) RootExists() (bool, error) {
 
 // Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
+	key := filepath.Join(s.root, path)
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(s.bucketName),
-		Key:    aws.String(path),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -78,43 +85,45 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 				return nil, &NotExistError{msg: "Get: path does not exist: " + path}
 			}
 		}
-		return nil, fmt.Errorf("Failed to read s3://%s/%s, got error: %s", s.bucketName, path, err)
+		return nil, fmt.Errorf("Failed to read %s/%s, got error: %s", s.RootURL(), path, err)
 	}
 	body, err := ioutil.ReadAll(obj.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read body from s3://%s/%s, got error: %s", s.bucketName, path, err)
+		return nil, fmt.Errorf("Failed to read body from %s/%s, got error: %s", s.RootURL(), path, err)
 	}
 	return body, nil
 }
 
 func (s *S3Storage) Delete(path string) error {
-	console.Debug("Deleting s3://%s/%s...", s.bucketName, path)
+	console.Debug("Deleting %s/%s...", s.RootURL(), path)
+	key := filepath.Join(s.root, path)
 	iter := s3manager.NewDeleteListIterator(s.svc, &s3.ListObjectsInput{
 		Bucket: &s.bucketName,
-		Prefix: &path,
+		Prefix: &key,
 	})
 	if err := s3manager.NewBatchDeleteWithClient(s.svc).Delete(aws.BackgroundContext(), iter); err != nil {
-		return fmt.Errorf("Failed to delete s3://%s/%s: %w", s.bucketName, path, err)
+		return fmt.Errorf("Failed to delete %s/%s: %w", s.RootURL(), path, err)
 	}
 	return nil
 }
 
 // Put data at path
 func (s *S3Storage) Put(path string, data []byte) error {
+	key := filepath.Join(s.root, path)
 	uploader := s3manager.NewUploader(s.sess)
 	_, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(s.bucketName),
-		Key:    aws.String(path),
+		Key:    aws.String(key),
 		Body:   bytes.NewReader(data),
 	})
 	if err != nil {
-		return fmt.Errorf("Unable to upload %q to %q: %w", path, s.bucketName, err)
+		return fmt.Errorf("Unable to upload to %s/%s: %w", s.RootURL(), path, err)
 	}
 	return nil
 }
 
-func (s *S3Storage) PutDirectory(localPath string, storagePath string) error {
-	files, err := putDirectoryFiles(localPath, storagePath)
+func (s *S3Storage) PutDirectory(localPath string, destPath string) error {
+	files, err := putDirectoryFiles(localPath, filepath.Join(s.root, destPath))
 	if err != nil {
 		return err
 	}
@@ -145,7 +154,8 @@ func (s *S3Storage) PutDirectory(localPath string, storagePath string) error {
 }
 
 // GetDirectory recursively copies storageDir to localDir
-func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
+func (s *S3Storage) GetDirectory(remoteDir string, localDir string) error {
+	prefix := filepath.Join(s.root, remoteDir)
 	iter := new(s3manager.DownloadObjectsIterator)
 	files := []*os.File{}
 	defer func() {
@@ -159,7 +169,7 @@ func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
 	keys := []*string{}
 	err := s.svc.ListObjectsV2PagesWithContext(aws.BackgroundContext(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucketName),
-		Prefix: aws.String(storageDir),
+		Prefix: aws.String(prefix),
 	}, func(output *s3.ListObjectsV2Output, last bool) bool {
 		for _, object := range output.Contents {
 			keys = append(keys, object.Key)
@@ -167,13 +177,13 @@ func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
 		return true
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to list objects in s3://%s/%s, got error: %w", s.bucketName, storageDir, err)
+		return fmt.Errorf("Failed to list objects in s3://%s/%s, got error: %w", s.bucketName, prefix, err)
 	}
 
 	for _, key := range keys {
-		relPath, err := filepath.Rel(storageDir, *key)
+		relPath, err := filepath.Rel(prefix, *key)
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", *key, storageDir, err)
+			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", *key, prefix, err)
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
@@ -200,7 +210,7 @@ func (s *S3Storage) GetDirectory(storageDir string, localDir string) error {
 
 	downloader := s3manager.NewDownloader(s.sess)
 	if err := downloader.DownloadWithIterator(aws.BackgroundContext(), iter); err != nil {
-		return fmt.Errorf("Failed to download s3://%s/%s to %s", s.bucketName, storageDir, localDir)
+		return fmt.Errorf("Failed to download s3://%s/%s to %s", s.bucketName, prefix, localDir)
 	}
 	return nil
 }
@@ -218,21 +228,25 @@ func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder st
 // List files in a path non-recursively
 func (s *S3Storage) List(dir string) ([]string, error) {
 	results := []string{}
+	prefix := filepath.Join(s.root, dir)
 
 	// prefixes must end with / and must not end with /
-	if !strings.HasSuffix(dir, "/") {
-		dir += "/"
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
 	}
-	dir = strings.TrimPrefix(dir, "/")
+	prefix = strings.TrimPrefix(prefix, "/")
 
 	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket:    aws.String(s.bucketName),
-		Prefix:    aws.String(dir),
+		Prefix:    aws.String(prefix),
 		Delimiter: aws.String("/"),
 		MaxKeys:   aws.Int64(1000),
 	}, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, value := range page.Contents {
 			key := *value.Key
+			if s.root != "" {
+				key = strings.TrimPrefix(strings.TrimPrefix(key, s.root), "/")
+			}
 			results = append(results, key)
 		}
 		return true
@@ -293,20 +307,24 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 	return nil
 }
 
-func (s *S3Storage) listRecursive(results chan<- ListResult, folder string, filter func(string) bool) {
+func (s *S3Storage) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
+	prefix := filepath.Join(s.root, dir)
 	// prefixes must end with / and must not end with /
-	if !strings.HasSuffix(folder, "/") {
-		folder += "/"
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
 	}
-	folder = strings.TrimPrefix(folder, "/")
+	prefix = strings.TrimPrefix(prefix, "/")
 
 	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket:  aws.String(s.bucketName),
-		Prefix:  aws.String(folder),
+		Prefix:  aws.String(prefix),
 		MaxKeys: aws.Int64(1000),
 	}, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, value := range page.Contents {
 			key := *value.Key
+			if s.root != "" {
+				key = strings.TrimPrefix(strings.TrimPrefix(key, s.root), "/")
+			}
 			if filter(key) {
 				results <- ListResult{Path: key}
 			}

@@ -179,7 +179,7 @@ func BenchmarkReplicateS3(b *testing.B) {
 	require.NoError(b, err)
 
 	// Create storage
-	storage, err := storage.NewS3Storage(bucketName)
+	storage, err := storage.NewS3Storage(bucketName, "root")
 	require.NoError(b, err)
 
 	err = createLotsOfExperiments(workingDir, storage, 5)

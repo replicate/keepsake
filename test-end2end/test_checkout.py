@@ -7,16 +7,27 @@ import pytest  # type: ignore
 
 
 @pytest.mark.parametrize(
-    "storage_backend", ["gcs", "s3", pytest.param("file", marks=pytest.mark.fast)],
+    "storage_backend,use_root",
+    [
+        ("gcs", False),
+        ("gcs", True),
+        ("s3", False),
+        ("s3", True),
+        pytest.param("file", False, marks=pytest.mark.fast),
+    ],
 )
-def test_checkout(storage_backend, tmpdir, temp_bucket, tmpdir_factory):
+def test_checkout(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
     if storage_backend == "s3":
-        storage = "s3://" + temp_bucket
+        storage = "s3://" + temp_bucket + "/root"
     if storage_backend == "gcs":
-        storage = "gs://" + temp_bucket
+        storage = "gs://" + temp_bucket + "/root"
     elif storage_backend == "file":
         storage = "file://" + str(tmpdir_factory.mktemp("storage"))
+
+    # different root directory in buckets
+    if use_root:
+        storage += "/root"
 
     rand = str(random.randint(0, 100000))
     os.mkdir(os.path.join(tmpdir, rand))

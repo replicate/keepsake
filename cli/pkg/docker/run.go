@@ -75,7 +75,7 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 	// available outside the container. to fix this we rewrite the
 	// storage path inside the container to a temporary directory,
 	// and mount that to the actual storage path on the host.
-	scheme, storagePath, err := storage.SplitURL(storageURL)
+	scheme, _, storagePath, err := storage.SplitURL(storageURL)
 	if err != nil {
 		return err
 	}
