@@ -22,25 +22,33 @@ def temp_bucket():
     try:
         bucket.reload()
         assert bucket.exists()
-        yield bucket_name
+        yield bucket
     finally:
         bucket.delete(force=True)
 
 
 def test_put_get(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket)
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
     storage.put("foo/bar.txt", "nice")
+    assert temp_bucket.blob("foo/bar.txt").download_as_string() == b"nice"
+    assert storage.get("foo/bar.txt") == b"nice"
+
+
+def test_put_get_with_root(temp_bucket):
+    storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
+    storage.put("foo/bar.txt", "nice")
+    assert temp_bucket.blob("someroot/foo/bar.txt").download_as_string() == b"nice"
     assert storage.get("foo/bar.txt") == b"nice"
 
 
 def test_get_not_exists(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket)
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
     with pytest.raises(DoesNotExistError):
         assert storage.get("foo/bar.txt")
 
 
 def test_put_directory(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket)
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
         abs_path = os.path.join(tmpdir, path)
@@ -49,6 +57,33 @@ def test_put_directory(temp_bucket, tmpdir):
             f.write("hello " + path)
 
     storage.put_directory("folder", tmpdir)
-    assert storage.get("folder/foo.txt") == b"hello foo.txt"
-    assert storage.get("folder/qux.txt") == b"hello qux.txt"
-    assert storage.get("folder/bar/baz.txt") == b"hello bar/baz.txt"
+    assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
+    assert temp_bucket.blob("folder/qux.txt").download_as_string() == b"hello qux.txt"
+    assert (
+        temp_bucket.blob("folder/bar/baz.txt").download_as_string()
+        == b"hello bar/baz.txt"
+    )
+
+
+def test_put_directory_with_root(temp_bucket, tmpdir):
+    storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
+
+    for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
+        abs_path = os.path.join(tmpdir, path)
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        with open(abs_path, "w") as f:
+            f.write("hello " + path)
+
+    storage.put_directory("folder", tmpdir)
+    assert (
+        temp_bucket.blob("someroot/folder/foo.txt").download_as_string()
+        == b"hello foo.txt"
+    )
+    assert (
+        temp_bucket.blob("someroot/folder/qux.txt").download_as_string()
+        == b"hello qux.txt"
+    )
+    assert (
+        temp_bucket.blob("someroot/folder/bar/baz.txt").download_as_string()
+        == b"hello bar/baz.txt"
+    )

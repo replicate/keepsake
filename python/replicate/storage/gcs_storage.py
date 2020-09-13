@@ -18,8 +18,9 @@ from ..exceptions import DoesNotExistError
 
 
 class GCSStorage(Storage):
-    def __init__(self, bucket: str, concurrency=512):
+    def __init__(self, bucket: str, root: str, concurrency=512):
         self.bucket_name = bucket
+        self.root = root
         self.client: Optional[storage.Client] = None
         self.concurrency = concurrency
         self.temp_service_account_path: Optional[str] = None
@@ -30,7 +31,7 @@ class GCSStorage(Storage):
         """
         bucket = self.bucket()
         try:
-            blob = bucket.blob(path)
+            blob = bucket.blob(os.path.join(self.root, path))
             return blob.download_as_string()
         except exceptions.NotFound:
             raise DoesNotExistError()
@@ -50,7 +51,7 @@ class GCSStorage(Storage):
         async with aiohttp.ClientSession() as session:
             storage = self._get_async_client(session=session)
             for relative_path, data in self.walk_directory_data(dir_to_store):
-                remote_path = os.path.join(path, relative_path)
+                remote_path = os.path.join(self.root, path, relative_path)
 
                 put_task = asyncio.ensure_future(
                     storage.upload(self.bucket_name, remote_path, data)
@@ -72,13 +73,8 @@ class GCSStorage(Storage):
         """
         Save data to file at path
         """
-        if isinstance(data, str):
-            data_bytes = data.encode()
-        else:
-            data_bytes = data
-
         bucket = self.bucket()
-        blob = bucket.blob(path)
+        blob = bucket.blob(os.path.join(self.root, path))
         blob.upload_from_string(data)
 
     def _get_client(self) -> storage.Client:

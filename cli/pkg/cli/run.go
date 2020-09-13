@@ -60,7 +60,7 @@ func runCommand(opts runOpts, args []string) (err error) {
 
 	// User input checks
 	if opts.host != "" {
-		scheme, _, err := storage.SplitURL(conf.Storage)
+		scheme, _, _, err := storage.SplitURL(conf.Storage)
 		if err != nil {
 			return err
 		}

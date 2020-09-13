@@ -28,7 +28,7 @@ func TestS3StorageGet(t *testing.T) {
 	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
 	time.Sleep(1 * time.Second)
 
-	storage, err := NewS3Storage(bucketName)
+	storage, err := NewS3Storage(bucketName, "root")
 	require.NoError(t, err)
 
 	require.NoError(t, storage.Put("some-file", []byte("hello")))

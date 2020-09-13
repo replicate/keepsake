@@ -5,18 +5,22 @@ import pytest  # type: ignore
 
 
 @pytest.mark.parametrize(
-    "storage_backend,use_replicate_run",
+    "storage_backend,use_root,use_replicate_run",
     [
-        ("gcs", False),
-        ("gcs", True),
-        ("s3", False),
-        ("s3", True),
-        ("file", False),
-        ("file", True),
-        pytest.param("undefined", False, marks=pytest.mark.fast),
+        ("gcs", False, False),
+        ("gcs", True, False),
+        ("gcs", False, True),
+        ("s3", False, False),
+        ("s3", True, False),
+        ("s3", False, True),
+        ("file", False, False),
+        ("file", False, True),
+        pytest.param("undefined", False, False, marks=pytest.mark.fast),
     ],
 )
-def test_list(storage_backend, use_replicate_run, tmpdir, temp_bucket, tmpdir_factory):
+def test_list(
+    storage_backend, use_replicate_run, use_root, tmpdir, temp_bucket, tmpdir_factory
+):
     tmpdir = str(tmpdir)
     if storage_backend == "s3":
         storage = "s3://" + temp_bucket
@@ -26,6 +30,10 @@ def test_list(storage_backend, use_replicate_run, tmpdir, temp_bucket, tmpdir_fa
         storage = "file://" + str(tmpdir_factory.mktemp("storage"))
     elif storage_backend == "undefined":
         storage = str(tmpdir_factory.mktemp("storage"))
+
+    # different root directory in buckets
+    if use_root:
+        storage += "/root"
 
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(
