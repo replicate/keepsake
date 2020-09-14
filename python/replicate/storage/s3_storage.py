@@ -4,7 +4,6 @@ import os
 import asyncio
 import re
 from typing import AnyStr, Optional, Generator, Set, Any
-import aiobotocore  # type: ignore
 import boto3  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
@@ -26,7 +25,7 @@ class S3Storage(Storage):
         """
         Get data at path
         """
-        client = self.get_client()
+        client = self._get_client()
         key = os.path.join(self.root, path)
         try:
             obj = client.get_object(Bucket=self.bucket_name, Key=key)
@@ -39,36 +38,10 @@ class S3Storage(Storage):
         """
         Save directory to path
         """
-        loop = asyncio.get_event_loop()
-        # TODO(andreas): handle exceptions
-        loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
-
-    async def put_directory_async(
-        self, loop: asyncio.AbstractEventLoop, path: str, dir_to_store: str
-    ):
-        put_tasks = set()
-        session = aiobotocore.get_session()
-        async with session.create_client("s3") as client:
-            for relative_path, body in self.walk_directory_data(dir_to_store):
-                remote_path = os.path.join(self.root, path, relative_path)
-
-                put_task = loop.create_task(
-                    client.put_object(
-                        Body=body, Bucket=self.bucket_name, Key=remote_path
-                    )
-                )
-
-                # Emulate a worker pool by waiting for a single task
-                # to finish when the number of tasks == self.concurrency
-                put_tasks.add(put_task)
-                if len(put_tasks) >= self.concurrency:
-                    _, new_tasks = await asyncio.wait(
-                        put_tasks, return_when=asyncio.FIRST_COMPLETED
-                    )
-                    for task in new_tasks:
-                        put_tasks.add(loop.create_task(task))
-
-            await asyncio.wait(put_tasks)
+        client = self._get_client()
+        for relative_path, data in self.walk_directory_data(dir_to_store):
+            remote_path = os.path.join(self.root, path, relative_path)
+            client.put_object(Bucket=self.bucket_name, Key=remote_path, Body=data)
 
     def put(self, path: str, data: AnyStr):
         """
@@ -80,7 +53,7 @@ class S3Storage(Storage):
         else:
             data_bytes = data
 
-        client = self.get_client()
+        client = self._get_client()
         try:
             client.put_object(Bucket=self.bucket_name, Key=key, Body=data_bytes)
         except client.exceptions.NoSuchBucket:
@@ -93,7 +66,7 @@ class S3Storage(Storage):
         """
         # TODO(andreas): inefficiently fetches all paths in bucket
 
-        client = self.get_client()
+        client = self._get_client()
         paginator = client.get_paginator("list_objects")
         prefix = os.path.join(self.root, path)
 
@@ -120,7 +93,7 @@ class S3Storage(Storage):
                     yield {"name": rel_path, "type": "file"}
 
     def exists(self, path: str) -> bool:
-        client = self.get_client()
+        client = self._get_client()
         key = os.path.join(self.root, path)
         try:
             client.head_object(Bucket=self.bucket_name, Key=key)
@@ -138,11 +111,11 @@ class S3Storage(Storage):
         if not self.exists(path):
             raise DoesNotExistError()
 
-        client = self.get_client()
+        client = self._get_client()
         key = os.path.join(self.root, path)
         client.delete_object(Bucket=self.bucket_name, Key=key)
 
-    def get_client(self):
+    def _get_client(self):
         if self.client is not None:
             return self.client
 
@@ -150,6 +123,6 @@ class S3Storage(Storage):
         return self.client
 
     def create_bucket(self):
-        self.get_client().create_bucket(Bucket=self.bucket_name)
+        self._get_client().create_bucket(Bucket=self.bucket_name)
         bucket = boto3.resource("s3").Bucket(self.bucket_name)
         bucket.wait_until_exists()
