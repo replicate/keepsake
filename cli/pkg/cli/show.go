@@ -15,7 +15,6 @@ import (
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/project"
-	"replicate.ai/cli/pkg/storage"
 )
 
 var timezone = time.Local
@@ -43,9 +42,6 @@ func show(cmd *cobra.Command, args []string) error {
 	store, err := getStorage(storageURL, projectDir)
 	if err != nil {
 		return err
-	}
-	if storage.NeedsCaching(store) {
-		console.Info("Fetching data from %q...", store.RootURL())
 	}
 	proj := project.NewProject(store)
 	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
