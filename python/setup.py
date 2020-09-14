@@ -98,9 +98,7 @@ setuptools.setup(
     # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
     # and break in weird ways?
     install_requires=[
-        "aiobotocore==1.0.7",
         "boto3==1.12.32",
-        "gcloud-aio-storage==5.5.4",
         "google-cloud-storage==1.23.0",
         "pyyaml==5.3.1",
         "typing-extensions",

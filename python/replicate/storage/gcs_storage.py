@@ -4,10 +4,7 @@ import sys
 import base64
 import binascii
 import os
-import asyncio
 from typing import AnyStr, Optional, Generator, Set, Tuple
-import aiohttp
-from gcloud.aio.storage import Storage as AioStorage  # type: ignore
 from google.cloud import storage  # type: ignore
 from google.api_core import exceptions  # type: ignore
 from google.auth.credentials import Credentials  # type: ignore
@@ -40,34 +37,11 @@ class GCSStorage(Storage):
         """
         Save directory to path
         """
-        loop = asyncio.get_event_loop()
-        # TODO(andreas): handle exceptions
-        loop.run_until_complete(self.put_directory_async(loop, path, dir_to_store))
-
-    async def put_directory_async(
-        self, loop: asyncio.AbstractEventLoop, path: str, dir_to_store: str
-    ):
-        put_tasks = set()
-        async with aiohttp.ClientSession() as session:
-            storage = self._get_async_client(session=session)
-            for relative_path, data in self.walk_directory_data(dir_to_store):
-                remote_path = os.path.join(self.root, path, relative_path)
-
-                put_task = asyncio.ensure_future(
-                    storage.upload(self.bucket_name, remote_path, data)
-                )
-
-                # Emulate a worker pool by waiting for a single task
-                # to finish when the number of tasks == self.concurrency
-                put_tasks.add(put_task)
-                if len(put_tasks) >= self.concurrency:
-                    _, new_tasks = await asyncio.wait(
-                        put_tasks, return_when=asyncio.FIRST_COMPLETED
-                    )
-                    for task in new_tasks:
-                        put_tasks.add(task)
-
-            await asyncio.wait(put_tasks)
+        bucket = self.bucket()
+        for relative_path, data in self.walk_directory_data(dir_to_store):
+            remote_path = os.path.join(self.root, path, relative_path)
+            blob = bucket.blob(remote_path)
+            blob.upload_from_string(data)
 
     def put(self, path: str, data: AnyStr):
         """
@@ -85,28 +59,6 @@ class GCSStorage(Storage):
             else:
                 self.client = storage.Client(project=project, credentials=credentials)
         return self.client
-
-    def _get_async_client(self, session: aiohttp.ClientSession) -> AioStorage:
-        # we need to save a service account file since AioStorage
-        # needs that. but we only do that if the script has been
-        # started from the replicate command line, in which case it'll
-        # have environment variables that get parsed by
-        # self._get_service_account_key().
-        if self.temp_service_account_path is None:
-            key_json = self._get_service_account_key()
-            if key_json is not None:
-                tmp = tempfile.NamedTemporaryFile(
-                    delete=False, prefix="replicate-service-account-", suffix=".json"
-                )
-                self.temp_service_account_path = tmp.name
-                tmp.close()
-
-                with open(self.temp_service_account_path, "w") as f:
-                    f.write(key_json.decode())
-        client = AioStorage(
-            session=session, service_file=self.temp_service_account_path
-        )
-        return client
 
     def bucket(self) -> storage.Bucket:
         """
