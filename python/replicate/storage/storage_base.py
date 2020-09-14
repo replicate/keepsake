@@ -14,7 +14,12 @@ ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
 class Storage:
     __metaclass__ = ABCMeta
 
-    put_directory_ignore = [".replicate", ".git", "venv", ".mypy_cache"]
+    put_directory_ignore = [
+        ".replicate",
+        ".git",
+        "venv",
+        ".mypy_cache",
+    ]
 
     @abstractmethod
     def get(self, path: str) -> bytes:
