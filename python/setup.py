@@ -86,7 +86,7 @@ class build_scripts(_build_scripts):
 # fmt: off
 setuptools.setup(
     name="replicate",
-    version="0.1.18",
+    version="0.1.19",
     author="",
     author_email="",
     description="",
