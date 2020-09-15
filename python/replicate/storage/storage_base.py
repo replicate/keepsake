@@ -46,12 +46,12 @@ class Storage:
             # Make it relative to path we want to store it in storage
             self.put(os.path.join(path, relative_path), data)
 
-    def walk_directory_data(
+    def walk_directory_paths(
         self, directory: str
-    ) -> Generator[Tuple[str, bytes], None, None]:
+    ) -> Generator[Tuple[str, str], None, None]:
         """
-        Yields (relative_path, data) of all files, recursively, in
-        directory.
+        Yields (relative_path, absolute_path) of all files,
+        recursively, in directory.
         """
         ignorefile_path = os.path.join(directory, ".replicateignore")
         if os.path.exists(ignorefile_path):
@@ -63,8 +63,7 @@ class Storage:
             dirs[:] = [d for d in dirs if d not in self.put_directory_ignore]
 
             for filename in files:
-                with open(os.path.join(current_directory, filename), "rb") as fh:
-                    data = fh.read()
+                absolute_path = os.path.join(current_directory, filename)
                 # Strip local path
                 relative_dir = os.path.relpath(current_directory, directory)
                 # relative_dir will be "." if current_directory ==
@@ -73,12 +72,23 @@ class Storage:
                 if relative_dir == ".":
                     relative_dir = ""
                 relative_path = os.path.join(relative_dir, filename)
-                absolute_path = os.path.join(current_directory, filename)
 
                 if ignore_matches is not None and ignore_matches(absolute_path):
                     continue
 
-                yield relative_path, data
+                yield relative_path, absolute_path
+
+    def walk_directory_data(
+        self, directory: str
+    ) -> Generator[Tuple[str, bytes], None, None]:
+        """
+        Yields (relative_path, data) of all files, recursively, in
+        directory.
+        """
+        for relative_path, absolute_path in self.walk_directory_paths(directory):
+            with open(absolute_path, "rb") as fh:
+                data = fh.read()
+            yield relative_path, data
 
     @abstractmethod
     def list(self, path: str) -> Generator[ListFileInfo, None, None]:

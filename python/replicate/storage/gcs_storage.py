@@ -38,16 +38,17 @@ class GCSStorage(Storage):
         Save directory to path
         """
         bucket = self.bucket()
-        for relative_path, data in self.walk_directory_data(dir_to_store):
+        for relative_path, absolute_path in self.walk_directory_paths(dir_to_store):
             remote_path = os.path.join(self.root, path, relative_path)
 
             if os.environ.get("REPLICATE_DEBUG"):
                 sys.stderr.write(
                     "Uploading to gs://{}/{}\n".format(self.bucket_name, remote_path)
                 )
+                sys.stderr.flush()
 
             blob = bucket.blob(remote_path)
-            blob.upload_from_string(data)
+            blob.upload_from_filename(absolute_path)
 
     def put(self, path: str, data: AnyStr):
         """
@@ -55,9 +56,11 @@ class GCSStorage(Storage):
         """
         bucket = self.bucket()
         remote_path = os.path.join(self.root, path)
-        sys.stderr.write(
-            "Uploading to gs://{}/{}\n".format(self.bucket_name, remote_path)
-        )
+        if os.environ.get("REPLICATE_DEBUG"):
+            sys.stderr.write(
+                "Uploading to gs://{}/{}\n".format(self.bucket_name, remote_path)
+            )
+            sys.stderr.flush()
         blob = bucket.blob(remote_path)
         blob.upload_from_string(data)
 
