@@ -2,6 +2,7 @@ import sys
 import os
 from abc import ABCMeta, abstractmethod
 from typing import AnyStr, Generator, Tuple
+from gitignore_parser import parse_gitignore  # type: ignore
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -52,6 +53,12 @@ class Storage:
         Yields (relative_path, data) of all files, recursively, in
         directory.
         """
+        ignorefile_path = os.path.join(directory, ".replicateignore")
+        if os.path.exists(ignorefile_path):
+            ignore_matches = parse_gitignore(ignorefile_path)
+        else:
+            ignore_matches = None
+
         for current_directory, dirs, files in os.walk(directory, topdown=True):
             dirs[:] = [d for d in dirs if d not in self.put_directory_ignore]
 
@@ -66,6 +73,10 @@ class Storage:
                 if relative_dir == ".":
                     relative_dir = ""
                 relative_path = os.path.join(relative_dir, filename)
+                absolute_path = os.path.join(current_directory, filename)
+
+                if ignore_matches is not None and ignore_matches(absolute_path):
+                    continue
 
                 yield relative_path, data
 

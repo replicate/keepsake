@@ -100,6 +100,7 @@ setuptools.setup(
     install_requires=[
         "boto3==1.12.32",
         "google-cloud-storage==1.23.0",
+        "gitignore-parser==0.0.8",
         "pyyaml==5.3.1",
         "typing-extensions",
     ],

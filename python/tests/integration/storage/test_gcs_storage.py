@@ -4,6 +4,7 @@ import random
 import string
 import pytest  # type: ignore
 from google.cloud import storage
+from google.api_core.exceptions import NotFound
 
 import replicate
 from replicate.exceptions import DoesNotExistError
@@ -87,3 +88,41 @@ def test_put_directory_with_root(temp_bucket, tmpdir):
         temp_bucket.blob("someroot/folder/bar/baz.txt").download_as_string()
         == b"hello bar/baz.txt"
     )
+
+
+def test_replicateignore(temp_bucket, tmpdir):
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
+
+    for path in [
+        "foo.txt",
+        "bar/baz.txt",
+        "bar/quux.xyz",
+        "bar/new-qux.txt",
+        "qux.xyz",
+    ]:
+        abs_path = os.path.join(tmpdir, path)
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        with open(abs_path, "w") as f:
+            f.write("hello " + path)
+
+    with open(os.path.join(tmpdir, ".replicateignore"), "w") as f:
+        f.write(
+            """
+# this is a comment
+baz.txt
+*.xyz
+"""
+        )
+
+    storage.put_directory("folder", tmpdir)
+    assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
+    assert (
+        temp_bucket.blob("folder/bar/new-qux.txt").download_as_string()
+        == b"hello bar/new-qux.txt"
+    )
+    with pytest.raises(NotFound):
+        temp_bucket.blob("folder/bar/baz.txt").download_as_string()
+    with pytest.raises(NotFound):
+        temp_bucket.blob("folder/qux.xyz").download_as_string()
+    with pytest.raises(NotFound):
+        temp_bucket.blob("folder/bar/quux.xyz").download_as_string()
