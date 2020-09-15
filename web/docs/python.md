@@ -17,7 +17,7 @@ You can install the library by adding it to your `requirements.txt` file:
 <CodeBlock className="txt">
 {`replicate==`+config.customFields.version+`
 `}</CodeBlock>
- 
+
 
 It's a good idea to put it in a file and commit it to Git so other people who use your code will have it installed automatically.
 
@@ -70,4 +70,55 @@ For example:
 ...   metrics={"train_loss": 0.425, "train_accuracy": 0.749},
 ...   primary_metric=("train_accuracy", "maximize"),
 ... )
+```
+
+#### `replicate.keras_callback.ReplicateCallback(filepath="model.hdf5", params=None, primary_metric=None, save_freq="epoch")`
+
+_Note: This is an experimental feature, and the API may change in the future._
+
+Replicate provies a convenient callback when you're working with Keras. `ReplicateCallback` behaves like Tensorflow's [ModelCheckpoint callback](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint), but in addition to exporting a model at the end of each epoch, it also:
+- runs `replicate.init()` to initialize an experiment at the start of training, and
+- runs `experiment.checkpoint()` after saving the model at the end of the epoch (or every _n_ batches if `save_freq` is an integer). This call also saves checkpoint metadata, that it gets from the [`logs` dictionary](https://www.tensorflow.org/guide/keras/custom_callback#a_basic_example) that is passed to the callback's `on_epoch_end` method.
+
+This class takes the following arguments:
+- `filepath`: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch.
+- `params`: A dictionary of hyperparameters that will be recorded to the experiment at the start of training.
+- `primary_metric`: A _pair_ in the format `(metric_name, goal)`, where `goal` is either `minimize`, or `maximize`.
+- `save_freq`:`"epoch"` or integer. When using `"epoch"`, the callback saves the model after each epoch. When using integer, the callback saves the model at end of this many batches.
+
+Example:
+
+```python
+dense_size = 784
+learning_rate = 0.01
+
+# from https://www.tensorflow.org/guide/keras/custom_callback
+model = keras.Sequential()
+model.add(keras.layers.Dense(1, input_dim=dense_size))
+model.compile(
+    optimizer=keras.optimizers.RMSprop(learning_rate=learning_rate),
+    loss="mean_squared_error",
+    metrics=["mean_absolute_error"],
+)
+
+# Load example MNIST data and pre-process it
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+x_train = x_train.reshape(-1, 784).astype("float32") / 255.0
+x_test = x_test.reshape(-1, 784).astype("float32") / 255.0
+
+model.fit(
+    x_train[:1000],
+    y_train[:1000],
+    batch_size=128,
+    epochs=20,
+    validation_split=0.5,
+    callbacks=[
+        MyLogger(),
+        ReplicateCallback(
+            params={"dense_size": dense_size, "learning_rate": learning_rate,},
+            primary_metric=("mean_absolute_error", "minimize"),
+            save_freq=2,
+        ),
+    ],
+)
 ```
