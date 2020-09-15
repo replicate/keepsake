@@ -24,6 +24,7 @@ class ReplicateCallback(ModelCheckpoint):
         self.init_params = params
         self.primary_metric = primary_metric
         self.experiment: experiment.Experiment
+        self.step = 0
 
         super().__init__(
             filepath=filepath,
@@ -68,5 +69,12 @@ class ReplicateCallback(ModelCheckpoint):
                 )
 
         self.experiment.checkpoint(
-            self.filepath, step=epoch, metrics=logs, primary_metric=self.primary_metric
+            self.filepath,
+            step=self.step,
+            metrics=logs,
+            primary_metric=self.primary_metric,
         )
+
+        # if save_freq is an integer, step = batch_number * save_freq
+        # if save_freq is epoch, step = epoch_number
+        self.step += 1
