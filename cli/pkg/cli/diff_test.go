@@ -30,14 +30,18 @@ func TestDiffSameExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Checkpoint:               2cccccc                   3cccccc
-Experiment:               1eeeeee                   1eeeeee
+Experiment
+ID:                       1eeeeee                        1eeeeee
 
 Params
 (no difference)
 
+Checkpoint
+ID:                       2cccccc                        3cccccc
+Created:                  Mon, 02 Jan 2006 23:00:05 +08  Mon, 02 Jan 2006 23:01:05 +08
+
 Metrics
-metric-1:                 0.01                      0.02
+metric-1:                 0.01                           0.02
 
 `
 	actual = testutil.TrimRightLines(actual)
@@ -61,17 +65,25 @@ func TestDiffDifferentExperiment(t *testing.T) {
 	actual := out.String()
 
 	expected := `
-Checkpoint:               2cccccc                   4cccccc
-Experiment:               1eeeeee                   2eeeeee
+Experiment
+ID:                       1eeeeee                        2eeeeee
+Command:                  train.py --gamma=1.2 -x
+Created:                  Mon, 02 Jan 2006 22:54:05 +08  Mon, 02 Jan 2006 23:03:05 +08
+Host:                     10.1.1.1                       10.1.1.2
 
 Params
-param-1:                  100                       200
-param-3:                  (not set)                 hi
+param-1:                  100                            200
+param-3:                  (not set)                      hi
+
+Checkpoint
+ID:                       2cccccc                        4cccccc
+Created:                  Mon, 02 Jan 2006 23:00:05 +08  Mon, 02 Jan 2006 23:02:05 +08
+Step:                     20                             5
 
 Metrics
-metric-1:                 0.01                      (not set)
-metric-2:                 2                         (not set)
-metric-3:                 (not set)                 0.5
+metric-1:                 0.01                           (not set)
+metric-2:                 2                              (not set)
+metric-3:                 (not set)                      0.5
 
 `
 	actual = testutil.TrimRightLines(actual)
