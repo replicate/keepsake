@@ -181,15 +181,21 @@ Let's compare the last checkpoints from the two experiments we ran. Run this, re
 
 ```shell-session
 $ replicate diff 4941495 a122e85
-Checkpoint:               4941495                   a122e85
-Experiment:               b90ad56                   9cce006
+Experiment
+ID:                       b90ad56                        9cce006
+Command:                  train.py                       train.py --learning_rate=0.2
+Created:                  Wed, 02 Sep 2020 20:44:51 PDT  Wed, 02 Sep 2020 20:45:01 PDT
 
 Params
-learning_rate:            0.01                      0.2
+learning_rate:            0.01                           0.2
+
+Checkpoint
+ID:                       4941495                        a122e85
+Created:                  Wed, 02 Sep 2020 20:44:55 PDT  Wed, 02 Sep 2020 20:45:04 PDT
 
 Metrics
-accuracy:                 1                         0.9666666388511658
-loss:                     0.11759971082210541       0.056485891342163086
+accuracy:                 1                              0.9666666388511658
+loss:                     0.11759971082210541            0.056485891342163086
 ```
 
 `replicate diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Replicate is aware of: params, metrics, dependencies, and so on.

@@ -5,7 +5,9 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"text/tabwriter"
+	"time"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
@@ -82,12 +84,21 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	// min width for 3 columns in 78 char terminal
 	w := tabwriter.NewWriter(out, 78/3, 8, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Checkpoint:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
-	fmt.Fprintf(w, "Experiment:\t%s\t%s\n", com1.ShortExperimentID(), com2.ShortExperimentID())
+	heading(w, au, "Experiment")
+	fmt.Fprintf(w, "ID:\t%s\t%s\n", exp1.ShortID(), exp2.ShortID())
+	// HACK: don't show "no differences" if it's the same experiment, but still show ID because that's useful
+	if exp1.ID != exp2.ID {
+		printMapDiff(w, au, experimentToMap(exp1), experimentToMap(exp2))
+	}
 
 	br(w)
 	heading(w, au, "Params")
 	printMapDiff(w, au, paramMapToStringMap(exp1.Params), paramMapToStringMap(exp2.Params))
+	br(w)
+
+	heading(w, au, "Checkpoint")
+	fmt.Fprintf(w, "ID:\t%s\t%s\n", com1.ShortID(), com2.ShortID())
+	printMapDiff(w, au, checkpointToMap(com1), checkpointToMap(com2))
 	br(w)
 
 	heading(w, au, "Metrics")
@@ -128,6 +139,25 @@ func printMapDiff(w *tabwriter.Writer, au aurora.Aurora, map1, map2 map[string]s
 		}
 	} else {
 		fmt.Fprintf(w, "%s\t\t\n", au.Faint("(no difference)"))
+	}
+}
+
+// Returns a map of checkpoint things we want to show in diff
+func checkpointToMap(checkpoint *project.Checkpoint) map[string]string {
+	return map[string]string{
+		"Step":    strconv.Itoa(checkpoint.Step),
+		"Created": checkpoint.Created.In(timezone).Format(time.RFC1123),
+		"Path":    checkpoint.Path,
+	}
+}
+
+// Returns a map of checkpoint things we want to show in diff
+func experimentToMap(exp *project.Experiment) map[string]string {
+	return map[string]string{
+		"Created": exp.Created.In(timezone).Format(time.RFC1123),
+		"Host":    exp.Host,
+		"User":    exp.User,
+		"Command": exp.Command,
 	}
 }
 
