@@ -37,7 +37,7 @@ default: build
 all: clean build_all install
 
 .PHONY: build
-build: assets
+build: clean assets
 	@mkdir -p $(RELEASE_DIR)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN)
 

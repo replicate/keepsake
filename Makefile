@@ -19,19 +19,14 @@ verify-clean-master:
 	git checkout master
 	git pull origin master
 
-.PHONY: release-python
-manually-release-python:
-	cd python && \
-	$(MAKE) build && \
-	twine check dist/* && \
-	twine upload dist/*
-
-.PHONY: release-cli
-manually-release-cli:
-	cd cli && \
-	$(MAKE) build-all ENVIRONMENT=production && \
-	gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" && \
-	gsutil cp -r release/ "gs://replicate-public/cli/latest"
+.PHONY: release-manual
+release-manual: check-version-var verify-clean-master
+	cd cli && $(MAKE) build-all ENVIRONMENT=production
+	cd cli && gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" 
+	cd cli && gsutil cp -r release/ "gs://replicate-public/cli/latest"
+	cd python && $(MAKE) build
+	cd python && twine check dist/*
+	cd python && twine upload dist/*
 
 .PHONY: check-version-var
 check-version-var:
