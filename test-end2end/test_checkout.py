@@ -1,3 +1,4 @@
+import urllib.request
 from glob import glob
 import random
 import json
@@ -33,6 +34,10 @@ def test_checkout(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory
     os.mkdir(os.path.join(tmpdir, rand))
     with open(os.path.join(tmpdir, rand, rand), "w") as f:
         f.write(rand)
+
+    # big file (7.1MB)
+    cicada_url = "https://storage.googleapis.com/replicate-public/cicada.ogg"
+    urllib.request.urlretrieve(cicada_url, os.path.join(tmpdir, "cicada.ogg"))
 
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(
@@ -87,5 +92,5 @@ if __name__ == "__main__":
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "train.py", "weights", rand]
+    expected_paths = ["replicate.yaml", "train.py", "weights", rand, "cicada.ogg"]
     assert set(actual_paths) == set(expected_paths)
