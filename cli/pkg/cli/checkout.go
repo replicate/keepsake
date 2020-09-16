@@ -105,10 +105,13 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	msg := ""
+	var experiment *project.Experiment
+
 	if result.Checkpoint != nil {
 		// Checking out checkpoint
 		checkpoint := result.Checkpoint
-		experiment, err := proj.ExperimentByID(checkpoint.ExperimentID)
+		experiment, err = proj.ExperimentByID(checkpoint.ExperimentID)
 		if err != nil {
 			return err
 		}
@@ -121,19 +124,25 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		fmt.Println()
-		console.Info("Checked out checkpoint %s to %q", checkpoint.ShortID(), outputDir)
+		msg += fmt.Sprintf("Copied the code and data from checkpoint %s to %q\n", checkpoint.ShortID(), outputDir)
 
 	} else {
 		// Checking out experiment
-		experiment := result.Experiment
+		experiment = result.Experiment
 		if err := store.GetDirectory(path.Join("experiments", experiment.ID), outputDir); err != nil {
 			return err
 		}
 
-		fmt.Println()
-		console.Info("Checked out experiment %s to %q", experiment.ShortID(), outputDir)
+		msg += fmt.Sprintf("Copied the code from experiment %s to %q\n", experiment.ShortID(), outputDir)
 	}
+
+	msg += "\n"
+	msg += "If you want to run this experiment again, this is how it was run:\n"
+	msg += "\n"
+	msg += "  " + experiment.Command
+	msg += "\n"
+	fmt.Fprintln(os.Stderr)
+	console.Info(msg)
 
 	return nil
 }
