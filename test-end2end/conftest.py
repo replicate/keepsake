@@ -81,16 +81,6 @@ def gpu_instance(request):
         # instance.wait_until_terminated()
 
 
-@pytest.fixture(autouse=True, scope="session")
-def install_cli():
-    subprocess.Popen(["make", "install"], cwd="../cli").wait()
-
-
-@pytest.fixture(autouse=True, scope="session")
-def install_python():
-    subprocess.Popen(["pip", "install", "."], cwd="../python").wait()
-
-
 @pytest.fixture(scope="function")
 def temp_bucket():
     # FIXME(bfirsh): this seems to not pass access key like gpu_instance?
