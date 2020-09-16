@@ -89,6 +89,10 @@ This class takes the following arguments:
 Example:
 
 ```python
+import tensorflow as tf
+from tensorflow import keras
+from replicate.keras_callback import ReplicateCallback
+
 dense_size = 784
 learning_rate = 0.01
 
@@ -113,11 +117,9 @@ model.fit(
     epochs=20,
     validation_split=0.5,
     callbacks=[
-        MyLogger(),
         ReplicateCallback(
             params={"dense_size": dense_size, "learning_rate": learning_rate,},
             primary_metric=("mean_absolute_error", "minimize"),
-            save_freq=2,
         ),
     ],
 )
