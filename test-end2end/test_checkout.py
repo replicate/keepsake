@@ -76,6 +76,23 @@ if __name__ == "__main__":
     assert len(experiments) == 1
 
     exp = experiments[0]
+
+    # checking out experiment
+    output_dir = str(tmpdir_factory.mktemp("output"))
+    subprocess.check_output(
+        ["replicate", "checkout", "-o", output_dir, exp["id"]], cwd=tmpdir, env=env,
+    )
+
+    with open(os.path.join(output_dir, rand, rand)) as f:
+        assert f.read() == rand
+
+    actual_paths = [
+        os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
+    ]
+    expected_paths = ["replicate.yaml", "train.py", rand, "cicada.ogg"]
+    assert set(actual_paths) == set(expected_paths)
+
+    # checking out checkpoint
     latest_id = exp["latest_checkpoint"]["id"]
 
     output_dir = str(tmpdir_factory.mktemp("output"))

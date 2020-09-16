@@ -8,7 +8,7 @@ This is the reference for the Replicate CLI commands. You can also see this in t
 ## Commands
 
 * [`replicate analytics`](#replicate-analytics) – Enable or disable analytics
-* [`replicate checkout`](#replicate-checkout) – Copy files from a checkpoint into the project directory
+* [`replicate checkout`](#replicate-checkout) – Copy files from an experiment or checkpoint into the project directory
 * [`replicate diff`](#replicate-diff) – Compare two experiments or checkpoints
 * [`replicate feedback`](#replicate-feedback) – Submit feedback to the team!
 * [`replicate ls`](#replicate-ls) – List experiments in this project
@@ -38,12 +38,12 @@ replicate analytics <on|off> [flags]
 ```
 ## `replicate checkout`
 
-Copy files from a checkpoint into the project directory
+Copy files from an experiment or checkpoint into the project directory
 
 ### Usage
 
 ```
-replicate checkout <checkpoint ID> [flags]
+replicate checkout <experiment or checkpoint ID> [flags]
 ```
 
 ### Flags

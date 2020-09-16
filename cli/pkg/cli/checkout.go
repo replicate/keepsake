@@ -16,8 +16,8 @@ import (
 
 func newCheckoutCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "checkout <checkpoint ID>",
-		Short: "Copy files from a checkpoint into the project directory",
+		Use:   "checkout <experiment or checkpoint ID>",
+		Short: "Copy files from an experiment or checkpoint into the project directory",
 		RunE:  checkoutCheckpoint,
 		Args:  cobra.ExactArgs(1),
 	}
@@ -77,7 +77,7 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	}
 
 	proj := project.NewProject(store)
-	com, err := proj.CheckpointFromPrefix(prefix)
+	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err
 	}
@@ -105,15 +105,35 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// TODO(andreas): empty directory before getting new contents
-	if err := store.GetDirectory(path.Join("experiments", com.ExperimentID), outputDir); err != nil {
-		return err
+	if result.Checkpoint != nil {
+		// Checking out checkpoint
+		checkpoint := result.Checkpoint
+		experiment, err := proj.ExperimentByID(checkpoint.ExperimentID)
+		if err != nil {
+			return err
+		}
+
+		if err := store.GetDirectory(path.Join("experiments", experiment.ID), outputDir); err != nil {
+			return err
+		}
+		// Overlay checkpoint on top of experiment
+		if err := store.GetDirectory(path.Join("checkpoints", checkpoint.ID), outputDir); err != nil {
+			return err
+		}
+
+		fmt.Println()
+		console.Info("Checked out checkpoint %s to %q", checkpoint.ShortID(), outputDir)
+
+	} else {
+		// Checking out experiment
+		experiment := result.Experiment
+		if err := store.GetDirectory(path.Join("experiments", experiment.ID), outputDir); err != nil {
+			return err
+		}
+
+		fmt.Println()
+		console.Info("Checked out experiment %s to %q", experiment.ShortID(), outputDir)
 	}
-	// Overlay checkpoint on top of experiment
-	if err := store.GetDirectory(path.Join("checkpoints", com.ID), outputDir); err != nil {
-		return err
-	}
-	fmt.Println()
-	console.Info("Checked out %s to %q", com.ShortID(), outputDir)
+
 	return nil
 }
