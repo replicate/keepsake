@@ -10,6 +10,8 @@ When you run the end to end tests, they will install the CLI into `/usr/local/bi
 
 ## Running
 
+First, you need to install the Python library and CLI in a place accessible by the tests. The tests will not compile the CLI for you.
+
 To just run a simple local end to end test in development, run:
 
 ```
