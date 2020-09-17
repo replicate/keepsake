@@ -35,7 +35,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
     current_workdir = os.getcwd()
     try:
         os.chdir(tmpdir)
-        experiment = replicate.init(params={"foo": "bar"})
+        experiment = replicate.init(path=".", params={"foo": "bar"})
 
         actual_experiment_meta = s3_read_json(
             temp_bucket,
@@ -53,6 +53,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
             "config": {"python": "3.7", "storage": "s3://" + temp_bucket},
+            "path": ".",
         }
         assert actual_experiment_meta == expected_experiment_meta
 

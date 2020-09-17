@@ -3,7 +3,8 @@ import os
 import datetime
 import json
 import sys
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List, Tuple, overload
+import warnings
 
 from .checkpoint import Checkpoint
 from .config import load_config
@@ -20,6 +21,7 @@ class Experiment:
         config: dict,
         project_dir: str,
         created: datetime.datetime,
+        path: str,
         params: Optional[Dict[str, Any]],
         disable_heartbeat: bool = False,
     ):
@@ -28,6 +30,7 @@ class Experiment:
         self.storage = storage_for_url(storage_url)
         # TODO: automatically detect workdir (see .project)
         self.project_dir = project_dir
+        self.path = path
         self.params = params
         self.id = random_hash()
         self.created = created
@@ -50,7 +53,17 @@ class Experiment:
         # causes a race condition, throwing 404s.
         # Hence, uploading the single metadata file is done first.
         # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_directory
-        self.storage.put_directory("experiments/{}/".format(self.id), self.project_dir)
+        if self.path is not None:
+            source_path = os.path.normpath(os.path.join(self.project_dir, self.path))
+            destination_path = os.path.normpath(
+                os.path.join("experiments", self.id, self.path)
+            )
+            if os.path.isfile(source_path):
+                with open(os.path.join(source_path), "rb") as fh:
+                    data = fh.read()
+                self.storage.put(destination_path, data)
+            else:
+                self.storage.put_directory(destination_path, source_path)
 
     def checkpoint(
         self,
@@ -62,13 +75,15 @@ class Experiment:
     ) -> Checkpoint:
         if kwargs:
             # FIXME (bfirsh): remove before launch
-            raise TypeError(
-                """Metrics must now be passed as a dictionary with the 'metrics' argument.
+            s = """Unexpected keyword arguments to init(): {} 
 
-    For example: experiment.checkpoint(path=".", metrics={...})
+Metrics must now be passed as a dictionary with the 'metrics' argument.
 
-    See the docs for more information: https://beta.replicate.ai/docs/python"""
-            )
+For example: experiment.checkpoint(path=".", metrics={{...}})
+
+See the docs for more information: https://beta.replicate.ai/docs/python"""
+            raise TypeError(s.format(", ".join(kwargs.keys())))
+
         created = datetime.datetime.utcnow()
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
         primary_metric_name: Optional[str] = None
@@ -104,6 +119,7 @@ class Experiment:
             "host": self.get_host(),
             "command": self.get_command(),
             "config": self.config,
+            "path": self.path,
         }
 
     def get_user(self) -> str:
@@ -123,17 +139,28 @@ class Experiment:
 
 
 def init(
-    disable_heartbeat: bool = False, params: Optional[Dict[str, Any]] = None, **kwargs
+    params: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs,
 ) -> Experiment:
+    try:
+        path = kwargs.pop("path")
+    except KeyError:
+        warnings.warn(
+            "The 'path' argument now needs to be passed to replicate.init() and this will throw an error at some point. "
+            "Add 'path=\".\"' to your replicate.init() arguments when you get a chance.",
+        )
+        path = "."
+    # TODO (bfirsh): fail if path is ../
+
     if kwargs:
         # FIXME (bfirsh): remove before launch
-        raise TypeError(
-            """Params must now be passed as a dictionary with the 'params' argument.
+        s = """Unexpected keyword arguments to init(): {} 
+            
+Params must now be passed as a dictionary with the 'params' argument.
 
-For example: replicate.init(params={...})
+For example: replicate.init(path=".", params={{...}})
 
 See the docs for more information: https://beta.replicate.ai/docs/python"""
-        )
+        raise TypeError(s.format(", ".join(kwargs.keys())))
     project_dir = get_project_dir()
     config = load_config(project_dir)
     created = datetime.datetime.utcnow()
@@ -141,6 +168,7 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
         config=config,
         project_dir=project_dir,
         created=created,
+        path=path,
         params=params,
         disable_heartbeat=disable_heartbeat,
     )

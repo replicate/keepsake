@@ -19,7 +19,7 @@ import replicate
 
 def train(**params):
     # highlight-next-line
-    experiment = replicate.init(params=params)
+    experiment = replicate.init(path=".", params=params)
     model = Model()
 
     for epoch in range(params["num_epochs"]):

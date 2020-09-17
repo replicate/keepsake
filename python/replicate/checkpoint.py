@@ -107,8 +107,10 @@ class Checkpoint(object):
         )
         # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_directory
         if self.path is not None:
-            source_path = os.path.join(self.project_dir, self.path)
-            destination_path = os.path.join("checkpoints", self.id, self.path)
+            source_path = os.path.normpath(os.path.join(self.project_dir, self.path))
+            destination_path = os.path.normpath(
+                os.path.join("checkpoints", self.id, self.path)
+            )
             if os.path.isfile(source_path):
                 with open(os.path.join(source_path), "rb") as fh:
                     data = fh.read()

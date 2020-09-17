@@ -53,7 +53,7 @@ storage: {storage}
 import replicate
 
 def main():
-    experiment = replicate.init()
+    experiment = replicate.init(path=".")
     with open("weights", "w") as fh:
         fh.write("42 lbs")
     experiment.checkpoint(path="weights")

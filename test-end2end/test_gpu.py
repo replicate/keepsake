@@ -37,7 +37,7 @@ import torch
 import time
 
 def main():
-    experiment = replicate.init()
+    experiment = replicate.init(path=".")
     num_gpus = torch.cuda.device_count()
     time.sleep(1)
     experiment.checkpoint(path=".", step=1, metrics={"num_gpus": num_gpus})
