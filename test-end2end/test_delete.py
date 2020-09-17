@@ -55,11 +55,12 @@ if __name__ == "__main__":
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
     cmd = ["python", "train.py", "--foo"]
-    return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()
-    assert return_code == 0
+    subprocess.run(cmd, cwd=tmpdir, env=env)
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env)
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
     assert experiments[0]["num_checkpoints"] == 3
@@ -68,7 +69,9 @@ if __name__ == "__main__":
     subprocess.run(["replicate", "delete", checkpoint_id], cwd=tmpdir, env=env)
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env)
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
     assert experiments[0]["num_checkpoints"] == 2
@@ -76,6 +79,8 @@ if __name__ == "__main__":
     subprocess.run(["replicate", "delete", experiments[0]["id"]], cwd=tmpdir, env=env)
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env)
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 0

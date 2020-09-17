@@ -69,11 +69,10 @@ if __name__ == "__main__":
         cmd = ["replicate", "run", "-v", "train.py", "--foo"]
     else:
         cmd = ["python", "train.py", "--foo"]
-    return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()
-    assert return_code == 0
+    subprocess.run(cmd, cwd=tmpdir, env=env)
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True).stdout
     )
     assert len(experiments) == 1
 
@@ -93,10 +92,11 @@ if __name__ == "__main__":
 
     # test that --storage-url works
     experiments2 = json.loads(
-        subprocess.check_output(
+        subprocess.run(
             ["replicate", "ls", "--json", "--storage-url=" + storage],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
-        )
+            capture_output=True
+        ).stdout
     )
     assert experiments2 == experiments

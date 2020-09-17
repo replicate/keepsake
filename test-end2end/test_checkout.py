@@ -67,11 +67,14 @@ if __name__ == "__main__":
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
     cmd = ["python", "train.py"]
-    return_code = subprocess.Popen(cmd, cwd=tmpdir, env=env).wait()
-    assert return_code == 0
+    subprocess.run(
+        cmd, cwd=tmpdir, env=env,
+    )
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "ls", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(
+            ["replicate", "ls", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
 
@@ -79,7 +82,7 @@ if __name__ == "__main__":
 
     # checking out experiment
     output_dir = str(tmpdir_factory.mktemp("output"))
-    subprocess.check_output(
+    subprocess.run(
         ["replicate", "checkout", "-o", output_dir, exp["id"]], cwd=tmpdir, env=env,
     )
 
@@ -96,7 +99,7 @@ if __name__ == "__main__":
     latest_id = exp["latest_checkpoint"]["id"]
 
     output_dir = str(tmpdir_factory.mktemp("output"))
-    subprocess.check_output(
+    subprocess.run(
         ["replicate", "checkout", "-o", output_dir, latest_id], cwd=tmpdir, env=env,
     )
 
