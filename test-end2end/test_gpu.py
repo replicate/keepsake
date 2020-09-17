@@ -55,7 +55,7 @@ if __name__ == "__main__":
     env["AWS_ACCESS_KEY_ID"] = gpu_instance.aws_access_key_id
     env["AWS_SECRET_ACCESS_KEY"] = gpu_instance.aws_secret_access_key
 
-    proc = subprocess.run(
+    subprocess.run(
         [
             "replicate",
             "run",
@@ -68,13 +68,12 @@ if __name__ == "__main__":
         ],
         cwd=tmpdir,
         env=env,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
     )
-    assert proc.returncode == 0
 
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
 
@@ -84,14 +83,18 @@ if __name__ == "__main__":
     assert exp["running"]
 
     running = json.loads(
-        subprocess.check_output(["replicate", "ps", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(
+            ["replicate", "ps", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
 
     assert running == experiments
 
     time.sleep(31)  # TODO(andreas): speed this up to make CI faster
     experiments = json.loads(
-        subprocess.check_output(["replicate", "list", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
 
@@ -99,6 +102,8 @@ if __name__ == "__main__":
     assert not exp["running"]
 
     running = json.loads(
-        subprocess.check_output(["replicate", "ps", "--json"], cwd=tmpdir, env=env,)
+        subprocess.run(
+            ["replicate", "ps", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(running) == 0
