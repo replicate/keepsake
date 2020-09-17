@@ -35,7 +35,7 @@ class ReplicateCallback(ModelCheckpoint):
         )
 
     def on_train_begin(self, logs=None):
-        self.experiment = experiment.init(params=self.init_params)
+        self.experiment = experiment.init(path=".", params=self.init_params)
         super().on_train_begin(logs)
 
     def _save_model(self, epoch, logs):

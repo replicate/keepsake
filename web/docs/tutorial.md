@@ -32,7 +32,7 @@ Then, copy and paste this code into `train.py`:
 
 Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
 
-The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of your code.
+The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of the given path to save your training code.
 
 The second is `experiment.checkpoint()`. This creates a **checkpoint** within the experiment. The checkpoint saves the metrics at that point, and makes a copy of the file or directory you pass to it, which could include weights and any other artifacts.
 

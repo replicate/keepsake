@@ -49,7 +49,7 @@ storage: {storage}
 import replicate
 
 def main():
-    experiment = replicate.init(params={"my_param": "my-value"})
+    experiment = replicate.init(path=".", params={"my_param": "my-value"})
 
     for step in range(3):
         experiment.checkpoint(path=".", step=step)

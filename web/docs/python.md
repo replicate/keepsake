@@ -28,21 +28,26 @@ pip install replicate
 
 ## API
 
-#### `replicate.init(params)`
+#### `replicate.init(path, params)`
 
 Create and return an experiment.
 
-It takes one argument: `params`, a dictionary of hyperparameters to record along with the experiment.
+It takes these arguments:
 
-The entire project directory will be saved to storage to save a copy of the code. The project directory is determined by the directory that contains `replicate.yaml`. If no `replicate.yaml` is found in any parent directories, the current working directory will be used.
+- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save your training code, or anything you want. If `path` is `None`, no data will be saved.
+- `params`: A dictionary of hyperparameters to record along with the experiment.
 
-To determine where data will be stored, this method will read `replicate.yaml` file in the working directory and use the `storage` option. [Learn more in the reference documentation.](replicate-yaml.md)
+The path saved is relative to the project directory. The project directory is determined by the directory that contains `replicate.yaml`. If no `replicate.yaml` is found in any parent directories, the current working directory will be used.
+
+If you want to exclude some files from being included, you can create a `.replicateignore` file alongside `replicate.yaml`. It is in the same format as `.gitignore`.
+
+The storage location for this data is determined by the `storage` option in `replicate.yaml`. [Learn more in the reference documentation.](replicate-yaml.md)
 
 For example:
 
 ```python
 >>> import replicate
->>> experiment = replicate.init(params={"learning_rate" 0.01})
+>>> experiment = replicate.init(path=".", params={"learning_rate" 0.01})
 ```
 
 #### `experiment.checkpoint(path, metrics, primary_metric=None, step=None)`
@@ -51,10 +56,10 @@ Create a checkpoint within an experiment.
 
 It takes these arguments:
 
-- `path`: A path to a file or directory that will be uploaded to storage, relative to the working directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
+- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory (the directory containing `replicate.yaml`). This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
 - `metrics`: A dictionary of metrics to record along with the checkpoint.
-- `primary_metric` (optional): A tuple `(name, goal)` to define one of the metrics as a primary metric to optimize. Goal can either be `minimize` or `maximize`.
-- `step` (optional): the iteration number of this checkpoint, such as epoch number. This is displayed in `replicate ls` and various other places.
+- `primary_metric` _(optional)_: A tuple `(name, goal)` to define one of the metrics as a primary metric to optimize. Goal can either be `minimize` or `maximize`.
+- `step` _(optional)_: the iteration number of this checkpoint, such as epoch number. This is displayed in `replicate ls` and various other places.
 
 Any keyword arguments passed to the function will also be recorded.
 

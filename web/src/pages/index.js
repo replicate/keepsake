@@ -112,9 +112,9 @@ import replicate
 
 def train():
     # highlight-next-line
-    # Save hyperparameters and training code
+    # Save training code and hyperparameters
     # highlight-next-line
-    experiment = replicate.init(params={...})
+    experiment = replicate.init(path=".", params={...})
     model = Model()
 
     for epoch in range(params["num_epochs"]):
@@ -122,7 +122,7 @@ def train():
 
         torch.save(model, "model.pth")
         # highlight-next-line
-        # Save a copy of model.pth and the metrics
+        # Save model weights and the metrics
         # highlight-next-line
         experiment.checkpoint(path="model.pth", metrics={...})`}
               </CodeBlock>

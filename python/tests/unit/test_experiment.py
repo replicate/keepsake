@@ -11,7 +11,13 @@ def test_init_and_checkpoint(temp_workdir):
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
-    experiment = replicate.init(params={"learning_rate": 0.002}, disable_heartbeat=True)
+    with open("README.md", "w") as fh:
+        fh.write("Hello")
+
+    # basic experiment
+    experiment = replicate.init(
+        path=".", params={"learning_rate": 0.002}, disable_heartbeat=True
+    )
 
     assert len(experiment.id) == 64
     with open(
@@ -23,6 +29,10 @@ def test_init_and_checkpoint(temp_workdir):
 
     with open(".replicate/storage/experiments/{}/train.py".format(experiment.id)) as fh:
         assert fh.read() == "print(1 + 1)"
+
+    assert os.path.exists(
+        ".replicate/storage/experiments/{}/README.md".format(experiment.id)
+    )
 
     # checkpoint with a file
     with open("weights", "w") as fh:
@@ -86,11 +96,35 @@ def test_init_and_checkpoint(temp_workdir):
 
     # checkpoint requires path option
     with pytest.raises(TypeError, match="missing 1 required positional argument"):
+        # pylint: disable=no-value-for-parameter
         checkpoint = experiment.checkpoint()
+
+    # experiment with file
+    experiment = replicate.init(
+        path="train.py", params={"learning_rate": 0.002}, disable_heartbeat=True
+    )
+    assert os.path.exists(
+        ".replicate/storage/experiments/{}/train.py".format(experiment.id)
+    )
+    assert not os.path.exists(
+        ".replicate/storage/experiments/{}/README.md".format(experiment.id)
+    )
+
+    # experiment with no path!
+    experiment = replicate.init(
+        path=None, params={"learning_rate": 0.002}, disable_heartbeat=True
+    )
+    with open(
+        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
+    ) as fh:
+        metadata = json.load(fh)
+    assert metadata["id"] == experiment.id
+    assert metadata["params"] == {"learning_rate": 0.002}
+    assert not os.path.exists(".replicate/storage/experiments/{}".format(experiment.id))
 
 
 def test_heartbeat(temp_workdir):
-    experiment = replicate.init()
+    experiment = replicate.init(path=".")
     # Don't write heartbeat
     experiment.heartbeat.kill()
     assert experiment.heartbeat.path == "metadata/heartbeats/{}.json".format(
