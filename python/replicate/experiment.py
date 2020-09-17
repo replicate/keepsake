@@ -1,6 +1,7 @@
 import getpass
 import os
 import datetime
+import inspect
 import json
 import sys
 from typing import Dict, Any, Optional, List, Tuple, overload
@@ -84,6 +85,9 @@ For example: experiment.checkpoint(path=".", metrics={{...}})
 See the docs for more information: https://beta.replicate.ai/docs/python"""
             raise TypeError(s.format(", ".join(kwargs.keys())))
 
+        if path is not None:
+            check_path(path)
+
         created = datetime.datetime.utcnow()
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
         primary_metric_name: Optional[str] = None
@@ -149,7 +153,8 @@ def init(
             "Add 'path=\".\"' to your replicate.init() arguments when you get a chance.",
         )
         path = "."
-    # TODO (bfirsh): fail if path is ../
+    if path is not None:
+        check_path(path)
 
     if kwargs:
         # FIXME (bfirsh): remove before launch
@@ -196,3 +201,15 @@ def set_option_defaults(
             )
         )
     return options
+
+
+def check_path(path: str):
+    # There are few other ways this can break (e.g. "dir/../../") but this will cover most ways users can trip up
+    if path.startswith("/") or path.startswith(".."):
+        func_name = inspect.stack()[1].function
+        s = """The path passed to {}() is relative to the project directory, and must not start with '..' or '/'. The project directory is the directory that contains replicate.yaml.
+
+You probably just want to set it to path=\".\" to save everything.
+
+To learn more, see the documentation: https://beta.replicate.ai/docs/python"""
+        raise ValueError(s.format(func_name))

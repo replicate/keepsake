@@ -94,10 +94,16 @@ def test_init_and_checkpoint(temp_workdir):
         is False
     )
 
-    # checkpoint requires path option
+    # checkpoint: various path problems
     with pytest.raises(TypeError, match="missing 1 required positional argument"):
         # pylint: disable=no-value-for-parameter
         checkpoint = experiment.checkpoint()
+    with pytest.raises(
+        ValueError,
+        match=r"The path passed to checkpoint\(\) is relative to the project directory",
+    ):
+        experiment.checkpoint(path="..")
+        experiment.checkpoint(path="/")
 
     # experiment with file
     experiment = replicate.init(
@@ -121,6 +127,14 @@ def test_init_and_checkpoint(temp_workdir):
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
     assert not os.path.exists(".replicate/storage/experiments/{}".format(experiment.id))
+
+    # experiment: various path problems
+    with pytest.raises(
+        ValueError,
+        match=r"The path passed to init\(\) is relative to the project directory",
+    ):
+        replicate.init(path="..")
+        replicate.init(path="/")
 
 
 def test_heartbeat(temp_workdir):
