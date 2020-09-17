@@ -1,9 +1,10 @@
----
-id: replicate-yaml
-title: replicate.yaml reference
----
+import CodeBlock from "../../../components/code-block";
+import DocsLayout from "../../../layouts/docs";
 
-The `replicate.yaml` file tells Replicate how to train your model and where to store it. This page is a comprehensive reference for it. To get an introduction on how to write it, see [working with remote machines](working-with-remote-machines.md).
+<DocsLayout title="replicate.yaml reference">
+
+
+The `replicate.yaml` file tells Replicate how to train your model and where to store it. This page is a comprehensive reference for it. To get an introduction on how to write it, see [working with remote machines](/docs/tutorial/remote-machines).
 
 <!-- `replicate.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Replicate uses the location of the file to figure out where your model is located. (maybe this lives in tutorial) -->
 
@@ -112,3 +113,6 @@ It supports several different storage mechanisms:
   You must install the [Cloud SDK](https://cloud.google.com/sdk) and run `gcloud auth login` before using this method.
 
 For Amazon S3 and Google Cloud Storage, you can also define a root directory inside the bucket so you can store multiple models per bucket. For example, `s3://hooli-models/hotdog-detector`. We recommend against this unless you have a good reason to – having a bucket per project allows for fine-grained access control.
+
+</DocsLayout>
+

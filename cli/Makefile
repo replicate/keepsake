@@ -126,7 +126,7 @@ strings:
 # FIXME (bfirsh): get this working again
 .PHONY: docs
 docs:
-	go run ./cmd/replicate/main.go generate-docs --docs-folder ../web/docs
+	go run ./cmd/replicate/main.go generate-docs --docs-folder ../web/pages/docs/reference/
 
 # Check this is a valid Git commit
 #
