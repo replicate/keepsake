@@ -1,16 +1,11 @@
----
-id: tutorial
-title: First steps
----
+import CodeBlock from "../../../components/code-block";
+import DocsLayout from "../../../layouts/docs";
+import Note from "../../../components/note";
 
-import CodeBlock from "@theme/CodeBlock";
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-import config from '../docusaurus.config.js';
+<DocsLayout title="Tutorial">
 
-If you like to **learn by doing**, this guide will help you learn how Replicate works by building a simple model.
 
-If you prefer to **learn concepts first**, take a look at [our guide about how Replicate works](how-it-works).
+This guide will help you learn how Replicate works by building a simple model.
 
 ## Write a model
 
@@ -26,11 +21,10 @@ cd iris-classifier
 Then, copy and paste this code into `train.py`:
 
 <CodeBlock className="python" metastring='title="train.py"'>
-{require('!!raw-loader!../../example/train.py').default}
+  {require("!!raw-loader!../../../../example/train.py").default}
 </CodeBlock>
- 
 
-Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
+Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
 
 The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of the given path to save your training code.
 
@@ -45,11 +39,13 @@ Before we start training, we need to install the Python packages that the model 
 Create `requirements.txt` to define our requirements:
 
 <CodeBlock className="txt" metastring='title="requirements.txt"'>
-{`replicate==`+config.customFields.version+`
+  {`replicate==` +
+    process.env.NEXT_PUBLIC_VERSION +
+    `
 scikit-learn==0.23.1
 torch==1.4.0
-`}</CodeBlock>
- 
+`}
+</CodeBlock>
 
 Then, install the Python requirements inside a [Virtualenv](https://virtualenv.pypa.io/en/latest/):
 
@@ -100,13 +96,17 @@ b90ad56     12 seconds ago  stopped        ben   0.01           4941495 (step 99
 9cce006     3 seconds ago   stopped        ben   0.2            a122e85 (step 99)  0.056486  a122e85 (step 99)  0.056486
 ```
 
-:::note
+<Note>
+
+
 Similar to how Git works, all this data is in your working directory. Replicate only lists experiments in the current working directory, so you'll only see experiments from the model you're working on.
 
-If you want to poke around at the internal data, it is inside `.replicate/`. It's not something you'd do day to day, but there's no magic going on – everything's right there as files and plain JSON.
+If you want to poke around at the internal data, it is inside `.replicate/`. It's not something you'd do day to day, but there's no magic going on – everything's right there as files and plain JSON.
 
 You probably want to add `.replicate` to `.gitignore`, if you're using Git.
-:::
+
+</Note>
+
 
 As a reminder, this is a list of **experiments** which represents runs of the `train.py` script. They store a copy of the code as it was when the script was started.
 
@@ -171,9 +171,14 @@ accuracy:           1
 loss:               0.11759971082210541 (primary, minimize)
 ```
 
-:::note
-Notice you can pass a prefix to `replicate show`, and it'll automatically find the experiment that starts with just those characters. Saves a few keystrokes.
-:::
+<Note>
+
+
+Notice you can pass a prefix to `replicate show`, and it'll automatically find
+the experiment that starts with just those characters. Saves a few keystrokes.
+
+</Note>
+
 
 ## Compare checkpoints
 
@@ -200,11 +205,15 @@ loss:                     0.11759971082210541            0.056485891342163086
 
 `replicate diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Replicate is aware of: params, metrics, dependencies, and so on.
 
-:::note
+<Note>
+
+
 `replicate diff` compares **checkpoints**, because that is the thing that actually has all the results.
 
 You can also pass an experiment ID, and it will pick the best or latest checkpoint from that experiment.
-:::
+
+</Note>
+
 
 ## Check out a checkpoint
 
@@ -252,4 +261,7 @@ You don't have to keep track of what you changed in your experiments, because Re
 
 So far, everything we've been doing has been local on a single machine. But in practice, you probably want to train on a separate machine with GPUs, or perhaps multiple machines at the same time. Or, perhaps you want to share your experiments with other people in your team.
 
-Take a look at [the guide to working with remote machines](working-with-remote-machines.md) to learn more about this.
+Take a look at [the guide to working with remote machines](/docs/tutorial/remote-machines) to learn more about this.
+
+</DocsLayout>
+

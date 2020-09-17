@@ -1,32 +1,24 @@
 {
-  "name": "replicate-docs",
-  "version": "0.0.0",
+  "name": "replicate-web",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next export"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.61",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.61",
-    "classnames": "^2.2.6",
-    "docusaurus-plugin-sass": "^0.1.9",
+    "@mdx-js/loader": "^1.6.17",
+    "@next/mdx": "^9.5.3",
+    "@reach/tabs": "^0.11.2",
+    "next": "9.5.3",
+    "prism-react-renderer": "^1.1.1",
+    "prismjs": "^1.21.0",
     "raw-loader": "^4.0.1",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "remark-slug": "^6.0.0",
+    "sass": "^1.26.10"
   }
 }

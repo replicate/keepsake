@@ -1,12 +1,20 @@
----
-id: working-with-remote-machines
-title: Working with remote machines
----
+import CodeBlock from "../../../components/code-block";
+import DocsLayout from "../../../layouts/docs";
+import Note from "../../../components/note";
+import {
+  StatefulTabs,
+  TabState,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+} from "../../../components/tabs";
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+<TabState>
+<DocsLayout title="Working with remote machines">
 
-This guide is the second part of the tutorial. If you want to follow along with the commands here, you might want to do [the first part](tutorial.md).
+
+This guide is the second part of the tutorial. If you want to follow along with the commands here, you might want to do [the first part](/docs/tutorial).
 
 Replicate makes it really easy to work with multiple training machines. It lets you:
 
@@ -19,15 +27,14 @@ By default, Replicate stores your experiments and checkpoints in `.replicate/sto
 
 This means you can train on several machines and the results will be stored in a central location. When you run `replicate ls` on your local machine, it will list all of the experiments that have run anywhere, so you can easily compare between them and download the results.
 
-<Tabs
-groupId="cloud-service"
-defaultValue="gcp"
-values={[
-{label: 'Google Cloud Storage', value: 'gcp'},
-{label: 'Amazon S3', value: 'aws'},
-]
-}>
-<TabItem value="gcp">
+<StatefulTabs>
+<TabList>
+<Tab>Google Cloud Storage</Tab>
+<Tab>Amazon S3</Tab>
+</TabList>
+<TabPanels>
+<TabPanel>
+
 
 ### Log in to Google Cloud
 
@@ -51,8 +58,9 @@ Create a file called `replicate.yaml` in the same directory as your project with
 storage: "gs://replicate-[your username]-iris-classifier"
 ```
 
-</TabItem>
-<TabItem value="aws">
+</TabPanel>
+<TabPanel>
+
 
 We haven't written a full guide to setting up S3 yet, so this assumes some knowledge of how Amazon Web Services works.
 
@@ -64,24 +72,34 @@ Then, create `replicate.yaml` with this content, replacing `[your username]` wit
 storage: "s3://replicate-[your username]-iris-classifier"
 ```
 
-</TabItem>
-</Tabs>
+</TabPanel>
+</TabPanels>
+</StatefulTabs>
+
 
 Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this Google Cloud Storage bucket.
 
-:::note
-Replicate will automatically create the bucket for you if it doesn't exist.
-:::
+<Note>
 
-If you're following along from [the tutorial](tutorial.md), run `python train.py` again. This time it will save your experiments to the Google Cloud bucket. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
+
+Replicate will automatically create the bucket for you if it doesn't exist.
+
+</Note>
+
+
+If you're following along from [the tutorial](/docs/tutorial), run `python train.py` again. This time it will save your experiments to the Google Cloud bucket. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
 
 Now, when you run `replicate ls`, it will list experiments from the bucket.
 
-:::note
+<Note>
+
+
 You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to Google Cloud, it will no longer list your local experiments.
 
 It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
-:::
+
+</Note>
+
 
 ## Train on remote machines
 
@@ -95,15 +113,14 @@ Replicate has a shortcut that makes this really easy. It will copy the code onto
 
 The first step is to create a machine to run training jobs. If you're already got a machine that you can access via SSH, you're good to go. Otherwise, you need to create a cloud GPU instance.
 
-<Tabs
-groupId="cloud-service"
-defaultValue="gcp"
-values={[
-{label: 'Google Cloud Compute', value: 'gcp'},
-{label: 'Amazon EC2', value: 'aws'},
-]
-}>
-<TabItem value="gcp">
+<StatefulTabs>
+<TabList>
+<Tab>Google Cloud Compute</Tab>
+<Tab>Amazon EC2</Tab>
+</TabList>
+<TabPanels>
+<TabPanel>
+
 
 Run this command to create a Google Cloud Compute instance:
 
@@ -124,13 +141,16 @@ gcloud compute instances create \
 
 Make a note of the value underneath `EXTERNAL_IP`. You'll need that in the next section.
 
-</TabItem>
-<TabItem value="aws">
+</TabPanel>
+<TabPanel>
+
 
 We haven't finished the Amazon EC2 section yet, sorry! Switch back to the "Google Cloud Compute" tab.
 
-</TabItem>
-</Tabs>
+</TabPanel>
+</TabPanels>
+</StatefulTabs>
+
 
 ### Run a training job
 
@@ -160,9 +180,13 @@ Epoch 98, train loss: 0.119, validation accuracy: 1.000
 Epoch 99, train loss: 0.118, validation accuracy: 1.000
 ```
 
-:::note
+<Note>
+
+
 If there is a "connection refused" error, wait a few minutes. The Google Cloud server takes some time to start up.
-:::
+
+</Note>
+
 
 Replicate copies the code from your local machine to the training server, builds a Docker image with the correct CUDA version, then starts your training script.
 
@@ -176,39 +200,42 @@ EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST CHECKPOINT
 
 Because you're storing the experiment data on cloud storage, you can create as many experiments as you like on as many machines as you like, and they'll all show up in one place.
 
-If you want to get the results of the experiment, run `replicate checkout`, like you did in [the first part of the tutorial](tutorial.md#check-out-a-checkpoint).
+If you want to get the results of the experiment, run `replicate checkout`, like you did in [the first part of the tutorial](/docs/tutorial#check-out-a-checkpoint).
 
 ## Stop your training machine
 
 When you've finished working, remember to stop your training machine, otherwise you're going to run up a large bill!
 
-<Tabs
-groupId="cloud-service"
-defaultValue="gcp"
-values={[
-{label: 'Google Cloud Compute', value: 'gcp'},
-{label: 'Amazon EC2', value: 'aws'},
-]
-}>
-<TabItem value="gcp">
+<StatefulTabs>
+<TabList>
+<Tab>Google Cloud Compute</Tab>
+<Tab>Amazon EC2</Tab>
+</TabList>
+<TabPanels>
+<TabPanel>
+
 
 ```shell-session
 gcloud compute instances delete replicate-training-1 --zone=us-east1-c
 ```
 
-</TabItem>
-<TabItem value="aws">
+</TabPanel>
+<TabPanel>
 We haven't finished the Amazon EC2 section yet, sorry! Switch back to the "Google Cloud Compute" tab.
-</TabItem>
-</Tabs>
+</TabPanel>
+</TabPanels>
+</StatefulTabs>
+
 
 ## What's next
 
 You might want to take a look at:
 
-<!-- - [Some of our example models](example-models) -->
-
-- [How Replicate works under the hood](how-it-works.md)
-- [The `replicate.yaml` reference](replicate-yaml.md)
+- [How Replicate works under the hood](/docs/learn/how-it-works)
+- [The `replicate.yaml` reference](/docs/reference/yaml)
 
 If something doesn't make sense, doesn't work, or you just have some questions, please email us: [team@replicate.ai](mailto:team@replicate.ai). We love hearing from you!
+
+</DocsLayout>
+</TabState>
+

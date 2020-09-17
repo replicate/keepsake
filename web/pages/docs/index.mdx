@@ -1,0 +1,47 @@
+import CodeBlock from "../../components/code-block";
+import DocsLayout from "../../layouts/docs";
+
+<DocsLayout>
+
+
+## First steps
+
+If you like to **learn by doing**, [our tutorial will help you learn how Replicate works by building a simple model](/docs/tutorial).
+
+If you prefer to **learn concepts first**, take a look at [our guide about how Replicate works](/docs/learn/how-it-works).
+
+## Install
+
+Install Replicate by adding it to your `requirements.txt` file:
+
+<CodeBlock className="txt">
+  {`replicate==` +
+    process.env.NEXT_PUBLIC_VERSION +
+    `
+`}
+</CodeBlock>
+
+Then, run this to install it in your Python environment:
+
+```
+pip install -r requirements.txt
+```
+
+It's a good idea to put it in a file and commit it to Git so other people who use your code will have it installed automatically.
+
+If you're just using it for yourself, you can also use pip directly:
+
+```
+pip install -U replicate
+```
+
+That's it! This has installed both the [Python library](/docs/reference/python) and the [command-line interface](/docs/reference/cli).
+
+Next, you might want to:
+
+- [Build a model to learn how to use Replicate](/docs/tutorial)
+- [Read our guide about how Replicate works](/docs/learn/how-it-works)
+- [Read the reference for the Python library](/docs/reference/python)
+
+</DocsLayout>
+

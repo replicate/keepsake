@@ -1,0 +1,869 @@
+/* FONTS */
+
+// TODO (bfirsh): put fonts on separate CDN somewhere (can't include in this repo because they aren't open source)
+@font-face {
+  font-family: "Replicate";
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/Replicate.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Replicate";
+  font-style: italic;
+  font-weight: 400;
+  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/ReplicateItalic.woff2)
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Replicate-Mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/ReplicateMono.woff2)
+    format("woff2");
+}
+
+/* MIXINS */
+
+$text: rgb(0, 0, 0);
+$text-shade: rgba(0, 0, 0, 0.5);
+$page: rgb(255, 255, 255);
+$panel: rgba(0, 0, 0, 0.08);
+$brand: rgb(255, 247, 145);
+
+$whitespace-vertical: 2.5vh;
+$whitespace-horizontal: 1.25vw;
+$grid-row: 37.5vh;
+
+$padding: $whitespace-vertical 0;
+
+@mixin layout-block {
+  display: block;
+  box-sizing: border-box;
+}
+
+@mixin grid-layout {
+  display: grid;
+  grid-template-columns: $whitespace-horizontal 1fr 1fr 1fr $whitespace-horizontal;
+  grid-gap: 0 $whitespace-horizontal;
+  @media (min-width: 1800px) {
+    grid-template-columns: 1fr 550px 550px 550px 1fr;
+  }
+}
+
+@mixin grid-module {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 0 $whitespace-horizontal;
+}
+
+@mixin font-core {
+  font-size: 1.3rem;
+  letter-spacing: 0;
+  line-height: 1.5;
+  @media (min-width: 1300px) {
+    font-size: 1.2rem;
+  }
+  @media (min-width: 1400px) {
+    font-size: 1.1rem;
+  }
+  @media (min-width: 1500px) {
+    font-size: 1rem;
+  }
+}
+
+@mixin font-feature {
+  font-size: 3rem;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+/* RESET */
+
+* {
+  margin: 0;
+  padding: 0;
+
+  color: inherit;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+html {
+  font-size: 1vw;
+  background: $brand;
+  @media (min-width: 1800px) {
+    font-size: 18px;
+  }
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  font-family: "Replicate", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  color: $text;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+a {
+  text-decoration: underline;
+  text-decoration-color: $text-shade;
+  text-decoration-thickness: 0.6px;
+  text-underline-offset: 0.15em;
+  &:hover {
+    text-decoration-color: $text;
+    text-decoration-thickness: 2px;
+  }
+  &:focus {
+    background: $text;
+    color: $brand;
+    outline: 0.333em solid $text;
+  }
+  &.button {
+    text-decoration: none;
+    border-radius: 5em;
+    border: 0.065em solid $text;
+    padding: 0.32em 1em 0.38em;
+    &:hover {
+      background: $text-shade;
+      color: $page;
+      outline: none;
+      border-color: transparent;
+    }
+    &:focus {
+      background: $text;
+      color: $brand;
+      outline: none;
+    }
+  }
+}
+
+.tagline {
+  @include font-feature;
+  strong {
+    font-weight: normal;
+    color: $text-shade;
+  }
+}
+
+h2 span {
+  display: block;
+  color: $text-shade;
+}
+
+.layout {
+  @include font-core;
+  @include grid-layout;
+  background: $page;
+  background: linear-gradient($brand 0%, $page 1%, $page 99%, $brand 100%);
+  &:before {
+    content: ".";
+    color: transparent;
+    background: $brand;
+    grid-column: 1 / 6;
+    grid-row: 1 / 3;
+  }
+}
+
+/* COMPONENTS */
+.codeblock {
+  // https://github.com/PrismJS/prism/blob/master/themes/prism.css
+  background: $text;
+  color: $page;
+  font-family: "Replicate-Mono";
+  padding: $padding;
+  overflow: auto;
+
+  pre {
+    // this makes the sizing right for scrolling, for some reason
+    float: left;
+    min-width: 100%;
+
+    direction: ltr;
+    text-align: left;
+    white-space: pre;
+    word-wrap: break-word;
+    word-spacing: normal;
+    word-break: normal;
+    line-height: 1.5;
+
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+
+  .token-line {
+    padding-left: $whitespace-horizontal;
+    padding-right: $whitespace-horizontal;
+  }
+  .token {
+    display: inline-block;
+  }
+
+  .line-highlight {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  // Based on https://github.com/PrismJS/prism-themes/blob/master/themes/prism-vsc-dark-plus.css
+  .namespace {
+    opacity: 0.7;
+  }
+
+  .token.doctype .token.doctype-tag {
+    color: #569cd6;
+  }
+
+  .token.doctype .token.name {
+    color: #9cdcfe;
+  }
+
+  .token.comment,
+  .token.prolog {
+    color: $brand;
+  }
+
+  .token.punctuation,
+  .language-html .language-css .token.punctuation,
+  .language-html .language-javascript .token.punctuation {
+    color: #d4d4d4;
+  }
+
+  .token.property,
+  .token.tag,
+  .token.boolean,
+  .token.number,
+  .token.constant,
+  .token.symbol,
+  .token.deleted,
+  .token.unit {
+    color: #b5cea8;
+  }
+
+  .token.selector,
+  .token.attr-name,
+  .token.string,
+  .token.char,
+  .token.builtin,
+  .token.inserted {
+    color: #ce9178;
+  }
+
+  .language-css .token.string.url {
+    text-decoration: underline;
+  }
+
+  .token.operator,
+  .token.entity {
+    color: #d4d4d4;
+  }
+
+  .token.operator.arrow {
+    color: #569cd6;
+  }
+
+  .token.atrule {
+    color: #ce9178;
+  }
+
+  .token.atrule .token.rule {
+    color: #c586c0;
+  }
+
+  .token.atrule .token.url {
+    color: #9cdcfe;
+  }
+
+  .token.atrule .token.url .token.function {
+    color: #6a9955;
+  }
+
+  .token.atrule .token.url .token.punctuation {
+    color: #d4d4d4;
+  }
+
+  .token.keyword {
+    color: #569cd6;
+  }
+
+  .token.keyword.module,
+  .token.keyword.control-flow {
+    color: #c586c0;
+  }
+
+  .token.function,
+  .token.function .token.maybe-class-name {
+    color: #6a9955;
+  }
+
+  .token.regex {
+    color: #d16969;
+  }
+
+  .token.important {
+    color: #569cd6;
+  }
+
+  .token.italic {
+    font-style: italic;
+  }
+
+  .token.constant {
+    color: #9cdcfe;
+  }
+
+  .token.class-name,
+  .token.maybe-class-name {
+    color: #4ec9b0;
+  }
+
+  .token.console {
+    color: #9cdcfe;
+  }
+
+  .token.parameter {
+    color: #9cdcfe;
+  }
+
+  .token.interpolation {
+    color: #9cdcfe;
+  }
+
+  .token.punctuation.interpolation-punctuation {
+    color: #569cd6;
+  }
+
+  .token.boolean {
+    color: #569cd6;
+  }
+
+  .token.property,
+  .token.variable,
+  .token.imports .token.maybe-class-name,
+  .token.exports .token.maybe-class-name {
+    color: #9cdcfe;
+  }
+
+  .token.selector {
+    color: #d7ba7d;
+  }
+
+  .token.escape {
+    color: #d7ba7d;
+  }
+
+  .token.tag {
+    color: #569cd6;
+  }
+
+  .token.tag .token.punctuation {
+    color: #808080;
+  }
+
+  .token.cdata {
+    color: #808080;
+  }
+
+  .token.attr-name {
+    color: #9cdcfe;
+  }
+
+  .token.attr-value,
+  .token.attr-value .token.punctuation {
+    color: #ce9178;
+  }
+
+  .token.attr-value .token.punctuation.attr-equals {
+    color: #d4d4d4;
+  }
+
+  .token.entity {
+    color: #569cd6;
+  }
+
+  .token.namespace {
+    color: #4ec9b0;
+  }
+
+  .language-shell-session {
+    .token-line {
+      .command {
+        font-weight: bold;
+        color: white;
+      }
+      .command.shell-symbol {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: normal;
+      }
+      .command.function,
+      .command.number,
+      .command.operator {
+        color: white;
+      }
+    }
+  }
+}
+
+.tabs {
+  button {
+    border: 0;
+    background: 0;
+    padding: $whitespace-vertical $whitespace-horizontal $whitespace-vertical /
+      2 $whitespace-horizontal;
+    margin: $whitespace-vertical 0;
+
+    &:focus {
+      outline: 0;
+    }
+    cursor: pointer;
+  }
+  button[data-selected] {
+    border-bottom: 1px solid black;
+    font-weight: bold;
+  }
+}
+
+.global-banner {
+  background: black;
+  color: white;
+  padding: $whitespace-vertical $whitespace-horizontal;
+  font-size: 1.2em;
+  text-align: center;
+
+  a {
+    text-decoration-color: white;
+  }
+}
+
+/* HOMEPAGE */
+
+header {
+  @include layout-block;
+  grid-column: 2 / 5;
+  grid-row: 1 / 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: $padding;
+  min-height: $grid-row * 2;
+  &.documentation {
+    min-height: $grid-row;
+  }
+  & > * {
+    flex-basis: 100%;
+  }
+  & > :last-child {
+    /*     margin-top: auto; */
+  }
+
+  nav {
+    padding-bottom: $whitespace-vertical;
+    display: flex;
+
+    h1 {
+      flex-grow: 1;
+    }
+    a {
+      margin-top: $whitespace-vertical / 2;
+      margin-right: $whitespace-horizontal;
+    }
+  }
+
+  .breadcrumb {
+    @include font-feature;
+    a {
+      color: $text-shade;
+      &:hover {
+        color: $text;
+      }
+      &:focus {
+        color: $brand;
+      }
+      &:after {
+        content: ".";
+        display: inline-block;
+        width: 0;
+        overflow: hidden;
+        margin: 0 0.25em 0 0.5em;
+        border-left: 1px solid;
+        transform: rotate(15deg);
+        vertical-align: middle;
+      }
+    }
+    h2 {
+      display: inline;
+    }
+  }
+  & > p {
+    text-align: center;
+    .button {
+      margin-left: $whitespace-horizontal;
+    }
+  }
+}
+
+.info {
+  @include layout-block;
+  grid-column: 2 / 5;
+  // grid-row: 2 / 3;
+  @include grid-module;
+  div {
+    padding: $padding;
+    padding-bottom: $whitespace-vertical * 3;
+    h2 {
+      @include font-feature;
+    }
+    p {
+      margin: $whitespace-vertical $whitespace-horizontal * 2 0 0;
+    }
+  }
+}
+
+.terminal {
+  @include layout-block;
+  grid-column: 2 / 5;
+  @include grid-module;
+  &:after {
+    content: ".";
+    color: transparent;
+    grid-column: 1 / 4;
+    position: relative;
+    height: 1px;
+    background: $text;
+    margin-right: $whitespace-horizontal * -2;
+  }
+  & > div {
+    grid-column: 1 / 2;
+    padding: $padding;
+    padding-bottom: $whitespace-vertical * 3;
+    h2 {
+      @include font-feature;
+    }
+    p,
+    ul {
+      margin: $whitespace-vertical $whitespace-horizontal * 2 0 0;
+      li {
+        margin-left: $whitespace-horizontal;
+      }
+    }
+  }
+  .codeblock {
+    grid-column: 2 / 4;
+    margin-right: $whitespace-horizontal * -2;
+    position: relative;
+    overflow: inherit;
+
+    &:before {
+      content: ".";
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      height: 2em;
+      color: transparent;
+      border-radius: 0.5em 0 0 0;
+      background: $text-shade;
+      @media (min-width: 1800px) {
+        border-radius: 0.5em 0.5em 0 0;
+      }
+    }
+  }
+}
+
+.docs {
+  @include layout-block;
+  grid-column: 2 / 5;
+  @include grid-module;
+  padding-top: 0;
+  padding-bottom: $whitespace-vertical * 3;
+  nav {
+    grid-column: 1 / 2;
+    padding: $padding;
+    padding-top: 0;
+
+    a {
+      text-decoration: none;
+    }
+
+    h2 {
+      font-weight: bold;
+    }
+
+    ol {
+      list-style: none;
+    }
+
+    // Top-level sections
+    & > ol {
+      position: sticky;
+      top: 0;
+      padding-top: calc(3.3rem + #{$whitespace-vertical});
+
+      & > li {
+        padding-bottom: $whitespace-vertical;
+      }
+    }
+
+    // Pages within sections
+    & ol ol {
+    }
+
+    // Table of contents within pages
+    & > ol ol ol {
+      padding-left: $whitespace-horizontal;
+
+      color: $text-shade;
+
+      a:hover {
+        color: $text;
+      }
+    }
+  }
+  .body {
+    grid-column: 2 / 4;
+    padding-top: calc(3.3rem + #{$whitespace-vertical});
+    hr {
+      border: none;
+      height: 3.5rem;
+    }
+    h1,
+    h2,
+    h3 {
+      @include font-feature;
+      max-width: 15em;
+      margin-top: 2.2em;
+      margin-bottom: $whitespace-vertical;
+      &:first-child {
+        margin-top: 0;
+      }
+
+      code {
+        font-size: 0.8em;
+        background: none;
+        padding: 0;
+      }
+    }
+    h4,
+    h5,
+    h6 {
+      max-width: 15em;
+      margin-top: 6em;
+      margin-bottom: $whitespace-vertical * 1.5;
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+    p {
+      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+      max-width: 50em;
+    }
+
+    ul,
+    ol {
+      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+      max-width: 50em;
+      padding-inline-start: $whitespace-horizontal * 2;
+    }
+
+    code {
+      font-family: "Replicate-Mono";
+      font-size: 0.9em;
+      display: inline-block;
+      padding: 0.15em 0.4em 0.1em;
+      border-radius: 0.25em;
+      background: $panel;
+    }
+    .codeblock {
+      margin: $whitespace-vertical 0;
+      font-size: 0.9em;
+    }
+
+    .note {
+      background-color: $panel;
+      padding: $whitespace-vertical * 0.5 $whitespace-horizontal
+        $whitespace-vertical;
+      margin: $whitespace-vertical 0;
+
+      h4 {
+        font-weight: bold;
+        margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+      }
+    }
+  }
+}
+
+.features {
+  @include layout-block;
+  grid-column: 2 / 5;
+  @include grid-module;
+  padding-top: 0;
+  padding-bottom: $whitespace-vertical * 3;
+  nav {
+    grid-column: 1 / 2;
+    padding: $padding;
+    padding-top: 0;
+
+    ol {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      padding-top: calc(3.3rem + #{$whitespace-vertical});
+
+      list-style: none;
+    }
+    h2 {
+      @include font-feature;
+      margin-bottom: $whitespace-vertical * 0.75;
+    }
+    a {
+      text-decoration: none;
+    }
+  }
+  .body {
+    grid-column: 2 / 4;
+    padding-top: calc(3.3rem + #{$whitespace-vertical});
+    hr {
+      border: none;
+      height: 3.5rem;
+    }
+    h1,
+    h2,
+    h3 {
+      @include font-feature;
+      max-width: 15em;
+      margin-top: 2.2em;
+      margin-bottom: $whitespace-vertical;
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+    h4,
+    h5,
+    h6 {
+      max-width: 15em;
+      margin-top: 6em;
+      margin-bottom: $whitespace-vertical * 1.5;
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+    p {
+      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+      max-width: 50em;
+    }
+    code {
+      font-family: "Replicate-Mono";
+      font-size: 0.9em;
+      display: inline-block;
+      padding: 0.15em 0.4em 0.1em;
+      border-radius: 0.25em;
+      background: $panel;
+    }
+    .codeblock {
+      margin: $whitespace-vertical 0;
+    }
+  }
+}
+
+footer {
+  @include layout-block;
+  grid-column: 1 / 6;
+  @include grid-layout;
+  background: $brand;
+  padding-top: $whitespace-vertical * 3;
+  padding-bottom: $whitespace-vertical * 1.5;
+  h2 {
+    @include font-feature;
+    grid-column: 2 / 5;
+    min-height: $grid-row / 2;
+    @include grid-module;
+    div:nth-child(1) {
+      grid-row: 1 / 2;
+      grid-column: 1 / 2;
+    }
+    div:nth-child(2) {
+      grid-row: 1 / 2;
+      grid-column: 1 / 2;
+      text-align: center;
+      padding-left: 7em;
+    }
+    div:nth-child(3) {
+      grid-row: 1 / 2;
+      grid-column: 2 / 4;
+    }
+  }
+  h3 {
+    @include font-feature;
+    padding-bottom: $whitespace-vertical;
+  }
+  a {
+    margin-right: $whitespace-horizontal;
+  }
+  #contributors {
+    grid-column: 2 / 3;
+    margin-bottom: $whitespace-vertical;
+    ul {
+      list-style: none;
+      li {
+        padding-left: 4em;
+        padding-bottom: $whitespace-vertical;
+      }
+      img {
+        float: left;
+        position: relative;
+        margin-left: -4.1em;
+        top: -0.25em;
+        width: 3em;
+        height: 3em;
+        border-radius: 3em;
+      }
+      p {
+        max-width: 19em;
+      }
+    }
+  }
+  #get-involved {
+    grid-column: 3 / 5;
+  }
+  #beta-message {
+    grid-column: 2 / 3;
+    max-width: 23em;
+  }
+  #invite-message {
+    grid-column: 3 / 4;
+    max-width: 23em;
+  }
+  nav {
+    @include layout-block;
+    grid-column: 4 / 5;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  p.tagline {
+    grid-column: 2 / 5;
+    padding-top: $whitespace-vertical;
+    margin-top: $whitespace-vertical;
+    border-top: 1px solid $text-shade;
+  }
+}

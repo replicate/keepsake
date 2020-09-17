@@ -1,7 +1,7 @@
----
-id: how-it-works
-title: How it works
----
+import DocsLayout from "../../../layouts/docs";
+
+<DocsLayout title="How it works">
+
 
 Replicate is similar to a version control system used for code: it records versions of machine learning models.
 
@@ -18,16 +18,18 @@ import torch
 import replicate
 
 def train(**params):
-    # highlight-next-line
+    #highlight-start
     experiment = replicate.init(path=".", params=params)
+    #highlight-end
     model = Model()
 
     for epoch in range(params["num_epochs"]):
         # ...
 
         torch.save(model, "model.torch")
-        # highlight-next-line
+        #highlight-start
         experiment.checkpoint(path="model.torch", metrics=metrics)
+        #highlight-end
 ```
 
 By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.
@@ -37,7 +39,7 @@ These two lines will record:
 - The code used to run the training script
 - The hyperparameters
 - Python version, Python package versions, PyTorch/Tensorflow version
-- Any files produced on each iteration – weights, Tensorboard logs, etc.
+- Any files produced on each iteration – weights, Tensorboard logs, etc.
 - Metrics on each iteration
 
 All of this versioned data is put in **storage**, which by default is the `.replicate/storage/` directory in the same directory as your code. You can also store this data on cloud storage, such as Amazon S3 or Google Cloud Storage. [The format of this data is explained further below.](#data-storage)
@@ -56,7 +58,7 @@ $ replicate checkout d4fb0d3
 
 Replicate has been intentionally designed command-line first so you can integrate it with scripts and continuous integration systems.
 
-## Concepts
+<!-- ## Concepts -->
 
 ### Experiments
 
@@ -92,7 +94,7 @@ They can be stored on:
 - Amazon S3
 - Google Cloud Storage
 
-The location is defined by setting the [`storage` option in `replicate.yaml`](replicate-yaml.md#storage). For example:
+The location is defined by setting the [`storage` option in `replicate.yaml`](/docs/reference/yaml#storage). For example:
 
 ```yaml
 storage: "s3://hooli-hotdog-detector"
@@ -102,9 +104,9 @@ This is the directory structure of a project:
 
 - `checkpoints/<checkpoint ID>/` – The files saved when you create a checkpoint, such as your trained weights.
 - `experiments/<experiment ID>/` – The files in your project's directory when an experiment was created, such as your source code.
-- `metadata/checkpoints/<checkpoints ID>.json` – A JSON file containing all the metadata about a checkpoint, include a pointer to the experiment ID it is part of.
-- `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment.
-- `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
+- `metadata/checkpoints/<checkpoints ID>.json` – A JSON file containing all the metadata about a checkpoint, include a pointer to the experiment ID it is part of.
+- `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment.
+- `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
 
 ## Remote execution
 
@@ -142,4 +144,7 @@ EXPERIMENT  STARTED            STATUS   HOST             USER  LATEST CHECKPOINT
 274a9ec     3 minutes ago      stopped  34.75.189.211    ben   911cf2b (step 99)  0.1176  911cf2b (step 99)  0.1176
 ```
 
-[See the working with remote machines tutorial](working-with-remote-machines.md) for more information.
+[See the working with remote machines tutorial](/docs/tutorial/remote-machines) for more information.
+
+</DocsLayout>
+

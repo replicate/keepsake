@@ -11,7 +11,7 @@ release: check-version-var verify-clean-master bump-version
 bump-version:
 	sed -E -i '' "s/VERSION := .+/VERSION := $(VERSION)/" cli/Makefile
 	sed -E -i '' 's/version=".+"/version="$(VERSION)"/' python/setup.py
-	sed -E -i '' 's/version: ".+"/version: "$(VERSION)"/' web/docusaurus.config.js
+	sed -E -i '' 's/NEXT_PUBLIC_VERSION=.+/NEXT_PUBLIC_VERSION=$(VERSION)/' web/.env
 
 .PHONY: verify-clean-master
 verify-clean-master:

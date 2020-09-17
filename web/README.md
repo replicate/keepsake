@@ -1,33 +1,20 @@
-# Website
+# Replicate Website
 
-This website is built using [Docusaurus 2](https://v2.docusaurus.io/), a modern static website generator.
+## Development environment
 
-### Installation
+Install dependencies:
 
-```
-$ yarn
-```
+    yarn
 
-### Local Development
+Run the development server:
 
-```
-$ yarn start
-```
+    yarn dev
 
-This command starts a local development server and open up a browser window. Most changes are reflected live without having to restart the server.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Build
+## Preview production deploy
 
-```
-$ yarn build
-```
+Sometimes the development environment and production build differ.
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-### Deployment
-
-```
-$ GIT_USER=<Your GitHub username> USE_SSH=true yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+    yarn build
+    yarn start

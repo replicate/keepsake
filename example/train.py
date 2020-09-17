@@ -9,18 +9,15 @@ from torch.autograd import Variable
 
 
 def train(learning_rate, num_epochs):
-    # highlight-next-line
+    # highlight-start
     # Create an "experiment". This represents a run of your training script.
-    # highlight-next-line
     # It saves the training code at the given path and any hyperparameters.
-    # highlight-next-line
     experiment = replicate.init(
-        # highlight-next-line
         path=".",
-        # highlight-next-line
-        params={"learning_rate": learning_rate, "num_epochs": num_epochs}
-        # highlight-next-line
+        # highlight-start
+        params={"learning_rate": learning_rate, "num_epochs": num_epochs},
     )
+    # highlight-end
 
     print("Downloading data set...")
     iris = load_iris()
@@ -61,24 +58,17 @@ def train(learning_rate, num_epochs):
             )
         )
         torch.save(model, "model.pth")
-        # highlight-next-line
+        # highlight-start
         # Create a checkpoint within the experiment.
-        # highlight-next-line
         # This saves the metrics at that point, and makes a copy of the file
-        # highlight-next-line
         # or directory given, which could weights and any other artifacts.
-        # highlight-next-line
         experiment.checkpoint(
-            # highlight-next-line
             path="model.pth",
-            # highlight-next-line
             step=epoch,
-            # highlight-next-line
             metrics={"loss": loss.item(), "accuracy": acc},
-            # highlight-next-line
             primary_metric=("loss", "minimize"),
-            # highlight-next-line
         )
+        # highlight-end
 
 
 if __name__ == "__main__":
