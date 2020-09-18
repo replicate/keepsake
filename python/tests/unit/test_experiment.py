@@ -100,10 +100,14 @@ def test_init_and_checkpoint(temp_workdir):
         checkpoint = experiment.checkpoint()
     with pytest.raises(
         ValueError,
-        match=r"The path passed to checkpoint\(\) is relative to the project directory",
+        match=r"The path passed to checkpoint\(\) must not start with '..' or '/'.",
     ):
         experiment.checkpoint(path="..")
         experiment.checkpoint(path="/")
+    with pytest.raises(
+        ValueError, match=r"The path passed to checkpoint\(\) does not exist: blah",
+    ):
+        experiment.checkpoint(path="blah")
 
     # experiment with file
     experiment = replicate.init(
@@ -131,10 +135,14 @@ def test_init_and_checkpoint(temp_workdir):
     # experiment: various path problems
     with pytest.raises(
         ValueError,
-        match=r"The path passed to init\(\) is relative to the project directory",
+        match=r"The path passed to init\(\) must not start with '..' or '/'.",
     ):
         replicate.init(path="..")
         replicate.init(path="/")
+    with pytest.raises(
+        ValueError, match=r"The path passed to init\(\) does not exist: blah",
+    ):
+        replicate.init(path="blah")
 
 
 def test_heartbeat(temp_workdir):
