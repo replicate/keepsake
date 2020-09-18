@@ -114,6 +114,10 @@ setuptools.setup(
             "tensorflow==2.3.0",
         ],
     },
+    setup_requires=[
+        "cffi>=1.0.0",
+    ],
+    cffi_modules=["build_shared.py:ffibuilder"],
     cmdclass={
         'bdist_wheel': bdist_wheel,
         'build_scripts': build_scripts,

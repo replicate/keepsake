@@ -7,9 +7,11 @@ ARCHITECTURES := 386 amd64
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 MAIN := cmd/replicate/main.go
+SHARED_MAIN := shared/main.go
 NAME := replicate
 RELEASE_DIR := release
 BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/$(NAME)
+STATIC_LIB = $(RELEASE_DIR)/shared/libreplicate.a
 INSTALL_PATH := /usr/local/bin/$(NAME)
 
 ASSETS_PACKAGE := assets
@@ -37,9 +39,10 @@ default: build
 all: clean build_all install
 
 .PHONY: build
-build: clean assets
+build: assets $(STATIC_LIB)
 	@mkdir -p $(RELEASE_DIR)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN)
+	CGO_ENABLED=1 go build -v --buildmode=c-archive $(LDFLAGS) -o $(STATIC_LIB) $(SHARED_MAIN)
 
 .PHONY: build-all
 build-all: assets

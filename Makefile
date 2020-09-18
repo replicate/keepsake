@@ -1,3 +1,7 @@
+.PHONY: build
+build:
+	cd cli && $(MAKE) build
+
 .PHONY: release
 release: check-version-var verify-clean-master bump-version
 	git add cli/Makefile python/setup.py web/.env
@@ -21,6 +25,7 @@ verify-clean-master:
 
 .PHONY: release-manual
 release-manual: check-version-var verify-clean-master
+	cd cli && $(MAKE) clean
 	cd cli && $(MAKE) build-all ENVIRONMENT=production
 	cd cli && gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" 
 	cd cli && gsutil cp -r release/ "gs://replicate-public/cli/latest"
