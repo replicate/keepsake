@@ -53,18 +53,13 @@ class Experiment:
         # If you upload lots of objects in parallel to a bucket that doesn't exist, it
         # causes a race condition, throwing 404s.
         # Hence, uploading the single metadata file is done first.
-        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_directory
+        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_path
         if self.path is not None:
             source_path = os.path.normpath(os.path.join(self.project_dir, self.path))
             destination_path = os.path.normpath(
                 os.path.join("experiments", self.id, self.path)
             )
-            if os.path.isfile(source_path):
-                with open(os.path.join(source_path), "rb") as fh:
-                    data = fh.read()
-                self.storage.put(destination_path, data)
-            else:
-                self.storage.put_directory(destination_path, source_path)
+            self.storage.put_path(destination_path, source_path)
 
     def checkpoint(
         self,

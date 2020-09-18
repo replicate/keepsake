@@ -48,7 +48,7 @@ def test_get_not_exists(temp_bucket):
         assert storage.get("foo/bar.txt")
 
 
-def test_put_directory(temp_bucket, tmpdir):
+def test_put_path(temp_bucket, tmpdir):
     storage = GCSStorage(bucket=temp_bucket.name, root="")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
@@ -57,7 +57,7 @@ def test_put_directory(temp_bucket, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_directory("folder", tmpdir)
+    storage.put_path("folder", tmpdir)
     assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
     assert temp_bucket.blob("folder/qux.txt").download_as_string() == b"hello qux.txt"
     assert (
@@ -65,8 +65,14 @@ def test_put_directory(temp_bucket, tmpdir):
         == b"hello bar/baz.txt"
     )
 
+    # single files
+    storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
+    assert (
+        temp_bucket.blob("singlefile/foo.txt").download_as_string() == b"hello foo.txt"
+    )
 
-def test_put_directory_with_root(temp_bucket, tmpdir):
+
+def test_put_path_with_root(temp_bucket, tmpdir):
     storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
@@ -75,7 +81,7 @@ def test_put_directory_with_root(temp_bucket, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_directory("folder", tmpdir)
+    storage.put_path("folder", tmpdir)
     assert (
         temp_bucket.blob("someroot/folder/foo.txt").download_as_string()
         == b"hello foo.txt"
@@ -87,6 +93,13 @@ def test_put_directory_with_root(temp_bucket, tmpdir):
     assert (
         temp_bucket.blob("someroot/folder/bar/baz.txt").download_as_string()
         == b"hello bar/baz.txt"
+    )
+
+    # single files
+    storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
+    assert (
+        temp_bucket.blob("someroot/singlefile/foo.txt").download_as_string()
+        == b"hello foo.txt"
     )
 
 
@@ -114,7 +127,7 @@ baz.txt
 """
         )
 
-    storage.put_directory("folder", tmpdir)
+    storage.put_path("folder", tmpdir)
     assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
     assert (
         temp_bucket.blob("folder/bar/new-qux.txt").download_as_string()

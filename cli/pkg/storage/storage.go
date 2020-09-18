@@ -29,6 +29,7 @@ type Storage interface {
 	RootExists() (bool, error)
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
+	// TODO (bfirsh): Support files and make PutPath, like Python.
 	PutDirectory(localPath string, storagePath string) error
 	GetDirectory(storagePath string, localPath string) error
 	Delete(path string) error
