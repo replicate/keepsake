@@ -36,13 +36,19 @@ class Storage:
         """
         raise NotImplementedError()
 
-    def put_directory(self, path: str, dir_to_store: str):
+    def put_path(self, path: str, source_path: str):
         """
-        Save directory to path
+        Save file or directory to path on storage
 
         Parallels storage.PutDirectory in Go.
         """
-        for relative_path, data in self.walk_directory_data(dir_to_store):
+        if os.path.isfile(source_path):
+            with open(source_path, "rb") as fh:
+                data = fh.read()
+            self.put(path, data)
+            return
+
+        for relative_path, data in self.walk_directory_data(source_path):
             # Make it relative to path we want to store it in storage
             self.put(os.path.join(path, relative_path), data)
 

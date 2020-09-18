@@ -34,13 +34,19 @@ class S3Storage(Storage):
         ret = obj["Body"].read()  # type: ignore
         return ret
 
-    def put_directory(self, path: str, dir_to_store: str):
+    def put_path(self, path: str, source_path: str):
         """
         Save directory to path
         """
         client = self._get_client()
-        for relative_path, data in self.walk_directory_data(dir_to_store):
-            remote_path = os.path.join(self.root, path, relative_path)
+        root_path = os.path.join(self.root, path)
+        if os.path.isfile(source_path):
+            with open(source_path, "rb") as fh:
+                data = fh.read()
+            client.put_object(Bucket=self.bucket_name, Key=root_path, Body=data)
+
+        for relative_path, data in self.walk_directory_data(source_path):
+            remote_path = os.path.join(root_path, relative_path)
             client.put_object(Bucket=self.bucket_name, Key=remote_path, Body=data)
 
     def put(self, path: str, data: AnyStr):

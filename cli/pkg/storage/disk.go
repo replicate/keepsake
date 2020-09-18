@@ -51,7 +51,7 @@ func (s *DiskStorage) Put(p string, data []byte) error {
 
 // PutDirectory recursively puts the local `localPath` directory into path `storagePath` on storage
 //
-// Parallels Storage.put_directory in Python.
+// Parallels Storage.put_path in Python.
 func (s *DiskStorage) PutDirectory(localPath string, storagePath string) error {
 	files, err := putDirectoryFiles(localPath, storagePath)
 	if err != nil {

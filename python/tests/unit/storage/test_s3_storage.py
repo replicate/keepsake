@@ -133,7 +133,7 @@ def test_list_with_root(mock_s3):
     ]
 
 
-def test_put_directory(mock_s3, tmpdir):
+def test_put_path(mock_s3, tmpdir):
     storage = S3Storage(bucket=BUCKET_NAME, root="")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
@@ -142,14 +142,18 @@ def test_put_directory(mock_s3, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_directory("folder", tmpdir)
+    storage.put_path("folder", tmpdir)
 
     assert mock_get(mock_s3, "folder/foo.txt") == b"hello foo.txt"
     assert mock_get(mock_s3, "folder/qux.txt") == b"hello qux.txt"
     assert mock_get(mock_s3, "folder/bar/baz.txt") == b"hello bar/baz.txt"
 
+    # single files
+    storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
+    assert mock_get(mock_s3, "singlefile/foo.txt") == b"hello foo.txt"
 
-def test_put_directory_with_root(mock_s3, tmpdir):
+
+def test_put_path_with_root(mock_s3, tmpdir):
     storage = S3Storage(bucket=BUCKET_NAME, root="someroot")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
@@ -158,8 +162,12 @@ def test_put_directory_with_root(mock_s3, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_directory("folder", tmpdir)
+    storage.put_path("folder", tmpdir)
 
     assert mock_get(mock_s3, "someroot/folder/foo.txt") == b"hello foo.txt"
     assert mock_get(mock_s3, "someroot/folder/qux.txt") == b"hello qux.txt"
     assert mock_get(mock_s3, "someroot/folder/bar/baz.txt") == b"hello bar/baz.txt"
+
+    # single files
+    storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
+    assert mock_get(mock_s3, "someroot/singlefile/foo.txt") == b"hello foo.txt"

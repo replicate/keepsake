@@ -33,13 +33,20 @@ class GCSStorage(Storage):
         except exceptions.NotFound:
             raise DoesNotExistError()
 
-    def put_directory(self, path: str, dir_to_store: str):
+    def put_path(self, path: str, source_path: str):
         """
-        Save directory to path
+        Save file or directory to path
         """
         bucket = self.bucket()
-        for relative_path, absolute_path in self.walk_directory_paths(dir_to_store):
-            remote_path = os.path.join(self.root, path, relative_path)
+        root_path = os.path.join(self.root, path)
+
+        if os.path.isfile(source_path):
+            blob = bucket.blob(root_path)
+            blob.upload_from_filename(source_path)
+            return
+
+        for relative_path, absolute_path in self.walk_directory_paths(source_path):
+            remote_path = os.path.join(root_path, relative_path)
 
             if os.environ.get("REPLICATE_DEBUG"):
                 sys.stderr.write(
