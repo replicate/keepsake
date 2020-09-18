@@ -9,7 +9,7 @@ base-image-builder/release
 python/build
 python/dist
 /local
-.env
+.env*.local
 
 # scratch notebooks
 Untitled.ipynb
