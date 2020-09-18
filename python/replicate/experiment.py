@@ -198,13 +198,23 @@ def set_option_defaults(
     return options
 
 
-def check_path(path: str):
-    # There are few other ways this can break (e.g. "dir/../../") but this will cover most ways users can trip up
-    if path.startswith("/") or path.startswith(".."):
-        func_name = inspect.stack()[1].function
-        s = """The path passed to {}() is relative to the project directory, and must not start with '..' or '/'. The project directory is the directory that contains replicate.yaml.
+CHECK_PATH_HELP_TEXT = """
 
-You probably just want to set it to path=\".\" to save everything.
+It is relative to the project directory, which is the directory that contains replicate.yaml. You probably just want to set it to path=\".\" to save everything, or path=\"somedir/\" to just save a particular directory.
 
 To learn more, see the documentation: https://beta.replicate.ai/docs/python"""
-        raise ValueError(s.format(func_name))
+
+
+def check_path(path: str):
+    func_name = inspect.stack()[1].function
+    # There are few other ways this can break (e.g. "dir/../../") but this will cover most ways users can trip up
+    if path.startswith("/") or path.startswith(".."):
+        raise ValueError(
+            "The path passed to {}() must not start with '..' or '/'.".format(func_name)
+            + CHECK_PATH_HELP_TEXT
+        )
+    if not os.path.exists(path):
+        raise ValueError(
+            "The path passed to {}() does not exist: {}".format(func_name, path)
+            + CHECK_PATH_HELP_TEXT
+        )
