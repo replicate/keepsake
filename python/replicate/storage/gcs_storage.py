@@ -13,6 +13,9 @@ from google.oauth2 import service_account  # type: ignore
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError
 
+# 5 minute timeout
+UPLOAD_TIMEOUT = 5 * 60
+
 
 class GCSStorage(Storage):
     def __init__(self, bucket: str, root: str, concurrency=512):
@@ -42,7 +45,7 @@ class GCSStorage(Storage):
 
         if os.path.isfile(source_path):
             blob = bucket.blob(root_path)
-            blob.upload_from_filename(source_path)
+            blob.upload_from_filename(source_path, timeout=UPLOAD_TIMEOUT)
             return
 
         for relative_path, absolute_path in self.walk_directory_paths(source_path):
@@ -55,7 +58,7 @@ class GCSStorage(Storage):
                 sys.stderr.flush()
 
             blob = bucket.blob(remote_path)
-            blob.upload_from_filename(absolute_path)
+            blob.upload_from_filename(absolute_path, timeout=UPLOAD_TIMEOUT)
 
     def put(self, path: str, data: AnyStr):
         """
@@ -69,7 +72,7 @@ class GCSStorage(Storage):
             )
             sys.stderr.flush()
         blob = bucket.blob(remote_path)
-        blob.upload_from_string(data)
+        blob.upload_from_string(data, timeout=UPLOAD_TIMEOUT)
 
     def _get_client(self) -> storage.Client:
         if self.client is None:
