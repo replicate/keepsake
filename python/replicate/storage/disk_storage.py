@@ -3,6 +3,14 @@ from typing import AnyStr, Generator
 
 from .storage_base import Storage, ListFileInfo
 from ..exceptions import DoesNotExistError
+from .._shared import lib
+from ..shared_utils import (
+    init_go_slice,
+    py_str_to_go,
+    go_bytes_to_py_bytes,
+    go_str_to_py,
+    init_go_string,
+)
 
 
 class DiskStorage(Storage):
@@ -11,18 +19,19 @@ class DiskStorage(Storage):
     """
 
     def __init__(self, root):
-        self.root = root
+        self.root = os.path.join(os.getcwd(), root)
 
     def get(self, path: str) -> bytes:
         """
         Get data at path
         """
-        full_path = os.path.join(self.root, path)
-        try:
-            with open(full_path, "rb") as fh:
-                return fh.read()
-        except FileNotFoundError:
-            raise DoesNotExistError("No such path: '{}'".format(full_path))
+        ret_slice = init_go_slice()
+        err_string = init_go_string()
+        lib.DiskStorageGet(
+            py_str_to_go(self.root)[0], py_str_to_go(path)[0], ret_slice, err_string[0]
+        )
+        print(err_string[1].n)
+        return go_bytes_to_py_bytes(ret_slice)
 
     def put(self, path: str, data: AnyStr):
         """

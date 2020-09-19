@@ -25,6 +25,16 @@ def go_bool_to_py(go_bool):
     return go_bool == 1
 
 
+def init_go_slice():
+    return ffi.new("GoSlice *")
+
+
+def init_go_string():
+    c_str = ffi.new("char[]", b"")
+    go_str = ffi.new("_GoString_ *", [c_str, 0])
+    return (go_str[0], c_str)
+
+
 def go_bytes_to_py_bytes(go_bytes) -> bytes:
     char_arr = ffi.cast("char *", go_bytes.data)
     return ffi.string(char_arr)
@@ -32,8 +42,4 @@ def go_bytes_to_py_bytes(go_bytes) -> bytes:
 
 def disk_storage_get(root, path):
     root = os.path.join(os.getcwd(), root)
-
-    ret_slice = ffi.new("GoSlice *")
-    lib.DiskStorageGet(py_str_to_go(root)[0], py_str_to_go(path)[0], ret_slice)
-    return go_bytes_to_py_bytes(ret_slice)
 

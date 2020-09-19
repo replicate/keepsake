@@ -7,14 +7,15 @@ import (
 )
 
 //export DiskStorageGet
-func DiskStorageGet(rootDir string, path string, result *[]C.char) {
+func DiskStorageGet(rootDir string, path string, result *[]C.char, errString *string) {
 	storage, err := storage.NewDiskStorage(rootDir)
 	if err != nil {
-		panic(err)
+		*errString = err.Error()
+		return
 	}
 	r, err := storage.Get(path)
 	if err != nil {
-		panic(err)
+		*errString = err.Error()
 	}
 	for _, b := range r {
 		*result = append(*result, C.char(b))
