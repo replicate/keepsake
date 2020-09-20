@@ -64,7 +64,6 @@ function Layout({ title, children }) {
           </nav>
           <p className="tagline">
             <strong>Replicate</strong> Version control for machine learning
-            experiments
           </p>
         </footer>
       </div>
