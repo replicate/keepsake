@@ -4,7 +4,7 @@ import moto  # type: ignore
 import os
 
 from replicate.exceptions import DoesNotExistError
-from replicate.storage.s3_storage import S3Storage
+from replicate.storage.s3_storage import S3Storage, S3ParallelCopier
 
 BUCKET_NAME = "mybucket"
 
@@ -17,6 +17,21 @@ def mock_s3():
     client.create_bucket(Bucket=BUCKET_NAME)
     yield client
     mock.stop()
+
+
+@pytest.fixture
+def mock_s3_parallel_copier():
+    old_begin = S3ParallelCopier.begin
+    S3ParallelCopier.begin = mock_copier_begin_fn
+    yield
+    S3ParallelCopier.begin = old_begin
+
+
+def mock_copier_begin_fn(self):
+    mock = moto.mock_s3()
+    mock.start()
+    self.client = boto3.client("s3")
+    self.client.create_bucket(Bucket=BUCKET_NAME)
 
 
 def mock_get(mock_s3, key):
@@ -153,7 +168,7 @@ def test_put_path(mock_s3, tmpdir):
     assert mock_get(mock_s3, "singlefile/foo.txt") == b"hello foo.txt"
 
 
-def test_put_path_with_root(mock_s3, tmpdir):
+def test_put_path_with_root(mock_s3, mock_s3_parallel_copier, tmpdir):
     storage = S3Storage(bucket=BUCKET_NAME, root="someroot")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:

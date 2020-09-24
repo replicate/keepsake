@@ -1,3 +1,4 @@
+import multiprocessing
 import sys
 import os
 from abc import ABCMeta, abstractmethod
@@ -10,6 +11,8 @@ else:
     from typing_extensions import TypedDict
 
 ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
+
+from . import parallel_copy
 
 
 class Storage:
@@ -51,6 +54,32 @@ class Storage:
         for relative_path, data in self.walk_directory_data(source_path):
             # Make it relative to path we want to store it in storage
             self.put(os.path.join(path, relative_path), data)
+
+    def parallel_copy(self, copier: parallel_copy.Copier, source_directory: str):
+        paths_queue = multiprocessing.Queue()
+        total_stat_queue = multiprocessing.Queue()
+        total_stat_paths_queue = multiprocessing.Queue()
+        done_queue = multiprocessing.Queue()
+        copy_worker = parallel_copy.ParallelCopyWorker(paths_queue, done_queue, copier)
+        progress_worker = parallel_copy.ProgressWorker(total_stat_queue, done_queue)
+        total_stat_worker = parallel_copy.TotalStatWorker(total_stat_paths_queue, total_stat_queue)
+
+        copy_worker.start()
+        progress_worker.start()
+        total_stat_worker.start()
+
+        for rel_path, abs_path in self.walk_directory_paths(source_directory):
+            paths_queue.put((rel_path, abs_path))
+            total_stat_paths_queue.put(abs_path)
+
+        # send sentinels
+        paths_queue.put(None)
+        total_stat_paths_queue.put(None)
+
+        copy_worker.join()
+        progress_worker.terminate()
+        total_stat_worker.terminate()
+
 
     def walk_directory_paths(
         self, directory: str

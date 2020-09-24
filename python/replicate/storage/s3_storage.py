@@ -1,12 +1,12 @@
 # TODO(andreas): better error handling
 
 import os
-import asyncio
 import re
 from typing import AnyStr, Optional, Generator, Set, Any
 import boto3  # type: ignore
 
 from .storage_base import Storage, ListFileInfo
+from .parallel_copy import Copier
 from ..exceptions import DoesNotExistError
 
 
@@ -36,7 +36,7 @@ class S3Storage(Storage):
 
     def put_path(self, path: str, source_path: str):
         """
-        Save directory to path
+        Save file or directory to s3 path
         """
         client = self._get_client()
         root_path = os.path.join(self.root, path)
@@ -45,9 +45,7 @@ class S3Storage(Storage):
                 data = fh.read()
             client.put_object(Bucket=self.bucket_name, Key=root_path, Body=data)
 
-        for relative_path, data in self.walk_directory_data(source_path):
-            remote_path = os.path.join(root_path, relative_path)
-            client.put_object(Bucket=self.bucket_name, Key=remote_path, Body=data)
+        self.parallel_copy(S3ParallelCopier(self, path), source_path)
 
     def put(self, path: str, data: AnyStr):
         """
@@ -132,3 +130,29 @@ class S3Storage(Storage):
         self._get_client().create_bucket(Bucket=self.bucket_name)
         bucket = boto3.resource("s3").Bucket(self.bucket_name)
         bucket.wait_until_exists()
+
+
+class S3ParallelCopier(Copier):
+
+    def __init__(self, storage: S3Storage, path):
+        super().__init__()
+
+        self.storage = storage
+        self.path = path
+        self.client = None
+
+    def begin(self):
+        self.client = boto3.client("s3")
+
+    def copy(self, rel_path: str, abs_path: str):
+        assert self.client is not None, "begin() must be called before copy()"
+
+        root_path = os.path.join(self.storage.root, self.path)
+        remote_path = os.path.join(root_path, rel_path)
+
+        with open(abs_path, "rb") as f:
+            data = f.read()
+
+        print("****************", self.storage.bucket_name, self.path, remote_path, len(data), rel_path, abs_path)
+
+        self.client.put_object(Bucket=self.storage.bucket_name, Key=remote_path, Body=data)
