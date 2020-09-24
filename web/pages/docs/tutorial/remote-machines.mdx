@@ -144,8 +144,18 @@ Make a note of the value underneath `EXTERNAL_IP`. You'll need that in the next 
 </TabPanel>
 <TabPanel>
 
+First, create a new private key pair using the [AWS EC2 console](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#KeyPairs:). Assuming your key was created with the name "my-aws-key-pair", run:
 
-We haven't finished the Amazon EC2 section yet, sorry! Switch back to the "Google Cloud Compute" tab.
+```shell-session
+REGION=us-east-1
+IMAGE_ID=$(aws ssm get-parameters --region=$REGION --names "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id" --query 'Parameters[0].Value' --output text)
+aws ec2 run-instances \
+        --image-id=$IMAGE_ID \
+        --count 1 \
+        --instance-type t3.large \
+        --key-name=my-aws-key-pair \
+        --region=$REGION
+```
 
 </TabPanel>
 </TabPanels>
@@ -221,7 +231,16 @@ gcloud compute instances delete replicate-training-1 --zone=us-east1-c
 
 </TabPanel>
 <TabPanel>
-We haven't finished the Amazon EC2 section yet, sorry! Switch back to the "Google Cloud Compute" tab.
+First, find the AWS instance ID by running
+```shell-session
+aws ec2 describe-instances
+```
+
+Then delete the instance:
+
+```shell-session
+aws ec2 terminate-instances --instance-id INSTANCE_ID
+```
 </TabPanel>
 </TabPanels>
 </StatefulTabs>
@@ -238,4 +257,3 @@ If something doesn't make sense, doesn't work, or you just have some questions, 
 
 </DocsLayout>
 </TabState>
-
