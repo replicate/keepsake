@@ -191,7 +191,8 @@ func runCommand(opts runOpts, args []string) (err error) {
 		return err
 	}
 
-	store, err := getStorage(conf.Storage, projectDir)
+	// Don't use getStorage and cached storage here, because we just need to call PrepareRunEnv
+	store, err := storage.ForURL(conf.Storage)
 	if err != nil {
 		return err
 	}
