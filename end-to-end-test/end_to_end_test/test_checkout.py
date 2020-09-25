@@ -20,9 +20,9 @@ import pytest  # type: ignore
 def test_checkout(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
     if storage_backend == "s3":
-        storage = "s3://" + temp_bucket + "/root"
+        storage = "s3://" + temp_bucket
     if storage_backend == "gcs":
-        storage = "gs://" + temp_bucket + "/root"
+        storage = "gs://" + temp_bucket
     elif storage_backend == "file":
         storage = "file://" + str(tmpdir_factory.mktemp("storage"))
 
