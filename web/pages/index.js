@@ -97,7 +97,7 @@ def train():
             <span>{num()}</span> You’re in control of your data
           </h2>
           <p>
-            All the data is stored on your own Amazon S3 or Google Cloud Bucket
+            All the data is stored on your own Amazon S3 or Google Cloud bucket
             as plain old files.
           </p>
         </div>
@@ -124,9 +124,9 @@ def train():
         <div className="body">
           <h3 id="anchor-1">Throw away your spreadsheet</h3>
           <p>
-            Your experiments are all in one place, with filter and sort. The
-            data's stored on S3, you can even see experiments that were run on
-            other machines.
+            Your experiments are all in one place, with filter and sort. Because
+            the data's stored on S3, you can even see experiments that were run
+            on other machines.
           </p>
           <CodeBlock language="shell-session">
             {`$ replicate ls --filter "val_loss<0.2"
