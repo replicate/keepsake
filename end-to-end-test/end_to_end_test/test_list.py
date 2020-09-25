@@ -3,6 +3,8 @@ import os
 import subprocess
 import pytest  # type: ignore
 
+from .utils import get_env
+
 
 @pytest.mark.parametrize(
     "storage_backend,use_root,use_replicate_run",
@@ -59,11 +61,7 @@ if __name__ == "__main__":
 """
         )
 
-    env = os.environ
-    env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
-    env["REPLICATE_DEV_PYTHON_SOURCE"] = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../python"
-    )
+    env = get_env()
 
     if use_replicate_run:
         cmd = ["replicate", "run", "-v", "train.py", "--foo"]
@@ -72,7 +70,9 @@ if __name__ == "__main__":
     subprocess.run(cmd, cwd=tmpdir, env=env)
 
     experiments = json.loads(
-        subprocess.run(["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True).stdout
+        subprocess.run(
+            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+        ).stdout
     )
     assert len(experiments) == 1
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
             ["replicate", "ls", "--json", "--storage-url=" + storage],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
-            capture_output=True
+            capture_output=True,
         ).stdout
     )
     assert experiments2 == experiments
