@@ -13,7 +13,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: test-end2end
+        working-directory: end-to-end-test
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-go@v2

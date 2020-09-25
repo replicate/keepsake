@@ -5,6 +5,8 @@ import subprocess
 import os
 import pytest
 
+from .utils import get_env
+
 
 def test_gpu_training(gpu_instance, tmpdir, temp_bucket):
     tmpdir = str(tmpdir)
@@ -47,11 +49,7 @@ if __name__ == "__main__":
 """
         )
 
-    env = os.environ
-    env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
-    env["REPLICATE_DEV_PYTHON_SOURCE"] = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../python"
-    )
+    env = get_env()
     env["AWS_ACCESS_KEY_ID"] = gpu_instance.aws_access_key_id
     env["AWS_SECRET_ACCESS_KEY"] = gpu_instance.aws_secret_access_key
 
