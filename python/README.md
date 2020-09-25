@@ -48,11 +48,13 @@ This will make `import replicate` work anywhere on your machine, symlinked to th
 
 It is difficult to use the development version of the Python library when running inside `replicate run` on a remote machine.
 
-The CLI has a `REPLICATE_DEV_PYTHON_SOURCE` environment variable that will make it upload that directory and `pip install` it as part of the Docker build. For example, replacing path to the path this README is in:
+The CLI has a `REPLICATE_DEV_PYTHON_PACKAGE` environment variable that will make it install that Python package as part of the Docker build. For example, replacing path to the path this README is in:
 
-    REPLICATE_DEV_PYTHON_SOURCE=/absolute/path/to/replicate/python replicate run python train.py
+    REPLICATE_DEV_PYTHON_PACKAGE=/path/to/python/dist/replicate-0.1.23-py3-none-manylinux1_x86_64.whl replicate run python train.py
 
-Now the Python library in this directory is installed in the `replicate run` environment.
+Now this package is installed in the `replicate run` environment.
+
+You'll probably want to run `make build` in the directory above this readme first to generate the package in `python/dist/`.
 
 ## Build package
 
