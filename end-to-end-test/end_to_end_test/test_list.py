@@ -67,11 +67,15 @@ if __name__ == "__main__":
         cmd = ["replicate", "run", "-v", "train.py", "--foo"]
     else:
         cmd = ["python", "train.py", "--foo"]
-    subprocess.run(cmd, cwd=tmpdir, env=env)
+    subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "list", "--json"], cwd=tmpdir, env=env, capture_output=True
+            ["replicate", "list", "--json"],
+            cwd=tmpdir,
+            env=env,
+            capture_output=True,
+            check=True,
         ).stdout
     )
     assert len(experiments) == 1
@@ -97,6 +101,7 @@ if __name__ == "__main__":
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
             capture_output=True,
+            check=True,
         ).stdout
     )
     assert experiments2 == experiments

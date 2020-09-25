@@ -67,13 +67,15 @@ if __name__ == "__main__":
     env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
 
     cmd = ["python", "train.py"]
-    subprocess.run(
-        cmd, cwd=tmpdir, env=env,
-    )
+    subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "ls", "--json"], cwd=tmpdir, env=env, capture_output=True
+            ["replicate", "ls", "--json"],
+            cwd=tmpdir,
+            env=env,
+            capture_output=True,
+            check=True,
         ).stdout
     )
     assert len(experiments) == 1
@@ -83,7 +85,10 @@ if __name__ == "__main__":
     # checking out experiment
     output_dir = str(tmpdir_factory.mktemp("output"))
     subprocess.run(
-        ["replicate", "checkout", "-o", output_dir, exp["id"]], cwd=tmpdir, env=env,
+        ["replicate", "checkout", "-o", output_dir, exp["id"]],
+        cwd=tmpdir,
+        env=env,
+        check=True,
     )
 
     with open(os.path.join(output_dir, rand, rand)) as f:
@@ -100,7 +105,10 @@ if __name__ == "__main__":
 
     output_dir = str(tmpdir_factory.mktemp("output"))
     subprocess.run(
-        ["replicate", "checkout", "-o", output_dir, latest_id], cwd=tmpdir, env=env,
+        ["replicate", "checkout", "-o", output_dir, latest_id],
+        cwd=tmpdir,
+        env=env,
+        check=True,
     )
 
     with open(os.path.join(output_dir, rand, rand)) as f:
