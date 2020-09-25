@@ -12,7 +12,23 @@ If you prefer to **learn concepts first**, take a look at [our guide about how R
 
 ## Install
 
-Install Replicate by adding it to your `requirements.txt` file:
+Replicate is a Python package. Run this to install it:
+
+```
+pip install -U replicate
+```
+
+That's it! This has installed both the [Python library](/docs/reference/python) and the [command-line interface](/docs/reference/cli).
+
+Next, you might want to:
+
+- [Build a model to learn how to use Replicate](/docs/tutorial)
+- [Read our guide about how Replicate works](/docs/learn/how-it-works)
+- [Read the reference for the Python library](/docs/reference/python)
+
+## Install with `requirements.txt`
+
+We recommend using `requirements.txt`, so other people who use your code will get Replicate installed automatically. Add this to your `requirements.txt` file, or create a new one:
 
 <CodeBlock className="txt">
   {`replicate==` +
@@ -26,22 +42,6 @@ Then, run this to install it in your Python environment:
 ```
 pip install -r requirements.txt
 ```
-
-It's a good idea to put it in a file and commit it to Git so other people who use your code will have it installed automatically.
-
-If you're just using it for yourself, you can also use pip directly:
-
-```
-pip install -U replicate
-```
-
-That's it! This has installed both the [Python library](/docs/reference/python) and the [command-line interface](/docs/reference/cli).
-
-Next, you might want to:
-
-- [Build a model to learn how to use Replicate](/docs/tutorial)
-- [Read our guide about how Replicate works](/docs/learn/how-it-works)
-- [Read the reference for the Python library](/docs/reference/python)
 
 </DocsLayout>
 
