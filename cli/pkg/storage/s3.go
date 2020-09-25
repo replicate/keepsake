@@ -127,10 +127,11 @@ func (s *S3Storage) PutDirectory(localPath string, destPath string) error {
 	if err != nil {
 		return err
 	}
-
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
 	for _, file := range files {
+		// Variables used in closure
+		file := file
 		err := queue.Go(func() error {
 			data, err := ioutil.ReadFile(file.Source)
 			if err != nil {
