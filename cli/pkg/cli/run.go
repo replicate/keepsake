@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -124,33 +124,22 @@ func runCommand(opts runOpts, args []string) (err error) {
 	}
 
 	// In development, put development Python package inside Docker image
-	devPythonSource := os.Getenv("REPLICATE_DEV_PYTHON_SOURCE")
-	devPythonSourceTmpdir := ""
-	if devPythonSource != "" {
-		console.Info("Using Python library from %s", devPythonSource)
+	devPythonPackage := os.Getenv("REPLICATE_DEV_PYTHON_PACKAGE")
+
+	devPythonPackageName := ""
+	if devPythonPackage != "" {
+		console.Info("Using Python library from %s", devPythonPackage)
+		devPythonPackageName = filepath.Base(devPythonPackage)
 		// Python source needs to be inside source dir so it gets uploaded and is
 		// in build context. It also can't be inside anything that doesn't
 		// get rsynced (e.g. .replicate)
-		devPythonSourceTmpdir = ".tmp-dev-python-source"
-		if err := os.RemoveAll(path.Join(projectDir, devPythonSourceTmpdir)); err != nil {
-			return err
-		}
-		options := copy.Options{
-			// skip .tox folder since it can be very big
-			Skip: func(src string) (bool, error) {
-				if strings.Contains(src, "/.tox/") {
-					return true, nil
-				}
-				return false, nil
-			},
-		}
-		if err := copy.Copy(devPythonSource, path.Join(projectDir, devPythonSourceTmpdir), options); err != nil {
-			return fmt.Errorf("Failed to copy REPLICATE_DEV_PYTHON_SOURCE: %w", err)
+		if err := copy.Copy(devPythonPackage, filepath.Join(projectDir, devPythonPackageName)); err != nil {
+			return fmt.Errorf("Failed to copy REPLICATE_DEV_PYTHON_PACKAGE: %w", err)
 		}
 	}
 
 	console.Debug("Using base image: %s", baseImage.RepositoryName())
-	dockerfile, err := build.GenerateDockerfile(conf, projectDir, devPythonSourceTmpdir)
+	dockerfile, err := build.GenerateDockerfile(conf, projectDir, devPythonPackageName)
 	if err != nil {
 		return err
 	}

@@ -14,9 +14,9 @@ RUN {{$install}}{{end}}
 COPY "{{.PythonRequirements}}" /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 {{end}}
-{{ if .DevPythonSource}}
-COPY "{{.DevPythonSource}}" /tmp/dev-python-source
-RUN cd /tmp/dev-python-source && pip install -e .
+{{ if .DevPythonPackage}}
+COPY "{{.DevPythonPackage}}" /tmp/
+RUN pip install "/tmp/{{.DevPythonPackage}}"
 {{end}}
 COPY . /code
 WORKDIR /code

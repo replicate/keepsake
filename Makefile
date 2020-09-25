@@ -1,3 +1,8 @@
+.PHONY: build
+build:
+	cd cli && $(MAKE) build-all
+	cd python && $(MAKE) build
+
 .PHONY: release
 release: check-version-var verify-clean-master bump-version
 	git add cli/Makefile python/setup.py web/.env
