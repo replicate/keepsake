@@ -22,6 +22,8 @@ func NewWorkerQueue(ctx context.Context, maxWorkers int) *WorkerQueue {
 
 // Go starts a Go routine as a worker. If there are already maxWorkers running, it
 // will block until one of them finishes
+//
+// Remember to redefine variables in a loop before calling Go(). See pkg/storage/sync.go for an example.
 func (wq *WorkerQueue) Go(f func() error) error {
 	// Context has error, so let it fall through to Wait(), otherwise
 	// sem.Acquire will return error context.Cancelled
