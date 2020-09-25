@@ -8,7 +8,7 @@ import pytest
 import paramiko
 import boto3
 from botocore.config import Config
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 from mypy_boto3_ec2 import EC2ServiceResource
 from mypy_boto3_ec2.service_resource import Instance
 
@@ -42,6 +42,7 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="function")
 def gpu_instance(request):
+    # FIXME (bfirsh): just use environment variables? they are needed for S3 anyway
     aws_access_key_id = request.config.getoption("--aws-access-key-id")
     aws_secret_access_key = request.config.getoption("--aws-secret-access-key")
     ssh_private_key = request.config.getoption("--ssh-private-key")
@@ -83,23 +84,25 @@ def gpu_instance(request):
 
 @pytest.fixture(scope="function")
 def temp_bucket():
-    # FIXME(bfirsh): this seems to not pass access key like gpu_instance?
-    s3 = boto3.resource("s3")
+    # We don't create bucket here so we can test Replicate's ability to create
+    # buckets.
+
     bucket_name = "replicate-test-" + "".join(
         random.choice(string.ascii_lowercase) for _ in range(20)
     )
+    yield bucket_name
 
+    # FIXME: this is used for both GCP and S3 tests, but only cleans up
+    # the S3 bucket.
+    # These fixtures should probably be arranged more intelligently so there
+    # are different ones for GCP and S3.
     try:
-        s3.create_bucket(Bucket=bucket_name)
-        bucket = s3.Bucket(bucket_name)
-        bucket.wait_until_exists()
-        yield bucket_name
+        s3 = boto3.resource("s3")
         bucket = s3.Bucket(bucket_name)
         bucket.objects.all().delete()
         bucket.delete()
-    # when just doing local stuff, not being able to create a bucket is fine.
-    except NoCredentialsError:
-        yield bucket_name
+    except (NoCredentialsError, ClientError):
+        pass
 
 
 def wait_for_port(port, host="localhost", timeout=5.0):
