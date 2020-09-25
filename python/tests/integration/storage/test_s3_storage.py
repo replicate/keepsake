@@ -1,29 +1,22 @@
 import json
 import os
-import random
-import string
 import pytest  # type: ignore
 import boto3
 
 import replicate
+from replicate.hash import random_hash
 
 
 @pytest.fixture(scope="function")
 def temp_bucket():
-    s3 = boto3.resource("s3")
-    bucket_name = "replicate-test-" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(20)
-    )
+    bucket_name = "replicate-test-" + random_hash()[:20]
 
-    try:
-        s3.create_bucket(Bucket=bucket_name)
-        bucket = s3.Bucket(bucket_name)
-        bucket.wait_until_exists()
-        yield bucket_name
-    finally:
-        bucket = s3.Bucket(bucket_name)
-        bucket.objects.all().delete()
-        bucket.delete()
+    yield bucket_name
+
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+    bucket.objects.all().delete()
+    bucket.delete()
 
 
 def test_s3_experiment(temp_bucket, tmpdir):

@@ -28,9 +28,9 @@ type S3Storage struct {
 }
 
 func NewS3Storage(bucket, root string) (*S3Storage, error) {
-	region, err := discoverBucketRegion(bucket)
+	region, err := getBucketRegionOrCreateBucket(bucket)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to discover AWS region for bucket %s, got error: %s", bucket, err)
+		return nil, err
 	}
 
 	s := &S3Storage{
@@ -340,8 +340,26 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, dir string, filter 
 
 func discoverBucketRegion(bucket string) (string, error) {
 	sess := session.Must(session.NewSession(&aws.Config{}))
-
 	ctx := context.Background()
-	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, "eu-west-1")
-	return region, err
+	return s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+}
+
+func getBucketRegionOrCreateBucket(bucket string) (string, error) {
+	// TODO (bfirsh): cache this
+	region, err := discoverBucketRegion(bucket)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			// The real check for this is `aerr.Code() == s3.ErrCodeNoSuchBucket` but GetBucketRegion doesnt return right error
+			if strings.Contains(aerr.Error(), "NotFound") {
+				// TODO (bfirsh): report to use that this is being created, in a way that is compatible with shared library
+				region = "us-east-1"
+				if err := CreateS3Bucket(region, bucket); err != nil {
+					return "", fmt.Errorf("Error creating bucket: %w", err)
+				}
+				return region, nil
+			}
+		}
+		return "", fmt.Errorf("Failed to discover AWS region for bucket %s, got error: %s", bucket, err)
+	}
+	return region, nil
 }
