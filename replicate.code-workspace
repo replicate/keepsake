@@ -25,7 +25,8 @@
       "editor.wordWrap": "on"
     },
     "python.formatting.provider": "black",
-    "python.linting.mypyEnabled": true
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintEnabled": true
   },
   "extensions": {
     "recommendations": [
