@@ -31,14 +31,14 @@ def temp_bucket():
 def test_put_get(temp_bucket):
     storage = GCSStorage(bucket=temp_bucket.name, root="")
     storage.put("foo/bar.txt", "nice")
-    assert temp_bucket.blob("foo/bar.txt").download_as_string() == b"nice"
+    assert temp_bucket.blob("foo/bar.txt").download_as_bytes() == b"nice"
     assert storage.get("foo/bar.txt") == b"nice"
 
 
 def test_put_get_with_root(temp_bucket):
     storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
     storage.put("foo/bar.txt", "nice")
-    assert temp_bucket.blob("someroot/foo/bar.txt").download_as_string() == b"nice"
+    assert temp_bucket.blob("someroot/foo/bar.txt").download_as_bytes() == b"nice"
     assert storage.get("foo/bar.txt") == b"nice"
 
 
@@ -58,17 +58,17 @@ def test_put_path(temp_bucket, tmpdir):
             f.write("hello " + path)
 
     storage.put_path("folder", tmpdir)
-    assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
-    assert temp_bucket.blob("folder/qux.txt").download_as_string() == b"hello qux.txt"
+    assert temp_bucket.blob("folder/foo.txt").download_as_bytes() == b"hello foo.txt"
+    assert temp_bucket.blob("folder/qux.txt").download_as_bytes() == b"hello qux.txt"
     assert (
-        temp_bucket.blob("folder/bar/baz.txt").download_as_string()
+        temp_bucket.blob("folder/bar/baz.txt").download_as_bytes()
         == b"hello bar/baz.txt"
     )
 
     # single files
     storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
     assert (
-        temp_bucket.blob("singlefile/foo.txt").download_as_string() == b"hello foo.txt"
+        temp_bucket.blob("singlefile/foo.txt").download_as_bytes() == b"hello foo.txt"
     )
 
 
@@ -83,22 +83,22 @@ def test_put_path_with_root(temp_bucket, tmpdir):
 
     storage.put_path("folder", tmpdir)
     assert (
-        temp_bucket.blob("someroot/folder/foo.txt").download_as_string()
+        temp_bucket.blob("someroot/folder/foo.txt").download_as_bytes()
         == b"hello foo.txt"
     )
     assert (
-        temp_bucket.blob("someroot/folder/qux.txt").download_as_string()
+        temp_bucket.blob("someroot/folder/qux.txt").download_as_bytes()
         == b"hello qux.txt"
     )
     assert (
-        temp_bucket.blob("someroot/folder/bar/baz.txt").download_as_string()
+        temp_bucket.blob("someroot/folder/bar/baz.txt").download_as_bytes()
         == b"hello bar/baz.txt"
     )
 
     # single files
     storage.put_path("singlefile/foo.txt", os.path.join(tmpdir, "foo.txt"))
     assert (
-        temp_bucket.blob("someroot/singlefile/foo.txt").download_as_string()
+        temp_bucket.blob("someroot/singlefile/foo.txt").download_as_bytes()
         == b"hello foo.txt"
     )
 
@@ -128,14 +128,14 @@ baz.txt
         )
 
     storage.put_path("folder", tmpdir)
-    assert temp_bucket.blob("folder/foo.txt").download_as_string() == b"hello foo.txt"
+    assert temp_bucket.blob("folder/foo.txt").download_as_bytes() == b"hello foo.txt"
     assert (
-        temp_bucket.blob("folder/bar/new-qux.txt").download_as_string()
+        temp_bucket.blob("folder/bar/new-qux.txt").download_as_bytes()
         == b"hello bar/new-qux.txt"
     )
     with pytest.raises(NotFound):
-        temp_bucket.blob("folder/bar/baz.txt").download_as_string()
+        temp_bucket.blob("folder/bar/baz.txt").download_as_bytes()
     with pytest.raises(NotFound):
-        temp_bucket.blob("folder/qux.xyz").download_as_string()
+        temp_bucket.blob("folder/qux.xyz").download_as_bytes()
     with pytest.raises(NotFound):
-        temp_bucket.blob("folder/bar/quux.xyz").download_as_string()
+        temp_bucket.blob("folder/bar/quux.xyz").download_as_bytes()
