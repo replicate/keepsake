@@ -98,6 +98,7 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("Failed to open %s, got error: %s", pathString, err)
 	}
+	// FIXME: unhandled error
 	defer reader.Close()
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -123,13 +124,68 @@ func (s *GCSStorage) Delete(path string) error {
 
 // Put data at path
 func (s *GCSStorage) Put(path string, data []byte) error {
-	// TODO
+	key := filepath.Join(s.root, path)
+	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, key)
+	bucket := s.client.Bucket(s.bucketName)
+	obj := bucket.Object(key)
+	writer := obj.NewWriter(context.TODO())
+	_, err := writer.Write(data)
+	if err != nil {
+		return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+	}
+	if err := writer.Close(); err != nil {
+		if strings.Contains(err.Error(), "notFound") {
+			if err := s.EnsureBucketExists(); err != nil {
+				return fmt.Errorf("Error creating bucket: %w", err)
+			}
+			writer := obj.NewWriter(context.TODO())
+			_, err := writer.Write(data)
+			if err != nil {
+				return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+			}
+			if err := writer.Close(); err != nil {
+				return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+			}
+			return nil
+		}
+		return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+	}
 	return nil
 }
 
 func (s *GCSStorage) PutDirectory(localPath string, storagePath string) error {
-	// TODO
-	return nil
+	files, err := putDirectoryFiles(localPath, filepath.Join(s.root, storagePath))
+	bucket := s.client.Bucket(s.bucketName)
+	if err != nil {
+		return err
+	}
+	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
+	for _, file := range files {
+		// Variables used in closure
+		file := file
+		err := queue.Go(func() error {
+			writer := bucket.Object(file.Dest).NewWriter(context.TODO())
+
+			reader, err := os.Open(file.Source)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(writer, reader); err != nil {
+				return err
+			}
+			if err := reader.Close(); err != nil {
+				return err
+			}
+			if err := writer.Close(); err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return queue.Wait()
 }
 
 // List files in a path non-recursively
