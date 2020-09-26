@@ -1,6 +1,7 @@
 import os
-import yaml
 from typing import List
+
+from ._vendor import yaml
 
 # TODO (bfirsh): send users to replicate.yaml reference if this is raised!
 class ConfigValidationError(Exception):

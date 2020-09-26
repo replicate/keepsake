@@ -1,0 +1,23 @@
+[tool.black]
+exclude = '(\.eggs|\.git|\.hg|\.mypy|_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist|_vendor)'
+
+[tool.vendoring]
+destination = "replicate/_vendor/"
+requirements = "replicate/_vendor/vendor.txt"
+namespace = "replicate._vendor"
+
+protected-files = ["__init__.py", "README.rst", "vendor.txt"]
+patches-dir = ""
+
+[tool.vendoring.transformations]
+substitute = []
+drop = [
+  # pyyaml falls back to plain python
+  "_yaml.*.so",
+]
+
+[tool.vendoring.typing-stubs]
+
+[tool.vendoring.license.directories]
+
+[tool.vendoring.license.fallback-urls]
