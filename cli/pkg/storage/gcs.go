@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 	"github.com/adjust/uniuri"
 	iam "google.golang.org/api/iam/v1"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 	"google.golang.org/api/serviceusage/v1"
 
 	"replicate.ai/cli/pkg/cache"
@@ -38,7 +40,19 @@ type GCSStorage struct {
 }
 
 func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
-	client, err := storage.NewClient(context.TODO())
+	options := []option.ClientOption{}
+
+	// When inside `replicate run`, get the options passed from PrepareRunEnv
+	key := os.Getenv("REPLICATE_GCP_SERVICE_ACCOUNT_KEY")
+	if key != "" {
+		keyJSON, err := base64.StdEncoding.DecodeString(key)
+		if err != nil {
+			return nil, fmt.Errorf("Error decoding REPLICATE_GCP_SERVICE_ACCOUNT_KEY: %w", err)
+		}
+		options = append(options, option.WithCredentialsJSON(keyJSON))
+	}
+
+	client, err := storage.NewClient(context.TODO(), options...)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
 	}
@@ -47,7 +61,8 @@ func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
 		bucketName: bucket,
 		root:       root,
 		client:     client,
-		projectID:  "",
+		// When inside `replicate run`, default to project passed from PrepareRunEnv
+		projectID: os.Getenv("REPLICATE_GCP_PROJECT"),
 	}, nil
 }
 
@@ -259,6 +274,9 @@ func (s *GCSStorage) CreateBucket() error {
 // and returns ["REPLICATE_GCP_SERVICE_ACCOUNT_KEY=<key>",
 // "REPLICATE_GCP_PROJECT=<project>"], where 'key' is a base64-encoded
 // json key
+//
+// This is used by `replicate run` to pass credentials to Replicate
+// running inside the container.
 func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
 	if err := s.EnsureBucketExists(); err != nil {
 		return nil, err
