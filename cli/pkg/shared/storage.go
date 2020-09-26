@@ -86,3 +86,13 @@ func (S3Storage) PutPath(args PutPathArgs, _ *int) error {
 	}
 	return st.PutPath(args.Src, args.Dest)
 }
+
+type DiskStorage struct{}
+
+func (DiskStorage) PutPath(args PutPathArgs, _ *int) error {
+	st, err := storage.NewDiskStorage(args.Root)
+	if err != nil {
+		return err
+	}
+	return st.PutPath(args.Src, args.Dest)
+}

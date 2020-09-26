@@ -122,7 +122,6 @@ setuptools.setup(
     # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
     # and break in weird ways?
     install_requires=[
-        "gitignore-parser==0.0.8",
         "pyyaml==5.3.1",
         "typing-extensions",
     ],

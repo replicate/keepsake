@@ -29,5 +29,8 @@ func Serve() {
 	if err := s.Register(GCSStorage{}); err != nil {
 		panic(err)
 	}
+	if err := s.Register(DiskStorage{}); err != nil {
+		panic(err)
+	}
 	s.ServeCodec(jsonrpc.NewServerCodec(rwCloser{os.Stdin, os.Stdout}))
 }
