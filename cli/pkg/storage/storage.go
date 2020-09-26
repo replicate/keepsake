@@ -7,6 +7,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	gitignore "github.com/sabhiram/go-gitignore"
+
+	"replicate.ai/cli/pkg/files"
 )
 
 var maxWorkers = 128
@@ -87,7 +91,8 @@ func ForURL(storageURL string) (Storage, error) {
 	return nil, fmt.Errorf("Unknown storage backend: %s", scheme)
 }
 
-var putDirectorySkip = []string{".replicate", ".git", "venv", ".mypy_cache"}
+// FIXME: should we keep on doing this?
+var putDirectoryAlwaysIgnore = []string{".replicate", ".git", "venv", ".mypy_cache"}
 
 type fileToPut struct {
 	Source string
@@ -95,13 +100,26 @@ type fileToPut struct {
 }
 
 func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error) {
+	// Perhaps this should be configurable, or done at a higher-level? It seems odd this is done at such a low level.
+	var ignore *gitignore.GitIgnore
+	var err error
+	ignoreFilePath := filepath.Join(localPath, ".replicateignore")
+	if isDir, _ := files.IsDir(localPath); isDir {
+		if exists, _ := files.FileExists(ignoreFilePath); exists {
+			ignore, err = gitignore.CompileIgnoreFile(ignoreFilePath)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	result := []fileToPut{}
-	err := filepath.Walk(localPath, func(currentPath string, info os.FileInfo, err error) error {
+	err = filepath.Walk(localPath, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
-			for _, dir := range putDirectorySkip {
+			for _, dir := range putDirectoryAlwaysIgnore {
 				if info.Name() == dir {
 					return filepath.SkipDir
 				}
@@ -113,6 +131,10 @@ func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error
 		relativePath, err := filepath.Rel(localPath, currentPath)
 		if err != nil {
 			return err
+		}
+
+		if ignore != nil && ignore.MatchesPath(relativePath) {
+			return nil
 		}
 
 		result = append(result, fileToPut{
