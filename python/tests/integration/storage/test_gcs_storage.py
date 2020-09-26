@@ -1,4 +1,3 @@
-import json
 import os
 import random
 import string
@@ -6,7 +5,6 @@ import pytest  # type: ignore
 from google.cloud import storage
 from google.api_core.exceptions import NotFound
 
-import replicate
 from replicate.exceptions import DoesNotExistError
 from replicate.storage.gcs_storage import GCSStorage
 
