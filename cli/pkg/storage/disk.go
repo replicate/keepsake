@@ -34,7 +34,7 @@ func (s *DiskStorage) RootExists() (bool, error) {
 func (s *DiskStorage) Get(p string) ([]byte, error) {
 	data, err := ioutil.ReadFile(path.Join(s.rootDir, p))
 	if err != nil && os.IsNotExist(err) {
-		return nil, &NotExistError{msg: "Get: path does not exist: " + p}
+		return nil, &DoesNotExistError{msg: "Get: path does not exist: " + p}
 	}
 	return data, err
 }

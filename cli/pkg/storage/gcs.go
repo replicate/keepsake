@@ -79,7 +79,7 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 	reader, err := obj.NewReader(context.TODO())
 	if err != nil {
 		if err == storage.ErrObjectNotExist {
-			return nil, &NotExistError{msg: "Get: path does not exist: " + pathString}
+			return nil, &DoesNotExistError{msg: "Get: path does not exist: " + pathString}
 		}
 		return nil, fmt.Errorf("Failed to open %s, got error: %s", pathString, err)
 	}

@@ -1,9 +1,9 @@
 package storage
 
-type NotExistError struct {
+type DoesNotExistError struct {
 	msg string
 }
 
-func (e *NotExistError) Error() string {
+func (e *DoesNotExistError) Error() string {
 	return e.msg
 }

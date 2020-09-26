@@ -82,7 +82,7 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			if aerr.Code() == s3.ErrCodeNoSuchKey {
-				return nil, &NotExistError{msg: "Get: path does not exist: " + path}
+				return nil, &DoesNotExistError{msg: "Get: path does not exist: " + path}
 			}
 		}
 		return nil, fmt.Errorf("Failed to read %s/%s, got error: %s", s.RootURL(), path, err)

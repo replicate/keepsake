@@ -35,5 +35,5 @@ func TestSync(t *testing.T) {
 	require.Equal(t, []byte("hello"), data)
 
 	_, err = destStorage.Get("new-path/nope")
-	require.IsType(t, &NotExistError{}, err)
+	require.IsType(t, &DoesNotExistError{}, err)
 }
