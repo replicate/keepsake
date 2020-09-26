@@ -119,12 +119,6 @@ setuptools.setup(
     python_requires='>=3.6.0',
     packages=setuptools.find_packages(),
     package_data={'replicate': ['bin/replicate-shared']},
-    # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
-    # and break in weird ways?
-    install_requires=[
-        "pyyaml==5.3.1",
-        "typing-extensions",
-    ],
     cmdclass={
         'bdist_wheel': bdist_wheel,
         'build_scripts': build_scripts,

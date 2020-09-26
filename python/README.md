@@ -70,3 +70,11 @@ You must build the entire project. See the README in the directory above.
 Any contributions must be formatted with [Black](https://github.com/psf/black). The best thing is to set up your editor to automatically format code, but you can also do it manually by running:
 
     $ make fmt
+
+## Vendoring libraries
+
+We vendor the few Python libraries we depend on to avoid dependency hell. We use [vendoring](https://pypi.org/project/vendoring/), the same tool used by pip.
+
+The vendored packages are defined in `replicate/_vendor/vendor.txt`. If you add/change anything in there, run this to update the vendored libraries:
+
+    make vendor
