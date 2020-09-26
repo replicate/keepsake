@@ -67,14 +67,14 @@ func (s *CachedStorage) GetDirectory(storagePath string, localPath string) error
 	return s.storage.GetDirectory(storagePath, localPath)
 }
 
-func (s *CachedStorage) PutDirectory(localPath string, storagePath string) error {
+func (s *CachedStorage) PutPath(localPath string, storagePath string) error {
 	// FIXME: potential for cache and remote to get out of sync on error
 	if strings.HasPrefix(storagePath, s.cachePrefix) {
-		if err := s.cacheStorage.PutDirectory(localPath, storagePath); err != nil {
+		if err := s.cacheStorage.PutPath(localPath, storagePath); err != nil {
 			return err
 		}
 	}
-	return s.storage.PutDirectory(localPath, storagePath)
+	return s.storage.PutPath(localPath, storagePath)
 
 }
 

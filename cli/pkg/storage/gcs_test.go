@@ -3,12 +3,16 @@ package storage
 import (
 	"context"
 	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
 	"testing"
 
 	"cloud.google.com/go/storage"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 
+	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/hash"
 )
 
@@ -17,7 +21,7 @@ import (
 
 // TODO: skip tests if you're not authenticated to Google Cloud. We should use `go test -short` to just run unit tests.
 
-func createBucket(t *testing.T, client *storage.Client) (*storage.BucketHandle, string) {
+func createGCSBucket(t *testing.T, client *storage.Client) (*storage.BucketHandle, string) {
 	projectID, err := discoverProjectID()
 	require.NoError(t, err)
 	bucketName := "replicate-test-" + hash.Random()[0:10]
@@ -27,7 +31,7 @@ func createBucket(t *testing.T, client *storage.Client) (*storage.BucketHandle, 
 	return bucket, bucketName
 }
 
-func deleteBucket(t *testing.T, bucket *storage.BucketHandle) {
+func deleteGCSBucket(t *testing.T, bucket *storage.BucketHandle) {
 	it := bucket.Objects(context.Background(), &storage.Query{
 		Prefix: "",
 	})
@@ -61,8 +65,8 @@ func readObject(t *testing.T, bucket *storage.BucketHandle, key string) []byte {
 func TestGCSStorageGet(t *testing.T) {
 	client, err := storage.NewClient(context.TODO())
 	require.NoError(t, err)
-	bucket, bucketName := createBucket(t, client)
-	t.Cleanup(func() { deleteBucket(t, bucket) })
+	bucket, bucketName := createGCSBucket(t, client)
+	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
 	createObject(t, bucket, "foo.txt", []byte("hello"))
 
 	storage, err := NewGCSStorage(bucketName, "")
@@ -75,8 +79,8 @@ func TestGCSStorageGet(t *testing.T) {
 func TestGCSStoragePut(t *testing.T) {
 	client, err := storage.NewClient(context.TODO())
 	require.NoError(t, err)
-	bucket, bucketName := createBucket(t, client)
-	t.Cleanup(func() { deleteBucket(t, bucket) })
+	bucket, bucketName := createGCSBucket(t, client)
+	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
 
 	storage, err := NewGCSStorage(bucketName, "")
 	require.NoError(t, err)
@@ -84,4 +88,33 @@ func TestGCSStoragePut(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, []byte("hello"), readObject(t, bucket, "foo.txt"))
+}
+
+func TestGCSStoragePutPath(t *testing.T) {
+	client, err := storage.NewClient(context.TODO())
+	require.NoError(t, err)
+	bucket, bucketName := createGCSBucket(t, client)
+	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
+
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+	err = os.Mkdir(path.Join(tmpDir, "somedir"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(tmpDir, "somedir/foo.txt"), []byte("hello"), 0644)
+	require.NoError(t, err)
+
+	storage, err := NewGCSStorage(bucketName, "")
+	require.NoError(t, err)
+
+	// Whole directory
+	err = storage.PutPath(filepath.Join(tmpDir, "somedir"), "anotherdir")
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), readObject(t, bucket, "anotherdir/foo.txt"))
+
+	// Single file
+	err = storage.PutPath(filepath.Join(tmpDir, "somedir/foo.txt"), "singlefile/foo.txt")
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), readObject(t, bucket, "singlefile/foo.txt"))
+
 }

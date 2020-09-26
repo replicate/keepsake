@@ -122,8 +122,8 @@ func (s *S3Storage) Put(path string, data []byte) error {
 	return nil
 }
 
-func (s *S3Storage) PutDirectory(localPath string, destPath string) error {
-	files, err := putDirectoryFiles(localPath, filepath.Join(s.root, destPath))
+func (s *S3Storage) PutPath(localPath string, destPath string) error {
+	files, err := putPathFiles(localPath, filepath.Join(s.root, destPath))
 	if err != nil {
 		return err
 	}

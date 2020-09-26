@@ -34,7 +34,7 @@ type Storage interface {
 	Get(path string) ([]byte, error)
 	Put(path string, data []byte) error
 	// TODO (bfirsh): Support files and make PutPath, like Python.
-	PutDirectory(localPath string, storagePath string) error
+	PutPath(localPath string, storagePath string) error
 	GetDirectory(storagePath string, localPath string) error
 	Delete(path string) error
 
@@ -92,14 +92,14 @@ func ForURL(storageURL string) (Storage, error) {
 }
 
 // FIXME: should we keep on doing this?
-var putDirectoryAlwaysIgnore = []string{".replicate", ".git", "venv", ".mypy_cache"}
+var putPathAlwaysIgnore = []string{".replicate", ".git", "venv", ".mypy_cache"}
 
 type fileToPut struct {
 	Source string
 	Dest   string
 }
 
-func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error) {
+func putPathFiles(localPath string, storagePath string) ([]fileToPut, error) {
 	// Perhaps this should be configurable, or done at a higher-level? It seems odd this is done at such a low level.
 	var ignore *gitignore.GitIgnore
 	var err error
@@ -119,7 +119,7 @@ func putDirectoryFiles(localPath string, storagePath string) ([]fileToPut, error
 			return err
 		}
 		if info.IsDir() {
-			for _, dir := range putDirectoryAlwaysIgnore {
+			for _, dir := range putPathAlwaysIgnore {
 				if info.Name() == dir {
 					return filepath.SkipDir
 				}
