@@ -2,31 +2,28 @@ package storage
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
-	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/require"
 
+	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/hash"
 )
 
-func TestS3StorageGet(t *testing.T) {
-	// It is possible to mock this stuff, but integration test is quick and easy
-	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3iface/
-	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
-		t.Skip("skipping S3 test because AWS_ACCESS_KEY_ID not set")
-	}
+// It is possible to mock this stuff, but integration test is quick and easy
+// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3iface/
+// TODO: perhaps use Google's httpreplay library so this doesn't hit network
+// https://godoc.org/cloud.google.com/go/httpreplay
 
-	// Create a bucket
-	bucketName := "replicate-test-" + hash.Random()[0:10]
-	err := CreateS3Bucket("us-east-1", bucketName)
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, DeleteS3Bucket("us-east-1", bucketName))
-	}()
-	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
-	time.Sleep(1 * time.Second)
+func TestS3StorageGet(t *testing.T) {
+	bucketName, _ := createS3Bucket(t)
+	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
 
 	storage, err := NewS3Storage(bucketName, "root")
 	require.NoError(t, err)
@@ -40,4 +37,62 @@ func TestS3StorageGet(t *testing.T) {
 	_, err = storage.Get("does-not-exist")
 	fmt.Println(err)
 	require.IsType(t, &DoesNotExistError{}, err)
+}
+
+func TestS3StoragePutPath(t *testing.T) {
+	bucketName, svc := createS3Bucket(t)
+	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
+
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+	err = os.Mkdir(filepath.Join(tmpDir, "somedir"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(filepath.Join(tmpDir, "somedir/foo.txt"), []byte("hello"), 0644)
+	require.NoError(t, err)
+
+	storage, err := NewS3Storage(bucketName, "")
+	require.NoError(t, err)
+
+	// Whole directory
+	err = storage.PutPath(filepath.Join(tmpDir, "somedir"), "anotherdir")
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), readS3Object(t, svc, bucketName, "anotherdir/foo.txt"))
+
+	// Single file
+	err = storage.PutPath(filepath.Join(tmpDir, "somedir/foo.txt"), "singlefile/foo.txt")
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello"), readS3Object(t, svc, bucketName, "singlefile/foo.txt"))
+}
+
+func createS3Bucket(t *testing.T) (string, *s3.S3) {
+	// TODO (bfirsh): do this more loudly
+	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
+		t.Skip("skipping S3 test because AWS_ACCESS_KEY_ID not set")
+	}
+
+	bucketName := "replicate-test-" + hash.Random()[0:10]
+	err := CreateS3Bucket("us-east-1", bucketName)
+	require.NoError(t, err)
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	})
+	require.NoError(t, err)
+	return bucketName, s3.New(sess)
+}
+
+func deleteS3Bucket(t *testing.T, bucketName string) {
+	require.NoError(t, DeleteS3Bucket("us-east-1", bucketName))
+}
+
+func readS3Object(t *testing.T, svc *s3.S3, bucketName string, key string) []byte {
+	obj, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(key),
+	})
+	require.NoError(t, err)
+	body, err := ioutil.ReadAll(obj.Body)
+	require.NoError(t, err)
+	return body
 }

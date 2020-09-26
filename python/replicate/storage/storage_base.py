@@ -40,7 +40,7 @@ class Storage:
         """
         Save file or directory to path on storage
 
-        Parallels storage.PutDirectory in Go.
+        Parallels storage.PutPath in Go.
         """
         if os.path.isfile(source_path):
             with open(source_path, "rb") as fh:

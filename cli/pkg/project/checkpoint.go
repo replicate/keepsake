@@ -47,7 +47,7 @@ func NewCheckpoint(experimentID string, metrics map[string]*param.Value) *Checkp
 
 // Save a checkpoint, with a copy of the filesystem
 func (c *Checkpoint) Save(st storage.Storage, workingDir string) error {
-	err := st.PutDirectory(workingDir, c.StorageDir())
+	err := st.PutPath(workingDir, c.StorageDir())
 	if err != nil {
 		return err
 	}

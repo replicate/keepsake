@@ -78,7 +78,7 @@ func rsyncCmd(localDir string, remoteOptions *Options, remoteDir string, remoteR
 	// TODO: .replicateignore (just maybe, there might be value in having the remote directory be an exact mirror, with .git and everything?)
 
 	// HACK: ignore stuff that gets made in getting started guide so this doesn't take forever
-	// See also putDirectorySkip in storage/storage.go
+	// See also putPathAlwaysIgnore in storage/storage.go
 	args = append(args, "--exclude", ".replicate", "--exclude", "venv")
 
 	// hack to get rid of core dumps

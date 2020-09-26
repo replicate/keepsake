@@ -153,8 +153,8 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 	return nil
 }
 
-func (s *GCSStorage) PutDirectory(localPath string, storagePath string) error {
-	files, err := putDirectoryFiles(localPath, filepath.Join(s.root, storagePath))
+func (s *GCSStorage) PutPath(localPath string, storagePath string) error {
+	files, err := putPathFiles(localPath, filepath.Join(s.root, storagePath))
 	bucket := s.client.Bucket(s.bucketName)
 	if err != nil {
 		return err

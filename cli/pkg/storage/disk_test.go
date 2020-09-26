@@ -77,7 +77,7 @@ func TestDiskStorageList(t *testing.T) {
 	require.Equal(t, []string{}, paths)
 }
 
-func TestPutDirectory(t *testing.T) {
+func TestPutPath(t *testing.T) {
 	storageDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(storageDir)
@@ -92,7 +92,7 @@ func TestPutDirectory(t *testing.T) {
 	require.NoError(t, os.Mkdir(path.Join(workDir, "subdirectory"), 0755))
 	require.NoError(t, ioutil.WriteFile(path.Join(workDir, "subdirectory/another-file"), []byte("hello again"), 0644))
 
-	err = storage.PutDirectory(workDir, "parent")
+	err = storage.PutPath(workDir, "parent")
 	require.NoError(t, err)
 
 	content, err := ioutil.ReadFile(path.Join(storageDir, "parent/some-file"))
