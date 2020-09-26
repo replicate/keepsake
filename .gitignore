@@ -8,6 +8,7 @@ cli/release
 base-image-builder/release
 python/build
 python/dist
+python/replicate/bin
 /local
 .env*.local
 

@@ -36,7 +36,7 @@ class Storage:
         """
         raise NotImplementedError()
 
-    def put_path(self, path: str, source_path: str):
+    def put_path(self, dest_path: str, source_path: str):
         """
         Save file or directory to path on storage
 
@@ -45,12 +45,12 @@ class Storage:
         if os.path.isfile(source_path):
             with open(source_path, "rb") as fh:
                 data = fh.read()
-            self.put(path, data)
+            self.put(dest_path, data)
             return
 
         for relative_path, data in self.walk_directory_data(source_path):
             # Make it relative to path we want to store it in storage
-            self.put(os.path.join(path, relative_path), data)
+            self.put(os.path.join(dest_path, relative_path), data)
 
     def walk_directory_paths(
         self, directory: str

@@ -7,9 +7,11 @@ ARCHITECTURES := 386 amd64
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 MAIN := cmd/replicate/main.go
+SHARED_MAIN := cmd/replicate-shared/main.go
 NAME := replicate
 RELEASE_DIR := release
 BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/$(NAME)
+SHARED_BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/replicate-shared
 INSTALL_PATH := /usr/local/bin/$(NAME)
 
 ASSETS_PACKAGE := assets
@@ -40,13 +42,16 @@ all: clean build_all install
 build: clean assets
 	@mkdir -p $(RELEASE_DIR)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN)
+	CGO_ENABLED=0 go build $(LDFLAGS) -o $(SHARED_BINARY) $(SHARED_MAIN)
 
 .PHONY: build-all
 build-all: assets
 	@mkdir -p $(RELEASE_DIR)
 	$(foreach GOOS, $(PLATFORMS),\
 	$(foreach GOARCH, $(ARCHITECTURES), \
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -v $(LDFLAGS) -o $(BINARY) $(MAIN); ))
+		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN); \
+		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build $(LDFLAGS) -o $(SHARED_BINARY) $(SHARED_MAIN); \
+	))
 
 .PHONY: install
 install: build

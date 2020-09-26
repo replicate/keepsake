@@ -6,13 +6,19 @@ Version control for machine learning.
 
 ## Contributing
 
+## Build
+
+This will build the Go CLI and the Python package:
+
+    make build
+
+The built Python packages are in `python/dist/`. These contain both the CLI and the Python library.
+
 ## Release
 
 This will release both the CLI and Python package:
 
-```
-make release VERSION=<version>
-```
+    make release VERSION=<version>
 
 It pushes a new tag, which will trigger the "Release" Github action.
 

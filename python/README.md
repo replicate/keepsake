@@ -24,6 +24,11 @@ Install [tox](https://tox.readthedocs.io/en/latest/) to run tests.
 
     $ pip install tox tox-wheel
 
+The Python library depends on the Go project, so you must build that first. Go up one directory, and build everything:
+
+    $ cd ..
+    $ make build
+
 ## Run tests
 
     $ tox
@@ -58,9 +63,7 @@ You'll probably want to run `make build` in the directory above this readme firs
 
 ## Build package
 
-This will build an egg in `dist/`.
-
-    $ python setup.py bdist_egg
+You must build the entire project. See the README in the directory above.
 
 ## Format source code
 
