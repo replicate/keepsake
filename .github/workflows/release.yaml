@@ -25,10 +25,8 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
-      - name: Build CLI
-        run: cd cli && make build-all ENVIRONMENT=production
-      - name: Build Python
-        run: cd python && make build
+      - name: Build
+        run: make build ENVIRONMENT=production
       - name: Set version
         run: |
           echo "::set-env name=version::$(./cli/release/linux/amd64/replicate --version | cut -f3 -d' ')"

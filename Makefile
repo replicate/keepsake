@@ -1,6 +1,8 @@
+ENVIRONMENT := development
+
 .PHONY: build
 build:
-	cd cli && $(MAKE) build-all
+	cd cli && $(MAKE) build-all ENVIRONMENT=$(ENVIRONMENT)
 	cd python && $(MAKE) build
 
 .PHONY: release
