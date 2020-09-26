@@ -39,5 +39,5 @@ func TestS3StorageGet(t *testing.T) {
 
 	_, err = storage.Get("does-not-exist")
 	fmt.Println(err)
-	require.IsType(t, &NotExistError{}, err)
+	require.IsType(t, &DoesNotExistError{}, err)
 }
