@@ -60,11 +60,11 @@ func (s *CachedStorage) Put(p string, data []byte) error {
 	return s.storage.Put(p, data)
 }
 
-func (s *CachedStorage) GetDirectory(storagePath string, localPath string) error {
+func (s *CachedStorage) GetPath(storagePath string, localPath string) error {
 	if strings.HasPrefix(storagePath, s.cachePrefix) {
-		return s.cacheStorage.GetDirectory(storagePath, localPath)
+		return s.cacheStorage.GetPath(storagePath, localPath)
 	}
-	return s.storage.GetDirectory(storagePath, localPath)
+	return s.storage.GetPath(storagePath, localPath)
 }
 
 func (s *CachedStorage) PutPath(localPath string, storagePath string) error {

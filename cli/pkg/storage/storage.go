@@ -35,7 +35,7 @@ type Storage interface {
 	Put(path string, data []byte) error
 	// TODO (bfirsh): Support files and make PutPath, like Python.
 	PutPath(localPath string, storagePath string) error
-	GetDirectory(storagePath string, localPath string) error
+	GetPath(storagePath string, localPath string) error
 	Delete(path string) error
 
 	// List files in a path non-recursively

@@ -154,8 +154,8 @@ func (s *S3Storage) PutPath(localPath string, destPath string) error {
 	return queue.Wait()
 }
 
-// GetDirectory recursively copies storageDir to localDir
-func (s *S3Storage) GetDirectory(remoteDir string, localDir string) error {
+// GetPath recursively copies storageDir to localDir
+func (s *S3Storage) GetPath(remoteDir string, localDir string) error {
 	prefix := filepath.Join(s.root, remoteDir)
 	iter := new(s3manager.DownloadObjectsIterator)
 	files := []*os.File{}
