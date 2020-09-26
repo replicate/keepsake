@@ -1,20 +1,18 @@
 # type: ignore
 from distutils.command.build_scripts import build_scripts as _build_scripts
-from distutils.util import convert_path
+from distutils.util import convert_path, get_platform
 import os
 from pathlib import Path
+import re
 import setuptools
+from setuptools.command.develop import develop as _develop
 import shutil
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 
-# The supported platforms we can build, passed to `python setup.py bdist_wheel --plat-name ...`
-#
-# For macosx, the version number indicates the _minimum_ version, so we just use an arbitrarily old one
-# (the same one that numpy uses *shrug*)
-# https://docs.python.org/3/distutils/apiref.html#distutils.util.get_platform
+# Supported platforms we can build
 #
 # There doesn't seem to be a good list of platforms. The best I can find is the source code of distutils:
 # https://github.com/python/cpython/blob/master/Lib/distutils/util.py
@@ -23,32 +21,51 @@ with open("README.md", "r", encoding="utf-8") as fh:
 # See also:
 # https://packaging.python.org/specifications/platform-compatibility-tags/
 # https://www.python.org/dev/peps/pep-0425/
-PLAT_NAME_TO_BINARY = {
-    "linux_i686": "linux/386/replicate",
-    "linux_x86_64": "linux/amd64/replicate",
+PLAT_NAME_TO_BINARY_PATH = {
+    "linux_i686": "linux/386",
+    "linux_x86_64": "linux/amd64",
     # "linux" is the default if no --plat-name is passed, but it is not specific
-    # enough for pypi, so define manylinux1 too
-    "manylinux1_i686": "linux/386/replicate",
-    "manylinux1_x86_64": "linux/amd64/replicate",
-    "macosx_10_9_x86_64": "darwin/amd64/replicate",
+    # enough for pypi, so we use manylinux for the released version
+    "manylinux1_i686": "linux/386",
+    "manylinux1_x86_64": "linux/amd64",
 }
 
 
-# HACK: lots of setup.py commands rely on the script existing, so create a dummy one for when
-# we're not building a package
-this_dir = Path(__file__).resolve().parent
-(this_dir / "build/bin").mkdir(parents=True, exist_ok=True)
-(this_dir / "build/bin/replicate").touch()
-
-
-def copy_binary(plat_name):
+def plat_name_to_binary_path(plat_name):
     """
-    Copy binary for platform from ../cli into current directory
+    Given a platform name, returns the path to the Go binaries to use.
+    
+    The platform name is the thing passed to `python setup.py bdist_wheel --plat-name ...`.
+    """
+    # These separators can be different things depending on where it comes from, so standardize
+    plat_name = plat_name.replace("-", "_")
+    plat_name = plat_name.replace(".", "_")
+    # Simple ones
+    if plat_name in PLAT_NAME_TO_BINARY_PATH:
+        return PLAT_NAME_TO_BINARY_PATH[plat_name]
+    # We need to do clever stuff for OS X, because it could be any version number
+    if re.match(r"macosx_\d+_\d+_x86_64", plat_name):
+        return "darwin/amd64"
+    raise Exception("unsupported plat_name: " + plat_name)
+
+
+def copy_binaries(plat_name):
+    """
+    Copy binaries for platform from ../cli into current directory
     """
     this_dir = Path(__file__).resolve().parent
-    binary_path = this_dir / "../cli/release" / PLAT_NAME_TO_BINARY[plat_name]
+    binary_path = this_dir / "../cli/release" / plat_name_to_binary_path(plat_name)
     (this_dir / "build/bin").mkdir(parents=True, exist_ok=True)
-    shutil.copy(binary_path, this_dir / "build/bin/replicate")
+    (this_dir / "replicate/bin").mkdir(parents=True, exist_ok=True)
+    shutil.copy(binary_path / "replicate", this_dir / "build/bin/replicate")
+    shutil.copy(
+        binary_path / "replicate-shared", this_dir / "replicate/bin/replicate-shared"
+    )
+
+
+# For stuff like `setup.py develop` and `setup.py install`, copy default binaries for
+# this platform. When building wheels, these defaults will then be overridden.
+copy_binaries(get_platform())
 
 
 # wheel isn't always installed, so only override for when we're building packages
@@ -58,7 +75,7 @@ try:
     # override bdist_wheel so we can copy binary into right place before wheel is created
     class bdist_wheel(_bdist_wheel):
         def run(self):
-            copy_binary(self.plat_name)
+            copy_binaries(self.plat_name)
             _bdist_wheel.run(self)
 
 
@@ -83,6 +100,12 @@ class build_scripts(_build_scripts):
         return outfiles, updated_files
 
 
+# don't install scripts for develop, because it expects them to be text
+class develop(_develop):
+    def install_egg_scripts(self, dist):
+        pass
+
+
 # fmt: off
 setuptools.setup(
     name="replicate",
@@ -95,11 +118,10 @@ setuptools.setup(
     url="https://github.com/replicate/replicate",
     python_requires='>=3.6.0',
     packages=setuptools.find_packages(),
+    package_data={'replicate': ['bin/replicate-shared']},
     # TODO (bfirsh): maybe vendor all dependencies to make it not collide with other things you have installed
     # and break in weird ways?
     install_requires=[
-        "boto3==1.12.32",
-        "google-cloud-storage==1.31.0",
         "gitignore-parser==0.0.8",
         "pyyaml==5.3.1",
         "typing-extensions",
@@ -107,6 +129,7 @@ setuptools.setup(
     cmdclass={
         'bdist_wheel': bdist_wheel,
         'build_scripts': build_scripts,
+        'develop': develop,
     },
     scripts=["build/bin/replicate"],
 )

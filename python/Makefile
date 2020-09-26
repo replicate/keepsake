@@ -29,6 +29,10 @@ clean:
 # for non-pure modules, but what the heck, this seems to work?
 # Anyway -- I'm writing this down here because if this stops working at some point in
 # the future it's because wheel changed their logic around pure modules.
+#
+# For macosx, the version number indicates the _minimum_ version, so we just use an arbitrarily old one
+# (the same one that numpy uses *shrug*)
+# https://docs.python.org/3/distutils/apiref.html#distutils.util.get_platform
 .PHONY: build
 build: clean
 	pip install wheel
