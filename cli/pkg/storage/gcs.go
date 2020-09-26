@@ -263,8 +263,8 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter
 	}
 }
 
-// GetDirectory recursively copies storageDir to localDir
-func (s *GCSStorage) GetDirectory(storageDir string, localDir string) error {
+// GetPath recursively copies storageDir to localDir
+func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
 	prefix := filepath.Join(s.root, storageDir)
 	err := s.applyRecursive(prefix, func(obj *storage.ObjectHandle) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
