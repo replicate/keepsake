@@ -4,7 +4,6 @@ import os
 import datetime
 import dateutil
 from dateutil.tz import tzutc
-import pytest
 
 from replicate.heartbeat import Heartbeat
 

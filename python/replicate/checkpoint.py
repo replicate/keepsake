@@ -1,9 +1,7 @@
 import sys
 import datetime
-import hashlib
 import os
 import json
-import random
 from typing import Optional, Dict, Any
 
 from .hash import random_hash
@@ -36,20 +34,19 @@ def _is_torch_tensor(obj):
 
 
 class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, o):
         if has_numpy:
-            if isinstance(obj, np.integer):
-                return int(obj)
-            elif isinstance(obj, np.floating):
-                return float(obj)
-            elif isinstance(obj, np.ndarray):
-                return obj.tolist()
-        if _is_torch_tensor(obj):
-            return obj.detach().tolist()
-        if _is_tensorflow_tensor(obj):
-            return obj.numpy().tolist()
-        print(type(obj))
-        return json.JSONEncoder.default(self, obj)
+            if isinstance(o, np.integer):
+                return int(o)
+            elif isinstance(o, np.floating):
+                return float(o)
+            elif isinstance(o, np.ndarray):
+                return o.tolist()
+        if _is_torch_tensor(o):
+            return o.detach().tolist()
+        if _is_tensorflow_tensor(o):
+            return o.numpy().tolist()
+        return json.JSONEncoder.default(self, o)
 
 
 class Checkpoint(object):

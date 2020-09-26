@@ -4,7 +4,7 @@ import datetime
 import inspect
 import json
 import sys
-from typing import Dict, Any, Optional, List, Tuple, overload
+from typing import Dict, Any, Optional, Tuple
 import warnings
 
 from .checkpoint import Checkpoint
@@ -12,7 +12,7 @@ from .config import load_config
 from .hash import random_hash
 from .metadata import rfc3339_datetime
 from .project import get_project_dir
-from .storage import storage_for_url, Storage
+from .storage import storage_for_url
 from .heartbeat import Heartbeat
 
 
@@ -29,7 +29,6 @@ class Experiment:
         self.config = config
         storage_url = config["storage"]
         self.storage = storage_for_url(storage_url)
-        # TODO: automatically detect workdir (see .project)
         self.project_dir = project_dir
         self.path = path
         self.params = params
