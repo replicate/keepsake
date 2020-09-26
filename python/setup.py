@@ -104,16 +104,6 @@ setuptools.setup(
         "pyyaml==5.3.1",
         "typing-extensions",
     ],
-    extras_require={
-        "test": [
-            "moto==1.3.14",
-            "mypy==0.782",
-            "black==19.10b0",
-            "pytest==5.4.3",
-            "tox==3.14.1",
-            "tensorflow==2.3.0",
-        ],
-    },
     cmdclass={
         'bdist_wheel': bdist_wheel,
         'build_scripts': build_scripts,

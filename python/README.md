@@ -22,7 +22,7 @@ If you work in virtualenvs, [pyenv-virtualenv](https://github.com/pyenv/pyenv-vi
 
 Install [tox](https://tox.readthedocs.io/en/latest/) to run tests.
 
-    $ pip install tox
+    $ pip install tox tox-wheel
 
 ## Run tests
 
