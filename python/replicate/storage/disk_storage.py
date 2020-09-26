@@ -2,12 +2,16 @@ import os
 from typing import AnyStr, Generator
 
 from .storage_base import Storage, ListFileInfo
+from .. import shared
 from ..exceptions import DoesNotExistError
 
 
 class DiskStorage(Storage):
     """
     Stores data on local filesystem
+
+    Unlike the remote storages, some of these methods are implemented natively
+    because they're trivial. The complex and slow ones (e.g. put_path) we call Go.
     """
 
     def __init__(self, root):
@@ -36,6 +40,17 @@ class DiskStorage(Storage):
             mode = "wb"
         with open(full_path, mode) as fh:
             fh.write(data)
+
+    def put_path(self, dest_path: str, source_path: str):
+        """
+        Save file or directory to path
+        """
+        shared.call(
+            "DiskStorage.PutPath",
+            Root=self.root,
+            Src=str(source_path),
+            Dest=str(dest_path),
+        )
 
     def list(self, path: str) -> Generator[ListFileInfo, None, None]:
         """
