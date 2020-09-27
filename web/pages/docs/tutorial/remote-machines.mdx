@@ -62,9 +62,18 @@ storage: "gs://replicate-[your username]-iris-classifier"
 <TabPanel>
 
 
-We haven't written a full guide to setting up S3 yet, so this assumes some knowledge of how Amazon Web Services works.
+### Log in to Amazon Web Services
 
-To store data on Amazon S3, first set the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` with your access key and secret. You'll probably want to use an IAM user with limited permissions.
+First, you need to install and configure the Amazon Web Services CLI if you haven't already. The easiest way to do this on macOS is to install it with Homebrew:
+
+1. If you haven't already, install [Homebrew](https://brew.sh/).
+1. Run `brew install aws`
+1. If you haven't already got an Amazon Web Services account, [sign up for Amazon Web Services](https://aws.amazon.com/free/).
+1. Run `aws configure` and [follow these instructions to configure it](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). You will need to get an access key ID and secret access key and set the region to `us-east-1. You don't need to set an output format, or profile.
+
+If you're on another platform, [follow these instructions to install the Amazon Web Services CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
+
+### Point Replicate at Amazon S3
 
 Then, create `replicate.yaml` with this content, replacing `[your username]` with your name, or some other unique string:
 
@@ -77,7 +86,7 @@ storage: "s3://replicate-[your username]-iris-classifier"
 </StatefulTabs>
 
 
-Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this Google Cloud Storage bucket.
+Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this bucket.
 
 <Note>
 
@@ -94,7 +103,7 @@ Now, when you run `replicate ls`, it will list experiments from the bucket.
 <Note>
 
 
-You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to Google Cloud, it will no longer list your local experiments.
+You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to a remote bucket, it will no longer list your local experiments.
 
 It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
 
@@ -139,22 +148,54 @@ gcloud compute instances create \
     --metadata="install-nvidia-driver=True"
 ```
 
-Make a note of the value underneath `EXTERNAL_IP`. You'll need that in the next section.
+Save this instance's IP address so we can use it later:
+
+```
+export REPLICATE_HOST=$(gcloud compute instances describe replicate-training-1 --zone us-east1-c --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+```
 
 </TabPanel>
 <TabPanel>
 
-First, create a new private key pair using the [AWS EC2 console](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#KeyPairs:). Assuming your key was created with the name "my-aws-key-pair", run:
+
+First, you need to add your SSH key to your Amazon Web Services account:
 
 ```shell-session
-REGION=us-east-1
-IMAGE_ID=$(aws ssm get-parameters --region=$REGION --names "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id" --query 'Parameters[0].Value' --output text)
+aws ec2 import-key-pair --region us-east-1 \
+    --key-name "replicate" \
+    --public-key-material fileb://~/.ssh/id_rsa.pub
+```
+
+Hit `q` to get out of the JSON output.
+
+<Note>
+
+
+If you get an error saying this file does not exist, [follow the "Generating a new SSH key" instructions in the GitHub documentation](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+
+</Note>
+
+
+Finally, create the EC2 instance:
+
+```shell-session
+export IMAGE_ID=$(aws ssm get-parameters --region=us-east-1 --names "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id" --query 'Parameters[0].Value' --output text)
 aws ec2 run-instances \
-        --image-id=$IMAGE_ID \
-        --count 1 \
-        --instance-type t3.large \
-        --key-name=my-aws-key-pair \
-        --region=$REGION
+    --image-id=$IMAGE_ID \
+    --count 1 \
+    --instance-type t3.large \
+    --key-name=replicate \
+    --region=us-east-1 \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=replicate-training-1}]'
+```
+
+We also need to make a note of the instance's IP address:
+
+```
+export REPLICATE_HOST=ec2-user@$(aws ec2 describe-instances --region=us-east-1 \
+  --filter='Name=tag:Name,Values=replicate-training-1' \
+  --query 'Reservations[].Instances[].PublicIpAddress' \
+  --output text)
 ```
 
 </TabPanel>
@@ -172,10 +213,10 @@ python: "3.8"
 
 You can now use `replicate run` to run a training job on a remote machine. The only two requirements are that the machine has Docker installed on it, and you can log into it with SSH.
 
-Run this on your local machine, replacing `EXTERNAL_IP` with the IP address of the machine:
+Run this on your local machine:
 
 ```shell-session
-$ replicate run -H EXTERNAL_IP python train.py
+$ replicate run -H $REPLICATE_HOST python train.py
 ═══╡ Found CUDA driver on remote host: 418.87.01
 ═══╡ Building Docker image...
 [+] Building 181.7s (12/12) FINISHED
@@ -193,7 +234,7 @@ Epoch 99, train loss: 0.118, validation accuracy: 1.000
 <Note>
 
 
-If there is a "connection refused" error, wait a few minutes. The Google Cloud server takes some time to start up.
+If there is a "connection refused" error, wait a few minutes. The instance takes some time to start up.
 
 </Note>
 
@@ -231,16 +272,17 @@ gcloud compute instances delete replicate-training-1 --zone=us-east1-c
 
 </TabPanel>
 <TabPanel>
-First, find the AWS instance ID by running
-```shell-session
-aws ec2 describe-instances
-```
 
-Then delete the instance:
+
+Run this to delete the instance:
 
 ```shell-session
-aws ec2 terminate-instances --instance-id INSTANCE_ID
+aws ec2 terminate-instances --region=us-east-1 --instance-id $(aws ec2 describe-instances --region=us-east-1 \
+  --filter='Name=tag:Name,Values=replicate-training-1' \
+  --query 'Reservations[].Instances[].InstanceId' \
+  --output text)
 ```
+
 </TabPanel>
 </TabPanels>
 </StatefulTabs>
@@ -257,3 +299,5 @@ If something doesn't make sense, doesn't work, or you just have some questions, 
 
 </DocsLayout>
 </TabState>
+````
+
