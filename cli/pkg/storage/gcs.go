@@ -19,9 +19,9 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/serviceusage/v1"
 
-	"replicate.ai/cli/pkg/cache"
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/settings"
 	"replicate.ai/cli/pkg/slices"
 )
 
@@ -337,7 +337,7 @@ func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
 	if err := s.EnsureBucketExists(); err != nil {
 		return nil, err
 	}
-	serviceAccountKey, err := s.GetOrCreateServiceAccount()
+	serviceAccountKey, err := s.getOrCreateServiceAccount()
 	if err != nil {
 		return nil, err
 	}
@@ -348,20 +348,23 @@ func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
 	return []string{"REPLICATE_GCP_SERVICE_ACCOUNT_KEY=" + serviceAccountKey, "REPLICATE_GCP_PROJECT=" + projectID}, nil
 }
 
-// GetOrCreateServiceAccount returns a base64-encoded service account
+// getOrCreateServiceAccount returns a base64-encoded service account
 // json key. If a cached version exists it is returned, otherwise a
 // new service account is created and the key is cached
-// TODO(andreas): since this is sensitive data, it should perhaps be cached in a more secure way (e.g. keychain or google cloud secrets manager)
-func (s *GCSStorage) GetOrCreateServiceAccount() (serviceAccountKey string, err error) {
-	cacheKey := "service-account-" + s.bucketName
-	if key, ok := cache.GetString(cacheKey); ok {
-		return key, nil
+func (s *GCSStorage) getOrCreateServiceAccount() (serviceAccountKey string, err error) {
+	secretName := "gcp-service-account-" + s.bucketName
+	data, err := settings.GetSecret(secretName)
+	if err != nil {
+		return "", err
+	}
+	if data != nil {
+		return string(data), nil
 	}
 	key, err := s.createServiceAccount()
 	if err != nil {
 		return "", err
 	}
-	if err := cache.SetString(cacheKey, key); err != nil {
+	if err := settings.SetSecret(secretName, []byte(key)); err != nil {
 		return "", err
 	}
 	return key, nil
@@ -371,6 +374,8 @@ func (s *GCSStorage) GetOrCreateServiceAccount() (serviceAccountKey string, err 
 // rights to the bucket, and returns the base64-encoded service
 // account json key
 func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error) {
+	console.Info("Creating a service account with limited permissions to access \"gs://%s\"...", s.bucketName)
+
 	if err := s.enableRequiredServices(); err != nil {
 		// only warn and move on. it's possible that the user
 		// has permissions to create service accounts, without
