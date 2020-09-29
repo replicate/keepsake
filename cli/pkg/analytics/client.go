@@ -13,6 +13,7 @@ import (
 	segment "github.com/segmentio/analytics-go"
 
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/files"
 )
 
 // Event used for storage on disk.
@@ -54,9 +55,6 @@ func NewClient(config *Config) (*Client, error) {
 func (a *Client) init() error {
 	if err := os.Mkdir(a.Dir, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("error making %s: %w", a.Dir, err)
-	}
-	if err := a.Touch(); err != nil {
-		return err
 	}
 
 	path := filepath.Join(a.Dir, "events")
@@ -153,6 +151,19 @@ func (a *Client) Track(name string, props map[string]interface{}) error {
 // ConditionalFlush flushes if event count is above `aboveSize`, or age is `aboveDuration`,
 // otherwise Close() is called and the underlying file(s) are closed.
 func (a *Client) ConditionalFlush(aboveSize int, aboveDuration time.Duration) error {
+	lastFlushExists, err := files.FileExists(filepath.Join(a.Dir, "last_flush"))
+	if err != nil {
+		return err
+	}
+	// Flush on first flush
+	// This causes analytics events to be sent on the second run of the command, after the
+	// user has had a chance to disable them.
+	// The analytics client is not instantiated at all on the first run -- see track.go.
+	if !lastFlushExists {
+		console.Debug("analytics: flushing on first flush")
+		return a.Flush()
+	}
+
 	age, err := a.LastFlushDuration()
 	if err != nil {
 		return err
