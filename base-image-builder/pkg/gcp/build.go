@@ -147,7 +147,7 @@ func (p *Provider) uploadSource(sourceDir string) (obj *storage.ObjectHandle, er
 	w := obj.NewWriter(context.TODO())
 	r, err := os.Open(tarPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read compressed model from %s, got error: %s", tarPath, err)
+		return nil, fmt.Errorf("Failed to read compressed model from %s: %s", tarPath, err)
 	}
 	if _, err := io.Copy(w, r); err != nil {
 		return nil, err

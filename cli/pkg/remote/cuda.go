@@ -16,12 +16,12 @@ func (c *Client) GetCUDADriverVersion() (string, error) {
 		if os.IsNotExist(err) {
 			return "", nil
 		}
-		return "", fmt.Errorf("Failed to open %s, got error: %s", versionPath, err)
+		return "", fmt.Errorf("Failed to open %s: %s", versionPath, err)
 	}
 
 	contents, err := ioutil.ReadAll(file)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read %s, got error: %s", versionPath, err)
+		return "", fmt.Errorf("Failed to read %s: %s", versionPath, err)
 	}
 
 	re := regexp.MustCompile(`Kernel Module\s+([0-9.]+)\s+`)

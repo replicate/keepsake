@@ -46,7 +46,7 @@ func LoadUserSettings() (*UserSettings, error) {
 	}
 	text, err := ioutil.ReadFile(settingsPath)
 	if err != nil {
-		console.Warn("Failed to read %s, got error: %s", settingsPath, err)
+		console.Warn("Failed to read %s: %s", settingsPath, err)
 		return &settings, nil
 	}
 

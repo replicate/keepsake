@@ -44,13 +44,13 @@ func (c *Client) SFTP() *sftp.Client {
 func (c *Client) WriteFile(data []byte, path string) error {
 	remoteFile, err := c.sftpClient.Create(path)
 	if err != nil {
-		return fmt.Errorf("Failed to create remote file at %s, got error: %s", path, err)
+		return fmt.Errorf("Failed to create remote file at %s: %s", path, err)
 	}
 	if _, err := remoteFile.Write(data); err != nil {
-		return fmt.Errorf("Failed to write remote file at %s, got error: %s", path, err)
+		return fmt.Errorf("Failed to write remote file at %s: %s", path, err)
 	}
 	if err := remoteFile.Close(); err != nil {
-		return fmt.Errorf("Failed to close remote file at %s, got error: %s", path, err)
+		return fmt.Errorf("Failed to close remote file at %s: %s", path, err)
 	}
 
 	return nil

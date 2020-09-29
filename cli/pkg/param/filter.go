@@ -74,7 +74,7 @@ func (fs *Filters) Matches(obj ValueGetter) (bool, error) {
 	for _, f := range fs.filters {
 		match, err := f.matches(obj)
 		if err != nil {
-			return false, fmt.Errorf("Error applying filter to %s, got error: %s", f.name, err)
+			return false, fmt.Errorf("Error applying filter to %s: %s", f.name, err)
 		}
 		if !match {
 			return false, nil
@@ -155,7 +155,7 @@ where <operator> can be
 	if f.name == "started" {
 		t, err := dateparse.ParseLocal(value)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse created time, got error: %s", err)
+			return nil, fmt.Errorf("Failed to parse created time: %s", err)
 		}
 		f.value = Float(float64(t.Unix()))
 	} else {

@@ -328,7 +328,7 @@ func None() *Value {
 func ToJSON(params map[string]*Value) (string, error) {
 	j, err := json.Marshal(params)
 	if err != nil {
-		return "", fmt.Errorf("Failed to convert params to JSON, got error: %s", err)
+		return "", fmt.Errorf("Failed to convert params to JSON: %s", err)
 	}
 	return string(j), nil
 }
@@ -337,7 +337,7 @@ func FromJSON(j string) (map[string]*Value, error) {
 	params := map[string]*Value{}
 	err := json.Unmarshal([]byte(j), &params)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load params from JSON, got error: %s", err)
+		return nil, fmt.Errorf("Failed to load params from JSON: %s", err)
 	}
 	return params, nil
 }

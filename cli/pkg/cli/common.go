@@ -44,7 +44,7 @@ func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, proje
 	// projectDir. It should probably use return value of FindConfigInWorkingDir.
 	projectDir, err = filepath.Abs(global.ProjectDirectory)
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s', got error: %w", global.ProjectDirectory, err)
+		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s': %w", global.ProjectDirectory, err)
 	}
 
 	return storageURL, projectDir, nil

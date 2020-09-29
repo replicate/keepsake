@@ -94,7 +94,7 @@ func (m *MockRemote) Kill() error {
 	err := exec.Command("docker", "kill", m.ContainerName).Run()
 	if err != nil {
 		// log an error since Kill() will be called defered in tests
-		console.Error("Failed to kill %s, got error: %s", m.ContainerName, err)
+		console.Error("Failed to kill %s: %s", m.ContainerName, err)
 		return err
 	}
 	return nil
