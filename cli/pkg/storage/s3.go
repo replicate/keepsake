@@ -42,7 +42,7 @@ func NewS3Storage(bucket, root string) (*S3Storage, error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to S3, got error: %s", err)
+		return nil, fmt.Errorf("Failed to connect to S3: %s", err)
 	}
 	s.svc = s3.New(s.sess)
 
@@ -85,11 +85,11 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 				return nil, &DoesNotExistError{msg: "Get: path does not exist: " + path}
 			}
 		}
-		return nil, fmt.Errorf("Failed to read %s/%s, got error: %s", s.RootURL(), path, err)
+		return nil, fmt.Errorf("Failed to read %s/%s: %s", s.RootURL(), path, err)
 	}
 	body, err := ioutil.ReadAll(obj.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read body from %s/%s, got error: %s", s.RootURL(), path, err)
+		return nil, fmt.Errorf("Failed to read body from %s/%s: %s", s.RootURL(), path, err)
 	}
 	return body, nil
 }
@@ -178,23 +178,23 @@ func (s *S3Storage) GetPath(remoteDir string, localDir string) error {
 		return true
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to list objects in s3://%s/%s, got error: %w", s.bucketName, prefix, err)
+		return fmt.Errorf("Failed to list objects in s3://%s/%s: %w", s.bucketName, prefix, err)
 	}
 
 	for _, key := range keys {
 		relPath, err := filepath.Rel(prefix, *key)
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", *key, prefix, err)
+			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", *key, prefix, err)
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
 		if err := os.MkdirAll(localDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %s, got error: %w", localDir, err)
+			return fmt.Errorf("Failed to create directory %s: %w", localDir, err)
 		}
 
 		f, err := os.Create(localPath)
 		if err != nil {
-			return fmt.Errorf("Failed to create file %s, got error: %w", localPath, err)
+			return fmt.Errorf("Failed to create file %s: %w", localPath, err)
 		}
 
 		console.Debug("Downloading %s to %s", *key, localPath)
@@ -265,7 +265,7 @@ func CreateS3Bucket(region, bucket string) (err error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to connect to S3, got error: %w", err)
+		return fmt.Errorf("Failed to connect to S3: %w", err)
 	}
 	svc := s3.New(sess)
 
@@ -288,7 +288,7 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to connect to S3, got error: %w", err)
+		return fmt.Errorf("Failed to connect to S3: %w", err)
 	}
 	svc := s3.New(sess)
 
@@ -333,7 +333,7 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, dir string, filter 
 		return true
 	})
 	if err != nil {
-		results <- ListResult{Error: fmt.Errorf("Failed to list objects in s3://%s, got error: %s", s.bucketName, err)}
+		results <- ListResult{Error: fmt.Errorf("Failed to list objects in s3://%s: %s", s.bucketName, err)}
 	}
 	close(results)
 }
@@ -359,7 +359,7 @@ func getBucketRegionOrCreateBucket(bucket string) (string, error) {
 				return region, nil
 			}
 		}
-		return "", fmt.Errorf("Failed to discover AWS region for bucket %s, got error: %s", bucket, err)
+		return "", fmt.Errorf("Failed to discover AWS region for bucket %s: %s", bucket, err)
 	}
 	return region, nil
 }

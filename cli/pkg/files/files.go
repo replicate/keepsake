@@ -15,7 +15,7 @@ func FileExists(filePath string) (bool, error) {
 	} else if os.IsNotExist(err) {
 		return false, nil
 	} else {
-		return false, fmt.Errorf("Failed to determine if %s exists, got error: %w", filePath, err)
+		return false, fmt.Errorf("Failed to determine if %s exists: %w", filePath, err)
 	}
 }
 
@@ -34,11 +34,11 @@ func TempDir(prefix string) (string, error) {
 
 	err := os.MkdirAll(tempFolder, 0755)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create temporary directory %s, got error: %w", tempFolder, err)
+		return "", fmt.Errorf("Failed to create temporary directory %s: %w", tempFolder, err)
 	}
 	name, err := ioutil.TempDir(tempFolder, prefix+"-")
 	if err != nil {
-		return "", fmt.Errorf("Failed to create temporary directory at %s, got error: %w", tempFolder, err)
+		return "", fmt.Errorf("Failed to create temporary directory at %s: %w", tempFolder, err)
 	}
 	return name, nil
 }
@@ -46,7 +46,7 @@ func TempDir(prefix string) (string, error) {
 func DirIsEmpty(dirPath string) (bool, error) {
 	f, err := os.Open(dirPath)
 	if err != nil {
-		return false, fmt.Errorf("Failed to open %s, got error: %w", dirPath, err)
+		return false, fmt.Errorf("Failed to open %s: %w", dirPath, err)
 	}
 	defer f.Close()
 
@@ -55,7 +55,7 @@ func DirIsEmpty(dirPath string) (bool, error) {
 		return true, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("Failed to read directory at %s, got error: %w", dirPath, err)
+		return false, fmt.Errorf("Failed to read directory at %s: %w", dirPath, err)
 	}
 	return false, nil
 }

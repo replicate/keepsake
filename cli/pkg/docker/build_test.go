@@ -34,7 +34,7 @@ CMD echo $HAS_GPU
 
 	defer func() {
 		if out, err := exec.Command("docker", "rmi", name).Output(); err != nil {
-			console.Warn("Failed to remove docker image %s, got error: %s", name, out)
+			console.Warn("Failed to remove docker image %s: %s", name, out)
 		}
 	}()
 
@@ -79,7 +79,7 @@ CMD cat /foo.txt
 		cmd := client.Command("docker", "rmi", name)
 		require.NoError(t, err)
 		if out, err := cmd.Output(); err != nil {
-			console.Warn("Failed to remove docker image %s, got error: %s", name, out)
+			console.Warn("Failed to remove docker image %s: %s", name, out)
 		}
 	}()
 

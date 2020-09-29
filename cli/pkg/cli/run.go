@@ -212,7 +212,7 @@ func parseMounts(mountStrings []string) ([]docker.Mount, error) {
 func getUser() (string, error) {
 	u, err := user.Current()
 	if err != nil {
-		return "", fmt.Errorf("Failed to determine current user, got error: %w", err)
+		return "", fmt.Errorf("Failed to determine current user: %w", err)
 	}
 	return u.Username, nil
 }

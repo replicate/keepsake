@@ -82,7 +82,7 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 	if scheme == storage.SchemeDisk {
 		storagePath, err = filepath.Abs(storagePath)
 		if err != nil {
-			return fmt.Errorf("Failed to determine absolute directory of %s, got error: %w", storagePath, err)
+			return fmt.Errorf("Failed to determine absolute directory of %s: %w", storagePath, err)
 		}
 		inContainerStorage := "/replicate-storage"
 		config.Env = append(config.Env, "REPLICATE_STORAGE="+inContainerStorage)

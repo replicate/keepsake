@@ -104,7 +104,7 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&conf)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse replicate.yaml, got error: %s", err)
+		return nil, fmt.Errorf("Failed to parse replicate.yaml: %s", err)
 	}
 
 	return conf, nil
@@ -116,7 +116,7 @@ func FindConfigPath(startFolder string) (configPath string, err error) {
 		configPath = filepath.Join(folder, global.ConfigFilename)
 		exists, err := files.FileExists(configPath)
 		if err != nil {
-			return "", fmt.Errorf("Failed to scan directory %s, got error: %s", folder, err)
+			return "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
 		}
 		if exists {
 			return configPath, nil

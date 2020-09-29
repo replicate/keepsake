@@ -63,4 +63,4 @@ class Heartbeat:
         try:
             storage.put(self.path, obj)
         except Exception as e:  # pylint: disable=broad-except
-            sys.stderr.write("Failed to save heartbeat, got error: {}".format(e))
+            sys.stderr.write("Failed to save heartbeat: {}".format(e))

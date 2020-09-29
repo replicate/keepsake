@@ -33,7 +33,7 @@ func (conf *Config) ReadPythonRequirements(projectDir string) (lines []string, e
 
 	contents, err := ioutil.ReadFile(requirementsPath)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read %s, got error: %s", requirementsPath, err)
+		return nil, fmt.Errorf("Failed to read %s: %s", requirementsPath, err)
 	}
 
 	lines = []string{}

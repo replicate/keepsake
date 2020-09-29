@@ -22,13 +22,13 @@ func Instance() (*Cache, error) {
 	}
 	dir, err := homedir.Expand("~/.cache/replicate")
 	if err != nil {
-		return nil, fmt.Errorf("Failed to determine home directory, got error: %s", err)
+		return nil, fmt.Errorf("Failed to determine home directory: %s", err)
 	}
 	dc, err := diskache.New(&diskache.Opts{
 		Directory: dir,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create disk cache, got error: %s", err)
+		return nil, fmt.Errorf("Failed to create disk cache: %s", err)
 	}
 	instance = &Cache{dc: dc}
 	return instance, nil
@@ -40,7 +40,7 @@ func Set(key string, data []byte) error {
 		return err
 	}
 	if err := c.dc.Set(key, data); err != nil {
-		return fmt.Errorf("Failed to store %s in cache, got error: %s", key, err)
+		return fmt.Errorf("Failed to store %s in cache: %s", key, err)
 	}
 	return nil
 }
@@ -48,7 +48,7 @@ func Set(key string, data []byte) error {
 func Get(key string) (data []byte, ok bool) {
 	c, err := Instance()
 	if err != nil {
-		console.Warn("Failed to get cache instance, got error: %s", err)
+		console.Warn("Failed to get cache instance: %s", err)
 		return nil, false
 	}
 	return c.dc.Get(key)

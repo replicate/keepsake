@@ -157,7 +157,7 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 // GetPath recursively copies storageDir to localDir
 func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
 	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir); err != nil {
-		return fmt.Errorf("Failed to copy directory from %s to %s, got error: %w", storageDir, localDir, err)
+		return fmt.Errorf("Failed to copy directory from %s to %s: %w", storageDir, localDir, err)
 	}
 	return nil
 }

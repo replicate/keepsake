@@ -72,7 +72,7 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %q, got error: %w", outputDir, err)
+			return fmt.Errorf("Failed to create directory %q: %w", outputDir, err)
 		}
 	}
 

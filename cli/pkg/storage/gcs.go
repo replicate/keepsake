@@ -96,13 +96,13 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 		if err == storage.ErrObjectNotExist {
 			return nil, &DoesNotExistError{msg: "Get: path does not exist: " + pathString}
 		}
-		return nil, fmt.Errorf("Failed to open %s, got error: %s", pathString, err)
+		return nil, fmt.Errorf("Failed to open %s: %s", pathString, err)
 	}
 	// FIXME: unhandled error
 	defer reader.Close()
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read %s, got error: %s", pathString, err)
+		return nil, fmt.Errorf("Failed to read %s: %s", pathString, err)
 	}
 
 	return data, nil
@@ -131,7 +131,7 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 	writer := obj.NewWriter(context.TODO())
 	_, err := writer.Write(data)
 	if err != nil {
-		return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+		return fmt.Errorf("Failed to write %q: %w", pathString, err)
 	}
 	if err := writer.Close(); err != nil {
 		if strings.Contains(err.Error(), "notFound") {
@@ -141,14 +141,14 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 			writer := obj.NewWriter(context.TODO())
 			_, err := writer.Write(data)
 			if err != nil {
-				return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+				return fmt.Errorf("Failed to write %q: %w", pathString, err)
 			}
 			if err := writer.Close(); err != nil {
-				return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+				return fmt.Errorf("Failed to write %q: %w", pathString, err)
 			}
 			return nil
 		}
-		return fmt.Errorf("Failed to write %q, got error: %w", pathString, err)
+		return fmt.Errorf("Failed to write %q: %w", pathString, err)
 	}
 	return nil
 }
@@ -270,35 +270,35 @@ func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
 		reader, err := obj.NewReader(context.TODO())
 		if err != nil {
-			return fmt.Errorf("Failed to open %s, got error: %w", gcsPathString, err)
+			return fmt.Errorf("Failed to open %s: %w", gcsPathString, err)
 		}
 		defer reader.Close()
 
 		relPath, err := filepath.Rel(prefix, obj.ObjectName())
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s, got error: %w", obj.ObjectName(), storageDir, err)
+			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", obj.ObjectName(), storageDir, err)
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
 		if err := os.MkdirAll(localDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %s, got error: %w", localDir, err)
+			return fmt.Errorf("Failed to create directory %s: %w", localDir, err)
 		}
 
 		f, err := os.Create(localPath)
 		if err != nil {
-			return fmt.Errorf("Failed to create file %s, got error: %w", localPath, err)
+			return fmt.Errorf("Failed to create file %s: %w", localPath, err)
 		}
 		defer f.Close()
 
 		console.Debug("Downloading %s to %s", gcsPathString, localPath)
 		if _, err := io.Copy(f, reader); err != nil {
-			return fmt.Errorf("Failed to copy %s to %s, got error: %w", gcsPathString, localPath, err)
+			return fmt.Errorf("Failed to copy %s to %s: %w", gcsPathString, localPath, err)
 		}
 		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failed to copy gs://%s/%s to %s, got error: %w", s.bucketName, storageDir, localDir, err)
+		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %w", s.bucketName, storageDir, localDir, err)
 	}
 	return nil
 }
@@ -506,7 +506,7 @@ func (s *GCSStorage) enableRequiredServices() error {
 
 	op, err := serviceusageClient.Services.BatchEnable("projects/"+projectID, &serviceusage.BatchEnableServicesRequest{ServiceIds: newServices}).Do()
 	if err != nil {
-		return fmt.Errorf("Failed to enable required APIs, got error: %s", err)
+		return fmt.Errorf("Failed to enable required APIs: %s", err)
 	}
 	return waitForOperation(context.TODO(), func() (bool, error) {
 		op, err = serviceusageClient.Operations.Get(op.Name).Do()
