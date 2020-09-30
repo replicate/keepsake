@@ -20,6 +20,17 @@ function Layout({ title, children }) {
       <div className="layout">
         {children}
         <footer>
+          <h2>
+            <div>
+              <a className="button" href="/docs">
+                Get started
+              </a>
+            </div>
+            <div> or, </div>
+            <div>
+              <a href="/docs">learn more about how Replicate works</a>
+            </div>
+          </h2>
           {/* <div id="contributors">
             <h3>Contributors</h3>
             <ul>
