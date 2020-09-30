@@ -1,29 +1,4 @@
-/* FONTS */
-
-// TODO (bfirsh): put fonts on separate CDN somewhere (can't include in this repo because they aren't open source)
-@font-face {
-  font-family: "Replicate";
-  font-style: normal;
-  font-weight: 400;
-  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/Replicate.woff2)
-    format("woff2");
-}
-
-@font-face {
-  font-family: "Replicate";
-  font-style: italic;
-  font-weight: 400;
-  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/ReplicateItalic.woff2)
-    format("woff2");
-}
-
-@font-face {
-  font-family: "Replicate-Mono";
-  font-style: normal;
-  font-weight: 400;
-  src: url(https://replicate.thinkm.tech/04-replicate-site/website.3/assets/fonts/ReplicateMono.woff2)
-    format("woff2");
-}
+@import "./fonts.scss";
 
 /* MIXINS */
 
@@ -107,7 +82,7 @@ html {
 
 body {
   -webkit-font-smoothing: antialiased;
-  font-family: "Replicate", sans-serif;
+  font-family: "basier_square", sans-serif;
   font-style: normal;
   font-weight: 400;
   color: $text;
@@ -119,6 +94,7 @@ em {
 
 strong {
   font-weight: bold;
+  letter-spacing: 0.035em;
 }
 
 a {
@@ -186,7 +162,7 @@ h2 span {
   // https://github.com/PrismJS/prism/blob/master/themes/prism.css
   background: $text;
   color: $page;
-  font-family: "Replicate-Mono";
+  font-family: "basier_square_mono", monospace;
   padding: $padding;
   overflow: auto;
 
@@ -445,18 +421,18 @@ h2 span {
 
 .global-banner {
   padding-top: $whitespace-vertical;
-  margin: 0 $whitespace-horizontal*2;
+  margin: 0 $whitespace-horizontal * 2;
   @include font-core;
   border-bottom: $keyline;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   p {
-    padding: 0 $whitespace-horizontal $whitespace-vertical*0.5 0;
+    padding: 0 $whitespace-horizontal $whitespace-vertical * 0.5 0;
   }
   nav {
     border-left: $keyline;
-    padding: 0 0 $whitespace-vertical*0.5 $whitespace-horizontal;
+    padding: 0 0 $whitespace-vertical * 0.5 $whitespace-horizontal;
     a + a {
       margin-left: $whitespace-horizontal;
     }
@@ -632,7 +608,7 @@ header {
           content: "–";
           display: inline-block;
           width: $whitespace-horizontal;
-          margin-left: $whitespace-horizontal*-1;
+          margin-left: $whitespace-horizontal * -1;
         }
       }
     }
@@ -695,7 +671,7 @@ header {
     }
 
     code {
-      font-family: "Replicate-Mono";
+      font-family: "basier_square_mono", monospace;
       font-size: 0.9em;
       display: inline-block;
       padding: 0.15em 0.4em 0.1em;
@@ -723,12 +699,11 @@ header {
     nav {
       padding-top: 3.3rem;
       & > ol {
-        top: $whitespace-vertical*0.5;
+        top: $whitespace-vertical * 0.5;
       }
     }
   }
 }
-
 
 footer {
   @include layout-block;
