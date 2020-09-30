@@ -3,14 +3,14 @@
 /* MIXINS */
 
 $text: rgb(0, 0, 0);
-$text-shade: rgba(0, 0, 0, 0.5);
+$text-shade: rgba(0, 0, 0, 0.45);
 $page: rgb(255, 255, 255);
-$panel: rgba(0, 0, 0, 0.08);
+$panel: rgba(0, 0, 0, 0.05);
 $brand: rgb(255, 247, 145);
 
 $whitespace-vertical: 2.5vh;
 $whitespace-horizontal: 1.25vw;
-$grid-row: 37.5vh;
+$grid-row: 50vh;
 
 $padding: $whitespace-vertical 0;
 
@@ -473,9 +473,9 @@ header {
   justify-content: space-between;
   align-items: stretch;
   padding: $padding;
-  min-height: calc(75vh - #{$whitespace-vertical*3});
+  min-height: calc(#{$grid-row * 1.5} - #{$whitespace-vertical*2});
   &.documentation {
-    min-height: calc(50vh - #{$whitespace-vertical*3});
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
   }
   & > * {
     flex-basis: 100%;
@@ -527,7 +527,7 @@ header {
   @include grid-module;
   div {
     padding: $padding;
-    padding-bottom: $whitespace-vertical * 3;
+    padding-bottom: $whitespace-vertical * 2;
     h2 {
       @include font-feature;
     }
@@ -541,13 +541,14 @@ header {
   @include layout-block;
   grid-column: 2 / 5;
   @include grid-module;
+  min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
   &:after {
     content: ".";
     color: transparent;
     grid-column: 1 / 4;
     position: relative;
-    height: 1px;
-    background: $text;
+    height: 0;
+    border-bottom: 1px solid $text;
     margin-right: $whitespace-horizontal * -2;
   }
   & > div {
@@ -570,7 +571,7 @@ header {
     margin-right: $whitespace-horizontal * -2;
     position: relative;
     overflow: inherit;
-
+    box-shadow: 0 2rem 4rem $text-shade;
     &:before {
       content: ".";
       position: absolute;
@@ -585,6 +586,46 @@ header {
         border-radius: 0.5em 0.5em 0 0;
       }
     }
+  }
+}
+
+.control {
+  @include layout-block;
+  position: relative;
+  z-index: 10;
+  grid-column: 2 / 5;
+  @include grid-module;
+  padding-top: $whitespace-vertical;
+  border-bottom: 1px solid $text;
+  &:before {
+    z-index: -1;
+    content: ".";
+    color: transparent;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: $whitespace-horizontal*-2;
+    background: $page;
+    @media (min-width: 1800px) {
+      right: calc(-50vw + 850px);
+    }
+  }
+  div {
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    &:nth-child(2) {
+      grid-column: 2 / 5;
+    }
+  }
+  h2 {
+    @include font-feature;
+    margin-bottom: $whitespace-vertical;
+  }
+  p {
+    padding-bottom: $whitespace-vertical;
   }
 }
 
@@ -649,7 +690,6 @@ header {
   }
   .body {
     grid-column: 2 / 4;
-    padding-top: calc(3.3rem + #{$whitespace-vertical});
     hr {
       border: none;
       height: 3.5rem;
@@ -659,11 +699,8 @@ header {
     h3 {
       @include font-feature;
       max-width: 15em;
-      margin-top: 2.2em;
+      padding-top: calc(3.3rem + #{$whitespace-vertical});
       margin-bottom: $whitespace-vertical;
-      &:first-child {
-        margin-top: 0;
-      }
       code {
         position: relative;
         font-size: 0.85em;
@@ -688,7 +725,7 @@ header {
     }
     & > p:first-child {
       @include font-feature;
-      margin-top: 0;
+      margin-top: calc(3.3rem + #{$whitespace-vertical});
       margin-bottom: $whitespace-vertical*2;
       max-width: 18.5em;
     }
@@ -745,8 +782,8 @@ footer {
   h2 {
     @include font-feature;
     grid-column: 2 / 5;
-    min-height: $grid-row;
     @include grid-module;
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
     div:nth-child(1) {
       grid-row: 1 / 2;
       grid-column: 1 / 2;

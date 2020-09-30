@@ -91,6 +91,24 @@ def train():
         #highlight-end`}</CodeBlock>
       </section>
 
+      <section className="control">
+        <div>
+          <h2>
+            <span>{num()}</span> Fully open source
+          </h2>
+          <p>It won't stop working if a startup goes out of business.</p>
+        </div>
+        <div>
+          <h2>
+            <span>{num()}</span> You keep control of your data
+          </h2>
+          <p>
+            All the data is stored on your own Amazon S3 or Google Cloud bucket
+            as plain old files.
+          </p>
+        </div>
+      </section>
+
       <section className="docs">
         <nav>
           <ol>
@@ -100,38 +118,23 @@ def train():
               </h2>
               <ol>
                 <li>
-                  <a href="#anchor-1">Replicate is open source</a>
+                  <a href="#anchor-1">Throw away your spreadsheet</a>
                 </li>
                 <li>
-                  <a href="#anchor-2">Keep control of your data</a>
+                  <a href="#anchor-2">Compare experiments</a>
                 </li>
                 <li>
-                  <a href="#anchor-3">Throw away your spreadsheet</a>
+                  <a href="#anchor-3">Commit to Git, after the fact</a>
                 </li>
                 <li>
-                  <a href="#anchor-4">Compare experiments</a>
-                </li>
-                <li>
-                  <a href="#anchor-5">Commit to Git, after the fact</a>
-                </li>
-                <li>
-                  <a href="#anchor-6">Run experiments on a remote machine</a>
+                  <a href="#anchor-4">Run experiments on a remote machine</a>
                 </li>
               </ol>
             </li>
           </ol>
         </nav>
         <div className="body">
-          <h3 id="anchor-1">Replicate is open source</h3>
-          <p>
-            It's not going to stop working if a startup goes out of business.
-          </p>
-          <h3 id="anchor-2">Keep control of your data</h3>
-          <p>
-            All the data is stored on your own Amazon S3 or Google Cloud bucket
-            as plain old files.
-          </p>
-          <h3 id="anchor-3">Throw away your spreadsheet</h3>
+          <h3 id="anchor-1">Throw away your spreadsheet</h3>
           <p>
             Your experiments are all in one place, with filter and sort. Because
             the data's stored on S3, you can even see experiments that were run
@@ -144,7 +147,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
           </CodeBlock>
 
-          <h3 id="anchor-4">Compare experiments</h3>
+          <h3 id="anchor-2">Compare experiments</h3>
           <p>
             It diffs everything, all the way down to versions of dependencies,
             just in case that latest Tensorflow version did something weird.
@@ -164,7 +167,7 @@ val_loss:         0.1484      0.1989
 val_accuracy:     0.9607      0.9411`}
           </CodeBlock>
 
-          <h3 id="anchor-5">Commit to Git, after the fact</h3>
+          <h3 id="anchor-3">Commit to Git, after the fact</h3>
           <p>
             There's no need to carefully commit everything to Git. Replicate
             lets you get back to any point you called{" "}
@@ -179,7 +182,7 @@ Copying code and weights to working directory...
 $ git commit -am "Use hinge loss"`}
           </CodeBlock>
 
-          <h3 id="anchor-6">Run experiments on a remote machine</h3>
+          <h3 id="anchor-4">Run experiments on a remote machine</h3>
           <p>
             Replicate has a handy shortcut for this. It'll SSH in, check the
             GPUs are set up correctly, copy over your code, then start your
