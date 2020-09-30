@@ -21,9 +21,9 @@ func NewRootCommand() (*cobra.Command, error) {
 
 To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 
-		Version:       global.Version,
+		Version: global.Version,
+		// This stops errors being printed because we print them in cmd/replicate/main.go
 		SilenceErrors: true,
-		SilenceUsage:  true,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if global.Verbose {
 				console.SetLevel(console.DebugLevel)

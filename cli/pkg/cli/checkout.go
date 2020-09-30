@@ -18,7 +18,7 @@ func newCheckoutCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "checkout <experiment or checkpoint ID>",
 		Short: "Copy files from an experiment or checkpoint into the project directory",
-		RunE:  checkoutCheckpoint,
+		Run:   handleErrors(checkoutCheckpoint),
 		Args:  cobra.ExactArgs(1),
 	}
 

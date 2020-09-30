@@ -15,7 +15,7 @@ func newRmCommand() *cobra.Command {
 
 To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 `,
-		RunE:       removeExperimentOrCheckpoint,
+		Run:        handleErrors(removeExperimentOrCheckpoint),
 		Args:       cobra.MinimumNArgs(1),
 		Aliases:    []string{"delete"},
 		SuggestFor: []string{"remove"},

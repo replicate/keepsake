@@ -23,7 +23,7 @@ func newShowCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show <experiment or checkpoint ID>",
 		Short: "View information about an experiment or checkpoint",
-		RunE:  show,
+		Run:   handleErrors(show),
 		Args:  cobra.ExactArgs(1),
 	}
 

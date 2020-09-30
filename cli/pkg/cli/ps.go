@@ -12,7 +12,7 @@ func newPsCommand() *cobra.Command {
 		Use:     "ps",
 		Short:   "List running experiments in this project",
 		Aliases: []string{"processes"},
-		RunE:    listRunningExperiments,
+		Run:     handleErrors(listRunningExperiments),
 		Args:    cobra.NoArgs,
 	}
 
