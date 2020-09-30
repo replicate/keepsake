@@ -24,7 +24,7 @@ func newDiffCommand() *cobra.Command {
 		Long: `Compare two experiments or checkpoints.
 
 If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest checkpoint.`,
-		RunE: diffCheckpoints,
+		Run:  handleErrors(diffCheckpoints),
 		Args: cobra.ExactArgs(2),
 	}
 

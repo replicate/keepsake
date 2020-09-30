@@ -34,9 +34,9 @@ func newRunCommand() *cobra.Command {
 		Use:   "run [flags] <command> [arg...]",
 		Short: "Run a command on a remote machine",
 		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: handleErrors(func(cmd *cobra.Command, args []string) error {
 			return runCommand(opts, args)
-		},
+		}),
 	}
 
 	flags := cmd.Flags()

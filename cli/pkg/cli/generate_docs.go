@@ -14,7 +14,7 @@ func newGenerateDocsCommand(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "generate-docs",
 		Short:  "",
-		RunE:   generateDocs(rootCmd),
+		Run:    handleErrors(generateDocs(rootCmd)),
 		Args:   cobra.ExactArgs(0),
 		Hidden: true,
 	}

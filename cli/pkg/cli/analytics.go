@@ -12,7 +12,7 @@ func newAnalyticsCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "analytics <on|off>",
 		Short: "Enable or disable analytics",
-		RunE:  analyticsCommand,
+		Run:   handleErrors(analyticsCommand),
 		Args:  cobra.ExactArgs(1),
 	}
 }

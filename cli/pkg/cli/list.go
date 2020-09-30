@@ -14,7 +14,7 @@ func newListCommand() *cobra.Command {
 		Use:     "ls",
 		Short:   "List experiments in this project",
 		Aliases: []string{"list"},
-		RunE:    listExperiments,
+		Run:     handleErrors(listExperiments),
 		Args:    cobra.NoArgs,
 	}
 

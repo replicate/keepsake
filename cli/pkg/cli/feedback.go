@@ -10,7 +10,7 @@ func newFeedbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "feedback",
 		Short: "Submit feedback to the team!",
-		RunE:  submitFeedback,
+		Run:   handleErrors(submitFeedback),
 	}
 
 	return cmd
