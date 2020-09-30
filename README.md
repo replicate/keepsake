@@ -6,6 +6,14 @@ Version control for machine learning.
 
 ## Contributing
 
+## Development environment
+
+Run this to install the CLI and Python library locally for development:
+
+    make develop
+
+This will set up a symlink for the Python library. If you make changes to Go code, you will need to re-run this to compile and install.
+
 ## Build
 
 This will build the Go CLI and the Python package:

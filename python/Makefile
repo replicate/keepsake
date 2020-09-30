@@ -16,7 +16,7 @@ lint:
 
 .PHONY: clean
 clean:
-	rm -rf build dist
+	rm -rf build dist replicate/bin
 
 # Build packages for the various platforms.
 # setup.py handles converting these platform names into Go platforms.

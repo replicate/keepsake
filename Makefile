@@ -5,6 +5,12 @@ build:
 	cd cli && $(MAKE) build-all ENVIRONMENT=$(ENVIRONMENT)
 	cd python && $(MAKE) build
 
+.PHONY: develop
+develop:
+	cd cli && $(MAKE) build
+	cd cli && $(MAKE) install
+	cd python && python setup.py develop
+
 .PHONY: release
 release: check-version-var verify-clean-master bump-version
 	git add cli/Makefile python/setup.py web/.env
