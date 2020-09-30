@@ -6,11 +6,9 @@ function DocsLayout({ title, children, ...props }) {
     <Layout {...props}>
       <Header className="documentation">
         <div className="breadcrumb">
-          <a href="/">Home</a>
+          <a href="/">Home</a>&nbsp;
           {title ? (
-            <>
-              <a href="/docs">Documentation</a> <h2>{title}</h2>
-            </>
+            <><a href="/docs">Documentation</a>&nbsp;<h2>{title}</h2></>
           ) : (
             <h2>Documentation</h2>
           )}

@@ -39,6 +39,8 @@ $grid-row: 37.5vh;
 
 $padding: $whitespace-vertical 0;
 
+$keyline: 1px solid $text-shade;
+
 @mixin layout-block {
   display: block;
   box-sizing: border-box;
@@ -75,7 +77,7 @@ $padding: $whitespace-vertical 0;
 }
 
 @mixin font-feature {
-  font-size: 3rem;
+  font-size: 3.1rem;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
@@ -442,10 +444,23 @@ h2 span {
 }
 
 .global-banner {
+  padding-top: $whitespace-vertical;
   margin: 0 $whitespace-horizontal*2;
-  padding: $whitespace-vertical 0;
   @include font-core;
-  border-bottom: 1px solid $text-shade;
+  border-bottom: $keyline;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  p {
+    padding: 0 $whitespace-horizontal $whitespace-vertical*0.5 0;
+  }
+  nav {
+    border-left: $keyline;
+    padding: 0 0 $whitespace-vertical*0.5 $whitespace-horizontal;
+    a + a {
+      margin-left: $whitespace-horizontal;
+    }
+  }
 }
 
 /* HOMEPAGE */
@@ -466,21 +481,11 @@ header {
   & > * {
     flex-basis: 100%;
   }
+  & > p {
+    display: none;
+  }
   & > :last-child {
     /*     margin-top: auto; */
-  }
-
-  nav {
-    padding-bottom: $whitespace-vertical;
-    display: flex;
-
-    h1 {
-      flex-grow: 1;
-    }
-    a {
-      margin-top: $whitespace-vertical / 2;
-      margin-right: $whitespace-horizontal;
-    }
   }
 
   .breadcrumb {
@@ -594,15 +599,14 @@ header {
     grid-column: 1 / 2;
     padding: $padding;
     padding-top: 0;
-
+    padding-bottom: 33vh;
     a {
       text-decoration: none;
     }
-
     h2 {
-      font-weight: bold;
+      @include font-feature;
+      margin-bottom: $whitespace-vertical;
     }
-
     ol {
       list-style: none;
     }
@@ -610,8 +614,12 @@ header {
     // Top-level sections
     & > ol {
       position: sticky;
+      position: -webkit-sticky;
       top: 0;
       padding-top: calc(3.3rem + #{$whitespace-vertical});
+      h2 span {
+        margin-top: -3.3rem;
+      }
 
       & > li {
         padding-bottom: $whitespace-vertical;
@@ -620,6 +628,16 @@ header {
 
     // Pages within sections
     & ol ol {
+      li {
+        position: relative;
+        padding-left: $whitespace-horizontal;
+        &:before {
+          content: "–";
+          display: inline-block;
+          width: $whitespace-horizontal;
+          margin-left: $whitespace-horizontal*-1;
+        }
+      }
     }
 
     // Table of contents within pages
@@ -706,78 +724,6 @@ header {
   }
 }
 
-.features {
-  @include layout-block;
-  grid-column: 2 / 5;
-  @include grid-module;
-  padding-top: 0;
-  padding-bottom: $whitespace-vertical * 3;
-  nav {
-    grid-column: 1 / 2;
-    padding: $padding;
-    padding-top: 0;
-
-    ol {
-      position: -webkit-sticky;
-      position: sticky;
-      top: 0;
-      padding-top: calc(3.3rem + #{$whitespace-vertical});
-
-      list-style: none;
-    }
-    h2 {
-      @include font-feature;
-      margin-bottom: $whitespace-vertical * 0.75;
-    }
-    a {
-      text-decoration: none;
-    }
-  }
-  .body {
-    grid-column: 2 / 4;
-    padding-top: calc(3.3rem + #{$whitespace-vertical});
-    hr {
-      border: none;
-      height: 3.5rem;
-    }
-    h1,
-    h2,
-    h3 {
-      @include font-feature;
-      max-width: 15em;
-      margin-top: 2.2em;
-      margin-bottom: $whitespace-vertical;
-      &:first-child {
-        margin-top: 0;
-      }
-    }
-    h4,
-    h5,
-    h6 {
-      max-width: 15em;
-      margin-top: 6em;
-      margin-bottom: $whitespace-vertical * 1.5;
-      &:first-child {
-        margin-top: 0;
-      }
-    }
-    p {
-      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
-      max-width: 50em;
-    }
-    code {
-      font-family: "Replicate-Mono";
-      font-size: 0.9em;
-      display: inline-block;
-      padding: 0.15em 0.4em 0.1em;
-      border-radius: 0.25em;
-      background: $panel;
-    }
-    .codeblock {
-      margin: $whitespace-vertical 0;
-    }
-  }
-}
 
 footer {
   @include layout-block;
@@ -809,9 +755,6 @@ footer {
   h3 {
     @include font-feature;
     padding-bottom: $whitespace-vertical;
-  }
-  a {
-    margin-right: $whitespace-horizontal;
   }
   #contributors {
     grid-column: 2 / 3;
@@ -850,15 +793,20 @@ footer {
   nav {
     @include layout-block;
     grid-column: 4 / 5;
+    grid-row: 3 / 4;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     align-items: flex-end;
+    a + a {
+      margin-left: $whitespace-horizontal;
+    }
   }
   p.tagline {
     grid-column: 2 / 5;
+    grid-row: 3 / 4;
     padding-top: $whitespace-vertical;
     margin-top: $whitespace-vertical;
-    border-top: 1px solid $text-shade;
+    border-top: $keyline;
   }
 }
