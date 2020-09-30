@@ -40,14 +40,14 @@ $keyline: 1px solid $text-shade;
   font-size: 1.3rem;
   letter-spacing: 0;
   line-height: 1.5;
+  @media (min-width: 1200px) {
+    font-size: 1.3rem;
+  }
   @media (min-width: 1300px) {
     font-size: 1.2rem;
   }
   @media (min-width: 1400px) {
     font-size: 1.1rem;
-  }
-  @media (min-width: 1500px) {
-    font-size: 1rem;
   }
 }
 
@@ -70,6 +70,7 @@ $keyline: 1px solid $text-shade;
   font-style: inherit;
   font-weight: inherit;
   line-height: inherit;
+  letter-spacing: inherit;
 }
 
 html {
@@ -94,7 +95,6 @@ em {
 
 strong {
   font-weight: bold;
-  letter-spacing: 0.035em;
 }
 
 a {
@@ -401,21 +401,40 @@ h2 span {
 }
 
 .tabs {
+  & > div:first-child {
+    @include font-feature;
+    margin-top: 2.2em;
+    margin-bottom: $whitespace-vertical*2;
+    border-bottom: $keyline;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    &:after {
+      content: ".";
+      width: 0;
+      overflow: hidden;
+      color: transparent;
+    }
+  }
   button {
-    border: 0;
-    background: 0;
-    padding: $whitespace-vertical $whitespace-horizontal $whitespace-vertical /
-      2 $whitespace-horizontal;
+    overflow: visible;
+    border: none;
+    background: none;
+    padding-right: $whitespace-horizontal;
+    padding-bottom: 0.1em;
     margin: $whitespace-vertical 0;
-
+    color: $text-shade;
+    cursor: pointer;
+    &:hover {
+      color: $text;
+    }
     &:focus {
       outline: 0;
     }
-    cursor: pointer;
   }
   button[data-selected] {
-    border-bottom: 1px solid black;
-    font-weight: bold;
+    color: $text;
+    cursor: text;
   }
 }
 
@@ -427,6 +446,10 @@ h2 span {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  @media (min-width: 1800px) {
+    width: calc(1800px - #{$whitespace-horizontal*4});
+    margin: 0 auto;
+  }
   p {
     padding: 0 $whitespace-horizontal $whitespace-vertical * 0.5 0;
   }
@@ -450,9 +473,9 @@ header {
   justify-content: space-between;
   align-items: stretch;
   padding: $padding;
-  min-height: $grid-row * 2;
+  min-height: calc(75vh - #{$whitespace-vertical*3});
   &.documentation {
-    min-height: $grid-row;
+    min-height: calc(50vh - #{$whitespace-vertical*3});
   }
   & > * {
     flex-basis: 100%;
@@ -570,7 +593,7 @@ header {
   grid-column: 2 / 5;
   @include grid-module;
   padding-top: 0;
-  padding-bottom: $whitespace-vertical * 3;
+  padding-bottom: $whitespace-vertical * 4;
   nav {
     grid-column: 1 / 2;
     padding: $padding;
@@ -641,11 +664,12 @@ header {
       &:first-child {
         margin-top: 0;
       }
-
       code {
-        font-size: 0.8em;
-        background: none;
-        padding: 0;
+        position: relative;
+        font-size: 0.85em;
+        background: $panel;
+        top: -0.025em;
+        padding: 0.3em 0.4em 0.35em;
       }
     }
     h4,
@@ -661,6 +685,12 @@ header {
     p {
       margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
       max-width: 50em;
+    }
+    & > p:first-child {
+      @include font-feature;
+      margin-top: 0;
+      margin-bottom: $whitespace-vertical*2;
+      max-width: 18.5em;
     }
 
     ul,
