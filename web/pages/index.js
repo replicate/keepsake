@@ -99,12 +99,24 @@ def train():
                 <span>{num()}</span> Features
               </h2>
               <ol>
-                <li><a href="#anchor-1">Replicate is open source</a></li>
-                <li><a href="#anchor-2">Keep control of your data</a></li>
-                <li><a href="#anchor-3">Throw away your spreadsheet</a></li>
-                <li><a href="#anchor-4">Compare experiments</a></li>
-                <li><a href="#anchor-5">Commit to Git, after the fact</a></li>
-                <li><a href="#anchor-6">Run experiments on a remote machine</a></li>
+                <li>
+                  <a href="#anchor-1">Replicate is open source</a>
+                </li>
+                <li>
+                  <a href="#anchor-2">Keep control of your data</a>
+                </li>
+                <li>
+                  <a href="#anchor-3">Throw away your spreadsheet</a>
+                </li>
+                <li>
+                  <a href="#anchor-4">Compare experiments</a>
+                </li>
+                <li>
+                  <a href="#anchor-5">Commit to Git, after the fact</a>
+                </li>
+                <li>
+                  <a href="#anchor-6">Run experiments on a remote machine</a>
+                </li>
               </ol>
             </li>
           </ol>
@@ -186,21 +198,6 @@ $ git commit -am "Use hinge loss"`}
           </CodeBlock>
         </div>
       </section>
-      <footer>
-        <h2>
-          <div>
-            <a className="button" href="/docs">
-              Get started
-            </a>
-          </div>
-          <div> or, </div>
-          <div>
-            <a href="/docs/learn/how-it-works">
-              learn more about how Replicate works
-            </a>
-          </div>
-        </h2>
-      </footer>
     </Layout>
   );
 }
