@@ -4,6 +4,7 @@ import os
 import json
 from typing import Optional, Dict, Any
 
+from . import console
 from .hash import random_hash
 from .metadata import rfc3339_datetime
 from .storage import Storage
@@ -79,7 +80,15 @@ class Checkpoint(object):
 
         self.validate_metrics()
 
+    def short_id(self):
+        return self.id[:7]
+
     def save(self, storage: Storage):
+        console.info(
+            "Creating checkpoint {}: copying '{}' to '{}'...".format(
+                self.short_id(), self.path, storage.root_url()
+            )
+        )
         obj = {
             "id": self.id,
             "created": rfc3339_datetime(self.created),

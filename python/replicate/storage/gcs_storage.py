@@ -10,6 +10,15 @@ class GCSStorage(Storage):
         self.bucket_name = bucket
         self.root = root
 
+    def root_url(self):
+        """
+        Returns the URL this storage is pointing at
+        """
+        ret = "gs://" + self.bucket_name
+        if self.root:
+            ret += "/" + self.root
+        return ret
+
     def get(self, path: str) -> bytes:
         """
         Get data at path

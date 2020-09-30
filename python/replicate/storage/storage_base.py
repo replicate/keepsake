@@ -14,6 +14,13 @@ class Storage:
     __metaclass__ = ABCMeta
 
     @abstractmethod
+    def root_url(self) -> str:
+        """
+        Returns the path or URL this storage is pointing at
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     def get(self, path: str) -> bytes:
         """
         Get data at path
