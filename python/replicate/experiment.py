@@ -7,6 +7,7 @@ import sys
 from typing import Dict, Any, Optional, Tuple
 import warnings
 
+from . import console
 from .checkpoint import Checkpoint
 from .config import load_config
 from .hash import random_hash
@@ -41,7 +42,15 @@ class Experiment:
             path="metadata/heartbeats/{}.json".format(self.id),
         )
 
+    def short_id(self):
+        return self.id[:7]
+
     def save(self):
+        console.info(
+            "Creating experiment {}: copying '{}' to '{}'...".format(
+                self.short_id(), self.path, self.storage.root_url()
+            )
+        )
         self.storage.put(
             "metadata/experiments/{}.json".format(self.id),
             json.dumps(self.get_metadata(), indent=2),

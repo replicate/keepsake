@@ -17,6 +17,12 @@ class DiskStorage(Storage):
     def __init__(self, root):
         self.root = root
 
+    def root_url(self):
+        """
+        Returns the path this storage is pointing at
+        """
+        return self.root
+
     def get(self, path: str) -> bytes:
         """
         Get data at path
