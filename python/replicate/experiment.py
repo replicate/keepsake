@@ -121,19 +121,19 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
         }
 
     def get_user(self) -> str:
-        user = os.environ.get("REPLICATE_USER")
+        user = os.environ.get("REPLICATE_INTERNAL_USER")
         if user is not None:
             return user
         return getpass.getuser()
 
     def get_host(self) -> str:
-        host = os.environ.get("REPLICATE_HOST")
+        host = os.environ.get("REPLICATE_INTERNAL_HOST")
         if host is not None:
             return host
         return ""
 
     def get_command(self) -> str:
-        return os.environ.get("REPLICATE_COMMAND", " ".join(sys.argv))
+        return os.environ.get("REPLICATE_INTERNAL_COMMAND", " ".join(sys.argv))
 
 
 def init(

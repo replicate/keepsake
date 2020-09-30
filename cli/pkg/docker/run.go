@@ -36,11 +36,11 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 	env = append(env, osEnv...)
 	env = append(env, "PYTHONUNBUFFERED=1")
 
-	// REPLICATE_USER and REPLICATE_HOST is used by the replicate
-	// python library to save user/host in experiment metadata
-	env = append(env, "REPLICATE_USER="+user)
-	env = append(env, "REPLICATE_HOST="+host)
-	env = append(env, "REPLICATE_COMMAND="+strings.Join(cmd, " "))
+	// These environment variables are used by the
+	// python library to save experiment metadata
+	env = append(env, "REPLICATE_INTERNAL_USER="+user)
+	env = append(env, "REPLICATE_INTERNAL_HOST="+host)
+	env = append(env, "REPLICATE_INTERNAL_COMMAND="+strings.Join(cmd, " "))
 
 	// Options for creating container
 	config := &container.Config{
