@@ -9,9 +9,12 @@ function Layout({ title, children }) {
       </Head>
 
       <div className="global-banner">
-        Welcome to the Replicate private beta! If you have any feedback, or know
-        somebody who might like it, email us:{" "}
-        <a href="mailto:team@replicate.ai">team@replicate.ai</a>
+        <p>Welcome to the Replicate private beta! If you have any feedback, or know somebody who might like it, email us:{" "}<a href="mailto:team@replicate.ai">team@replicate.ai</a></p>
+        <nav>
+          <a href="/docs">Docs</a>
+          <a href="https://github.com/replicate/replicate">GitHub</a>
+        </nav>
+
       </div>
 
       <div className="layout">
