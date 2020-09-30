@@ -442,15 +442,10 @@ h2 span {
 }
 
 .global-banner {
-  background: black;
-  color: white;
-  padding: $whitespace-vertical $whitespace-horizontal;
-  font-size: 1.2em;
-  text-align: center;
-
-  a {
-    text-decoration-color: white;
-  }
+  margin: 0 $whitespace-horizontal*2;
+  padding: $whitespace-vertical 0;
+  @include font-core;
+  border-bottom: 1px solid $text-shade;
 }
 
 /* HOMEPAGE */
