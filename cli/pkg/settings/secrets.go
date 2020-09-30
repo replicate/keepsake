@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// TODO(bfirsh): perhaps this could be stored in local keychai
+// TODO(bfirsh): perhaps this could be stored in local keychain
 
 func secretsDir() (string, error) {
 	settingsDir, err := UserSettingsDir()
@@ -18,6 +18,8 @@ func secretsDir() (string, error) {
 }
 
 // Get a secret, returning nil if it doesn't exist
+//
+// Note that the name is used as the filename of the secret file, so it must not contain special characters.
 func GetSecret(name string) ([]byte, error) {
 	dir, err := secretsDir()
 	if err != nil {
@@ -33,6 +35,9 @@ func GetSecret(name string) ([]byte, error) {
 	return data, nil
 }
 
+// SetSecret writes a secret to the local secrets directory.
+//
+// Note that the name is used as the filename of the secret file, so it must not contain special characters.
 func SetSecret(name string, data []byte) error {
 	dir, err := secretsDir()
 	if err != nil {
