@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"replicate.ai/cli/pkg/cache"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/storage"
 )
@@ -302,11 +301,7 @@ func copyCheckpoints(checkpoints []*Checkpoint) []*Checkpoint {
 	return copied
 }
 
-func cachedLoadFromPath(store storage.Storage, path string, obj interface{}) error {
-	cacheKey := store.RootURL() + "/" + path
-	if ok := cache.GetStruct(cacheKey, obj); ok {
-		return nil
-	}
+func loadFromPath(store storage.Storage, path string, obj interface{}) error {
 	contents, err := store.Get(path)
 	if err != nil {
 		return err
@@ -314,5 +309,5 @@ func cachedLoadFromPath(store storage.Storage, path string, obj interface{}) err
 	if err := json.Unmarshal(contents, obj); err != nil {
 		return fmt.Errorf("Parse error: %s", err)
 	}
-	return cache.SetStruct(cacheKey, obj)
+	return nil
 }

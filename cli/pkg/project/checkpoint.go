@@ -93,7 +93,7 @@ func listCheckpoints(store storage.Storage) ([]*Checkpoint, error) {
 	checkpoints := []*Checkpoint{}
 	for _, p := range paths {
 		com := new(Checkpoint)
-		if err := cachedLoadFromPath(store, p, com); err == nil {
+		if err := loadFromPath(store, p, com); err == nil {
 			checkpoints = append(checkpoints, com)
 		} else {
 			console.Warn("Failed to load metadata from %q: %s", p, err)

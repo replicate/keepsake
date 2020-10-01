@@ -83,7 +83,7 @@ func listExperiments(store storage.Storage) ([]*Experiment, error) {
 	experiments := []*Experiment{}
 	for _, p := range paths {
 		exp := new(Experiment)
-		if err := cachedLoadFromPath(store, p, exp); err == nil {
+		if err := loadFromPath(store, p, exp); err == nil {
 			experiments = append(experiments, exp)
 		} else {
 			// TODO: should this just be ignored? can this be recovered from?
