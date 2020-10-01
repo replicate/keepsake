@@ -3,6 +3,7 @@ import os
 import datetime
 import inspect
 import json
+import shlex
 import sys
 from typing import Dict, Any, Optional, Tuple
 import warnings
@@ -142,7 +143,8 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
         return ""
 
     def get_command(self) -> str:
-        return os.environ.get("REPLICATE_INTERNAL_COMMAND", " ".join(sys.argv))
+        command = " ".join(map(shlex.quote, sys.argv))
+        return os.environ.get("REPLICATE_INTERNAL_COMMAND", command)
 
 
 def init(
