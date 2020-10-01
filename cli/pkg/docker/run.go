@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/kballard/go-shellquote"
 
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/remote"
@@ -40,7 +40,7 @@ func Run(dockerClient *client.Client, imageName string, cmd []string, mounts []M
 	// python library to save experiment metadata
 	env = append(env, "REPLICATE_INTERNAL_USER="+user)
 	env = append(env, "REPLICATE_INTERNAL_HOST="+host)
-	env = append(env, "REPLICATE_INTERNAL_COMMAND="+strings.Join(cmd, " "))
+	env = append(env, "REPLICATE_INTERNAL_COMMAND="+shellquote.Join(cmd...))
 
 	// Options for creating container
 	config := &container.Config{
