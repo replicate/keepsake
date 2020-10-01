@@ -198,7 +198,9 @@ $ git commit -am "Use hinge loss"`}
           </div>
           <div> or, </div>
           <div>
-            <a href="/docs">learn more about how Replicate works</a>
+            <a href="/docs/learn/how-it-works">
+              learn more about how Replicate works
+            </a>
           </div>
         </h2>
       </footer>
