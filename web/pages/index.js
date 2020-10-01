@@ -100,7 +100,7 @@ def train():
         </div>
         <div>
           <h2>
-            <span>{num()}</span> You keep control of your data
+            <span>{num()}</span> You keep control of&nbsp;your&nbsp;data
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud bucket
@@ -109,7 +109,7 @@ def train():
         </div>
       </section>
 
-      <section className="docs">
+      <section className="docs homepage">
         <nav>
           <ol>
             <li>

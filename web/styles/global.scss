@@ -28,6 +28,9 @@ $keyline: 1px solid $text-shade;
   @media (min-width: 1800px) {
     grid-template-columns: 1fr 550px 550px 550px 1fr;
   }
+  @media (max-width: 700px) {
+    grid-template-columns: $whitespace-horizontal * 3 1fr 1fr 1fr $whitespace-horizontal * 3;
+  }
 }
 
 @mixin grid-module {
@@ -49,12 +52,28 @@ $keyline: 1px solid $text-shade;
   @media (min-width: 1400px) {
     font-size: 1.1rem;
   }
+  @media (max-width: 1000px) {
+    font-size: 1.6rem;
+  }
+  @media (max-width: 800px) {
+    font-size: 1.9rem;
+  }
+  @media (max-width: 700px) {
+    font-size: 3.5rem;
+  }
 }
 
 @mixin font-feature {
   font-size: 3.1rem;
   letter-spacing: -0.025em;
   line-height: 1.1;
+  hyphens: manual;
+  @media (max-width: 1000px) {
+    font-size: 3rem;
+  }
+  @media (max-width: 700px) {
+    font-size: 7rem;
+  }
 }
 
 /* RESET */
@@ -87,6 +106,7 @@ body {
   font-style: normal;
   font-weight: 400;
   color: $text;
+  hyphens: auto;
 }
 
 em {
@@ -132,9 +152,18 @@ a {
 
 .tagline {
   @include font-feature;
+  @media (max-width: 1000px) {
+    font-size: 7rem;
+  }
+  @media (max-width: 700px) {
+    font-size: 10rem;
+  }
   strong {
     font-weight: normal;
     color: $text-shade;
+    @media (max-width: 1000px) {
+      display: block;
+    }
   }
 }
 
@@ -160,6 +189,7 @@ h2 span {
 /* COMPONENTS */
 .codeblock {
   // https://github.com/PrismJS/prism/blob/master/themes/prism.css
+  @include font-core;
   background: $text;
   color: $page;
   font-family: "basier_square_mono", monospace;
@@ -404,16 +434,29 @@ h2 span {
   & > div:first-child {
     @include font-feature;
     margin-top: 2.2em;
-    margin-bottom: $whitespace-vertical*2;
+    margin-bottom: $whitespace-vertical * 2;
     border-bottom: $keyline;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    @media (max-width: 700px) {
+      @include font-core;
+    }
     &:after {
       content: ".";
       width: 0;
       overflow: hidden;
       color: transparent;
+    }
+  }
+  div {
+    &:focus {
+      outline: none;
+    }
+    h1:first-child,
+    h2:first-child,
+    h3:first-child {
+      padding-top: 0;
     }
   }
   button {
@@ -439,6 +482,7 @@ h2 span {
 }
 
 .global-banner {
+  position: relative;
   padding-top: $whitespace-vertical;
   margin: 0 $whitespace-horizontal * 2;
   @include font-core;
@@ -446,18 +490,46 @@ h2 span {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  @media (max-width: 1000px) {
+    padding-top: $whitespace-vertical * 0.5;
+  }
+  @media (max-width: 700px) {
+    flex-direction: column;
+    margin: 0 $whitespace-horizontal * 4;
+  }
   @media (min-width: 1800px) {
-    width: calc(1800px - #{$whitespace-horizontal*4});
+    width: calc(1650px + #{$whitespace-horizontal * 2});
     margin: 0 auto;
   }
   p {
     padding: 0 $whitespace-horizontal $whitespace-vertical * 0.5 0;
+    @media (max-width: 1000px) and (min-width: 701px) {
+      width: 53rem;
+    }
   }
   nav {
     border-left: $keyline;
     padding: 0 0 $whitespace-vertical * 0.5 $whitespace-horizontal;
     a + a {
       margin-left: $whitespace-horizontal;
+    }
+    @media (max-width: 1000px) {
+      width: calc(33% - #{$whitespace-horizontal});
+    }
+    @media (max-width: 700px) {
+      width: 100%;
+      border-left: none;
+      padding-left: 0;
+      text-align: right;
+    }
+  }
+  @media (max-width: 700px) {
+    p + nav {
+      position: absolute;
+      bottom: -3em;
+      a {
+        margin-right: $whitespace-horizontal;
+      }
     }
   }
 }
@@ -473,9 +545,9 @@ header {
   justify-content: space-between;
   align-items: stretch;
   padding: $padding;
-  min-height: calc(#{$grid-row * 1.5} - #{$whitespace-vertical*2});
+  min-height: calc(#{$grid-row * 1.5} - #{$whitespace-vertical * 2});
   &.documentation {
-    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical * 2});
   }
   & > * {
     flex-basis: 100%;
@@ -486,7 +558,12 @@ header {
   & > :last-child {
     /*     margin-top: auto; */
   }
-
+  @media (max-width: 700px) {
+    .tagline {
+      padding: 20vh 0 15vh;
+      margin-bottom: $whitespace-vertical * 2;
+    }
+  }
   .breadcrumb {
     @include font-feature;
     a {
@@ -507,9 +584,22 @@ header {
         transform: rotate(15deg);
         vertical-align: middle;
       }
+      @media (max-width: 700px) {
+        & + a {
+          &:before {
+            content: "...";
+          }
+          span {
+            display: none;
+          }
+        }
+      }
     }
     h2 {
       display: inline;
+      @media (max-width: 700px) {
+        display: inline-block;
+      }
     }
   }
   & > p {
@@ -523,11 +613,13 @@ header {
 .info {
   @include layout-block;
   grid-column: 2 / 5;
-  // grid-row: 2 / 3;
   @include grid-module;
   div {
     padding: $padding;
     padding-bottom: $whitespace-vertical * 2;
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+    }
     h2 {
       @include font-feature;
     }
@@ -538,23 +630,51 @@ header {
 }
 
 .terminal {
+  position: relative;
   @include layout-block;
   grid-column: 2 / 5;
   @include grid-module;
-  min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
+  min-height: calc(#{$grid-row} - #{$whitespace-vertical * 2});
+  &:before {
+    content: ".";
+    color: transparent;
+    position: absolute;
+    left: 0;
+    right: $whitespace-horizontal * -2;
+    bottom: -6rem;
+    height: 6rem;
+    background: $page;
+    z-index: 10;
+    @media (min-width: 1800px) {
+      right: calc(-50vw + 825px + #{$whitespace-horizontal});
+    }
+    @media (max-width: 700px) {
+      margin-left: $whitespace-horizontal * -4;
+      margin-right: $whitespace-horizontal * -2;
+    }
+  }
   &:after {
     content: ".";
     color: transparent;
-    grid-column: 1 / 4;
-    position: relative;
-    height: 0;
-    border-bottom: 1px solid $text;
+    position: absolute;
+    height: 1px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $text;
     margin-right: $whitespace-horizontal * -2;
+    z-index: 11;
+    @media (max-width: 700px) {
+      display: none;
+    }
   }
   & > div {
     grid-column: 1 / 2;
     padding: $padding;
     padding-bottom: $whitespace-vertical * 3;
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+    }
     h2 {
       @include font-feature;
     }
@@ -572,6 +692,10 @@ header {
     position: relative;
     overflow: inherit;
     box-shadow: 0 2rem 4rem $text-shade;
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+      margin-right: $whitespace-horizontal * -4;
+    }
     &:before {
       content: ".";
       position: absolute;
@@ -597,27 +721,20 @@ header {
   @include grid-module;
   padding-top: $whitespace-vertical;
   border-bottom: 1px solid $text;
-  &:before {
-    z-index: -1;
-    content: ".";
-    color: transparent;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: $whitespace-horizontal*-2;
-    background: $page;
-    @media (min-width: 1800px) {
-      right: calc(-50vw + 850px);
-    }
-  }
   div {
-    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical * 2});
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     &:nth-child(2) {
       grid-column: 2 / 5;
+    }
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+      &:nth-child(2) {
+        grid-column: 1 / 4;
+        margin-top: $whitespace-vertical;
+      }
     }
   }
   h2 {
@@ -635,6 +752,37 @@ header {
   @include grid-module;
   padding-top: 0;
   padding-bottom: $whitespace-vertical * 4;
+  &.homepage nav {
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+      padding-bottom: 0;
+      ol ol {
+        display: none;
+      }
+    }
+  }
+  &.documentation {
+    @media (max-width: 700px) {
+      padding-bottom: 0;
+      nav {
+        position: relative;
+        grid-column: 1 / 4;
+        grid-row: 2 / 3;
+        margin-top: $whitespace-vertical * 4;
+        padding-bottom: $whitespace-vertical * 2;
+        &:before {
+          content: ".";
+          color: transparent;
+          position: absolute;
+          top: 0;
+          left: $whitespace-horizontal * -4;
+          right: $whitespace-horizontal * -4;
+          bottom: 0;
+          background: $panel;
+        }
+      }
+    }
+  }
   nav {
     grid-column: 1 / 2;
     padding: $padding;
@@ -646,6 +794,9 @@ header {
     h2 {
       @include font-feature;
       margin-bottom: $whitespace-vertical;
+      @media (max-width: 700px) {
+        margin-bottom: 0;
+      }
     }
     ol {
       list-style: none;
@@ -665,14 +816,29 @@ header {
 
     // Pages within sections
     & ol ol {
+      @media (max-width: 700px) {
+        margin-bottom: $whitespace-vertical;
+      }
       li {
         position: relative;
-        padding-left: $whitespace-horizontal;
+        padding-left: 1em;
         &:before {
           content: "–";
           display: inline-block;
-          width: $whitespace-horizontal;
-          margin-left: $whitespace-horizontal * -1;
+          width: 0.9em;
+          margin-left: -0.9em;
+        }
+        @media (max-width: 700px) {
+          border-bottom: $keyline;
+          padding: 0;
+          margin: 0;
+          a {
+            display: block;
+            padding: $whitespace-vertical * 0.5 0;
+          }
+          &:before {
+            display: none;
+          }
         }
       }
     }
@@ -680,9 +846,7 @@ header {
     // Table of contents within pages
     & > ol ol ol {
       padding-left: $whitespace-horizontal;
-
       color: $text-shade;
-
       a:hover {
         color: $text;
       }
@@ -690,6 +854,9 @@ header {
   }
   .body {
     grid-column: 2 / 4;
+    @media (max-width: 700px) {
+      grid-column: 1 / 4;
+    }
     hr {
       border: none;
       height: 3.5rem;
@@ -726,7 +893,7 @@ header {
     & > p:first-child {
       @include font-feature;
       margin-top: calc(3.3rem + #{$whitespace-vertical});
-      margin-bottom: $whitespace-vertical*2;
+      margin-bottom: $whitespace-vertical * 2;
       max-width: 18.5em;
     }
 
@@ -779,11 +946,14 @@ footer {
   background: $brand;
   padding-top: $whitespace-vertical * 3;
   padding-bottom: $whitespace-vertical * 1.5;
+  @media (max-width: 700px) {
+    padding-bottom: $whitespace-vertical;
+  }
   h2 {
     @include font-feature;
     grid-column: 2 / 5;
     @include grid-module;
-    min-height: calc(#{$grid-row} - #{$whitespace-vertical*2});
+    min-height: calc(#{$grid-row} - #{$whitespace-vertical * 2});
     div:nth-child(1) {
       grid-row: 1 / 2;
       grid-column: 1 / 2;
@@ -797,6 +967,29 @@ footer {
     div:nth-child(3) {
       grid-row: 1 / 2;
       grid-column: 2 / 4;
+    }
+    @media (max-width: 700px) {
+      div:nth-child(1) {
+        grid-column: 1 / 4;
+        grid-row: 1 / 2;
+        a {
+          position: relative;
+          display: block;
+          text-align: center;
+          top: -0.5em;
+        }
+      }
+      div:nth-child(2) {
+        grid-column: 1 / 2;
+        padding-top: 2em;
+        padding-left: 0;
+        width: 2em;
+      }
+      div:nth-child(3) {
+        grid-column: 1 / 4;
+        padding-top: 2em;
+        padding-left: 2em;
+      }
     }
   }
   h3 {
@@ -847,6 +1040,14 @@ footer {
     align-items: flex-end;
     a + a {
       margin-left: $whitespace-horizontal;
+    }
+    @media (max-width: 700px) {
+      grid-column: 2 / 5;
+      grid-row: 2 / 3;
+      justify-content: flex-start;
+      a {
+        margin-right: $whitespace-horizontal;
+      }
     }
   }
   p.tagline {

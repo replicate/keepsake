@@ -77,7 +77,7 @@ function Layout({ title, children }) {
             <a href="mailto:team@replicate.ai">team@replicate.ai</a>
           </nav>
           <p className="tagline">
-            <strong>Replicate</strong> Version control for machine learning
+            <strong>Replicate</strong> Version control for machine&nbsp;learning
           </p>
         </footer>
       </div>
