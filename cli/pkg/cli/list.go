@@ -56,6 +56,7 @@ func addListFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolP("quiet", "q", false, "Only print experiment IDs")
 }
 
+// FIXME(bfirsh): use an opts struct and the "Var" version of flag functions to get rid of this
 func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams bool, err error) {
 	json, err := cmd.Flags().GetBool("json")
 	if err != nil {

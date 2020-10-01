@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -19,23 +20,37 @@ import (
 
 var timezone = time.Local
 
+type experimentShowJSON struct {
+	project.Experiment
+	Checkpoints []*project.Checkpoint `json:"checkpoints"`
+}
+
+type showOpts struct {
+	json       bool
+	storageURL string
+}
+
 func newShowCommand() *cobra.Command {
+	var opts showOpts
+
 	cmd := &cobra.Command{
 		Use:   "show <experiment or checkpoint ID>",
 		Short: "View information about an experiment or checkpoint",
-		Run:   handleErrors(show),
-		Args:  cobra.ExactArgs(1),
+		Run: handleErrors(func(cmd *cobra.Command, args []string) error {
+			return show(opts, args, os.Stdout)
+		}),
+		Args: cobra.ExactArgs(1),
 	}
 
-	// TODO(andreas): support json output
-	addStorageURLFlag(cmd)
+	cmd.Flags().BoolVar(&opts.json, "json", false, "Print output in JSON format")
+	addStorageURLFlagVar(cmd, &opts.storageURL)
 
 	return cmd
 }
 
-func show(cmd *cobra.Command, args []string) error {
+func show(opts showOpts, args []string, out io.Writer) error {
 	prefix := args[0]
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	storageURL, projectDir, err := getStorageURLFromStringOrConfig(opts.storageURL)
 	if err != nil {
 		return err
 	}
@@ -51,10 +66,25 @@ func show(cmd *cobra.Command, args []string) error {
 
 	au := getAurora()
 
-	if result.Checkpoint != nil {
-		return showCheckpoint(au, os.Stdout, proj, result.Checkpoint)
+	if opts.json {
+		enc := json.NewEncoder(out)
+		enc.SetIndent("", "  ")
+		if result.Checkpoint != nil {
+			return enc.Encode(result.Checkpoint)
+		}
+		var experimentShow experimentShowJSON
+		experimentShow.Experiment = *result.Experiment
+		experimentShow.Checkpoints, err = proj.ExperimentCheckpoints(result.Experiment.ID)
+		if err != nil {
+			return err
+		}
+		return enc.Encode(experimentShow)
 	}
-	return showExperiment(au, os.Stdout, proj, result.Experiment)
+
+	if result.Checkpoint != nil {
+		return showCheckpoint(au, out, proj, result.Checkpoint)
+	}
+	return showExperiment(au, out, proj, result.Experiment)
 }
 
 func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, com *project.Checkpoint) error {
