@@ -23,14 +23,13 @@ func addStorageURLFlag(cmd *cobra.Command) {
 	cmd.Flags().StringP("storage-url", "S", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
 }
 
-// getStorageURLFromConfigOrFlag uses --storage-url if it exists,
-// otherwise finds replicate.yaml recursively
-func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, projectDir string, err error) {
-	storageURL, err = cmd.Flags().GetString("storage-url")
-	if err != nil {
-		return "", "", err
-	}
+func addStorageURLFlagVar(cmd *cobra.Command, opt *string) {
+	cmd.Flags().StringVarP(opt, "storage-url", "S", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
+}
 
+// getStorageURLFromStringOrConfig attempts to get it from passed string from --storage-url,
+// otherwise finds replicate.yaml recursively
+func getStorageURLFromStringOrConfig(storageURL string) (string, string, error) {
 	if storageURL == "" {
 		conf, projectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
 		if err != nil {
@@ -42,12 +41,22 @@ func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, proje
 	// if global.ProjectDirectory == "", abs of that is cwd
 	// FIXME (bfirsh): this does not look up directories for replicate.yaml, so might be the wrong
 	// projectDir. It should probably use return value of FindConfigInWorkingDir.
-	projectDir, err = filepath.Abs(global.ProjectDirectory)
+	projectDir, err := filepath.Abs(global.ProjectDirectory)
 	if err != nil {
 		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s': %w", global.ProjectDirectory, err)
 	}
 
 	return storageURL, projectDir, nil
+}
+
+// getStorageURLFromConfigOrFlag uses --storage-url if it exists,
+// otherwise finds replicate.yaml recursively
+func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, projectDir string, err error) {
+	storageURL, err = cmd.Flags().GetString("storage-url")
+	if err != nil {
+		return "", "", err
+	}
+	return getStorageURLFromStringOrConfig(storageURL)
 }
 
 // getProjectDir returns the project's source directory

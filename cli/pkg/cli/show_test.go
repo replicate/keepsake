@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -164,6 +165,14 @@ metric-2:   2
 	expected = expected[1:]
 	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
+
+	// json
+	out = new(bytes.Buffer)
+	err = show(showOpts{storageURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"3ccc"}, out)
+	require.NoError(t, err)
+	var chkpt project.Checkpoint
+	require.NoError(t, json.Unmarshal(out.Bytes(), &chkpt))
+	require.Equal(t, "3ccccccccc", chkpt.ID)
 }
 
 func TestShowExperiment(t *testing.T) {
@@ -210,4 +219,14 @@ To see more details about a checkpoint, run:
 	expected = expected[1:]
 	actual = testutil.TrimRightLines(actual)
 	require.Equal(t, expected, actual)
+
+	// json
+	out = new(bytes.Buffer)
+	err = show(showOpts{storageURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"1eee"}, out)
+	require.NoError(t, err)
+	var exp experimentShowJSON
+	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))
+	require.Equal(t, "1eeeeeeeee", exp.ID)
+	require.Equal(t, "1ccccccccc", exp.Checkpoints[0].ID)
+
 }
