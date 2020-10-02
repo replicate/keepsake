@@ -22,8 +22,8 @@ func TestUnmarshalValue(t *testing.T) {
 		{"123456", false, &Value{intVal: IP(123456)}},
 		{"true", false, &Value{boolVal: BP(true)}},
 		{"false", false, &Value{boolVal: BP(false)}},
-		{"\"bar\"", false, &Value{stringVal: SP("bar")}},
-		{"\"bar, baz\"", false, &Value{stringVal: SP("bar, baz")}},
+		{`"bar"`, false, &Value{stringVal: SP("bar")}},
+		{`"bar, baz"`, false, &Value{stringVal: SP("bar, baz")}},
 		{"[bar, baz]", true, nil},
 	} {
 		actual := Value{}
@@ -35,6 +35,19 @@ func TestUnmarshalValue(t *testing.T) {
 			require.Equal(t, *tt.expected, actual)
 		}
 	}
+
+	// NOTE(bfirsh): It was quite hard to debug which tests in the above code were failing,
+	// because the line numbers were meaningless, so I added these new ones as explicit,
+	// more verbose tests
+
+	var val Value
+
+	require.NoError(t, json.Unmarshal([]byte(`{"foo": "bar"}`), &val))
+	require.Equal(t, Value{objectVal: map[string]interface{}{"foo": "bar"}}, val)
+
+	require.NoError(t, json.Unmarshal([]byte(`["bar", "baz"]`), &val))
+	require.Equal(t, Value{objectVal: []interface{}{"bar", "baz"}}, val)
+
 }
 
 func TestMarshalValue(t *testing.T) {
@@ -57,11 +70,24 @@ func TestMarshalValue(t *testing.T) {
 			require.Equal(t, tt.expected, string(actual))
 		}
 	}
+
+	require.Equal(t,
+		shim([]byte(`{"foo":"bar"}`), nil),
+		shim(json.Marshal(Object(map[string]interface{}{"foo": "bar"}))),
+	)
 }
 
 func TestShortString(t *testing.T) {
-	require.Equal(t, "hello", String("hello").ShortString(5, 5))
+	require.Equal(t, "hell", String("hell").ShortString(5, 5))
 	require.Equal(t, "he...", String("helloo").ShortString(5, 5))
+
+	require.Equal(t, `{"foo":"bar"}`, Object(map[string]interface{}{"foo": "bar"}).ShortString(15, 5))
+	require.Equal(t, `{"bar":"baz"...`, Object(map[string]interface{}{"foo": "bar", "bar": "baz"}).ShortString(15, 5))
+
+	// Ints don't get truncated
+	require.Equal(t, "1234567890", Int(1234567890).ShortString(5, 5))
+
+	// Floats
 	require.Equal(t, "0.12", Float(0.12).ShortString(10, 5))
 	require.Equal(t, "12.34", Float(12.34).ShortString(10, 5))
 	require.Equal(t, "0.12346", Float(0.1234567).ShortString(10, 5))
@@ -78,16 +104,37 @@ func TestShortString(t *testing.T) {
 
 }
 
+func TestEqual(t *testing.T) {
+	foobar := Object(map[string]interface{}{"foo": "bar"})
+	require.Equal(t, shim(true, nil), shim(foobar.Equal(Object(map[string]interface{}{"foo": "bar"}))))
+	require.Equal(t, shim(false, nil), shim(foobar.Equal(Object(map[string]interface{}{"foo": "baz"}))))
+	require.Equal(t, shim(false, nil), shim(foobar.Equal(Object([]interface{}{"foo", "baz"}))))
+}
+
 func TestGreaterThan(t *testing.T) {
-	res, _ := Float(1.5).GreaterThan(Int(1))
-	require.True(t, res)
-	res, _ = Int(1).GreaterThan(Float(1.5))
-	require.False(t, res)
+	require.Equal(t, shim(true, nil), shim(Float(1.5).GreaterThan(Int(1))))
+	require.Equal(t, shim(false, nil), shim(Int(1).GreaterThan(Float(1.5))))
+	require.Equal(t, shim(false, nil), shim(Object(map[string]interface{}{"foo": "bar"}).GreaterThan(Object(map[string]interface{}{"foo": "bar"}))))
 }
 
 func TestLessThan(t *testing.T) {
-	res, _ := Float(1.5).LessThan(Int(1))
-	require.False(t, res)
-	res, _ = Int(1).LessThan(Float(1.5))
-	require.True(t, res)
+	require.Equal(t, shim(false, nil), shim(Float(1.5).LessThan(Int(1))))
+	require.Equal(t, shim(true, nil), shim(Int(1).LessThan(Float(1.5))))
+	require.Equal(t, shim(false, nil), shim(Object(map[string]interface{}{"foo": "bar"}).GreaterThan(Object(map[string]interface{}{"foo": "bar"}))))
+}
+
+func TestType(t *testing.T) {
+	require.Equal(t, TypeObject, Object(map[string]interface{}{"foo": "bar"}).Type())
+}
+
+func TestVal(t *testing.T) {
+	require.Equal(t, map[string]interface{}{"foo": "bar"}, Object(map[string]interface{}{"foo": "bar"}).ObjectVal())
+}
+
+func TestPythonString(t *testing.T) {
+	require.Equal(t, `{"foo":"bar"}`, Object(map[string]interface{}{"foo": "bar"}).PythonString())
+}
+
+func shim(v ...interface{}) []interface{} {
+	return v
 }
