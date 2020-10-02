@@ -71,6 +71,7 @@ export default function Home() {
             everything. You don't need to change how you work.
           </p>
         </div>
+        <div className="windowChrome">
         <CodeBlock language="python">{`import torch
 import replicate
 
@@ -89,6 +90,7 @@ def train():
         # Save a model weights and the metrics
         experiment.checkpoint(path="model.pth", metrics={...})
         #highlight-end`}</CodeBlock>
+        </div>
       </section>
 
       <section className="control">

@@ -193,8 +193,8 @@ h2 span {
   background: $text;
   color: $page;
   font-family: "basier_square_mono", monospace;
-  padding: $padding;
   overflow: auto;
+  padding: $padding;
 
   pre {
     // this makes the sizing right for scrolling, for some reason
@@ -686,12 +686,14 @@ header {
       }
     }
   }
-  .codeblock {
+  .windowChrome {
     grid-column: 2 / 4;
     margin-right: $whitespace-horizontal * -2;
     position: relative;
+    padding: 0;
     overflow: inherit;
     box-shadow: 0 2rem 4rem $text-shade;
+    background: $text;
     @media (max-width: 700px) {
       grid-column: 1 / 4;
       margin-right: $whitespace-horizontal * -4;
