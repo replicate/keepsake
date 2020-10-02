@@ -55,7 +55,7 @@ model.fit(
 
 The `ReplicateCallback` class takes the following arguments, all optional:
 
-- **`filepath`**: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch. Default: `model.hdf5`
+- **`filepath`**: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch. If it is `None`, the model is not saved, and the callback just gathers code and metrics. Default: `model.hdf5`
 - **`params`**: A dictionary of hyperparameters that will be recorded to the experiment at the start of training.
 - **`primary_metric`**: A tuple in the format `(metric_name, goal)`, where `goal` is either `minimize`, or `maximize`. For example, `("mean_absolute_error", "minimize")`.
 - **`save_freq`**:`"epoch"` or integer. When using `"epoch"`, the callback saves the model after each epoch. When using integer, the callback saves the model at end of this many batches. Default: `"epoch"`
