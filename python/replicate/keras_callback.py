@@ -20,6 +20,7 @@ class ReplicateCallback(ModelCheckpoint):
         params: Optional[Dict[str, Any]] = None,
         primary_metric: Optional[Tuple[str, str]] = None,
         save_freq: str = "epoch",
+        save_weights_only: bool = False,
     ):
         self.init_params = params
         self.primary_metric = primary_metric
@@ -30,7 +31,7 @@ class ReplicateCallback(ModelCheckpoint):
             filepath=filepath,
             verbose=0,
             save_best_only=False,
-            save_weights_only=False,
+            save_weights_only=save_weights_only,
             save_freq=save_freq,
         )
 
