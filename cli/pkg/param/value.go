@@ -125,7 +125,7 @@ func (v *Value) String() string {
 	return string(data)
 }
 
-func truncate(s string, maxLength int) string {
+func Truncate(s string, maxLength int) string {
 	if len(s) > maxLength && maxLength > 3 {
 		return s[:maxLength-3] + "..."
 	}
@@ -155,9 +155,9 @@ func (v *Value) ShortString(maxLength int, precision int) string {
 		return strconv.FormatFloat(f, 'g', precision, 64)
 	// Strings that need truncating
 	case TypeString:
-		return truncate(v.StringVal(), maxLength)
+		return Truncate(v.StringVal(), maxLength)
 	case TypeObject:
-		return truncate(v.String(), maxLength)
+		return Truncate(v.String(), maxLength)
 	}
 	// Everything else doesn't get truncated (int, bool, none)
 	return v.String()
