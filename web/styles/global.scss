@@ -1,5 +1,13 @@
 @import "./fonts.scss";
 
+@font-face {
+  font-family: "Replicate-Mono";
+  font-style: normal;
+  font-weight: 800;
+  src: url(../public/fonts/ReplicateMonoBold.woff2)
+    format("woff2");
+}
+
 /* MIXINS */
 
 $text: rgb(0, 0, 0);
