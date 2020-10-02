@@ -26,7 +26,7 @@ const (
 	FormatQuiet
 )
 
-const valueMaxLength = 10
+const valueMaxLength = 20
 const valueTruncate = 5
 
 type Metric struct {
@@ -187,7 +187,7 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 		// experiment params
 		for _, heading := range paramsToDisplay {
 			if val, ok := exp.Params[heading]; ok {
-				fmt.Fprintf(tw, "%v", val)
+				fmt.Fprint(tw, val.ShortString(valueMaxLength, valueTruncate))
 			}
 			fmt.Fprintf(tw, "\t")
 		}
