@@ -3,15 +3,14 @@ from glob import glob
 import tensorflow as tf  # type: ignore
 from tensorflow import keras  # type: ignore
 import pytest
+import os
 
 from replicate.keras_callback import ReplicateCallback
 
 from .common import temp_workdir
 
 
-def test_keras_callback(temp_workdir):
-    dense_size = 784
-    learning_rate = 0.1
+def _model(dense_size, learning_rate):
 
     # from https://www.tensorflow.org/guide/keras/custom_callback
     model = keras.Sequential()
@@ -32,6 +31,14 @@ def test_keras_callback(temp_workdir):
     y_train = y_train[:1000]
     x_test = x_test[:1000]
     y_test = y_test[:1000]
+    return model, x_train, y_train
+
+
+def test_keras_callback(temp_workdir):
+    dense_size = 784
+    learning_rate = 0.1
+
+    model, x_train, y_train = _model(dense_size, learning_rate)
 
     model.fit(
         x_train,
@@ -66,4 +73,39 @@ def test_keras_callback(temp_workdir):
     }
     assert set(chkp_meta["metrics"].keys()) == set(
         ["mean_absolute_error", "loss", "val_mean_absolute_error", "val_loss"]
+    )
+    assert os.path.exists(
+        ".replicate/storage/checkpoints/" + chkp_meta["id"] + "/model.hdf5"
+    )
+
+
+def test_keras_callback_with_no_filepath(temp_workdir):
+    dense_size = 784
+    learning_rate = 0.1
+
+    model, x_train, y_train = _model(dense_size, learning_rate)
+
+    model.fit(
+        x_train,
+        y_train,
+        batch_size=128,
+        epochs=5,
+        verbose=0,
+        validation_split=0.5,
+        callbacks=[
+            ReplicateCallback(
+                filepath=None,
+                params={"dense_size": dense_size, "learning_rate": learning_rate,},
+                primary_metric=("mean_absolute_error", "minimize"),
+            )
+        ],
+    )
+
+    chkp_meta_paths = glob(".replicate/storage/metadata/checkpoints/*.json")
+    assert len(chkp_meta_paths) == 5
+    with open(chkp_meta_paths[0]) as f:
+        chkp_meta = json.load(f)
+    assert chkp_meta["path"] == None
+    assert not os.path.exists(
+        ".replicate/storage/checkpoints/" + chkp_meta["id"] + "/model.hdf5"
     )
