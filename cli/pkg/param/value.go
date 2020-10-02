@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -17,16 +18,21 @@ const (
 	TypeFloat  Type = "float"
 	TypeString Type = "string"
 	TypeBool   Type = "bool"
+	TypeObject Type = "object"
 	TypeNone   Type = "none"
 )
 
 var Types = []Type{TypeInt, TypeFloat, TypeString, TypeBool}
+
+// TODO(bfirsh): could complexity be reduced here if it were implemented as interface{}?
 
 type Value struct {
 	intVal    *int
 	floatVal  *float64
 	stringVal *string
 	boolVal   *bool
+	// objectVal is anything that can't be unmarshalled into the above types, including lists
+	objectVal interface{}
 	isNone    bool
 }
 
@@ -40,6 +46,8 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 		return json.Marshal(v.floatVal)
 	case v.stringVal != nil:
 		return json.Marshal(v.stringVal)
+	case v.objectVal != nil:
+		return json.Marshal(v.objectVal)
 	case v.isNone:
 		return []byte("null"), nil
 	}
@@ -47,6 +55,8 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 }
 
 func (v *Value) UnmarshalJSON(data []byte) error {
+	// FIXME(bfirsh): this might be more robust if it unmarshalled to interface{}
+	// then we used reflect? the error returned from json.Unmarshal might be other things
 	if i := new(int); json.Unmarshal(data, i) == nil {
 		v.intVal = i
 		return nil
@@ -67,9 +77,11 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 		v.stringVal = s
 		return nil
 	}
-	return fmt.Errorf("Failed to decode parameter default %s", string(data))
+	return json.Unmarshal(data, &v.objectVal)
 }
 
+// ParseFromString attempts to turn a string passed to a filter into a value.
+// They aren't valid JSON because they're provided by a human (strings might not have quotes, etc).
 func ParseFromString(s string) *Value {
 	data := []byte(s)
 	v := &Value{}
@@ -95,6 +107,9 @@ func ParseFromString(s string) *Value {
 		v.boolVal = &val
 		return v
 	}
+	if json.Unmarshal(data, &v.objectVal) == nil {
+		return v
+	}
 	v.stringVal = &s
 	return v
 }
@@ -110,6 +125,13 @@ func (v *Value) String() string {
 	return string(data)
 }
 
+func truncate(s string, maxLength int) string {
+	if len(s) > maxLength && maxLength > 3 {
+		return s[:maxLength-3] + "..."
+	}
+	return s
+}
+
 // ShortString returns a shorter version of the string, useful for displaying
 // in the user interface when there isn't much space
 //
@@ -121,12 +143,8 @@ func (v *Value) String() string {
 // TODO: some interesting stuff could be done with color here (e.g. "..." and "none" could be dimmed)
 // so maybe this should be lifted out into a generic shortener in the console package.
 func (v *Value) ShortString(maxLength int, precision int) string {
-	if v.Type() == TypeString {
-		s := v.StringVal()
-		if len(s) > maxLength && maxLength > 3 {
-			return s[:len(s)-4] + "..."
-		}
-	} else if v.Type() == TypeFloat {
+	switch v.Type() {
+	case TypeFloat:
 		f := v.FloatVal()
 
 		// For big numbers, don't truncate so eagerly
@@ -135,7 +153,13 @@ func (v *Value) ShortString(maxLength int, precision int) string {
 		}
 
 		return strconv.FormatFloat(f, 'g', precision, 64)
+	// Strings that need truncating
+	case TypeString:
+		return truncate(v.StringVal(), maxLength)
+	case TypeObject:
+		return truncate(v.String(), maxLength)
 	}
+	// Everything else doesn't get truncated (int, bool, none)
 	return v.String()
 }
 
@@ -149,6 +173,8 @@ func (v *Value) Type() Type {
 		return TypeFloat
 	case v.stringVal != nil:
 		return TypeString
+	case v.objectVal != nil:
+		return TypeObject
 	case v.isNone:
 		return TypeNone
 	}
@@ -187,6 +213,13 @@ func (v *Value) StringVal() string {
 	return *v.stringVal
 }
 
+func (v *Value) ObjectVal() interface{} {
+	if v.Type() != TypeObject {
+		panic(fmt.Sprintf("Can't use %s as object", v))
+	}
+	return v.objectVal
+}
+
 func (v *Value) PythonString() string {
 	switch v.Type() {
 	case TypeBool:
@@ -200,6 +233,16 @@ func (v *Value) PythonString() string {
 		return fmt.Sprintf("%f", *v.floatVal)
 	case TypeString:
 		return fmt.Sprintf("\"%s\"", *v.stringVal)
+	case TypeObject:
+		// FIXME(bfirsh): JSON isn't quite valid Python, but this function isn't used for anything
+		// so I'm not going to fix this properly now
+		data, err := json.Marshal(v.objectVal)
+		if err != nil {
+			// FIXME(bfirsh): this function should really return an error, but in
+			// theory we are always unmarshalling this from JSON
+			panic("Error marshaling object: " + err.Error())
+		}
+		return string(data)
 	case TypeNone:
 		return "None"
 	}
@@ -219,6 +262,8 @@ func (v *Value) Equal(other *Value) (bool, error) {
 		return v.FloatVal() == other.FloatVal(), nil
 	case TypeString:
 		return v.StringVal() == other.StringVal(), nil
+	case TypeObject:
+		return reflect.DeepEqual(v.ObjectVal(), other.ObjectVal()), nil
 	}
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
@@ -252,6 +297,8 @@ func (v *Value) GreaterThan(other *Value) (bool, error) {
 		return v.FloatVal() > other.FloatVal(), nil
 	case TypeString:
 		return v.StringVal() > other.StringVal(), nil
+	case TypeObject:
+		return false, nil
 	}
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
@@ -319,6 +366,10 @@ func Float(v float64) *Value {
 
 func String(v string) *Value {
 	return &Value{stringVal: &v}
+}
+
+func Object(v interface{}) *Value {
+	return &Value{objectVal: v}
 }
 
 func None() *Value {

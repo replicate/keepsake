@@ -48,7 +48,7 @@ func MakeFilters(strings []string) (*Filters, error) {
 // SetExclusive sets a filter exclusively, deleting any previous
 // filters with that name
 func (fs *Filters) SetExclusive(name string, operator Operator, value *Value) {
-	filters := []*filter{&filter{
+	filters := []*filter{{
 		name:     name,
 		operator: operator,
 		value:    value,

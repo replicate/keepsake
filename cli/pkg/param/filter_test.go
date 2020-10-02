@@ -21,6 +21,8 @@ func TestParseTypesGood(t *testing.T) {
 		{"foo = false", filter{"foo", OperatorEqual, Bool(false)}},
 		{"foo = null", filter{"foo", OperatorEqual, None()}},
 		{"foo = None", filter{"foo", OperatorEqual, None()}},
+		{`foo = {"foo": "bar"}`, filter{"foo", OperatorEqual, Object(map[string]interface{}{"foo": "bar"})}},
+		{`foo = ["foo", "bar"]`, filter{"foo", OperatorEqual, Object([]interface{}{"foo", "bar"})}},
 	} {
 		actual, err := parse(tt.input)
 		require.NoError(t, err)
