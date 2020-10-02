@@ -38,6 +38,7 @@ class ReplicateCallback(ModelCheckpoint):
         self.experiment = experiment.init(path=".", params=self.init_params)
         super().on_train_begin(logs)
 
+    # FIXME(bfirsh): probably a bad idea to override an internal method -- this theoretically might break at some point?
     def _save_model(self, epoch, logs):
         logs = logs or {}
 
@@ -73,6 +74,8 @@ class ReplicateCallback(ModelCheckpoint):
             step=self.step,
             metrics=logs,
             primary_metric=self.primary_metric,
+            # TODO(bfirsh): make this output information in a way that is compatible with keras's progress bar
+            quiet=True,
         )
 
         # if save_freq is an integer, step = batch_number * save_freq

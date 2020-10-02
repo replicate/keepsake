@@ -76,6 +76,7 @@ class Experiment:
         step: Optional[int] = None,
         metrics: Optional[Dict[str, Any]] = None,
         primary_metric: Optional[Tuple[str, str]] = None,
+        quiet: bool = False,
         **kwargs,
     ) -> Checkpoint:
         if kwargs:
@@ -113,6 +114,12 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
             primary_metric_name=primary_metric_name,
             primary_metric_goal=primary_metric_goal,
         )
+        if not quiet:
+            console.info(
+                "Creating checkpoint {}: copying '{}' to '{}'...".format(
+                    checkpoint.short_id(), checkpoint.path, self.storage.root_url(),
+                )
+            )
         checkpoint.save(self.storage)
         if not self.disable_heartbeat:
             self.heartbeat.ensure_running()
