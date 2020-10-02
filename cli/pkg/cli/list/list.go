@@ -247,6 +247,11 @@ func getParamsToDisplay(experiments []*ListExperiment, onlyChangedParams bool) [
 		paramValues := map[string]*param.Value{}
 		for _, exp := range experiments {
 			for key, val := range exp.Params {
+				// Don't show objects in list view, because they're likely long and not very helpful
+				if val.Type() == param.TypeObject {
+					continue
+				}
+
 				firstVal, ok := paramValues[key]
 				if ok {
 					notEqual, err := firstVal.NotEqual(val)
@@ -262,7 +267,11 @@ func getParamsToDisplay(experiments []*ListExperiment, onlyChangedParams bool) [
 		}
 	} else {
 		for _, exp := range experiments {
-			for key := range exp.Params {
+			for key, val := range exp.Params {
+				// Don't show objects in list view, because they're likely long and not very helpful
+				if val.Type() == param.TypeObject {
+					continue
+				}
 				expHeadingSet[key] = true
 			}
 		}
