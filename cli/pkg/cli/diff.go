@@ -36,6 +36,8 @@ If an experiment ID is passed, it will pick the best checkpoint from that experi
 
 func diffCheckpoints(cmd *cobra.Command, args []string) error {
 	// TODO(andreas): generalize to >2 checkpoints/experiments
+	// TODO(bfirsh): it probably makes sense to refactor this to diff param.Values instead of strings at some point.
+	// that way we can do interesting stuff like diff JSON structures, using param.Value comparison methods, ShortString, etc.
 
 	prefix1 := args[0]
 	prefix2 := args[1]
@@ -62,7 +64,6 @@ func heading(w *tabwriter.Writer, au aurora.Aurora, text string) {
 	fmt.Fprintf(w, "%s\t\t\n", au.Bold(text))
 }
 
-// TODO(andreas): diff command line arguments
 func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 string, prefix2 string) error {
 	com1, err := loadCheckpoint(proj, prefix1)
 	if err != nil {
@@ -135,7 +136,9 @@ func printMapDiff(w *tabwriter.Writer, au aurora.Aurora, map1, map2 map[string]s
 			if kv.value[1] != nil {
 				right = *(kv.value[1])
 			}
-			fmt.Fprintf(w, "%s:\t%s\t%s\n", kv.key, left, right)
+			// Truncate to 50, which seems ball-park sensible figure to make this fit in a wide terminal
+			// At some point when we have a clever responsive tabwriter, we can adjust this based on terminal width!
+			fmt.Fprintf(w, "%s:\t%s\t%s\n", kv.key, param.Truncate(left, 50), param.Truncate(right, 50))
 		}
 	} else {
 		fmt.Fprintf(w, "%s\t\t\n", au.Faint("(no difference)"))
