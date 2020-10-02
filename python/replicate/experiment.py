@@ -5,7 +5,7 @@ import inspect
 import json
 import shlex
 import sys
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import warnings
 
 from . import console
@@ -24,7 +24,7 @@ class Experiment:
         config: dict,
         project_dir: str,
         created: datetime.datetime,
-        path: str,
+        path: Optional[str],
         params: Optional[Dict[str, Any]],
         disable_heartbeat: bool = False,
     ):
@@ -52,6 +52,13 @@ class Experiment:
                 self.short_id(), self.path, self.storage.root_url()
             )
         )
+
+        errors = self.validate()
+        if errors:
+            for error in errors:
+                console.error("Not saving experiment: " + error)
+            return
+
         self.storage.put(
             "metadata/experiments/{}.json".format(self.id),
             json.dumps(self.get_metadata(), indent=2),
@@ -69,6 +76,25 @@ class Experiment:
                 os.path.join("experiments", self.id, self.path)
             )
             self.storage.put_path(destination_path, source_path)
+
+    def validate(self) -> List[str]:
+        errors = []
+
+        if self.params is not None:
+            if isinstance(self.params, dict):
+                for key, value in self.params.items():
+                    try:
+                        json.dumps(value)
+                    except (ValueError, TypeError, OverflowError):
+                        errors.append(
+                            "Failed to serialize the param '{}' to JSON. Make sure it's only using basic types (str, int, float, bool, dict, list, None)".format(
+                                key
+                            )
+                        )
+            else:
+                errors.append("params must be a dictionary")
+
+        return errors
 
     def checkpoint(
         self,
@@ -91,9 +117,9 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
             raise TypeError(s.format(", ".join(kwargs.keys())))
 
         if path is not None:
+            # TODO: Migrate this to validate
             check_path(path)
 
-        created = datetime.datetime.utcnow()
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
         primary_metric_name: Optional[str] = None
         primary_metric_goal: Optional[str] = None
@@ -106,9 +132,7 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
 
         checkpoint = Checkpoint(
             experiment=self,
-            project_dir=self.project_dir,
             path=path,
-            created=created,
             step=step,
             metrics=metrics,
             primary_metric_name=primary_metric_name,
@@ -166,6 +190,7 @@ def init(
         )
         path = "."
     if path is not None:
+        # TODO: Migrate this to validate
         check_path(path)
 
     if kwargs:

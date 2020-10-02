@@ -152,3 +152,17 @@ def test_heartbeat(temp_workdir):
     assert experiment.heartbeat.path == "metadata/heartbeats/{}.json".format(
         experiment.id
     )
+
+
+class Blah:
+    pass
+
+
+def test_validate():
+    experiment = replicate.init(path=None, params="lol", disable_heartbeat=True)
+    assert experiment.validate() == ["params must be a dictionary"]
+
+    experiment = replicate.init(
+        path=None, params={"foo": Blah()}, disable_heartbeat=True
+    )
+    assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
