@@ -595,7 +595,7 @@ header {
       @media (max-width: 700px) {
         & + a {
           &:before {
-            content: "...";
+            content: "Docs";
           }
           span {
             display: none;
