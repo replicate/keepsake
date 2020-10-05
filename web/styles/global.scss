@@ -741,11 +741,11 @@ header {
     background-repeat: no-repeat;
     background-position: center center;
     &:nth-child(1) {
-      background-image: url(../public/svg/icon-1.svg);
+      /*       background-image: url(../public/svg/icon-1.svg); */
     }
     &:nth-child(2) {
       grid-column: 2 / 5;
-      background-image: url(../public/svg/icon-2.svg);
+      /*       background-image: url(../public/svg/icon-2.svg); */
     }
     @media (max-width: 700px) {
       grid-column: 1 / 4;
