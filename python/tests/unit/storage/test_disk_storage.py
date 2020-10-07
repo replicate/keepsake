@@ -21,14 +21,8 @@ def test_list():
         storage = DiskStorage(root=tmpdir)
         storage.put("foo", "nice")
         storage.put("some/bar", "nice")
-        actual = list(storage.list(""))
-        actual.sort(key=lambda x: x["name"])
-        expected = [
-            {"name": "foo", "type": "file"},
-            {"name": "some", "type": "directory"},
-        ]
-        assert actual == expected
-        assert list(storage.list("some")) == [{"name": "bar", "type": "file"}]
+        assert storage.list("") == ["foo"]
+        assert storage.list("some") == ["some/bar"]
 
 
 def test_delete():
