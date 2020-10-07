@@ -66,6 +66,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "step": 10,
             "metrics": {"loss": 1.1, "baz": "qux"},
             "path": ".",
+            "primary_metric": None,
         }
         assert actual_checkpoint_meta == expected_checkpoint_meta
 

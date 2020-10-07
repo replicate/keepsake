@@ -1,12 +1,22 @@
+try:
+    # backport is incompatible with 3.7+, so we must use built-in
+    from dataclasses import dataclass
+except ImportError:
+    from ._vendor.dataclasses import dataclass
 import datetime
 import os
 import json
+import sys
 from typing import Optional, Dict, Any, List
+
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from ._vendor.typing_extensions import TypedDict
 
 from . import console
 from .hash import random_hash
 from .metadata import rfc3339_datetime
-from .storage import Storage
 
 
 # We load numpy but not torch or tensorflow because numpy loads very fast and
@@ -49,72 +59,39 @@ class CustomJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
+class PrimaryMetric(TypedDict):
+    name: str
+    goal: str
+
+
+@dataclass
 class Checkpoint(object):
     """
-    A snapshot of a training job -- the working directory plus any metadata.
+    A checkpoint within an experiment. It represents the metrics and the file or directory specified by `path` at a point in time during the experiment.
     """
 
-    def __init__(
-        self,
-        experiment,  # can't type annotate due to circular import
-        path: Optional[str] = None,
-        step: Optional[int] = None,
-        metrics: Optional[Dict[str, Any]] = None,
-        primary_metric_name: Optional[str] = None,
-        primary_metric_goal: Optional[str] = None,
-    ):
-        self.experiment = experiment
-        self.path = path
-        self.step = step
-        self.metrics = metrics
-        self.primary_metric_name = primary_metric_name
-        self.primary_metric_goal = primary_metric_goal
+    experiment: Any  # circular import
 
-        # TODO (bfirsh): content addressable id
-        self.id = random_hash()
-        self.created = datetime.datetime.utcnow()
+    id: str
+    created: datetime.datetime
+    path: Optional[str] = None
+    step: Optional[int] = None
+    metrics: Optional[Dict[str, Any]] = None
+    primary_metric: Optional[PrimaryMetric] = None
 
-    def short_id(self):
+    def short_id(self) -> str:
         return self.id[:7]
 
-    def save(self, storage: Storage):
-        errors = self.validate()
-        if errors:
-            for error in errors:
-                console.error("Not saving checkpoint: " + error)
-            return
-
-        obj = {
+    def to_json(self) -> Dict[str, Any]:
+        return {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
             "experiment_id": self.experiment.id,
             "path": self.path,
             "metrics": self.metrics,
+            "primary_metric": self.primary_metric,
+            "step": self.step,
         }
-        if (
-            self.primary_metric_name is not None
-            and self.primary_metric_goal is not None
-        ):
-            obj["primary_metric"] = {
-                "name": self.primary_metric_name,
-                "goal": self.primary_metric_goal,
-            }
-
-        if self.step is not None:
-            obj["step"] = self.step
-        storage.put(
-            "metadata/checkpoints/{}.json".format(self.id),
-            json.dumps(obj, indent=2, cls=CustomJSONEncoder),
-        )
-        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_path
-        if self.path is not None:
-            source_path = os.path.normpath(
-                os.path.join(self.experiment.project_dir, self.path)
-            )
-            destination_path = os.path.normpath(
-                os.path.join("checkpoints", self.id, self.path)
-            )
-            storage.put_path(destination_path, source_path)
 
     def validate(self) -> List[str]:
         errors = []
@@ -141,18 +118,20 @@ class Checkpoint(object):
 
         if (
             self.metrics is not None
-            and self.primary_metric_name is not None
-            and self.primary_metric_name not in self.metrics
+            and self.primary_metric is not None
+            and self.primary_metric.get("name") is not None
+            and self.primary_metric["name"] not in self.metrics
         ):
             errors.append(
                 "Primary metric '{}' is not defined in metrics".format(
-                    self.primary_metric_name
+                    self.primary_metric["name"]
                 )
             )
 
-        if self.primary_metric_goal is not None and self.primary_metric_goal.lower() not in (
-            "maximize",
-            "minimize",
+        if (
+            self.primary_metric is not None
+            and self.primary_metric.get("goal") is not None
+            and self.primary_metric["goal"].lower() not in ("maximize", "minimize",)
         ):
             errors.append(
                 "Primary metric goal must be either 'maximize' or 'minimize'. "
@@ -160,3 +139,58 @@ class Checkpoint(object):
             )
 
         return errors
+
+
+@dataclass
+class CheckpointCollection:
+    """
+    An object for managing checkpoints within an experiment.
+    """
+
+    experiment: Any  # circular import
+
+    def create(
+        self,
+        path: Optional[str] = None,
+        step: Optional[int] = None,
+        metrics: Optional[Dict[str, Any]] = None,
+        primary_metric: Optional[PrimaryMetric] = None,
+        quiet: bool = False,
+    ) -> Checkpoint:
+        project = self.experiment._project
+
+        checkpoint = Checkpoint(
+            experiment=self.experiment,
+            id=random_hash(),
+            created=datetime.datetime.utcnow(),
+            path=path,
+            step=step,
+            metrics=metrics,
+            primary_metric=primary_metric,
+        )
+        if not quiet:
+            console.info(
+                "Creating checkpoint {}: copying '{}' to '{}'...".format(
+                    checkpoint.short_id(), checkpoint.path, project.storage.root_url(),
+                )
+            )
+
+        errors = checkpoint.validate()
+        if errors:
+            for error in errors:
+                console.error("Not saving checkpoint: " + error)
+            return checkpoint
+
+        project.storage.put(
+            "metadata/checkpoints/{}.json".format(checkpoint.id),
+            json.dumps(checkpoint.to_json(), indent=2, cls=CustomJSONEncoder),
+        )
+        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_path
+        if checkpoint.path is not None:
+            source_path = os.path.normpath(os.path.join(project.dir, checkpoint.path))
+            destination_path = os.path.normpath(
+                os.path.join("checkpoints", checkpoint.id, checkpoint.path)
+            )
+            project.storage.put_path(destination_path, source_path)
+
+        return checkpoint

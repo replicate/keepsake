@@ -1,3 +1,8 @@
+try:
+    # backport is incompatible with 3.7+, so we must use built-in
+    from dataclasses import dataclass
+except ImportError:
+    from ._vendor.dataclasses import dataclass
 import getpass
 import os
 import datetime
@@ -9,73 +14,33 @@ from typing import Dict, Any, Optional, Tuple, List
 import warnings
 
 from . import console
-from .checkpoint import Checkpoint
-from .config import load_config
+from .checkpoint import Checkpoint, CheckpointCollection, PrimaryMetric
 from .hash import random_hash
-from .metadata import rfc3339_datetime
-from .project import get_project_dir
-from .storage import storage_for_url
 from .heartbeat import Heartbeat
+from .metadata import rfc3339_datetime
 
 
+@dataclass
 class Experiment:
-    def __init__(
-        self,
-        config: dict,
-        project_dir: str,
-        created: datetime.datetime,
-        path: Optional[str],
-        params: Optional[Dict[str, Any]],
-        disable_heartbeat: bool = False,
-    ):
-        self.config = config
-        storage_url = config["storage"]
-        self.storage = storage_for_url(storage_url)
-        self.project_dir = project_dir
-        self.path = path
-        self.params = params
-        self.id = random_hash()
-        self.created = created
-        self.disable_heartbeat = disable_heartbeat
-        self.heartbeat = Heartbeat(
-            experiment_id=self.id,
-            storage_url=storage_url,
-            path="metadata/heartbeats/{}.json".format(self.id),
-        )
+    """
+    A run of a training script.
+    """
+
+    _project: Any
+
+    id: str
+    created: datetime.datetime
+    user: str
+    host: str
+    command: str
+    config: dict
+    path: Optional[str]
+    params: Optional[Dict[str, Any]] = None
+
+    _heartbeat: Optional[Heartbeat] = None
 
     def short_id(self):
         return self.id[:7]
-
-    def save(self):
-        console.info(
-            "Creating experiment {}: copying '{}' to '{}'...".format(
-                self.short_id(), self.path, self.storage.root_url()
-            )
-        )
-
-        errors = self.validate()
-        if errors:
-            for error in errors:
-                console.error("Not saving experiment: " + error)
-            return
-
-        self.storage.put(
-            "metadata/experiments/{}.json".format(self.id),
-            json.dumps(self.get_metadata(), indent=2),
-        )
-        # This is intentionally after uploading the metadata file.
-        # When you upload an object to a GCS bucket that doesn't exist, the upload of
-        # the first object creates the bucket.
-        # If you upload lots of objects in parallel to a bucket that doesn't exist, it
-        # causes a race condition, throwing 404s.
-        # Hence, uploading the single metadata file is done first.
-        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_path
-        if self.path is not None:
-            source_path = os.path.normpath(os.path.join(self.project_dir, self.path))
-            destination_path = os.path.normpath(
-                os.path.join("experiments", self.id, self.path)
-            )
-            self.storage.put_path(destination_path, source_path)
 
     def validate(self) -> List[str]:
         errors = []
@@ -96,6 +61,10 @@ class Experiment:
 
         return errors
 
+    @property
+    def checkpoints(self) -> CheckpointCollection:
+        return CheckpointCollection(self)
+
     def checkpoint(
         self,
         path: Optional[str],  # this requires an explicit path=None to not save source
@@ -104,10 +73,15 @@ class Experiment:
         primary_metric: Optional[Tuple[str, str]] = None,
         quiet: bool = False,
         **kwargs,
-    ) -> Checkpoint:
+    ) -> Optional[Checkpoint]:
+        """
+        Create a checkpoint within this experiment.
+
+        This saves the metrics at this point, and makes a copy of the file or directory passed to `path`, which could be weights or any other artifact.
+        """
         if kwargs:
             # FIXME (bfirsh): remove before launch
-            s = """Unexpected keyword arguments to init(): {} 
+            s = """Unexpected keyword arguments to checkpoint(): {} 
 
 Metrics must now be passed as a dictionary with the 'metrics' argument.
 
@@ -121,123 +95,106 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
             check_path(path)
 
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
-        primary_metric_name: Optional[str] = None
-        primary_metric_goal: Optional[str] = None
+        primary_metric_dict: Optional[PrimaryMetric] = None
         if primary_metric is not None:
             if len(primary_metric) != 2:
                 raise ValueError(
                     "primary_metric must be a tuple of (name, goal), where name corresponds to a metric key, and goal is either 'maximize' or 'minimize'"
                 )
-            primary_metric_name, primary_metric_goal = primary_metric
+            primary_metric_dict = {
+                "name": primary_metric[0],
+                "goal": primary_metric[1],
+            }
 
-        checkpoint = Checkpoint(
-            experiment=self,
+        checkpoint = self.checkpoints.create(
             path=path,
             step=step,
             metrics=metrics,
-            primary_metric_name=primary_metric_name,
-            primary_metric_goal=primary_metric_goal,
+            primary_metric=primary_metric_dict,
+            quiet=quiet,
         )
-        if not quiet:
-            console.info(
-                "Creating checkpoint {}: copying '{}' to '{}'...".format(
-                    checkpoint.short_id(), checkpoint.path, self.storage.root_url(),
-                )
-            )
-        checkpoint.save(self.storage)
-        if not self.disable_heartbeat:
-            self.heartbeat.ensure_running()
+
+        if self._heartbeat is not None:
+            self._heartbeat.ensure_running()
+
         return checkpoint
 
-    def get_metadata(self) -> Dict[str, Any]:
+    def to_json(self) -> Dict[str, Any]:
         return {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
             "params": self.params,
-            "user": self.get_user(),
-            "host": self.get_host(),
-            "command": self.get_command(),
+            "user": self.user,
+            "host": self.host,
+            "command": self.command,
             "config": self.config,
             "path": self.path,
         }
 
-    def get_user(self) -> str:
-        user = os.environ.get("REPLICATE_INTERNAL_USER")
-        if user is not None:
-            return user
-        return getpass.getuser()
-
-    def get_host(self) -> str:
-        host = os.environ.get("REPLICATE_INTERNAL_HOST")
-        if host is not None:
-            return host
-        return ""
-
-    def get_command(self) -> str:
-        command = " ".join(map(shlex.quote, sys.argv))
-        return os.environ.get("REPLICATE_INTERNAL_COMMAND", command)
-
-
-def init(
-    params: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs,
-) -> Experiment:
-    try:
-        path = kwargs.pop("path")
-    except KeyError:
-        warnings.warn(
-            "The 'path' argument now needs to be passed to replicate.init() and this will throw an error at some point. "
-            "Add 'path=\".\"' to your replicate.init() arguments when you get a chance.",
+    def start_heartbeat(self):
+        self._heartbeat = Heartbeat(
+            experiment_id=self.id,
+            storage_url=self._project.config["storage"],
+            path="metadata/heartbeats/{}.json".format(self.id),
         )
-        path = "."
-    if path is not None:
-        # TODO: Migrate this to validate
-        check_path(path)
-
-    if kwargs:
-        # FIXME (bfirsh): remove before launch
-        s = """Unexpected keyword arguments to init(): {} 
-            
-Params must now be passed as a dictionary with the 'params' argument.
-
-For example: replicate.init(path=".", params={{...}})
-
-See the docs for more information: https://beta.replicate.ai/docs/python"""
-        raise TypeError(s.format(", ".join(kwargs.keys())))
-    project_dir = get_project_dir()
-    config = load_config(project_dir)
-    created = datetime.datetime.utcnow()
-    experiment = Experiment(
-        config=config,
-        project_dir=project_dir,
-        created=created,
-        path=path,
-        params=params,
-        disable_heartbeat=disable_heartbeat,
-    )
-    experiment.save()
-    if not disable_heartbeat:
-        experiment.heartbeat.start()
-    return experiment
+        self._heartbeat.start()
 
 
-def set_option_defaults(
-    options: Optional[Dict[str, Any]], defaults: Dict[str, Any]
-) -> Dict[str, Any]:
-    if options is None:
-        options = {}
-    else:
-        options = options.copy()
-    for name, value in defaults.items():
-        if name not in options:
-            options[name] = value
-    invalid_options = set(options) - set(defaults)
-    if invalid_options:
-        raise ValueError(
-            "Invalid option{}: {}".format(
-                "s" if len(invalid_options) > 1 else "", ", ".join(invalid_options)
+@dataclass
+class ExperimentCollection:
+    """
+    An object for managing experiments in a project.
+    """
+
+    project: Any  # circular import
+
+    def create(self, path=None, params=None) -> Experiment:
+        command = " ".join(map(shlex.quote, sys.argv))
+        experiment = Experiment(
+            _project=self.project,
+            id=random_hash(),
+            created=datetime.datetime.utcnow(),
+            path=path,
+            params=params,
+            config=self.project.config,
+            user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
+            host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
+            command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
+        )
+
+        console.info(
+            "Creating experiment {}: copying '{}' to '{}'...".format(
+                experiment.short_id(), experiment.path, self.project.storage.root_url()
             )
         )
-    return options
+
+        errors = experiment.validate()
+        if errors:
+            for error in errors:
+                console.error("Not saving experiment: " + error)
+            return experiment
+
+        self.project.storage.put(
+            "metadata/experiments/{}.json".format(experiment.id),
+            json.dumps(experiment.to_json(), indent=2),
+        )
+        # This is intentionally after uploading the metadata file.
+        # When you upload an object to a GCS bucket that doesn't exist, the upload of
+        # the first object creates the bucket.
+        # If you upload lots of objects in parallel to a bucket that doesn't exist, it
+        # causes a race condition, throwing 404s.
+        # Hence, uploading the single metadata file is done first.
+        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_path
+        if experiment.path is not None:
+            source_path = os.path.normpath(
+                os.path.join(self.project.dir, experiment.path)
+            )
+            destination_path = os.path.normpath(
+                os.path.join("experiments", experiment.id, experiment.path)
+            )
+            self.project.storage.put_path(destination_path, source_path)
+
+        return experiment
 
 
 CHECK_PATH_HELP_TEXT = """
@@ -260,3 +217,44 @@ def check_path(path: str):
             "The path passed to {}() does not exist: {}".format(func_name, path)
             + CHECK_PATH_HELP_TEXT
         )
+
+
+def init(
+    params: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs,
+) -> Experiment:
+    """
+    Create a new experiment.
+    """
+    try:
+        path = kwargs.pop("path")
+    except KeyError:
+        warnings.warn(
+            "The 'path' argument now needs to be passed to replicate.init() and this will throw an error at some point. "
+            "Add 'path=\".\"' to your replicate.init() arguments when you get a chance.",
+        )
+        path = "."
+    if path is not None:
+        # TODO: Migrate this to validate
+        check_path(path)
+
+    if kwargs:
+        # FIXME (bfirsh): remove before launch
+        s = """Unexpected keyword arguments to init(): {} 
+            
+Params must now be passed as a dictionary with the 'params' argument.
+
+For example: replicate.init(path=".", params={{...}})
+
+See the docs for more information: https://beta.replicate.ai/docs/python"""
+        raise TypeError(s.format(", ".join(kwargs.keys())))
+
+    # circular import
+    from .project import Project
+
+    project = Project()
+    experiment = project.experiments.create(path=path, params=params)
+
+    if not disable_heartbeat:
+        experiment.start_heartbeat()
+
+    return experiment

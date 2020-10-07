@@ -5,7 +5,8 @@ try:
 except ImportError:
     from keras.callbacks import ModelCheckpoint  # type: ignore
 
-from . import experiment
+from . import init
+from .experiment import Experiment
 
 
 class ReplicateCallback(ModelCheckpoint):
@@ -24,7 +25,7 @@ class ReplicateCallback(ModelCheckpoint):
     ):
         self.init_params = params
         self.primary_metric = primary_metric
-        self.experiment: experiment.Experiment
+        self.experiment: Experiment
         self.step = 0
 
         super().__init__(
@@ -36,7 +37,7 @@ class ReplicateCallback(ModelCheckpoint):
         )
 
     def on_train_begin(self, logs=None):
-        self.experiment = experiment.init(path=".", params=self.init_params)
+        self.experiment = init(path=".", params=self.init_params)
         super().on_train_begin(logs)
 
     # FIXME(bfirsh): probably a bad idea to override an internal method -- this theoretically might break at some point?
