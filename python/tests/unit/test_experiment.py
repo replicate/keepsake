@@ -1,8 +1,10 @@
+import datetime
 import json
 import os
 import pytest  # type: ignore
 
 import replicate
+from replicate.experiment import Experiment
 
 from .common import temp_workdir
 
@@ -148,8 +150,8 @@ def test_init_and_checkpoint(temp_workdir):
 def test_heartbeat(temp_workdir):
     experiment = replicate.init(path=".")
     # Don't write heartbeat
-    experiment.heartbeat.kill()
-    assert experiment.heartbeat.path == "metadata/heartbeats/{}.json".format(
+    experiment._heartbeat.kill()
+    assert experiment._heartbeat.path == "metadata/heartbeats/{}.json".format(
         experiment.id
     )
 
@@ -159,10 +161,18 @@ class Blah:
 
 
 def test_validate():
-    experiment = replicate.init(path=None, params="lol", disable_heartbeat=True)
+    kwargs = {
+        "_project": None,
+        "id": "abc123",
+        "created": datetime.datetime.utcnow(),
+        "user": "ben",
+        "host": "",
+        "config": {},
+        "command": "",
+    }
+
+    experiment = Experiment(path=None, params="lol", **kwargs)
     assert experiment.validate() == ["params must be a dictionary"]
 
-    experiment = replicate.init(
-        path=None, params={"foo": Blah()}, disable_heartbeat=True
-    )
+    experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
     assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]

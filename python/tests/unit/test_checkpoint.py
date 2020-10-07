@@ -1,5 +1,7 @@
-import replicate
+import datetime
+
 from replicate.checkpoint import Checkpoint
+from replicate.experiment import Experiment
 
 
 class Blah:
@@ -7,35 +9,47 @@ class Blah:
 
 
 def test_validate():
-    experiment = replicate.init(
-        path=None, params={"foo": "bar"}, disable_heartbeat=True
+    experiment = Experiment(
+        _project=None,
+        id="abc123",
+        created=datetime.datetime.utcnow(),
+        user="ben",
+        host="",
+        command="",
+        config={},
+        path=None,
+        params={"foo": "bar"},
     )
 
-    checkpoint = Checkpoint(experiment, path=123)
+    kwargs = {
+        "experiment": experiment,
+        "id": "def456",
+        "created": datetime.datetime.utcnow(),
+    }
+
+    checkpoint = Checkpoint(path=123, **kwargs)
     assert checkpoint.validate() == ["path must be a string"]
 
-    checkpoint = Checkpoint(experiment, step="lol")
+    checkpoint = Checkpoint(step="lol", **kwargs)
     assert checkpoint.validate() == ["step must be an integer"]
 
-    checkpoint = Checkpoint(experiment, metrics="lol")
+    checkpoint = Checkpoint(metrics="lol", **kwargs)
     assert checkpoint.validate() == ["metrics must be a dictionary"]
 
-    checkpoint = Checkpoint(experiment, metrics={"foo": Blah()})
+    checkpoint = Checkpoint(metrics={"foo": Blah()}, **kwargs)
     assert "Failed to serialize the metric 'foo' to JSON" in checkpoint.validate()[0]
 
     checkpoint = Checkpoint(
-        experiment,
         metrics={"foo": "bar"},
-        primary_metric_name="baz",
-        primary_metric_goal="maximize",
+        primary_metric={"name": "baz", "goal": "maximize"},
+        **kwargs
     )
     assert checkpoint.validate() == ["Primary metric 'baz' is not defined in metrics"]
 
     checkpoint = Checkpoint(
-        experiment,
         metrics={"foo": "bar"},
-        primary_metric_name="foo",
-        primary_metric_goal="maximilize",
+        primary_metric={"name": "foo", "goal": "maximilize"},
+        **kwargs
     )
     assert (
         "Primary metric goal must be either 'maximize' or 'minimize'"
