@@ -1,7 +1,7 @@
 import os
-from typing import AnyStr, Generator
+from typing import AnyStr, List
 
-from .storage_base import Storage, ListFileInfo
+from .storage_base import Storage
 from .. import shared
 from ..exceptions import DoesNotExistError
 
@@ -58,17 +58,20 @@ class DiskStorage(Storage):
             Dest=str(dest_path),
         )
 
-    def list(self, path: str) -> Generator[ListFileInfo, None, None]:
+    def list(self, path: str) -> List[str]:
         """
-        List files at path
+        Returns a list of files at path, but not any subdirectories.
+         
+        Returned paths are prefixed with the given path, that can be passed straight to Get().
+        Directories are not listed.
+        If path does not exist, an empty list will be returned.
         """
-        # This is not recursive, but S3-style APIs make it very efficient to do recursive lists, so we probably want to add that
         full_path = os.path.join(self.root, path)
+        result: List[str] = []
         for filename in os.listdir(full_path):
             if os.path.isfile(os.path.join(full_path, filename)):
-                yield {"name": filename, "type": "file"}
-            else:
-                yield {"name": filename, "type": "directory"}
+                result.append(os.path.join(path, filename))
+        return result
 
     def delete(self, path: str):
         """

@@ -1,6 +1,6 @@
-from typing import AnyStr, Generator
+from typing import AnyStr, List
 
-from .storage_base import Storage, ListFileInfo
+from .storage_base import Storage
 from .. import shared
 from ..exceptions import DoesNotExistError
 
@@ -68,7 +68,7 @@ class S3Storage(Storage):
             Data=data_bytes,
         )
 
-    def list(self, path: str) -> Generator[ListFileInfo, None, None]:
+    def list(self, path: str) -> List[str]:
         """
         List files at path
         """

@@ -1,13 +1,6 @@
 import sys
 from abc import ABCMeta, abstractmethod
-from typing import AnyStr, Generator
-
-if sys.version_info >= (3, 8):
-    from typing import TypedDict
-else:
-    from .._vendor.typing_extensions import TypedDict
-
-ListFileInfo = TypedDict("ListFileInfo", {"name": str, "type": str})
+from typing import AnyStr, List
 
 
 class Storage:
@@ -41,7 +34,7 @@ class Storage:
         raise NotImplementedError()
 
     @abstractmethod
-    def list(self, path: str) -> Generator[ListFileInfo, None, None]:
+    def list(self, path: str) -> List[str]:
         """
         List files at path
         """
