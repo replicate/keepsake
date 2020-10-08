@@ -15,6 +15,7 @@ import warnings
 
 from . import console
 from .checkpoint import Checkpoint, CheckpointCollection, PrimaryMetric
+from .exceptions import DoesNotExistError
 from .hash import random_hash
 from .heartbeat import Heartbeat
 from .metadata import rfc3339_datetime, parse_rfc3339
@@ -203,6 +204,32 @@ class ExperimentCollection:
             self.project.storage.put_path(destination_path, source_path)
 
         return experiment
+
+    def get(self, experiment_id) -> Experiment:
+        """
+        Returns the experiment with the given ID.
+        """
+        storage = self.project.storage
+        ids = []
+        for path in storage.list("metadata/experiments/"):
+            ids.append(os.path.basename(path).split(".")[0])
+
+        matching_ids = list(filter(lambda i: i.startswith(experiment_id), ids))
+        if len(matching_ids) == 0:
+            raise DoesNotExistError(
+                "'{}' does not match any experiment IDs".format(experiment_id)
+            )
+        elif len(matching_ids) > 1:
+            raise DoesNotExistError(
+                "'{}' is ambiguous - it matches {} experiment IDs".format(
+                    experiment_id, len(matching_ids)
+                )
+            )
+
+        data = json.loads(
+            storage.get("metadata/experiments/{}.json".format(matching_ids[0]))
+        )
+        return Experiment.from_json(self.project, data)
 
     def list(self) -> List[Experiment]:
         """
