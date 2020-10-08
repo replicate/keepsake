@@ -10,7 +10,7 @@ class Blah:
 
 def test_validate():
     experiment = Experiment(
-        _project=None,
+        project=None,
         id="abc123",
         created=datetime.datetime.utcnow(),
         user="ben",
