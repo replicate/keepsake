@@ -7,8 +7,6 @@ import os
 
 from replicate.keras_callback import ReplicateCallback
 
-from .common import temp_workdir
-
 
 def _model(dense_size, learning_rate):
 
