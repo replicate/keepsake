@@ -23,6 +23,13 @@ type PutPathArgs struct {
 	Bucket, Root, Src, Dest string
 }
 
+type ListArgs struct {
+	Bucket, Root, Path string
+}
+type ListReturn struct {
+	Paths []string
+}
+
 type GCSStorage struct{}
 
 func (GCSStorage) Get(args GetArgs, ret *GetReturn) error {
@@ -45,6 +52,15 @@ func (GCSStorage) Put(args PutArgs, _ *int) error {
 		return err
 	}
 	return st.Put(args.Path, args.Data)
+}
+
+func (GCSStorage) List(args ListArgs, ret *ListReturn) error {
+	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	ret.Paths, err = st.List(args.Path)
+	return err
 }
 
 func (GCSStorage) PutPath(args PutPathArgs, _ *int) error {
@@ -77,6 +93,15 @@ func (S3Storage) Put(args PutArgs, _ *int) error {
 		return err
 	}
 	return st.Put(args.Path, args.Data)
+}
+
+func (S3Storage) List(args ListArgs, ret *ListReturn) error {
+	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	ret.Paths, err = st.List(args.Path)
+	return err
 }
 
 func (S3Storage) PutPath(args PutPathArgs, _ *int) error {

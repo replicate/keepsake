@@ -64,10 +64,18 @@ class GCSStorage(Storage):
             Data=data_bytes,
         )
 
-    def delete(self, path: str):
-        # TODO
-        pass
-
     def list(self, path: str) -> List[str]:
+        """
+        Returns a list of files at path, but not any subdirectories.
+        """
+        result = shared.call(
+            "GCSStorage.List",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            Path=str(path),  # typecast for pathlib
+        )
+        return result["Paths"]
+
+    def delete(self, path: str):
         # TODO
         pass
