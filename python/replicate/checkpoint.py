@@ -16,7 +16,7 @@ else:
 
 from . import console
 from .hash import random_hash
-from .metadata import rfc3339_datetime
+from .metadata import rfc3339_datetime, parse_rfc3339
 
 
 # We load numpy but not torch or tensorflow because numpy loads very fast and
@@ -81,6 +81,14 @@ class Checkpoint(object):
 
     def short_id(self) -> str:
         return self.id[:7]
+
+    @classmethod
+    def from_json(self, experiment: Any, data: Dict[str, Any]) -> "Checkpoint":
+        data = data.copy()
+        data["created"] = parse_rfc3339(data["created"])
+        # TODO(bfirsh): maybe want to validate this is correct?
+        del data["experiment_id"]
+        return Checkpoint(experiment=experiment, **data)
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -194,3 +202,18 @@ class CheckpointCollection:
             project.storage.put_path(destination_path, source_path)
 
         return checkpoint
+
+    def list(self):
+        """
+        Return all checkpoints for an experiment, sorted by creation date.
+        """
+        storage = self.experiment._project.storage
+        result: List[Checkpoint] = []
+        # FIXME (bfirsh): this is ridiculously inefficient. if we don't add a local sqlite database,
+        # then this may well need some caching
+        for path in storage.list("metadata/checkpoints/"):
+            data = json.loads(storage.get(path))
+            if data["experiment_id"] == self.experiment.id:
+                result.append(Checkpoint.from_json(self.experiment, data))
+        result.sort(key=lambda e: e.created)
+        return result
