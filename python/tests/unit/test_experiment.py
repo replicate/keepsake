@@ -6,8 +6,6 @@ import pytest  # type: ignore
 import replicate
 from replicate.experiment import Experiment
 
-from .common import temp_workdir
-
 
 def test_init_and_checkpoint(temp_workdir):
     with open("train.py", "w") as fh:
