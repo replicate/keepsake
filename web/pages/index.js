@@ -72,7 +72,7 @@ export default function Home() {
           </p>
         </div>
         <div className="windowChrome">
-        <CodeBlock language="python">{`import torch
+          <CodeBlock language="python">{`import torch
 import replicate
 
 def train():
@@ -102,11 +102,20 @@ def train():
         </div>
         <div>
           <h2>
-            <span>{num()}</span> You keep control of&nbsp;your&nbsp;data
+            <span>{num()}</span> You're in control of&nbsp;your&nbsp;data
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud bucket
             as plain old files.
+          </p>
+        </div>
+        <div>
+          <h2>
+            <span>{num()}</span> Works with everything
+          </h2>
+          <p>
+            Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It's just
+            saving files – export however you want.
           </p>
         </div>
       </section>
