@@ -5,6 +5,7 @@ import boto3
 
 import replicate
 from replicate.hash import random_hash
+from replicate.storage.s3_storage import S3Storage
 
 
 @pytest.fixture(scope="function")
@@ -72,6 +73,14 @@ def test_s3_experiment(temp_bucket, tmpdir):
 
     finally:
         os.chdir(current_workdir)
+
+
+def test_list(temp_bucket):
+    storage = S3Storage(bucket=temp_bucket, root="")
+    storage.put("foo", "nice")
+    storage.put("some/bar", "nice")
+    assert storage.list("") == ["foo"]
+    assert storage.list("some") == ["some/bar"]
 
 
 def s3_read(bucket, path):

@@ -46,6 +46,14 @@ def test_get_not_exists(temp_bucket):
         assert storage.get("foo/bar.txt")
 
 
+def test_list(temp_bucket):
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
+    storage.put("foo", "nice")
+    storage.put("some/bar", "nice")
+    assert storage.list("") == ["foo"]
+    assert storage.list("some") == ["some/bar"]
+
+
 def test_put_path(temp_bucket, tmpdir):
     storage = GCSStorage(bucket=temp_bucket.name, root="")
 

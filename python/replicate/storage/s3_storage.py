@@ -70,8 +70,15 @@ class S3Storage(Storage):
 
     def list(self, path: str) -> List[str]:
         """
-        List files at path
+        Returns a list of files at path, but not any subdirectories.
         """
+        result = shared.call(
+            "S3Storage.List",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            Path=str(path),  # typecast for pathlib
+        )
+        return result["Paths"]
 
     def exists(self, path: str) -> bool:
         pass

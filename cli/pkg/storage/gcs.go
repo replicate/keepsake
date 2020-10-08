@@ -216,7 +216,9 @@ func (s *GCSStorage) List(dir string) ([]string, error) {
 		if s.root != "" {
 			p = strings.TrimPrefix(strings.TrimPrefix(p, s.root), "/")
 		}
-		results = append(results, p)
+		if p != "" {
+			results = append(results, p)
+		}
 	}
 	return results, nil
 }
