@@ -1007,23 +1007,31 @@ footer {
   #contributors {
     grid-column: 2 / 3;
     margin-bottom: $whitespace-vertical;
+    $image-size: 5em;
     ul {
       list-style: none;
+      margin-bottom: $whitespace-vertical;
       li {
-        padding-left: 4em;
+        padding-left: $image-size + 1em;
         padding-bottom: $whitespace-vertical;
       }
       img {
         float: left;
         position: relative;
-        margin-left: -4.1em;
-        top: -0.25em;
-        width: 3em;
-        height: 3em;
-        border-radius: 3em;
+        margin-left: -1.1em - $image-size;
+        width: $image-size;
+        height: $image-size;
+        border-radius: $image-size;
+      }
+      h4 {
+        font-weight: bold;
       }
       p {
         max-width: 19em;
+      }
+      .link {
+        color: $text-shade;
+        margin-right: 0.3em;
       }
     }
   }
