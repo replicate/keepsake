@@ -16,3 +16,10 @@ def rfc3339_datetime(dt: datetime.datetime) -> str:
         dt.tzinfo is None
     ), "rfc3339_datetime() only works with naive datetime objects"
     return dt.isoformat() + "Z"
+
+
+def parse_rfc3339(s: str) -> datetime.datetime:
+    """
+    Parse a string in the RFC3339 format we use.
+    """
+    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%fZ")
