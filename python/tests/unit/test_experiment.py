@@ -1,3 +1,7 @@
+try:
+    import dataclasses
+except ImportError:
+    from replicate._vendor import dataclasses
 import datetime
 import json
 import os
@@ -5,6 +9,7 @@ import pytest  # type: ignore
 
 import replicate
 from replicate.experiment import Experiment
+from replicate.project import Project
 
 
 def test_init_and_checkpoint(temp_workdir):
@@ -176,3 +181,37 @@ class TestExperiment:
         experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
         assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
 
+    def test_from_json(self):
+        data = {
+            "id": "3132f9288bcc09a6b4d283c95a3968379d6b01fcf5d06500e789f90fdb02b7e1",
+            "created": "2020-10-07T22:44:06.243914Z",
+            "params": {"learning_rate": 0.01, "num_epochs": 100},
+            "user": "ben",
+            "host": "",
+            "command": "train.py",
+            "config": {"python": "3.8", "storage": ".replicate/storage/"},
+            "path": ".",
+        }
+        exp = Experiment.from_json(None, data)
+        assert dataclasses.asdict(exp) == {
+            "id": "3132f9288bcc09a6b4d283c95a3968379d6b01fcf5d06500e789f90fdb02b7e1",
+            "created": datetime.datetime(2020, 10, 7, 22, 44, 6, 243914),
+            "params": {"learning_rate": 0.01, "num_epochs": 100},
+            "user": "ben",
+            "host": "",
+            "command": "train.py",
+            "config": {"python": "3.8", "storage": ".replicate/storage/"},
+            "path": ".",
+        }
+
+
+class TestExperimentCollection:
+    def test_list(self, temp_workdir):
+        project = Project()
+        exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp2 = project.experiments.create(path=None, params={"foo": "baz"})
+
+        experiments = project.experiments.list()
+        assert len(experiments) == 2
+        assert experiments[0].id == exp1.id
+        assert experiments[1].id == exp2.id

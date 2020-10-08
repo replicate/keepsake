@@ -17,7 +17,7 @@ from . import console
 from .checkpoint import Checkpoint, CheckpointCollection, PrimaryMetric
 from .hash import random_hash
 from .heartbeat import Heartbeat
-from .metadata import rfc3339_datetime
+from .metadata import rfc3339_datetime, parse_rfc3339
 
 
 @dataclass
@@ -121,6 +121,12 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
 
         return checkpoint
 
+    @classmethod
+    def from_json(self, project: Any, data: Dict[str, Any]) -> "Experiment":
+        data = data.copy()
+        data["created"] = parse_rfc3339(data["created"])
+        return Experiment(project=project, **data)
+
     def to_json(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -197,6 +203,18 @@ class ExperimentCollection:
             self.project.storage.put_path(destination_path, source_path)
 
         return experiment
+
+    def list(self) -> List[Experiment]:
+        """
+        Return all experiments for a project, sorted by creation date.
+        """
+        storage = self.project.storage
+        result: List[Experiment] = []
+        for path in storage.list("metadata/experiments/"):
+            data = json.loads(storage.get(path))
+            result.append(Experiment.from_json(self.project, data))
+        result.sort(key=lambda e: e.created)
+        return result
 
 
 CHECK_PATH_HELP_TEXT = """
