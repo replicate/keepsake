@@ -1,8 +1,8 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
-    from dataclasses import dataclass
+    from dataclasses import dataclass, InitVar
 except ImportError:
-    from ._vendor.dataclasses import dataclass
+    from ._vendor.dataclasses import dataclass, InitVar
 import getpass
 import os
 import datetime
@@ -26,7 +26,7 @@ class Experiment:
     A run of a training script.
     """
 
-    _project: Any
+    project: InitVar[Any]
 
     id: str
     created: datetime.datetime
@@ -37,7 +37,9 @@ class Experiment:
     path: Optional[str]
     params: Optional[Dict[str, Any]] = None
 
-    _heartbeat: Optional[Heartbeat] = None
+    def __post_init__(self, project):
+        self._project = project
+        self._heartbeat = None
 
     def short_id(self):
         return self.id[:7]
@@ -151,7 +153,7 @@ class ExperimentCollection:
     def create(self, path=None, params=None) -> Experiment:
         command = " ".join(map(shlex.quote, sys.argv))
         experiment = Experiment(
-            _project=self.project,
+            project=self.project,
             id=random_hash(),
             created=datetime.datetime.utcnow(),
             path=path,

@@ -158,19 +158,21 @@ class Blah:
     pass
 
 
-def test_validate():
-    kwargs = {
-        "_project": None,
-        "id": "abc123",
-        "created": datetime.datetime.utcnow(),
-        "user": "ben",
-        "host": "",
-        "config": {},
-        "command": "",
-    }
+class TestExperiment:
+    def test_validate(self):
+        kwargs = {
+            "project": None,
+            "id": "abc123",
+            "created": datetime.datetime.utcnow(),
+            "user": "ben",
+            "host": "",
+            "config": {},
+            "command": "",
+        }
 
-    experiment = Experiment(path=None, params="lol", **kwargs)
-    assert experiment.validate() == ["params must be a dictionary"]
+        experiment = Experiment(path=None, params="lol", **kwargs)
+        assert experiment.validate() == ["params must be a dictionary"]
 
-    experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
-    assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
+        experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
+        assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
+
