@@ -8,6 +8,7 @@ import os
 import pytest  # type: ignore
 
 import replicate
+from replicate.exceptions import DoesNotExistError
 from replicate.experiment import Experiment
 from replicate.project import Project
 
@@ -206,6 +207,18 @@ class TestExperiment:
 
 
 class TestExperimentCollection:
+    def test_get(self, temp_workdir):
+        project = Project()
+        exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp2 = project.experiments.create(path=None, params={"foo": "baz"})
+
+        assert project.experiments.get(exp1.id).created == exp1.created
+        # get by prefix
+        assert project.experiments.get(exp2.id[:7]).created == exp2.created
+
+        with pytest.raises(DoesNotExistError):
+            project.experiments.get("doesnotexist")
+
     def test_list(self, temp_workdir):
         project = Project()
         exp1 = project.experiments.create(path=None, params={"foo": "bar"})
