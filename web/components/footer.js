@@ -130,7 +130,9 @@ function Footer({ children }) {
             ></div>
             <figcaption>
               <h4>Andreas Jansson</h4>
-              <p>ML infrastructure and research at Spotify.</p>
+              <p>
+                ML infrastructure and research at Spotify. PhD in ML for music.
+              </p>
               <p>
                 <a href="https://github.com/andreasjansson" className="link">
                   <FontAwesomeIcon icon={faGithub} />
