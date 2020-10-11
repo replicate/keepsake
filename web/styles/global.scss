@@ -899,10 +899,7 @@ header {
       max-width: 50em;
     }
     & > p:first-child {
-      @include font-feature;
       margin-top: calc(3.3rem + #{$whitespace-vertical});
-      margin-bottom: $whitespace-vertical * 2;
-      max-width: 18.5em;
     }
 
     ul,
