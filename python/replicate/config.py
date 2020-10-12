@@ -28,16 +28,15 @@ def load_config(project_dir):
     if "REPLICATE_STORAGE" in os.environ:
         data["storage"] = os.environ["REPLICATE_STORAGE"]
 
-    return validate_and_set_defaults(data)
+    return validate_and_set_defaults(data, project_dir)
 
 
 # TODO(andreas): more rigorous validation
 VALID_KEYS = ["storage", "python", "cuda", "python_requirements", "install", "metrics"]
 REQUIRED_KEYS: List[str] = []
-DEFAULTS = {"storage": ".replicate/storage/", "python": "3.7"}
 
 
-def validate_and_set_defaults(data):
+def validate_and_set_defaults(data, project_dir):
     # TODO (bfirsh): just really simple for now. JSON schema is probably right way (aanand says that is only decent solution)
     for key in REQUIRED_KEYS:
         if key not in data:
@@ -47,7 +46,12 @@ def validate_and_set_defaults(data):
                 )
             )
 
-    for key, value in DEFAULTS.items():
+    defaults = {
+        "storage": os.path.join(project_dir, ".replicate/storage/"),
+        "python": "3.7",
+    }
+
+    for key, value in defaults.items():
         if key not in data:
             data[key] = value
 

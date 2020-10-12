@@ -1,4 +1,5 @@
 import pytest  # type: ignore
+import os
 
 from replicate.config import (
     load_config,
@@ -13,18 +14,20 @@ def test_load_config_blank(tmp_path):
 
     assert load_config(tmp_path) == {
         "python": "3.7",
-        "storage": ".replicate/storage/",
+        "storage": os.path.join(tmp_path, ".replicate/storage/"),
     }
 
 
 def test_validate():
-    validate_and_set_defaults({"storage": "s3://foobar"})
+    validate_and_set_defaults({"storage": "s3://foobar"}, "/foo")
     with pytest.raises(ConfigValidationError):
-        validate_and_set_defaults({"invalid": "key"})
-        validate_and_set_defaults({"storage": 1234})
-        validate_and_set_defaults({"storage": "s3://foobar", "something": "else"})
+        validate_and_set_defaults({"invalid": "key"}, "/foo")
+        validate_and_set_defaults({"storage": 1234}, "/foo")
+        validate_and_set_defaults(
+            {"storage": "s3://foobar", "something": "else"}, "/foo"
+        )
 
-    assert validate_and_set_defaults({}) == {
+    assert validate_and_set_defaults({}, "/foo") == {
         "python": "3.7",
-        "storage": ".replicate/storage/",
+        "storage": "/foo/.replicate/storage/",
     }

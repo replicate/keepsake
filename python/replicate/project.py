@@ -13,8 +13,8 @@ class Project:
     Represents a codebase and set of experiments, analogous to a Git repository.
     """
 
-    def __init__(self):
-        self.dir = get_project_dir()
+    def __init__(self, dir=None):
+        self.dir = dir or get_project_dir()
         self.config = load_config(self.dir)
         self.storage = storage_for_url(self.config["storage"])
 
