@@ -35,6 +35,45 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		User:    "andreas",
 		Config:  conf,
 		Command: "train.py --foo bar",
+		Checkpoints: []*project.Checkpoint{
+			{
+				ID:      "1ccccccccc",
+				Created: time.Now().UTC().Add(-1 * time.Minute),
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.1),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 10,
+			}, {
+				ID:      "2ccccccccc",
+				Created: time.Now().UTC(),
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.01),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 20,
+			}, {
+				ID:      "3ccccccccc",
+				Created: time.Now().UTC(),
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.02),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 20,
+			},
+		},
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: time.Now().UTC().Add(-1 * time.Minute),
@@ -46,6 +85,20 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		Host:   "10.1.1.2",
 		User:   "andreas",
 		Config: conf,
+		Checkpoints: []*project.Checkpoint{
+			{
+				ID:      "4ccccccccc",
+				Created: time.Now().UTC(),
+				Metrics: map[string]*param.Value{
+					"metric-3": param.Float(0.5),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 5,
+			},
+		},
 	}, {
 		ID:      "3eeeeeeeee",
 		Created: time.Now().UTC().Add(-2 * time.Minute),
@@ -60,62 +113,6 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	}}
 	for _, exp := range experiments {
 		require.NoError(t, exp.Save(store))
-	}
-
-	var checkpoints = []*project.Checkpoint{{
-		ID:           "1ccccccccc",
-		Created:      time.Now().UTC().Add(-1 * time.Minute),
-		ExperimentID: experiments[0].ID,
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.1),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 10,
-	}, {
-		ID:           "2ccccccccc",
-		Created:      time.Now().UTC(),
-		ExperimentID: experiments[0].ID,
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.01),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 20,
-	}, {
-		ID:           "3ccccccccc",
-		Created:      time.Now().UTC(),
-		ExperimentID: experiments[0].ID,
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.02),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 20,
-	}, {
-		ID:           "4ccccccccc",
-		Created:      time.Now().UTC(),
-		ExperimentID: experiments[1].ID,
-		Metrics: map[string]*param.Value{
-			"metric-3": param.Float(0.5),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 5,
-	}}
-	for _, com := range checkpoints {
-		require.NoError(t, com.Save(store, workingDir))
 	}
 
 	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
@@ -261,14 +258,15 @@ func TestListJSON(t *testing.T) {
 			"learning_rate": param.Float(0.001),
 		},
 		Command: "train.py --gamma 1.2",
+		Checkpoints: []*project.Checkpoint{
+			project.NewCheckpoint(map[string]*param.Value{
+				"accuracy": param.Float(0.987),
+			}),
+		},
 	}
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
-	com := project.NewCheckpoint(exp.ID, map[string]*param.Value{
-		"accuracy": param.Float(0.987),
-	})
-	require.NoError(t, com.Save(storage, workingDir))
 
 	// Experiment still running
 	exp = &project.Experiment{
@@ -278,14 +276,15 @@ func TestListJSON(t *testing.T) {
 			"learning_rate": param.Float(0.002),
 		},
 		Command: "train.py --gamma 1.5",
+		Checkpoints: []*project.Checkpoint{
+			project.NewCheckpoint(map[string]*param.Value{
+				"accuracy": param.Float(0.987),
+			}),
+		},
 	}
 	require.NoError(t, exp.Save(storage))
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
-	com = project.NewCheckpoint(exp.ID, map[string]*param.Value{
-		"accuracy": param.Float(0.987),
-	})
-	require.NoError(t, com.Save(storage, workingDir))
 
 	// replicate ls
 	actual := capturer.CaptureStdout(func() {

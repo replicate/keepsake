@@ -92,13 +92,11 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 				return fmt.Errorf("Error creating heartbeat: %w", err)
 			}
 
+			exp.Checkpoints = []*project.Checkpoint{}
 			for j := 0; j < numCheckpoints; j++ {
-				com := project.NewCheckpoint(exp.ID, map[string]*param.Value{
+				exp.Checkpoints = append(exp.Checkpoints, project.NewCheckpoint(map[string]*param.Value{
 					"accuracy": param.Float(0.987),
-				})
-				if err := com.Save(storage, workingDir); err != nil {
-					return fmt.Errorf("Error saving checkpoint: %w", err)
-				}
+				}))
 			}
 			return nil
 		})

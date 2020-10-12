@@ -106,15 +106,11 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	}
 
 	msg := ""
-	var experiment *project.Experiment
+	experiment := result.Experiment
 
 	if result.Checkpoint != nil {
 		// Checking out checkpoint
 		checkpoint := result.Checkpoint
-		experiment, err = proj.ExperimentByID(checkpoint.ExperimentID)
-		if err != nil {
-			return err
-		}
 
 		if err := store.GetPath(path.Join("experiments", experiment.ID), outputDir); err != nil {
 			return err
@@ -128,7 +124,6 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 
 	} else {
 		// Checking out experiment
-		experiment = result.Experiment
 		if err := store.GetPath(path.Join("experiments", experiment.ID), outputDir); err != nil {
 			return err
 		}
