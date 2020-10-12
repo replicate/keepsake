@@ -16,8 +16,7 @@ def temp_bucket():
     )
 
     client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    bucket.create()
+    bucket = client.create_bucket(bucket_name)
     try:
         bucket.reload()
         assert bucket.exists()
