@@ -65,19 +65,11 @@ func heading(w *tabwriter.Writer, au aurora.Aurora, text string) {
 }
 
 func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 string, prefix2 string) error {
-	com1, err := loadCheckpoint(proj, prefix1)
+	exp1, com1, err := loadCheckpoint(proj, prefix1)
 	if err != nil {
 		return err
 	}
-	com2, err := loadCheckpoint(proj, prefix2)
-	if err != nil {
-		return err
-	}
-	exp1, err := proj.ExperimentByID(com1.ExperimentID)
-	if err != nil {
-		return err
-	}
-	exp2, err := proj.ExperimentByID(com2.ExperimentID)
+	exp2, com2, err := loadCheckpoint(proj, prefix2)
 	if err != nil {
 		return err
 	}
@@ -176,37 +168,31 @@ func paramMapToStringMap(params map[string]*param.Value) map[string]string {
 // checkpoint, that is returned. If the prefix matches an experiment, it
 // returns the best checkpoint if a primary metric is defined in config,
 // otherwise the latest checkpoint.
-func loadCheckpoint(proj *project.Project, prefix string) (*project.Checkpoint, error) {
+func loadCheckpoint(proj *project.Project, prefix string) (*project.Experiment, *project.Checkpoint, error) {
 	obj, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if obj.Checkpoint != nil {
-		return obj.Checkpoint, nil
+		return obj.Experiment, obj.Checkpoint, nil
 	}
 	exp := obj.Experiment
 
 	// First, try getting best checkpoint
-	checkpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
-	if err != nil {
-		return nil, err
-	}
+	checkpoint := exp.BestCheckpoint()
 	if checkpoint != nil {
 		console.Info("%q matches an experiment, picking the best checkpoint", prefix)
-		return checkpoint, nil
+		return exp, checkpoint, nil
 	}
 
 	// If there is no best checkpoint and no error, then no primary metric has been set,
 	// so fall back to picking latest checkpoint
 	console.Info("%q is an experiment, picking the latest checkpoint", prefix)
-	checkpoint, err = proj.ExperimentLatestCheckpoint(exp.ID)
-	if err != nil {
-		return nil, err
-	}
+	checkpoint = exp.LatestCheckpoint()
 	if checkpoint == nil {
-		return nil, fmt.Errorf("Could not pick best checkpoint for experiment %q: it does not have any checkpoints.", exp.ShortID())
+		return nil, nil, fmt.Errorf("Could not pick best checkpoint for experiment %q: it does not have any checkpoints.", exp.ShortID())
 	}
-	return checkpoint, nil
+	return exp, checkpoint, nil
 }
 
 // mapString takes two maps of strings and returns a single map with two values

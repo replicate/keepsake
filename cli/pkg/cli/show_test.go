@@ -41,6 +41,48 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Host:    "10.1.1.1",
 		User:    "andreas",
 		Config:  conf,
+		Checkpoints: []*project.Checkpoint{
+			{
+				ID:      "1ccccccccc",
+				Created: fixedTime.Add(-5 * time.Minute),
+				Path:    "data",
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.1),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 10,
+			}, {
+				ID:      "2ccccccccc",
+				Created: fixedTime.Add(-4 * time.Minute),
+				Path:    "data",
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.01),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 20,
+			}, {
+				ID:      "3ccccccccc",
+				Created: fixedTime.Add(-3 * time.Minute),
+				Path:    "data",
+				Metrics: map[string]*param.Value{
+					"metric-1": param.Float(0.02),
+					"metric-2": param.Int(2),
+				},
+				PrimaryMetric: &project.PrimaryMetric{
+					Name: "metric-1",
+					Goal: project.GoalMinimize,
+				},
+				Step: 20,
+			},
+		},
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: fixedTime.Add(-1 * time.Minute),
@@ -52,65 +94,20 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		Host:   "10.1.1.2",
 		User:   "andreas",
 		Config: conf,
+		Checkpoints: []*project.Checkpoint{
+			{
+				ID:      "4ccccccccc",
+				Created: fixedTime.Add(-2 * time.Minute),
+				Path:    "data",
+				Metrics: map[string]*param.Value{
+					"metric-3": param.Float(0.5),
+				},
+				Step: 5,
+			},
+		},
 	}}
 	for _, exp := range experiments {
 		require.NoError(t, exp.Save(store))
-	}
-
-	var checkpoints = []*project.Checkpoint{{
-		ID:           "1ccccccccc",
-		Created:      fixedTime.Add(-5 * time.Minute),
-		ExperimentID: experiments[0].ID,
-		Path:         "data",
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.1),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 10,
-	}, {
-		ID:           "2ccccccccc",
-		Created:      fixedTime.Add(-4 * time.Minute),
-		ExperimentID: experiments[0].ID,
-		Path:         "data",
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.01),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 20,
-	}, {
-		ID:           "3ccccccccc",
-		Created:      fixedTime.Add(-3 * time.Minute),
-		ExperimentID: experiments[0].ID,
-		Path:         "data",
-		Metrics: map[string]*param.Value{
-			"metric-1": param.Float(0.02),
-			"metric-2": param.Int(2),
-		},
-		PrimaryMetric: &project.PrimaryMetric{
-			Name: "metric-1",
-			Goal: project.GoalMinimize,
-		},
-		Step: 20,
-	}, {
-		ID:           "4ccccccccc",
-		Created:      fixedTime.Add(-2 * time.Minute),
-		ExperimentID: experiments[1].ID,
-		Path:         "data",
-		Metrics: map[string]*param.Value{
-			"metric-3": param.Float(0.5),
-		},
-		Step: 5,
-	}}
-	for _, com := range checkpoints {
-		require.NoError(t, com.Save(store, workingDir))
 	}
 
 	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
@@ -133,7 +130,7 @@ func TestShowCheckpoint(t *testing.T) {
 
 	out := new(bytes.Buffer)
 	au := aurora.NewAurora(false)
-	err = showCheckpoint(au, out, proj, result.Checkpoint)
+	err = showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint)
 	require.NoError(t, err)
 	actual := out.String()
 
@@ -224,7 +221,7 @@ To see more details about a checkpoint, run:
 	out = new(bytes.Buffer)
 	err = show(showOpts{storageURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"1eee"}, out)
 	require.NoError(t, err)
-	var exp experimentShowJSON
+	var exp project.Experiment
 	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))
 	require.Equal(t, "1eeeeeeeee", exp.ID)
 	require.Equal(t, "1ccccccccc", exp.Checkpoints[0].ID)

@@ -312,25 +312,13 @@ func createListExperiments(proj *project.Project, filters *param.Filters) ([]*Li
 			User:    exp.User,
 			Config:  exp.Config,
 		}
-		checkpoints, err := proj.ExperimentCheckpoints(exp.ID)
-		if err != nil {
-			return nil, err
-		}
-		latest, err := proj.ExperimentLatestCheckpoint(exp.ID)
-		if err != nil {
-			return nil, err
-		}
-		best, err := proj.ExperimentBestCheckpoint(exp.ID)
-		if err != nil {
-			return nil, err
-		}
 		running, err := proj.ExperimentIsRunning(exp.ID)
 		if err != nil {
 			return nil, err
 		}
-		listExperiment.LatestCheckpoint = latest
-		listExperiment.BestCheckpoint = best
-		listExperiment.NumCheckpoints = len(checkpoints)
+		listExperiment.LatestCheckpoint = exp.LatestCheckpoint()
+		listExperiment.BestCheckpoint = exp.BestCheckpoint()
+		listExperiment.NumCheckpoints = len(exp.Checkpoints)
 		listExperiment.Running = running
 
 		match, err := filters.Matches(listExperiment)

@@ -30,6 +30,9 @@ def test_s3_experiment(temp_bucket, tmpdir):
     try:
         os.chdir(tmpdir)
         experiment = replicate.init(path=".", params={"foo": "bar"})
+        checkpoint = experiment.checkpoint(
+            path=".", step=10, metrics={"loss": 1.1, "baz": "qux"}
+        )
 
         actual_experiment_meta = s3_read_json(
             temp_bucket,
@@ -48,28 +51,18 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "params": {"foo": "bar"},
             "config": {"python": "3.7", "storage": "s3://" + temp_bucket},
             "path": ".",
+            "checkpoints": [
+                {
+                    "id": checkpoint.id,
+                    "created": checkpoint.created.isoformat() + "Z",
+                    "step": 10,
+                    "metrics": {"loss": 1.1, "baz": "qux"},
+                    "path": ".",
+                    "primary_metric": None,
+                }
+            ],
         }
         assert actual_experiment_meta == expected_experiment_meta
-
-        checkpoint = experiment.checkpoint(
-            path=".", step=10, metrics={"loss": 1.1, "baz": "qux"}
-        )
-
-        actual_checkpoint_meta = s3_read_json(
-            temp_bucket,
-            os.path.join("metadata", "checkpoints", checkpoint.id + ".json"),
-        )
-
-        expected_checkpoint_meta = {
-            "id": checkpoint.id,
-            "created": checkpoint.created.isoformat() + "Z",
-            "experiment_id": experiment.id,
-            "step": 10,
-            "metrics": {"loss": 1.1, "baz": "qux"},
-            "path": ".",
-            "primary_metric": None,
-        }
-        assert actual_checkpoint_meta == expected_checkpoint_meta
 
     finally:
         os.chdir(current_workdir)

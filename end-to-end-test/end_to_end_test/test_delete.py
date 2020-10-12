@@ -84,7 +84,8 @@ if __name__ == "__main__":
         ).stdout
     )
     assert len(experiments) == 1
-    assert experiments[0]["num_checkpoints"] == 2
+    # TODO(bfirsh): checkpoint metadata is no longer deleted, so check that checkout fails
+    assert experiments[0]["num_checkpoints"] == 3
 
     subprocess.run(
         ["replicate", "delete", experiments[0]["id"]], cwd=tmpdir, env=env, check=True

@@ -50,13 +50,14 @@ def test_init_and_checkpoint(temp_workdir):
 
     assert len(checkpoint.id) == 64
     with open(
-        ".replicate/storage/metadata/checkpoints/{}.json".format(checkpoint.id)
+        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
     ) as fh:
         metadata = json.load(fh)
-    assert metadata["id"] == checkpoint.id
-    assert metadata["step"] == 1
-    assert metadata["metrics"] == {"validation_loss": 0.123}
-    assert metadata["experiment_id"] == experiment.id
+    assert len(metadata["checkpoints"]) == 1
+    checkpoint_metadata = metadata["checkpoints"][0]
+    assert checkpoint_metadata["id"] == checkpoint.id
+    assert checkpoint_metadata["step"] == 1
+    assert checkpoint_metadata["metrics"] == {"validation_loss": 0.123}
     with open(".replicate/storage/checkpoints/{}/weights".format(checkpoint.id)) as fh:
         assert fh.read() == "1.2kg"
     assert (
@@ -91,10 +92,10 @@ def test_init_and_checkpoint(temp_workdir):
         path=None, step=1, metrics={"validation_loss": 0.123}
     )
     with open(
-        ".replicate/storage/metadata/checkpoints/{}.json".format(checkpoint.id)
+        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
     ) as fh:
         metadata = json.load(fh)
-    assert metadata["id"] == checkpoint.id
+    assert metadata["checkpoints"][-1]["id"] == checkpoint.id
     assert (
         os.path.exists(".replicate/storage/checkpoints/{}".format(checkpoint.id))
         is False
@@ -192,6 +193,7 @@ class TestExperiment:
             "command": "train.py",
             "config": {"python": "3.8", "storage": ".replicate/storage/"},
             "path": ".",
+            "checkpoints": [],
         }
         exp = Experiment.from_json(None, data)
         assert dataclasses.asdict(exp) == {
@@ -203,16 +205,30 @@ class TestExperiment:
             "command": "train.py",
             "config": {"python": "3.8", "storage": ".replicate/storage/"},
             "path": ".",
+            "checkpoints": [],
         }
+
+    def test_checkpoints(self, temp_workdir):
+        project = Project()
+        experiment = project.experiments.create(path=None, params={"foo": "bar"})
+        chk1 = experiment.checkpoint(path=None, metrics={"accuracy": "ok"})
+        chk2 = experiment.checkpoint(path=None, metrics={"accuracy": "super"})
+        assert len(experiment.checkpoints) == 2
+        assert experiment.checkpoints[0].id == chk1.id
+        assert experiment.checkpoints[1].id == chk2.id
 
 
 class TestExperimentCollection:
     def test_get(self, temp_workdir):
         project = Project()
         exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp1.checkpoint(path=None, metrics={"accuracy": "wicked"})
         exp2 = project.experiments.create(path=None, params={"foo": "baz"})
 
-        assert project.experiments.get(exp1.id).created == exp1.created
+        actual_exp = project.experiments.get(exp1.id)
+        assert actual_exp.created == exp1.created
+        assert len(actual_exp.checkpoints) == 1
+        assert actual_exp.checkpoints[0].metrics == {"accuracy": "wicked"}
         # get by prefix
         assert project.experiments.get(exp2.id[:7]).created == exp2.created
 
@@ -222,9 +238,12 @@ class TestExperimentCollection:
     def test_list(self, temp_workdir):
         project = Project()
         exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp1.checkpoint(path=None, metrics={"accuracy": "wicked"})
         exp2 = project.experiments.create(path=None, params={"foo": "baz"})
 
         experiments = project.experiments.list()
         assert len(experiments) == 2
         assert experiments[0].id == exp1.id
+        assert len(experiments[0].checkpoints) == 1
+        assert experiments[0].checkpoints[0].metrics == {"accuracy": "wicked"}
         assert experiments[1].id == exp2.id

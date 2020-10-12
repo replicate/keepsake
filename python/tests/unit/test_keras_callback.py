@@ -59,11 +59,9 @@ def test_keras_callback(temp_workdir):
         exp_meta = json.load(f)
     assert exp_meta["params"]["dense_size"] == 784
     assert exp_meta["params"]["learning_rate"] == 0.1
+    assert len(exp_meta["checkpoints"]) == 5
+    chkp_meta = exp_meta["checkpoints"][0]
 
-    chkp_meta_paths = glob(".replicate/storage/metadata/checkpoints/*.json")
-    assert len(chkp_meta_paths) == 5
-    with open(chkp_meta_paths[0]) as f:
-        chkp_meta = json.load(f)
     assert chkp_meta["path"] == "model.hdf5"
     assert chkp_meta["primary_metric"] == {
         "name": "mean_absolute_error",
@@ -99,11 +97,14 @@ def test_keras_callback_with_no_filepath(temp_workdir):
         ],
     )
 
-    chkp_meta_paths = glob(".replicate/storage/metadata/checkpoints/*.json")
-    assert len(chkp_meta_paths) == 5
-    with open(chkp_meta_paths[0]) as f:
-        chkp_meta = json.load(f)
-    assert chkp_meta["path"] == None
+    exp_meta_paths = glob(".replicate/storage/metadata/experiments/*.json")
+    assert len(exp_meta_paths) == 1
+    with open(exp_meta_paths[0]) as f:
+        exp_meta = json.load(f)
+
+    assert len(exp_meta["checkpoints"]) == 5
+    chkp_meta = exp_meta["checkpoints"][0]
+    assert chkp_meta["path"] is None
     assert not os.path.exists(
         ".replicate/storage/checkpoints/" + chkp_meta["id"] + "/model.hdf5"
     )

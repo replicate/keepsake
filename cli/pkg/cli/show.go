@@ -20,11 +20,6 @@ import (
 
 var timezone = time.Local
 
-type experimentShowJSON struct {
-	project.Experiment
-	Checkpoints []*project.Checkpoint `json:"checkpoints"`
-}
-
 type showOpts struct {
 	json       bool
 	storageURL string
@@ -72,26 +67,16 @@ func show(opts showOpts, args []string, out io.Writer) error {
 		if result.Checkpoint != nil {
 			return enc.Encode(result.Checkpoint)
 		}
-		var experimentShow experimentShowJSON
-		experimentShow.Experiment = *result.Experiment
-		experimentShow.Checkpoints, err = proj.ExperimentCheckpoints(result.Experiment.ID)
-		if err != nil {
-			return err
-		}
-		return enc.Encode(experimentShow)
+		return enc.Encode(result.Experiment)
 	}
 
 	if result.Checkpoint != nil {
-		return showCheckpoint(au, out, proj, result.Checkpoint)
+		return showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint)
 	}
 	return showExperiment(au, out, proj, result.Experiment)
 }
 
-func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, com *project.Checkpoint) error {
-	exp, err := proj.ExperimentByID(com.ExperimentID)
-	if err != nil {
-		return err
-	}
+func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment, com *project.Checkpoint) error {
 	experimentRunning, err := proj.ExperimentIsRunning(exp.ID)
 	if err != nil {
 		return err
@@ -135,21 +120,14 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 
 	fmt.Fprintf(out, "%s\n", au.Bold("Checkpoints"))
 
-	checkpoints, err := proj.ExperimentCheckpoints(exp.ID)
-	if err != nil {
-		return err
-	}
-	bestCheckpoint, err := proj.ExperimentBestCheckpoint(exp.ID)
-	if err != nil {
-		return err
-	}
+	bestCheckpoint := exp.BestCheckpoint()
 	labelNames := []string{}
 
 	cw := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
 	headings := []string{"ID", "STEP", "CREATED"}
 	// FIXME(bfirsh): labels might change during experiment
-	if len(checkpoints) != 0 {
-		for label := range checkpoints[0].Metrics {
+	if len(exp.Checkpoints) != 0 {
+		for label := range exp.Checkpoints[0].Metrics {
 			labelNames = append(labelNames, label)
 		}
 		// TODO: put primary first
@@ -160,7 +138,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	}
 	fmt.Fprintf(cw, "%s\n", strings.Join(headings, "\t"))
 
-	for _, checkpoint := range checkpoints {
+	for _, checkpoint := range exp.Checkpoints {
 		columns := []string{checkpoint.ShortID(), strconv.Itoa(checkpoint.Step), console.FormatTime(checkpoint.Created)}
 		for _, label := range labelNames {
 			val := checkpoint.Metrics[label]

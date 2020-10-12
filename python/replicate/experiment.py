@@ -1,8 +1,8 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
-    from dataclasses import dataclass, InitVar
+    from dataclasses import dataclass, InitVar, field
 except ImportError:
-    from ._vendor.dataclasses import dataclass, InitVar
+    from ._vendor.dataclasses import dataclass, InitVar, field
 import getpass
 import os
 import datetime
@@ -14,10 +14,15 @@ from typing import Dict, Any, Optional, Tuple, List
 import warnings
 
 from . import console
-from .checkpoint import Checkpoint, CheckpointCollection, PrimaryMetric
 from .exceptions import DoesNotExistError
+from .checkpoint import (
+    Checkpoint,
+    PrimaryMetric,
+    CustomJSONEncoder,
+)
 from .hash import random_hash
 from .heartbeat import Heartbeat
+from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 
 
@@ -37,6 +42,7 @@ class Experiment:
     config: dict
     path: Optional[str]
     params: Optional[Dict[str, Any]] = None
+    checkpoints: List[Checkpoint] = field(default_factory=list)
 
     def __post_init__(self, project):
         self._project = project
@@ -63,10 +69,6 @@ class Experiment:
                 errors.append("params must be a dictionary")
 
         return errors
-
-    @property
-    def checkpoints(self) -> CheckpointCollection:
-        return CheckpointCollection(self)
 
     def checkpoint(
         self,
@@ -98,6 +100,7 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
             check_path(path)
 
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
+        # FIXME: store as tuple throughout for consistency?
         primary_metric_dict: Optional[PrimaryMetric] = None
         if primary_metric is not None:
             if len(primary_metric) != 2:
@@ -109,23 +112,63 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
                 "goal": primary_metric[1],
             }
 
-        checkpoint = self.checkpoints.create(
+        checkpoint = Checkpoint(
+            id=random_hash(),
+            created=datetime.datetime.utcnow(),
             path=path,
             step=step,
             metrics=metrics,
             primary_metric=primary_metric_dict,
-            quiet=quiet,
         )
+        if not quiet:
+            console.info(
+                "Creating checkpoint {}: copying '{}' to '{}'...".format(
+                    checkpoint.short_id(),
+                    checkpoint.path,
+                    self._project.storage.root_url(),
+                )
+            )
+
+        errors = checkpoint.validate()
+        if errors:
+            for error in errors:
+                console.error("Not saving checkpoint: " + error)
+            return checkpoint
+
+        self.checkpoints.append(checkpoint)
+        self.save()
+
+        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_path
+        if checkpoint.path is not None:
+            source_path = os.path.normpath(
+                os.path.join(self._project.dir, checkpoint.path)
+            )
+            destination_path = os.path.normpath(
+                os.path.join("checkpoints", checkpoint.id, checkpoint.path)
+            )
+            self._project.storage.put_path(destination_path, source_path)
 
         if self._heartbeat is not None:
             self._heartbeat.ensure_running()
 
         return checkpoint
 
+    def save(self):
+        """
+        Save this experiment's metadata to storage.
+        """
+        self._project.storage.put(
+            "metadata/experiments/{}.json".format(self.id),
+            json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
+        )
+
     @classmethod
     def from_json(self, project: Any, data: Dict[str, Any]) -> "Experiment":
         data = data.copy()
         data["created"] = parse_rfc3339(data["created"])
+        data["checkpoints"] = [
+            Checkpoint.from_json(d) for d in data.get("checkpoints", [])
+        ]
         return Experiment(project=project, **data)
 
     def to_json(self) -> Dict[str, Any]:
@@ -138,6 +181,7 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
             "command": self.command,
             "config": self.config,
             "path": self.path,
+            "checkpoints": [c.to_json() for c in self.checkpoints],
         }
 
     def start_heartbeat(self):
@@ -157,7 +201,7 @@ class ExperimentCollection:
 
     project: Any  # circular import
 
-    def create(self, path=None, params=None) -> Experiment:
+    def create(self, path=None, params=None, quiet=False) -> Experiment:
         command = " ".join(map(shlex.quote, sys.argv))
         experiment = Experiment(
             project=self.project,
@@ -171,11 +215,14 @@ class ExperimentCollection:
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
         )
 
-        console.info(
-            "Creating experiment {}: copying '{}' to '{}'...".format(
-                experiment.short_id(), experiment.path, self.project.storage.root_url()
+        if not quiet:
+            console.info(
+                "Creating experiment {}: copying '{}' to '{}'...".format(
+                    experiment.short_id(),
+                    experiment.path,
+                    self.project.storage.root_url(),
+                )
             )
-        )
 
         errors = experiment.validate()
         if errors:
@@ -183,10 +230,8 @@ class ExperimentCollection:
                 console.error("Not saving experiment: " + error)
             return experiment
 
-        self.project.storage.put(
-            "metadata/experiments/{}.json".format(experiment.id),
-            json.dumps(experiment.to_json(), indent=2),
-        )
+        experiment.save()
+
         # This is intentionally after uploading the metadata file.
         # When you upload an object to a GCS bucket that doesn't exist, the upload of
         # the first object creates the bucket.

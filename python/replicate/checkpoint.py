@@ -15,48 +15,9 @@ else:
     from ._vendor.typing_extensions import TypedDict
 
 from . import console
+from .json import CustomJSONEncoder
 from .hash import random_hash
 from .metadata import rfc3339_datetime, parse_rfc3339
-
-
-# We load numpy but not torch or tensorflow because numpy loads very fast and
-# they're probably using it anyway
-# fmt: off
-try:
-    import numpy as np  # type: ignore
-    has_numpy = True
-except ImportError:
-    has_numpy = False
-# fmt: on
-
-# Tensorflow takes a solid 10 seconds to import on a modern Macbook Pro, so instead of importing,
-# do this instead
-def _is_tensorflow_tensor(obj):
-    # e.g. __module__='tensorflow.python.framework.ops', __name__='EagerTensor'
-    return (
-        obj.__class__.__module__.split(".")[0] == "tensorflow"
-        and "Tensor" in obj.__class__.__name__
-    )
-
-
-def _is_torch_tensor(obj):
-    return (obj.__class__.__module__, obj.__class__.__name__) == ("torch", "Tensor")
-
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if has_numpy:
-            if isinstance(o, np.integer):
-                return int(o)
-            elif isinstance(o, np.floating):
-                return float(o)
-            elif isinstance(o, np.ndarray):
-                return o.tolist()
-        if _is_torch_tensor(o):
-            return o.detach().tolist()
-        if _is_tensorflow_tensor(o):
-            return o.numpy().tolist()
-        return json.JSONEncoder.default(self, o)
 
 
 class PrimaryMetric(TypedDict):
@@ -70,8 +31,6 @@ class Checkpoint(object):
     A checkpoint within an experiment. It represents the metrics and the file or directory specified by `path` at a point in time during the experiment.
     """
 
-    experiment: Any  # circular import
-
     id: str
     created: datetime.datetime
     path: Optional[str] = None
@@ -83,18 +42,15 @@ class Checkpoint(object):
         return self.id[:7]
 
     @classmethod
-    def from_json(self, experiment: Any, data: Dict[str, Any]) -> "Checkpoint":
+    def from_json(self, data: Dict[str, Any]) -> "Checkpoint":
         data = data.copy()
         data["created"] = parse_rfc3339(data["created"])
-        # TODO(bfirsh): maybe want to validate this is correct?
-        del data["experiment_id"]
-        return Checkpoint(experiment=experiment, **data)
+        return Checkpoint(**data)
 
     def to_json(self) -> Dict[str, Any]:
         return {
             "id": self.id,
             "created": rfc3339_datetime(self.created),
-            "experiment_id": self.experiment.id,
             "path": self.path,
             "metrics": self.metrics,
             "primary_metric": self.primary_metric,
@@ -147,73 +103,3 @@ class Checkpoint(object):
             )
 
         return errors
-
-
-@dataclass
-class CheckpointCollection:
-    """
-    An object for managing checkpoints within an experiment.
-    """
-
-    experiment: Any  # circular import
-
-    def create(
-        self,
-        path: Optional[str] = None,
-        step: Optional[int] = None,
-        metrics: Optional[Dict[str, Any]] = None,
-        primary_metric: Optional[PrimaryMetric] = None,
-        quiet: bool = False,
-    ) -> Checkpoint:
-        project = self.experiment._project
-
-        checkpoint = Checkpoint(
-            experiment=self.experiment,
-            id=random_hash(),
-            created=datetime.datetime.utcnow(),
-            path=path,
-            step=step,
-            metrics=metrics,
-            primary_metric=primary_metric,
-        )
-        if not quiet:
-            console.info(
-                "Creating checkpoint {}: copying '{}' to '{}'...".format(
-                    checkpoint.short_id(), checkpoint.path, project.storage.root_url(),
-                )
-            )
-
-        errors = checkpoint.validate()
-        if errors:
-            for error in errors:
-                console.error("Not saving checkpoint: " + error)
-            return checkpoint
-
-        project.storage.put(
-            "metadata/checkpoints/{}.json".format(checkpoint.id),
-            json.dumps(checkpoint.to_json(), indent=2, cls=CustomJSONEncoder),
-        )
-        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_path
-        if checkpoint.path is not None:
-            source_path = os.path.normpath(os.path.join(project.dir, checkpoint.path))
-            destination_path = os.path.normpath(
-                os.path.join("checkpoints", checkpoint.id, checkpoint.path)
-            )
-            project.storage.put_path(destination_path, source_path)
-
-        return checkpoint
-
-    def list(self):
-        """
-        Return all checkpoints for an experiment, sorted by creation date.
-        """
-        storage = self.experiment._project.storage
-        result: List[Checkpoint] = []
-        # FIXME (bfirsh): this is ridiculously inefficient. if we don't add a local sqlite database,
-        # then this may well need some caching
-        for path in storage.list("metadata/checkpoints/"):
-            data = json.loads(storage.get(path))
-            if data["experiment_id"] == self.experiment.id:
-                result.append(Checkpoint.from_json(self.experiment, data))
-        result.sort(key=lambda e: e.created)
-        return result
