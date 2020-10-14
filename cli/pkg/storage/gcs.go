@@ -210,7 +210,7 @@ func (s *GCSStorage) List(dir string) ([]string, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Failed to list %s/%s", s.RootURL(), dir)
+			return nil, fmt.Errorf("Failed to list %s/%s: %s", s.RootURL(), dir, err)
 		}
 		p := attrs.Name
 		if s.root != "" {
@@ -249,11 +249,17 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {
-			close(results)
 			break
 		}
 		if err != nil {
-			results <- ListResult{Error: fmt.Errorf("Failed to list gs://%s/%s", s.bucketName, prefix)}
+			// Treat non-existent buckets as empty
+			// Can't figure out how to check this error more strongly
+			if strings.Contains(err.Error(), "storage: bucket doesn't exist") {
+				break
+			}
+
+			results <- ListResult{Error: fmt.Errorf("Failed to list gs://%s/%s: %s", s.bucketName, prefix, err)}
+			break
 		}
 		if filter(attrs.Name) {
 			p := attrs.Name
@@ -263,6 +269,7 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter
 			results <- ListResult{Path: p, MD5: attrs.MD5}
 		}
 	}
+	close(results)
 }
 
 // GetPath recursively copies storageDir to localDir

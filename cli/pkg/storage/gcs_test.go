@@ -128,7 +128,7 @@ func TestGCSListRecursive(t *testing.T) {
 	storage, err := NewGCSStorage(bucketName, "")
 	require.NoError(t, err)
 
-	// Works with emty storage
+	// Works with empty storage
 	results := make(chan ListResult)
 	go storage.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
@@ -142,5 +142,12 @@ func TestGCSListRecursive(t *testing.T) {
 		Path: "checkpoints/abc123.json",
 		MD5:  []byte{0x93, 0x48, 0xae, 0x78, 0x51, 0xcf, 0x3b, 0xa7, 0x98, 0xd9, 0x56, 0x4e, 0xf3, 0x8, 0xec, 0x25},
 	}, <-results)
+	require.Empty(t, <-results)
+
+	// Works with non-existent bucket
+	storage, err = NewGCSStorage("replicate-test-"+hash.Random()[0:10], "")
+	require.NoError(t, err)
+	results = make(chan ListResult)
+	go storage.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
 }
