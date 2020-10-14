@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -489,7 +490,10 @@ func (s *S3Storage) listRecursive(results chan<- ListResult, dir string, filter 
 				key = strings.TrimPrefix(strings.TrimPrefix(key, s.root), "/")
 			}
 			if filter(key) {
-				results <- ListResult{Path: key}
+				// If S3 gives us an empty/bad etag, then make it blank and cause sync instead of throwing error
+				// Also, the etag includes quotes for some reason
+				md5, _ := hex.DecodeString(strings.Replace(*value.ETag, "\"", "", -1))
+				results <- ListResult{Path: key, MD5: md5}
 			}
 		}
 		return true

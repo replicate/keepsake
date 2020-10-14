@@ -260,7 +260,7 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter
 			if s.root != "" {
 				p = strings.TrimPrefix(strings.TrimPrefix(p, s.root), "/")
 			}
-			results <- ListResult{Path: p}
+			results <- ListResult{Path: p, MD5: attrs.MD5}
 		}
 	}
 }

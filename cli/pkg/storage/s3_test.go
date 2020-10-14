@@ -65,6 +65,30 @@ func TestS3StoragePutPath(t *testing.T) {
 	require.Equal(t, []byte("hello"), readS3Object(t, svc, bucketName, "singlefile/foo.txt"))
 }
 
+func TestS3ListRecursive(t *testing.T) {
+	bucketName, _ := createS3Bucket(t)
+	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
+
+	storage, err := NewS3Storage(bucketName, "")
+	require.NoError(t, err)
+
+	// Works with emty storage
+	results := make(chan ListResult)
+	go storage.ListRecursive(results, "checkpoints")
+	require.Empty(t, <-results)
+
+	// Lists stuff!
+	require.NoError(t, storage.Put("checkpoints/abc123.json", []byte("yep")))
+	require.NoError(t, storage.Put("experiments/def456.json", []byte("nope")))
+	results = make(chan ListResult)
+	go storage.ListRecursive(results, "checkpoints")
+	require.Equal(t, ListResult{
+		Path: "checkpoints/abc123.json",
+		MD5:  []byte{0x93, 0x48, 0xae, 0x78, 0x51, 0xcf, 0x3b, 0xa7, 0x98, 0xd9, 0x56, 0x4e, 0xf3, 0x8, 0xec, 0x25},
+	}, <-results)
+	require.Empty(t, <-results)
+}
+
 func createS3Bucket(t *testing.T) (string, *s3.S3) {
 	// TODO (bfirsh): do this more loudly
 	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {

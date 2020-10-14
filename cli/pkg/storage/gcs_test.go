@@ -118,3 +118,29 @@ func TestGCSStoragePutPath(t *testing.T) {
 	require.Equal(t, []byte("hello"), readObject(t, bucket, "singlefile/foo.txt"))
 
 }
+
+func TestGCSListRecursive(t *testing.T) {
+	client, err := storage.NewClient(context.TODO())
+	require.NoError(t, err)
+	bucket, bucketName := createGCSBucket(t, client)
+	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
+
+	storage, err := NewGCSStorage(bucketName, "")
+	require.NoError(t, err)
+
+	// Works with emty storage
+	results := make(chan ListResult)
+	go storage.ListRecursive(results, "checkpoints")
+	require.Empty(t, <-results)
+
+	// Lists stuff!
+	require.NoError(t, storage.Put("checkpoints/abc123.json", []byte("yep")))
+	require.NoError(t, storage.Put("experiments/def456.json", []byte("nope")))
+	results = make(chan ListResult)
+	go storage.ListRecursive(results, "checkpoints")
+	require.Equal(t, ListResult{
+		Path: "checkpoints/abc123.json",
+		MD5:  []byte{0x93, 0x48, 0xae, 0x78, 0x51, 0xcf, 0x3b, 0xa7, 0x98, 0xd9, 0x56, 0x4e, 0xf3, 0x8, 0xec, 0x25},
+	}, <-results)
+	require.Empty(t, <-results)
+}
