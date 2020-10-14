@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"replicate.ai/cli/pkg/concurrency"
-	"replicate.ai/cli/pkg/console"
 )
 
 // Sync destStorage/destPath to match sourceStorage/sourcePath
@@ -18,17 +17,6 @@ import (
 // - checking mtime
 // - make better use of the channel to list files, so it can start to copy while it's paginating
 func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPath string) error {
-	// FIXME: This causes an extra unnecessary request on every run on command
-	// Instead, storage should throw NotExistError (or a new suitable error) and we should catch that
-	rootExists, err := sourceStorage.RootExists()
-	if err != nil {
-		return err
-	}
-	if !rootExists {
-		console.Debug("Not syncing non-existing storage at %s", sourceStorage.RootURL())
-		return nil
-	}
-
 	sourceFiles, err := listRecursiveSlice(sourceStorage, sourcePath)
 	if err != nil {
 		return err
