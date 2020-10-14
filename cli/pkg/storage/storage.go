@@ -25,6 +25,7 @@ const (
 
 type ListResult struct {
 	Path  string
+	MD5   []byte
 	Error error
 }
 

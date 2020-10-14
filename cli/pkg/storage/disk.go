@@ -1,7 +1,9 @@
 package storage
 
 import (
+	"crypto/md5"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -111,7 +113,12 @@ func (s *DiskStorage) ListRecursive(results chan<- ListResult, folder string) {
 			if err != nil {
 				return err
 			}
-			results <- ListResult{Path: relPath}
+
+			md5sum, err := md5File(path)
+			if err != nil {
+				return err
+			}
+			results <- ListResult{Path: relPath, MD5: md5sum}
 		}
 		return nil
 	})
@@ -164,4 +171,17 @@ func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
 
 func (s *DiskStorage) PrepareRunEnv() ([]string, error) {
 	return []string{}, nil
+}
+
+func md5File(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return nil, err
+	}
+	return h.Sum(nil), nil
 }
