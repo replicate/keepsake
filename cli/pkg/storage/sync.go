@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"path"
 	"strings"
@@ -10,91 +11,80 @@ import (
 
 // Sync destStorage/destPath to match sourceStorage/sourcePath
 //
-// It does this based on filename. If file exists in source, but not in dest, it will copy it from
-// source to dest. If it exists in dest but not in source, it will delete it in dest.
-//
-// This could be improved by:
-// - checking mtime
-// - make better use of the channel to list files, so it can start to copy while it's paginating
+// - If file exists in source, but not in dest, it will copy from source to dest
+// - If file exists in both but different content, it will copy from source to dest
+// - If file exists in dest but not in source, it will delete in dest
 func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPath string) error {
-	sourceFiles, err := listRecursiveSlice(sourceStorage, sourcePath)
-	if err != nil {
-		return err
-	}
-	destFiles, err := listRecursiveSlice(destStorage, destPath)
-	if err != nil {
-		return err
-	}
-	sourceFiles = stripPathPrefix(sourceFiles, sourcePath)
-	destFiles = stripPathPrefix(destFiles, sourcePath)
-	sourceUnique := diff(sourceFiles, destFiles)
-	destUnique := diff(destFiles, sourceFiles)
-
+	// A queue to use for the various storage operations we have to run
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
-	for _, p := range sourceUnique {
-		// Variables used in closure
-		sourcePath := sourcePath
-		destPath := destPath
-		p := p
-		err := queue.Go(func() error {
-			data, err := sourceStorage.Get(path.Join(sourcePath, p))
+	// 1: Fetch destFiles synchronously off disk
+	// TODO: This could be optimized by doing this while source list request is in flight
+	results := make(chan ListResult)
+	// path -> MD5 hash map used to efficiently check if files should be synced
+	destFiles := make(map[string][]byte)
+
+	go destStorage.ListRecursive(results, destPath)
+	for result := range results {
+		if result.Error != nil {
+			return result.Error
+		}
+		destFiles[strings.TrimPrefix(result.Path, destPath)] = result.MD5
+	}
+
+	// 2: Copy files from dest to source which don't exist or have changed
+	sourceFiles := make(chan ListResult)
+	// path map used for step (3)
+	sourceFileMap := make(map[string]struct{})
+	go sourceStorage.ListRecursive(sourceFiles, sourcePath)
+	for sourceFile := range sourceFiles {
+		if sourceFile.Error != nil {
+			return sourceFile.Error
+		}
+		relativePath := strings.TrimPrefix(sourceFile.Path, sourcePath)
+		sourceFileMap[relativePath] = struct{}{}
+
+		needsCopying := false
+		if destMD5, found := destFiles[relativePath]; found {
+			if !bytes.Equal(sourceFile.MD5, destMD5) {
+				needsCopying = true
+			}
+		} else {
+			needsCopying = true
+		}
+
+		if needsCopying {
+			// Variables used in closure
+			sourcePath := sourcePath
+			destPath := destPath
+			relativePath := relativePath
+			err := queue.Go(func() error {
+				data, err := sourceStorage.Get(path.Join(sourcePath, relativePath))
+				if err != nil {
+					return err
+				}
+				return destStorage.Put(path.Join(destPath, relativePath), data)
+			})
 			if err != nil {
 				return err
 			}
-			return destStorage.Put(path.Join(destPath, p), data)
-		})
-		if err != nil {
-			return err
 		}
 	}
-	for _, p := range destUnique {
-		// Variables used in closure
-		destPath := destPath
-		p := p
-		err := queue.Go(func() error {
-			return destStorage.Delete(path.Join(destPath, p))
-		})
-		if err != nil {
-			return err
+
+	// 3: Delete files from dest that don't exist in source
+	for relativePath := range destFiles {
+		if _, found := sourceFileMap[relativePath]; !found {
+			// Variables used in closure
+			destPath := destPath
+			relativePath := relativePath
+			err := queue.Go(func() error {
+				return destStorage.Delete(path.Join(destPath, relativePath))
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return queue.Wait()
-}
-
-// diff returns the elements in `a` that aren't in `b`.
-func diff(a, b []string) []string {
-	mb := make(map[string]struct{}, len(b))
-	for _, x := range b {
-		mb[x] = struct{}{}
-	}
-	var diff []string
-	for _, x := range a {
-		if _, found := mb[x]; !found {
-			diff = append(diff, x)
-		}
-	}
-	return diff
-}
-
-func stripPathPrefix(paths []string, prefix string) []string {
-	ret := make([]string, len(paths))
-	for i, v := range paths {
-		ret[i] = strings.TrimPrefix(v, prefix)
-	}
-	return ret
-}
-
-func listRecursiveSlice(storage Storage, path string) ([]string, error) {
-	results := make(chan ListResult)
-	out := []string{}
-	go storage.ListRecursive(results, path)
-	for result := range results {
-		if result.Error != nil {
-			return nil, result.Error
-		}
-		out = append(out, result.Path)
-	}
-	return out, nil
 }
