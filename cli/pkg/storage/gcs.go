@@ -21,6 +21,7 @@ import (
 
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/settings"
 	"replicate.ai/cli/pkg/slices"
 )
@@ -154,7 +155,7 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 }
 
 func (s *GCSStorage) PutPath(localPath string, storagePath string) error {
-	files, err := putPathFiles(localPath, filepath.Join(s.root, storagePath))
+	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, storagePath))
 	bucket := s.client.Bucket(s.bucketName)
 	if err != nil {
 		return err
@@ -186,6 +187,25 @@ func (s *GCSStorage) PutPath(localPath string, storagePath string) error {
 		}
 	}
 	return queue.Wait()
+}
+
+func (s *GCSStorage) PutPathTar(localPath, tarPath, includePath string) error {
+	if !strings.HasSuffix(tarPath, ".tar.gz") {
+		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
+	}
+	if err := s.EnsureBucketExists(); err != nil {
+		return fmt.Errorf("Error creating bucket: %w", err)
+	}
+
+	key := filepath.Join(s.root, tarPath)
+	bucket := s.client.Bucket(s.bucketName)
+	obj := bucket.Object(key)
+	writer := obj.NewWriter(context.TODO())
+
+	if err := putPathTar(localPath, writer, filepath.Base(tarPath), includePath); err != nil {
+		return err
+	}
+	return writer.Close()
 }
 
 // List files in a path non-recursively
@@ -310,6 +330,21 @@ func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
 		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %w", s.bucketName, storageDir, localDir, err)
 	}
 	return nil
+}
+
+func (s *GCSStorage) GetPathTar(tarPath, localPath string) error {
+	// archiver doesn't let us use readers, so download to temporary file
+	// TODO: make a better tar implementation
+	tmpdir, err := files.TempDir("tar")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
+	if err := s.GetPath(tarPath, tmptarball); err != nil {
+		return err
+	}
+	return extractTar(tmptarball, localPath)
 }
 
 func (s *GCSStorage) EnsureBucketExists() error {

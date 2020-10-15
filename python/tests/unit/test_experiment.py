@@ -6,6 +6,8 @@ import datetime
 import json
 import os
 import pytest  # type: ignore
+import tarfile
+import tempfile
 
 import replicate
 from replicate.exceptions import DoesNotExistError
@@ -33,12 +35,17 @@ def test_init_and_checkpoint(temp_workdir):
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
 
-    with open(".replicate/storage/experiments/{}/train.py".format(experiment.id)) as fh:
-        assert fh.read() == "print(1 + 1)"
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with tarfile.open(
+            ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
+        ) as tar:
+            tar.extractall(tmpdir)
 
-    assert os.path.exists(
-        ".replicate/storage/experiments/{}/README.md".format(experiment.id)
-    )
+        assert (
+            open(os.path.join(tmpdir, experiment.id, "train.py")).read()
+            == "print(1 + 1)"
+        )
+        assert os.path.exists(os.path.join(tmpdir, experiment.id, "README.md"))
 
     # checkpoint with a file
     with open("weights", "w") as fh:
@@ -58,14 +65,15 @@ def test_init_and_checkpoint(temp_workdir):
     assert checkpoint_metadata["id"] == checkpoint.id
     assert checkpoint_metadata["step"] == 1
     assert checkpoint_metadata["metrics"] == {"validation_loss": 0.123}
-    with open(".replicate/storage/checkpoints/{}/weights".format(checkpoint.id)) as fh:
-        assert fh.read() == "1.2kg"
-    assert (
-        os.path.exists(
-            ".replicate/storage/checkpoints/{}/train.py".format(checkpoint.id)
-        )
-        is False
-    )
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with tarfile.open(
+            ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
+        ) as tar:
+            tar.extractall(tmpdir)
+
+        assert open(os.path.join(tmpdir, checkpoint.id, "weights")).read() == "1.2kg"
+        assert not os.path.exists(os.path.join(tmpdir, checkpoint.id, "train.py"))
 
     # checkpoint with a directory
     os.mkdir("data")
@@ -76,16 +84,16 @@ def test_init_and_checkpoint(temp_workdir):
         path="data", step=1, metrics={"validation_loss": 0.123}
     )
 
-    with open(
-        ".replicate/storage/checkpoints/{}/data/weights".format(checkpoint.id)
-    ) as fh:
-        assert fh.read() == "1.3kg"
-    assert (
-        os.path.exists(
-            ".replicate/storage/checkpoints/{}/train.py".format(checkpoint.id)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with tarfile.open(
+            ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
+        ) as tar:
+            tar.extractall(tmpdir)
+
+        assert (
+            open(os.path.join(tmpdir, checkpoint.id, "data/weights")).read() == "1.3kg"
         )
-        is False
-    )
+        assert not os.path.exists(os.path.join(tmpdir, checkpoint.id, "train.py"))
 
     # checkpoint with no path
     checkpoint = experiment.checkpoint(
@@ -96,9 +104,8 @@ def test_init_and_checkpoint(temp_workdir):
     ) as fh:
         metadata = json.load(fh)
     assert metadata["checkpoints"][-1]["id"] == checkpoint.id
-    assert (
-        os.path.exists(".replicate/storage/checkpoints/{}".format(checkpoint.id))
-        is False
+    assert not os.path.exists(
+        ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
     )
 
     # checkpoint: various path problems
@@ -120,12 +127,17 @@ def test_init_and_checkpoint(temp_workdir):
     experiment = replicate.init(
         path="train.py", params={"learning_rate": 0.002}, disable_heartbeat=True
     )
-    assert os.path.exists(
-        ".replicate/storage/experiments/{}/train.py".format(experiment.id)
-    )
-    assert not os.path.exists(
-        ".replicate/storage/experiments/{}/README.md".format(experiment.id)
-    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with tarfile.open(
+            ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
+        ) as tar:
+            tar.extractall(tmpdir)
+
+        assert (
+            open(os.path.join(tmpdir, experiment.id, "train.py")).read()
+            == "print(1 + 1)"
+        )
+        assert not os.path.exists(os.path.join(tmpdir, experiment.id, "README.md"))
 
     # experiment with no path!
     experiment = replicate.init(
@@ -137,7 +149,9 @@ def test_init_and_checkpoint(temp_workdir):
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
-    assert not os.path.exists(".replicate/storage/experiments/{}".format(experiment.id))
+    assert not os.path.exists(
+        ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
+    )
 
     # experiment: various path problems
     with pytest.raises(

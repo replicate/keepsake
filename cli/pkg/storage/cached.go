@@ -67,6 +67,13 @@ func (s *CachedStorage) GetPath(storagePath string, localPath string) error {
 	return s.storage.GetPath(storagePath, localPath)
 }
 
+func (s *CachedStorage) GetPathTar(tarPath, localPath string) error {
+	if strings.HasPrefix(tarPath, s.cachePrefix) {
+		return s.cacheStorage.GetPathTar(tarPath, localPath)
+	}
+	return s.storage.GetPathTar(tarPath, localPath)
+}
+
 func (s *CachedStorage) PutPath(localPath string, storagePath string) error {
 	// FIXME: potential for cache and remote to get out of sync on error
 	if strings.HasPrefix(storagePath, s.cachePrefix) {
@@ -76,6 +83,16 @@ func (s *CachedStorage) PutPath(localPath string, storagePath string) error {
 	}
 	return s.storage.PutPath(localPath, storagePath)
 
+}
+
+func (s *CachedStorage) PutPathTar(localPath, tarPath, includePath string) error {
+	// FIXME: potential for cache and remote to get out of sync on error
+	if strings.HasPrefix(tarPath, s.cachePrefix) {
+		if err := s.cacheStorage.PutPathTar(localPath, tarPath, includePath); err != nil {
+			return err
+		}
+	}
+	return s.storage.PutPathTar(localPath, tarPath, includePath)
 }
 
 func (s *CachedStorage) List(p string) ([]string, error) {

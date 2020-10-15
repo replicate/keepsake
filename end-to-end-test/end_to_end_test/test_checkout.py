@@ -50,13 +50,15 @@ storage: {storage}
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
         f.write(
             """
+import os
 import replicate
 
 def main():
     experiment = replicate.init(path=".")
-    with open("weights", "w") as fh:
+    os.mkdir("data")
+    with open("data/weights", "w") as fh:
         fh.write("42 lbs")
-    experiment.checkpoint(path="weights")
+    experiment.checkpoint(path="data/")
 
 if __name__ == "__main__":
     main()
@@ -114,11 +116,17 @@ if __name__ == "__main__":
     with open(os.path.join(output_dir, rand, rand)) as f:
         assert f.read() == rand
 
-    with open(os.path.join(output_dir, "weights")) as f:
+    with open(os.path.join(output_dir, "data/weights")) as f:
         assert f.read() == "42 lbs"
 
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "train.py", "weights", rand, "cicada.ogg"]
+    expected_paths = [
+        "replicate.yaml",
+        "train.py",
+        "data",
+        rand,
+        "cicada.ogg",
+    ]
     assert set(actual_paths) == set(expected_paths)

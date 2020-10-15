@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket...")
     storage = storage_for_url(args.bucket)
-    storage.put_path("", os.path.join(project_dir, ".replicate/storage/"))
+    storage.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
 
     print("Creating extra data...")
     for i in range(10):
@@ -40,4 +40,4 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket_prime...")
     storage = storage_for_url(args.bucket_prime)
-    storage.put_path("", os.path.join(project_dir, ".replicate/storage/"))
+    storage.put_path(os.path.join(project_dir, ".replicate/storage/"), "")

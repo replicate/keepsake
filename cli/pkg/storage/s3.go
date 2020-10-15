@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -21,9 +22,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"golang.org/x/sync/errgroup"
 
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
+	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/settings"
 )
 
@@ -130,7 +133,7 @@ func (s *S3Storage) Put(path string, data []byte) error {
 }
 
 func (s *S3Storage) PutPath(localPath string, destPath string) error {
-	files, err := putPathFiles(localPath, filepath.Join(s.root, destPath))
+	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, destPath))
 	if err != nil {
 		return err
 	}
@@ -159,6 +162,35 @@ func (s *S3Storage) PutPath(localPath string, destPath string) error {
 	}
 
 	return queue.Wait()
+}
+
+func (s *S3Storage) PutPathTar(localPath, tarPath, includePath string) error {
+	if !strings.HasSuffix(tarPath, ".tar.gz") {
+		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
+	}
+
+	reader, writer := io.Pipe()
+
+	// TODO: This doesn't cancel elegantly on error -- we should use the context returned here and check if it is done.
+	errs, _ := errgroup.WithContext(context.TODO())
+
+	errs.Go(func() error {
+		if err := putPathTar(localPath, writer, filepath.Base(tarPath), includePath); err != nil {
+			return err
+		}
+		return writer.Close()
+	})
+	errs.Go(func() error {
+		key := filepath.Join(s.root, tarPath)
+		uploader := s3manager.NewUploader(s.sess)
+		_, err := uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(s.bucketName),
+			Key:    aws.String(key),
+			Body:   reader,
+		})
+		return err
+	})
+	return errs.Wait()
 }
 
 // GetPath recursively copies storageDir to localDir
@@ -221,6 +253,21 @@ func (s *S3Storage) GetPath(remoteDir string, localDir string) error {
 		return fmt.Errorf("Failed to download s3://%s/%s to %s", s.bucketName, prefix, localDir)
 	}
 	return nil
+}
+
+func (s *S3Storage) GetPathTar(tarPath, localPath string) error {
+	// archiver doesn't let us use readers, so download to temporary file
+	// TODO: make a better tar implementation
+	tmpdir, err := files.TempDir("tar")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
+	if err := s.GetPath(tarPath, tmptarball); err != nil {
+		return err
+	}
+	return extractTar(tmptarball, localPath)
 }
 
 func (s *S3Storage) ListRecursive(results chan<- ListResult, dir string) {

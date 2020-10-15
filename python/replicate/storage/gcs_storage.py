@@ -36,7 +36,7 @@ class GCSStorage(Storage):
             raise
         return result["Data"]
 
-    def put_path(self, dest_path: str, source_path: str):
+    def put_path(self, source_path: str, dest_path: str):
         """
         Save file or directory to path
         """
@@ -46,6 +46,19 @@ class GCSStorage(Storage):
             Root=self.root,
             Src=str(source_path),
             Dest=str(dest_path),
+        )
+
+    def put_path_tar(self, local_path: str, tar_path: str, include_path: str):
+        """
+        Save file or directory to tarball
+        """
+        shared.call(
+            "GCSStorage.PutPathTar",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            LocalPath=str(local_path),
+            TarPath=str(tar_path),
+            IncludePath=str(include_path),
         )
 
     def put(self, path: str, data: AnyStr):

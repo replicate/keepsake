@@ -71,7 +71,7 @@ def test_keras_callback(temp_workdir):
         ["mean_absolute_error", "loss", "val_mean_absolute_error", "val_loss"]
     )
     assert os.path.exists(
-        ".replicate/storage/checkpoints/" + chkp_meta["id"] + "/model.hdf5"
+        ".replicate/storage/checkpoints/" + chkp_meta["id"] + ".tar.gz"
     )
 
 
@@ -106,5 +106,5 @@ def test_keras_callback_with_no_filepath(temp_workdir):
     chkp_meta = exp_meta["checkpoints"][0]
     assert chkp_meta["path"] is None
     assert not os.path.exists(
-        ".replicate/storage/checkpoints/" + chkp_meta["id"] + "/model.hdf5"
+        ".replicate/storage/checkpoints/" + chkp_meta["id"] + ".tar.gz"
     )

@@ -23,6 +23,10 @@ type PutPathArgs struct {
 	Bucket, Root, Src, Dest string
 }
 
+type PutPathTarArgs struct {
+	Bucket, Root, LocalPath, TarPath, IncludePath string
+}
+
 type ListArgs struct {
 	Bucket, Root, Path string
 }
@@ -71,6 +75,14 @@ func (GCSStorage) PutPath(args PutPathArgs, _ *int) error {
 	return st.PutPath(args.Src, args.Dest)
 }
 
+func (GCSStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
+}
+
 type S3Storage struct{}
 
 func (S3Storage) Get(args GetArgs, ret *GetReturn) error {
@@ -112,6 +124,14 @@ func (S3Storage) PutPath(args PutPathArgs, _ *int) error {
 	return st.PutPath(args.Src, args.Dest)
 }
 
+func (S3Storage) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
+}
+
 type DiskStorage struct{}
 
 func (DiskStorage) PutPath(args PutPathArgs, _ *int) error {
@@ -120,4 +140,12 @@ func (DiskStorage) PutPath(args PutPathArgs, _ *int) error {
 		return err
 	}
 	return st.PutPath(args.Src, args.Dest)
+}
+
+func (DiskStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := storage.NewDiskStorage(args.Root)
+	if err != nil {
+		return err
+	}
+	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
 }

@@ -1,4 +1,3 @@
-import sys
 from abc import ABCMeta, abstractmethod
 from typing import AnyStr, List
 
@@ -27,9 +26,15 @@ class Storage:
         """
         raise NotImplementedError()
 
-    def put_path(self, dest_path: str, source_path: str):
+    def put_path(self, source_path: str, dest_path: str):
         """
         Save file or directory to path on storage
+        """
+        raise NotImplementedError()
+
+    def put_path_tar(self, local_path: str, tar_path: str, include_path: str):
+        """
+        Save local file or directory to tar.gz file on storage.
         """
         raise NotImplementedError()
 

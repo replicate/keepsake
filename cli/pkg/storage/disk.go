@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/otiai10/copy"
 
@@ -41,6 +42,21 @@ func (s *DiskStorage) Get(p string) ([]byte, error) {
 	return data, err
 }
 
+// GetPath recursively copies storageDir to localDir
+func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
+	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir); err != nil {
+		return fmt.Errorf("Failed to copy directory from %s to %s: %w", storageDir, localDir, err)
+	}
+	return nil
+}
+
+// GetPathTar extracts tarball `tarPath` to `localPath`
+//
+// See storage.go for full documentation.
+func (s *DiskStorage) GetPathTar(tarPath, localPath string) error {
+	return extractTar(path.Join(s.rootDir, tarPath), localPath)
+}
+
 // Put data at path
 func (s *DiskStorage) Put(p string, data []byte) error {
 	fullPath := path.Join(s.rootDir, p)
@@ -52,10 +68,8 @@ func (s *DiskStorage) Put(p string, data []byte) error {
 }
 
 // PutPath recursively puts the local `localPath` directory into path `storagePath` on storage
-//
-// Parallels Storage.put_path in Python.
 func (s *DiskStorage) PutPath(localPath string, storagePath string) error {
-	files, err := putPathFiles(localPath, storagePath)
+	files, err := getListOfFilesToPut(localPath, storagePath)
 	if err != nil {
 		return err
 	}
@@ -70,6 +84,35 @@ func (s *DiskStorage) PutPath(localPath string, storagePath string) error {
 		}
 	}
 	return nil
+}
+
+// PutPathTar recursively puts the local `localPath` directory into a tar.gz file `tarPath` on storage.
+// If `includePath` is set, only that will be included.
+//
+// See storage.go for full documentation.
+func (s *DiskStorage) PutPathTar(localPath, tarPath, includePath string) error {
+	if !strings.HasSuffix(tarPath, ".tar.gz") {
+		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
+	}
+
+	fullPath := path.Join(s.rootDir, tarPath)
+	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
+	if err != nil {
+		return err
+	}
+
+	tarFile, err := os.Create(fullPath)
+	if err != nil {
+		return err
+	}
+	defer tarFile.Close()
+
+	if err := putPathTar(localPath, tarFile, filepath.Base(tarPath), includePath); err != nil {
+		return err
+	}
+
+	// Explicitly call Close() on success to capture error
+	return tarFile.Close()
 }
 
 // Delete deletes path. If path is a directory, it recursively deletes
@@ -159,14 +202,6 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 		results <- ListResult{Error: err}
 	}
 	close(results)
-}
-
-// GetPath recursively copies storageDir to localDir
-func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
-	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir); err != nil {
-		return fmt.Errorf("Failed to copy directory from %s to %s: %w", storageDir, localDir, err)
-	}
-	return nil
 }
 
 func (s *DiskStorage) PrepareRunEnv() ([]string, error) {
