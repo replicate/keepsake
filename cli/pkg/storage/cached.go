@@ -131,10 +131,6 @@ func (s *CachedStorage) RootURL() string {
 	return s.storage.RootURL()
 }
 
-func (s *CachedStorage) RootExists() (bool, error) {
-	return s.storage.RootExists()
-}
-
 func (s *CachedStorage) PrepareRunEnv() ([]string, error) {
 	return s.storage.PrepareRunEnv()
 }

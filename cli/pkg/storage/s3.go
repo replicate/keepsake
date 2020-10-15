@@ -67,21 +67,6 @@ func (s *S3Storage) RootURL() string {
 	return ret
 }
 
-func (s *S3Storage) RootExists() (bool, error) {
-	_, err := s.svc.HeadBucket(&s3.HeadBucketInput{
-		Bucket: &s.bucketName,
-	})
-	if err == nil {
-		return true, nil
-	}
-	if ee, ok := err.(awserr.Error); ok {
-		if ee.Code() == s3.ErrCodeNoSuchBucket {
-			return false, nil
-		}
-	}
-	return false, err
-}
-
 // Get data at path
 func (s *S3Storage) Get(path string) ([]byte, error) {
 	key := filepath.Join(s.root, path)
