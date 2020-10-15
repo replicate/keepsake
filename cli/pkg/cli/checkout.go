@@ -112,11 +112,11 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		// Checking out checkpoint
 		checkpoint := result.Checkpoint
 
-		if err := store.GetPath(path.Join("experiments", experiment.ID), outputDir); err != nil {
+		if err := store.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
 			return err
 		}
 		// Overlay checkpoint on top of experiment
-		if err := store.GetPath(path.Join("checkpoints", checkpoint.ID), outputDir); err != nil {
+		if err := store.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
 			return err
 		}
 
@@ -124,7 +124,7 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 
 	} else {
 		// Checking out experiment
-		if err := store.GetPath(path.Join("experiments", experiment.ID), outputDir); err != nil {
+		if err := store.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
 			return err
 		}
 

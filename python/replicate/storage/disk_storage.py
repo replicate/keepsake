@@ -47,7 +47,7 @@ class DiskStorage(Storage):
         with open(full_path, mode) as fh:
             fh.write(data)
 
-    def put_path(self, dest_path: str, source_path: str):
+    def put_path(self, source_path: str, dest_path: str):
         """
         Save file or directory to path
         """
@@ -56,6 +56,18 @@ class DiskStorage(Storage):
             Root=self.root,
             Src=str(source_path),
             Dest=str(dest_path),
+        )
+
+    def put_path_tar(self, local_path: str, tar_path: str, include_path: str):
+        """
+        Save file or directory to tarball
+        """
+        shared.call(
+            "DiskStorage.PutPathTar",
+            Root=self.root,
+            LocalPath=str(local_path),
+            TarPath=str(tar_path),
+            IncludePath=str(include_path),
         )
 
     def list(self, path: str) -> List[str]:

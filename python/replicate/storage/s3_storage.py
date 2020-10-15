@@ -40,7 +40,7 @@ class S3Storage(Storage):
             raise
         return result["Data"]
 
-    def put_path(self, dest_path: str, source_path: str):
+    def put_path(self, source_path: str, dest_path: str):
         """
         Save directory to path
         """
@@ -50,6 +50,19 @@ class S3Storage(Storage):
             Root=self.root,
             Src=str(source_path),
             Dest=str(dest_path),
+        )
+
+    def put_path_tar(self, local_path: str, tar_path: str, include_path: str):
+        """
+        Save file or directory to tarball
+        """
+        shared.call(
+            "S3Storage.PutPathTar",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            LocalPath=str(local_path),
+            TarPath=str(tar_path),
+            IncludePath=str(include_path),
         )
 
     def put(self, path: str, data: AnyStr):

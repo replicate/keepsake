@@ -102,8 +102,8 @@ storage: "s3://hooli-hotdog-detector"
 
 This is the directory structure of a project:
 
-- `checkpoints/<checkpoint ID>/` – The files saved when you create a checkpoint, such as your trained weights.
-- `experiments/<experiment ID>/` – The files in your project's directory when an experiment was created, such as your source code.
+- `checkpoints/<checkpoint ID>.tar.gz` – A tarball of the files saved when you create a checkpoint, such as your trained weights.
+- `experiments/<experiment ID>.tar.gz` – A tarball of the files in your project's directory when an experiment was created, such as your source code.
 - `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment and its checkpoints.
 - `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
 

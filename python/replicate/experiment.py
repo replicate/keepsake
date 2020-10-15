@@ -135,18 +135,15 @@ See the docs for more information: https://beta.replicate.ai/docs/python"""
                 console.error("Not saving checkpoint: " + error)
             return checkpoint
 
+        # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
+        if checkpoint.path is not None:
+            tar_path = "checkpoints/{}.tar.gz".format(checkpoint.id)
+            self._project.storage.put_path_tar(
+                self._project.dir, tar_path, checkpoint.path
+            )
+
         self.checkpoints.append(checkpoint)
         self.save()
-
-        # FIXME (bfirsh): this will cause partial checkpoints if process quits half way through put_path
-        if checkpoint.path is not None:
-            source_path = os.path.normpath(
-                os.path.join(self._project.dir, checkpoint.path)
-            )
-            destination_path = os.path.normpath(
-                os.path.join("checkpoints", checkpoint.id, checkpoint.path)
-            )
-            self._project.storage.put_path(destination_path, source_path)
 
         if self._heartbeat is not None:
             self._heartbeat.ensure_running()
@@ -230,23 +227,14 @@ class ExperimentCollection:
                 console.error("Not saving experiment: " + error)
             return experiment
 
-        experiment.save()
-
-        # This is intentionally after uploading the metadata file.
-        # When you upload an object to a GCS bucket that doesn't exist, the upload of
-        # the first object creates the bucket.
-        # If you upload lots of objects in parallel to a bucket that doesn't exist, it
-        # causes a race condition, throwing 404s.
-        # Hence, uploading the single metadata file is done first.
-        # FIXME (bfirsh): this will cause partial experiments if process quits half way through put_path
+        # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if experiment.path is not None:
-            source_path = os.path.normpath(
-                os.path.join(self.project.dir, experiment.path)
+            tar_path = "experiments/{}.tar.gz".format(experiment.id)
+            self.project.storage.put_path_tar(
+                self.project.dir, tar_path, experiment.path
             )
-            destination_path = os.path.normpath(
-                os.path.join("experiments", experiment.id, experiment.path)
-            )
-            self.project.storage.put_path(destination_path, source_path)
+
+        experiment.save()
 
         return experiment
 
