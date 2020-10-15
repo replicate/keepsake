@@ -75,18 +75,6 @@ func (s *GCSStorage) RootURL() string {
 	return ret
 }
 
-func (s *GCSStorage) RootExists() (bool, error) {
-	bucket := s.client.Bucket(s.bucketName)
-	_, err := bucket.Attrs(context.TODO())
-	if err == nil {
-		return true, nil
-	}
-	if err == storage.ErrBucketNotExist {
-		return false, nil
-	}
-	return false, fmt.Errorf("Failed to determine if bucket gs://%s exists: %w", s.bucketName, err)
-}
-
 func (s *GCSStorage) Get(path string) ([]byte, error) {
 	key := filepath.Join(s.root, path)
 	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, key)
@@ -136,7 +124,7 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 	}
 	if err := writer.Close(); err != nil {
 		if strings.Contains(err.Error(), "notFound") {
-			if err := s.EnsureBucketExists(); err != nil {
+			if err := s.ensureBucketExists(); err != nil {
 				return fmt.Errorf("Error creating bucket: %w", err)
 			}
 			writer := obj.NewWriter(context.TODO())
@@ -193,7 +181,7 @@ func (s *GCSStorage) PutPathTar(localPath, tarPath, includePath string) error {
 	if !strings.HasSuffix(tarPath, ".tar.gz") {
 		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
 	}
-	if err := s.EnsureBucketExists(); err != nil {
+	if err := s.ensureBucketExists(); err != nil {
 		return fmt.Errorf("Error creating bucket: %w", err)
 	}
 
@@ -347,8 +335,20 @@ func (s *GCSStorage) GetPathTar(tarPath, localPath string) error {
 	return extractTar(tmptarball, localPath)
 }
 
-func (s *GCSStorage) EnsureBucketExists() error {
-	exists, err := s.RootExists()
+func (s *GCSStorage) bucketExists() (bool, error) {
+	bucket := s.client.Bucket(s.bucketName)
+	_, err := bucket.Attrs(context.TODO())
+	if err == nil {
+		return true, nil
+	}
+	if err == storage.ErrBucketNotExist {
+		return false, nil
+	}
+	return false, fmt.Errorf("Failed to determine if bucket gs://%s exists: %w", s.bucketName, err)
+}
+
+func (s *GCSStorage) ensureBucketExists() error {
+	exists, err := s.bucketExists()
 	if err != nil {
 		return err
 	}
@@ -378,7 +378,7 @@ func (s *GCSStorage) CreateBucket() error {
 // This is used by `replicate run` to pass credentials to Replicate
 // running inside the container.
 func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
-	if err := s.EnsureBucketExists(); err != nil {
+	if err := s.ensureBucketExists(); err != nil {
 		return nil, err
 	}
 	serviceAccountKey, err := s.getOrCreateServiceAccount()

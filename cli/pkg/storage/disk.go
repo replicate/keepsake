@@ -11,8 +11,6 @@ import (
 	"strings"
 
 	"github.com/otiai10/copy"
-
-	"replicate.ai/cli/pkg/files"
 )
 
 type DiskStorage struct {
@@ -27,10 +25,6 @@ func NewDiskStorage(rootDir string) (*DiskStorage, error) {
 
 func (s *DiskStorage) RootURL() string {
 	return "file://" + s.rootDir
-}
-
-func (s *DiskStorage) RootExists() (bool, error) {
-	return files.FileExists(s.rootDir)
 }
 
 // Get data at path

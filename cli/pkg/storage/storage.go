@@ -40,8 +40,6 @@ type Storage interface {
 	// A human-readable representation of this storage location. For example: s3://my-bucket/root
 	RootURL() string
 
-	RootExists() (bool, error)
-
 	// Get data at path
 	Get(path string) ([]byte, error)
 
