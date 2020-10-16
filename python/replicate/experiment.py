@@ -72,29 +72,17 @@ class Experiment:
 
     def checkpoint(
         self,
-        path: Optional[str],  # this requires an explicit path=None to not save source
+        path: Optional[str] = None,
         step: Optional[int] = None,
         metrics: Optional[Dict[str, Any]] = None,
         primary_metric: Optional[Tuple[str, str]] = None,
         quiet: bool = False,
-        **kwargs,
     ) -> Optional[Checkpoint]:
         """
         Create a checkpoint within this experiment.
 
         This saves the metrics at this point, and makes a copy of the file or directory passed to `path`, which could be weights or any other artifact.
         """
-        if kwargs:
-            # FIXME (bfirsh): remove before launch
-            s = """Unexpected keyword arguments to checkpoint(): {} 
-
-Metrics must now be passed as a dictionary with the 'metrics' argument.
-
-For example: experiment.checkpoint(path=".", metrics={{...}})
-
-See the docs for more information: https://beta.replicate.ai/docs/python"""
-            raise TypeError(s.format(", ".join(kwargs.keys())))
-
         if path is not None:
             # TODO: Migrate this to validate
             check_path(path)
@@ -300,33 +288,16 @@ def check_path(path: str):
 
 
 def init(
-    params: Optional[Dict[str, Any]] = None, disable_heartbeat: bool = False, **kwargs,
+    path: Optional[str] = None,
+    params: Optional[Dict[str, Any]] = None,
+    disable_heartbeat: bool = False,
 ) -> Experiment:
     """
     Create a new experiment.
     """
-    try:
-        path = kwargs.pop("path")
-    except KeyError:
-        warnings.warn(
-            "The 'path' argument now needs to be passed to replicate.init() and this will throw an error at some point. "
-            "Add 'path=\".\"' to your replicate.init() arguments when you get a chance.",
-        )
-        path = "."
     if path is not None:
         # TODO: Migrate this to validate
         check_path(path)
-
-    if kwargs:
-        # FIXME (bfirsh): remove before launch
-        s = """Unexpected keyword arguments to init(): {} 
-            
-Params must now be passed as a dictionary with the 'params' argument.
-
-For example: replicate.init(path=".", params={{...}})
-
-See the docs for more information: https://beta.replicate.ai/docs/python"""
-        raise TypeError(s.format(", ".join(kwargs.keys())))
 
     # circular import
     from .project import Project

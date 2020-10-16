@@ -3,6 +3,7 @@ import DocsLayout from "../../../layouts/docs";
 
 <DocsLayout title="Python library reference">
 
+
 The Replicate Python library is used to create experiments and checkpoints in your training script.
 
 This page is a comprehensive reference for it. To get an introduction on how to use it, see [the tutorial](/docs/tutorial).
@@ -15,7 +16,7 @@ Create and return an experiment.
 
 It takes these arguments:
 
-- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save your training code, or anything you want. If `path` is `None`, no data will be saved.
+- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save your training code, or anything you want. If `path` is not set, no data will be saved.
 - `params`: A dictionary of hyperparameters to record along with the experiment.
 
 The path saved is relative to the project directory. The project directory is determined by the directory that contains `replicate.yaml`. If no `replicate.yaml` is found in any parent directories, the current working directory will be used.
@@ -40,7 +41,7 @@ Create a checkpoint within an experiment.
 
 It takes these arguments:
 
-- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is `None`, no data will be saved.
+- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is not set, no data will be saved.
 - `metrics`: A dictionary of metrics to record along with the checkpoint.
 - `primary_metric` _(optional)_: A tuple `(name, goal)` to define one of the metrics as a primary metric to optimize. Goal can either be `minimize` or `maximize`.
 - `step` _(optional)_: the iteration number of this checkpoint, such as epoch number. This is displayed in `replicate ls` and various other places.
