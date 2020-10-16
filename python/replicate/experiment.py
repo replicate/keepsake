@@ -109,13 +109,16 @@ class Experiment:
             primary_metric=primary_metric_dict,
         )
         if not quiet:
-            console.info(
-                "Creating checkpoint {}: copying '{}' to '{}'...".format(
-                    checkpoint.short_id(),
-                    checkpoint.path,
-                    self._project.storage.root_url(),
+            if path is None:
+                console.info("Creating checkpoint {}".format(checkpoint.short_id()))
+            else:
+                console.info(
+                    "Creating checkpoint {}: copying '{}' to '{}'...".format(
+                        checkpoint.short_id(),
+                        checkpoint.path,
+                        self._project.storage.root_url(),
+                    )
                 )
-            )
 
         errors = checkpoint.validate()
         if errors:
@@ -201,13 +204,16 @@ class ExperimentCollection:
         )
 
         if not quiet:
-            console.info(
-                "Creating experiment {}: copying '{}' to '{}'...".format(
-                    experiment.short_id(),
-                    experiment.path,
-                    self.project.storage.root_url(),
+            if path is None:
+                console.info("Creating experiment {}".format(experiment.short_id()))
+            else:
+                console.info(
+                    "Creating experiment {}: copying '{}' to '{}'...".format(
+                        experiment.short_id(),
+                        experiment.path,
+                        self.project.storage.root_url(),
+                    )
                 )
-            )
 
         errors = experiment.validate()
         if errors:
