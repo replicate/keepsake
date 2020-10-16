@@ -184,9 +184,9 @@ func TestListOutputTableFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   HOST      PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
+2eeeeee     about a minute ago  stopped  10.1.1.2  200      4cccccc (step 5)
+1eeeeee     about a second ago  running  10.1.1.1  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -209,8 +209,8 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-1eeeeee     about a second ago  running  10.1.1.1  andreas  3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
+1eeeeee     about a second ago  running  3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
