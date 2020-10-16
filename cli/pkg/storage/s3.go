@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,22 +11,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/adjust/uniuri"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"golang.org/x/sync/errgroup"
 
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/files"
-	"replicate.ai/cli/pkg/settings"
 )
 
 type S3Storage struct {
@@ -292,166 +286,6 @@ func (s *S3Storage) List(dir string) ([]string, error) {
 		return true
 	})
 	return results, err
-}
-
-func (s *S3Storage) PrepareRunEnv() ([]string, error) {
-	accessKey, err := s.getOrCreateIAMUser()
-	if err != nil {
-		return nil, err
-	}
-	return []string{
-		"AWS_ACCESS_KEY_ID=" + *accessKey.AccessKeyId,
-		"AWS_SECRET_ACCESS_KEY=" + *accessKey.SecretAccessKey,
-		"AWS_DEFAULT_REGION=" + *s.sess.Config.Region,
-	}, nil
-}
-
-func (s *S3Storage) getOrCreateIAMUser() (*iam.AccessKey, error) {
-	secretName := "aws-iam-user-" + s.bucketName
-	data, err := settings.GetSecret(secretName)
-	if err != nil {
-		return nil, err
-	}
-	if data != nil {
-		var accessKey *iam.AccessKey
-		err := json.Unmarshal(data, &accessKey)
-		return accessKey, err
-	}
-	key, err := s.createIAMUser()
-	if err != nil {
-		return nil, err
-	}
-	data, err = json.Marshal(key)
-	if err != nil {
-		return nil, err
-	}
-	if err := settings.SetSecret(secretName, data); err != nil {
-		return nil, err
-	}
-	return key, nil
-
-}
-
-func (s *S3Storage) createIAMUser() (*iam.AccessKey, error) {
-	// AWS have a service for these sorts of access keys called "STS".
-	// We're using regular IAM accounts instead because those have a max expiry for 36 hours.
-	// Training jobs might run for much longer than that, so we need regular IAM users.
-
-	console.Info("Creating an IAM account with limited permissions to access \"s3://%s\"...", s.bucketName)
-
-	svc := iam.New(s.sess)
-	// https://docs.aws.amazon.com/IAM/latest/APIReference/API_User.html
-	maxBucketNameLength := 64 - len("replicate") - 7 - 2
-	bucketName := s.bucketName
-	if len(bucketName) > maxBucketNameLength {
-		bucketName = bucketName[:maxBucketNameLength]
-	}
-	username := fmt.Sprintf("replicate-%s-%s", bucketName, strings.ToLower(uniuri.NewLen(7)))
-
-	// Create user
-	_, err := svc.CreateUser(&iam.CreateUserInput{
-		UserName: aws.String(username),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error creating IAM user: %w", err)
-	}
-
-	// Create policy
-	policyDocument, err := s.iamPolicy()
-	if err != nil {
-		return nil, err
-	}
-	createPolicyResult, err := svc.CreatePolicy(&iam.CreatePolicyInput{
-		PolicyDocument: aws.String(policyDocument),
-		PolicyName:     aws.String(username),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Attach policy to user
-	_, err = svc.AttachUserPolicy(&iam.AttachUserPolicyInput{
-		PolicyArn: aws.String(*createPolicyResult.Policy.Arn),
-		UserName:  aws.String(username),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Create access key
-	result, err := svc.CreateAccessKey(&iam.CreateAccessKeyInput{
-		UserName: aws.String(username),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error creating IAM access key: %w", err)
-	}
-
-	// Wait for IAM user to exist
-	// The IAM user exists now if you call the IAM API, but the access key hasn't yet propagated,
-	// so we need to call an actual API call and check that it doesn't throw invalid access key *heavy sigh*
-	console.Info("Waiting for IAM user to exist...")
-	err = waitForOperation(context.TODO(), func() (bool, error) {
-		sess, err := session.NewSession(&aws.Config{
-			Credentials: credentials.NewStaticCredentials(*result.AccessKey.AccessKeyId, *result.AccessKey.SecretAccessKey, ""),
-		})
-		if err != nil {
-			return false, err
-		}
-
-		_, err = sts.New(sess).GetCallerIdentity(&sts.GetCallerIdentityInput{})
-		if err != nil {
-			// This error doesn't seem to come out with a proper type
-			if strings.Contains(err.Error(), "InvalidClientTokenId") {
-				return false, nil
-			}
-			return false, err
-		}
-		return true, nil
-	})
-	return result.AccessKey, err
-}
-
-type policyDocument struct {
-	Version   string
-	Statement []statementEntry
-}
-
-type statementEntry struct {
-	Effect   string
-	Action   []string
-	Resource []string
-}
-
-// Returns IAM policy JSON which allows full access to a single S3 bucket
-func (s *S3Storage) iamPolicy() (string, error) {
-	policy := policyDocument{
-		Version: "2012-10-17",
-		Statement: []statementEntry{
-			{
-				Effect: "Allow",
-				Action: []string{
-					"s3:GetBucketLocation",
-					"s3:ListBucket",
-				},
-				Resource: []string{"arn:aws:s3:::" + s.bucketName},
-			},
-			{
-				Effect: "Allow",
-				Action: []string{
-					"s3:*",
-				},
-				Resource: []string{
-					"arn:aws:s3:::" + s.bucketName,
-					"arn:aws:s3:::" + s.bucketName + "/*",
-				},
-			},
-		},
-	}
-	b, err := json.Marshal(&policy)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
 }
 
 func CreateS3Bucket(region, bucket string) (err error) {

@@ -4,85 +4,15 @@ import DocsLayout from "../../../layouts/docs";
 <DocsLayout title="replicate.yaml reference">
 
 
-The `replicate.yaml` file tells Replicate how to train your model and where to store it. 
+The `replicate.yaml` file configures Replicate.
 
-This page is a comprehensive reference for it. To get an introduction on how to write it, see [working with remote machines](/docs/tutorial/remote-machines).
-
-<!-- `replicate.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Replicate uses the location of the file to figure out where your model is located. (maybe this lives in tutorial) -->
+`replicate.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Replicate uses the location of the file to figure out where your model is located.
 
 It looks a bit like this:
 
 ```yaml
 storage: "s3://hooli-hotdog-model"
-python: "3.8"
 ```
-
-## `cuda`
-
-The CUDA version to install when you use `replicate run`.
-
-By default, Replicate will attempt to pick a CUDA version based on the Tensorflow or PyTorch versions you choose. This option lets you set the version if you aren't using Tensorflow or PyTorch, or want to override it for whatever reason.
-
-For example:
-
-```yaml
-cuda: "10.2"
-```
-
-## `install`
-
-A list of commands to run to set up the Docker environment that `replicate run` runs inside. For example:
-
-```yaml
-install:
-  - "apt-get update -qq && apt-get install -yq cowsay"
-```
-
-## `install_script`
-
-The path to a script that sets up the Docker environment for `replicate run`. You can use this if you need to do something more complicated than you can do with the `install` option.
-
-For example, say you have this script, called `install.sh`:
-
-```bash
-#!/bin/bash -e
-apt-get update -qq
-apt-get install -yq cowsay
-```
-
-You would include this line in `replicate.yaml` to run this script to set up the Docker environment for `replicate run`:
-
-```yaml
-install_script: "./install.sh"
-```
-
-## `python`
-
-The Python version to use for `repicate run`, omitting the patch version \(i.e. `3.8`, not `3.8.1`\). It can take one of these values:
-
-- `2.7`
-- `3.5`
-- `3.6`
-- `3.7`
-- `3.8`
-
-For example:
-
-```yaml
-python: "3.8"
-```
-
-## `python_requirements`
-
-The path to a file which contains Python requirements to be installed in the environment for `replicate run`, in the format used by pip. By default, this is `requirements.txt`.
-
-You might want to use this if you need to define some different requirements for your Replicate environment. For example:
-
-```yaml
-python_requirements: "requirements-replicate.txt"
-```
-
-<!-- FIXME: this is an anti-pattern... we want people to be using normal requirements.txt, really... -->
 
 ## `storage`
 

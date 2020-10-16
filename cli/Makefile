@@ -14,10 +14,6 @@ BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/$(NAME)
 SHARED_BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/replicate-shared
 INSTALL_PATH := /usr/local/bin/$(NAME)
 
-ASSETS_PACKAGE := assets
-ASSETS_DIR := pkg/$(ASSETS_PACKAGE)
-ASSETS_INPUT := raw-assets
-
 LDFLAGS := -ldflags "-X replicate.ai/cli/pkg/global.Version=$(VERSION) -X replicate.ai/cli/pkg/global.Environment=$(ENVIRONMENT) -w"
 
 export GO111MODULE = on
@@ -39,13 +35,13 @@ default: build
 all: clean build_all install
 
 .PHONY: build
-build: clean assets
+build: clean
 	@mkdir -p $(RELEASE_DIR)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BINARY) $(MAIN)
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(SHARED_BINARY) $(SHARED_MAIN)
 
 .PHONY: build-all
-build-all: assets
+build-all:
 	@mkdir -p $(RELEASE_DIR)
 	$(foreach GOOS, $(PLATFORMS),\
 	$(foreach GOARCH, $(ARCHITECTURES), \
@@ -57,22 +53,11 @@ build-all: assets
 install: build
 	cp $(BINARY) $(INSTALL_PATH)
 
-# TODO (bfirsh): this could be a real make statement to cache it. something like `pkg/assets/%.go: raw-assets/%`
-# TODO(andreas): verify in CI that generated assets.go match raw-assets
-.PHONY: assets
-assets:
-	@mkdir -p $(ASSETS_DIR)
-	go run github.com/go-bindata/go-bindata/go-bindata -nometadata -o $(ASSETS_DIR)/$(ASSETS_PACKAGE).go -pkg $(ASSETS_PACKAGE) -prefix $(ASSETS_INPUT)/ $(ASSETS_INPUT)
-
-.PHONY: clean-assets
-clean-assets:
-	rm -rf $(ASSETS_DIR)
-
 .PHONY: clean
-clean: clean-assets
+clean:
 	rm -rf $(RELEASE_DIR)
 
-test: check-fmt assets vet lint
+test: check-fmt vet lint
 	go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
 
 
@@ -141,5 +126,5 @@ docs:
 #
 # TODO (bfirsh): this should probably be moved to top-level Makefile
 .PHONY: validate
-validate: assets docs mod-tidy
+validate: docs mod-tidy
 	make/validate

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,28 +9,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/adjust/uniuri"
-	iam "google.golang.org/api/iam/v1"
 	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
-	"google.golang.org/api/serviceusage/v1"
 
 	"replicate.ai/cli/pkg/concurrency"
 	"replicate.ai/cli/pkg/console"
 	"replicate.ai/cli/pkg/files"
-	"replicate.ai/cli/pkg/settings"
-	"replicate.ai/cli/pkg/slices"
 )
-
-const waitRefreshInterval = 500 * time.Millisecond
-
-var requiredServices = []string{
-	"storage-api.googleapis.com",
-	"iam.googleapis.com",
-}
 
 type GCSStorage struct {
 	projectID  string
@@ -41,19 +26,7 @@ type GCSStorage struct {
 }
 
 func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
-	options := []option.ClientOption{}
-
-	// When inside `replicate run`, get the options passed from PrepareRunEnv
-	key := os.Getenv("REPLICATE_GCP_SERVICE_ACCOUNT_KEY")
-	if key != "" {
-		keyJSON, err := base64.StdEncoding.DecodeString(key)
-		if err != nil {
-			return nil, fmt.Errorf("Error decoding REPLICATE_GCP_SERVICE_ACCOUNT_KEY: %w", err)
-		}
-		options = append(options, option.WithCredentialsJSON(keyJSON))
-	}
-
-	client, err := storage.NewClient(context.TODO(), options...)
+	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
 	}
@@ -62,8 +35,6 @@ func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
 		bucketName: bucket,
 		root:       root,
 		client:     client,
-		// When inside `replicate run`, default to project passed from PrepareRunEnv
-		projectID: os.Getenv("REPLICATE_GCP_PROJECT"),
 	}, nil
 }
 
@@ -370,108 +341,6 @@ func (s *GCSStorage) CreateBucket() error {
 	return nil
 }
 
-// PrepareRunEnv gets or creates the GCS bucket and service account,
-// and returns ["REPLICATE_GCP_SERVICE_ACCOUNT_KEY=<key>",
-// "REPLICATE_GCP_PROJECT=<project>"], where 'key' is a base64-encoded
-// json key
-//
-// This is used by `replicate run` to pass credentials to Replicate
-// running inside the container.
-func (s *GCSStorage) PrepareRunEnv() ([]string, error) {
-	if err := s.ensureBucketExists(); err != nil {
-		return nil, err
-	}
-	serviceAccountKey, err := s.getOrCreateServiceAccount()
-	if err != nil {
-		return nil, err
-	}
-	projectID, err := s.getProjectID()
-	if err != nil {
-		return nil, err
-	}
-	return []string{"REPLICATE_GCP_SERVICE_ACCOUNT_KEY=" + serviceAccountKey, "REPLICATE_GCP_PROJECT=" + projectID}, nil
-}
-
-// getOrCreateServiceAccount returns a base64-encoded service account
-// json key. If a cached version exists it is returned, otherwise a
-// new service account is created and the key is cached
-func (s *GCSStorage) getOrCreateServiceAccount() (serviceAccountKey string, err error) {
-	secretName := "gcp-service-account-" + s.bucketName
-	data, err := settings.GetSecret(secretName)
-	if err != nil {
-		return "", err
-	}
-	if data != nil {
-		return string(data), nil
-	}
-	key, err := s.createServiceAccount()
-	if err != nil {
-		return "", err
-	}
-	if err := settings.SetSecret(secretName, []byte(key)); err != nil {
-		return "", err
-	}
-	return key, nil
-}
-
-// CreateServiceAccount creates a new service account, gives it OWNER
-// rights to the bucket, and returns the base64-encoded service
-// account json key
-func (s *GCSStorage) createServiceAccount() (serviceAccountKey string, err error) {
-	console.Info("Creating a service account with limited permissions to access \"gs://%s\"...", s.bucketName)
-
-	if err := s.enableRequiredServices(); err != nil {
-		// only warn and move on. it's possible that the user
-		// has permissions to create service accounts, without
-		// permission to list or enable services.
-		console.Warn("Failed to enable Google Cloud services: %s\n\nIf the following Google Cloud services are not enabled, Google Cloud Storage may not work: %s", err, strings.Join(requiredServices, ", "))
-	}
-
-	projectID, err := s.getProjectID()
-	if err != nil {
-		return "", err
-	}
-
-	maxBucketNameLength := 30 - len("replicate") - 7 - 2
-	bucketName := s.bucketName
-	if len(bucketName) > maxBucketNameLength {
-		bucketName = bucketName[:maxBucketNameLength]
-	}
-	name := fmt.Sprintf("replicate-%s-%s", bucketName, strings.ToLower(uniuri.NewLen(7)))
-
-	iamService, err := iam.NewService(context.Background())
-	if err != nil {
-		return "", fmt.Errorf("Failed to connect to Google Cloud IAM: %w", err)
-	}
-
-	console.Debug("Creating service account %s as an owner of gs://%s", name, s.bucketName)
-	accountRequest := &iam.CreateServiceAccountRequest{
-		AccountId: name,
-		ServiceAccount: &iam.ServiceAccount{
-			DisplayName: "replicate/" + s.bucketName,
-		},
-	}
-	account, err := iamService.Projects.ServiceAccounts.Create("projects/"+projectID, accountRequest).Do()
-	if err != nil {
-		return "", fmt.Errorf("Failed to create Google Cloud service account: %w", err)
-	}
-
-	resource := fmt.Sprintf("projects/%s/serviceAccounts/%s", projectID, account.Email)
-	keyRequest := &iam.CreateServiceAccountKeyRequest{}
-	key, err := iamService.Projects.ServiceAccounts.Keys.Create(resource, keyRequest).Do()
-	if err != nil {
-		return "", fmt.Errorf("Failed to create Google Cloud service account key for %s: %w", account.Email, err)
-	}
-
-	bucket := s.client.Bucket(s.bucketName)
-	err = bucket.ACL().Set(context.TODO(), storage.ACLEntity("user-"+account.Email), storage.RoleOwner)
-	if err != nil {
-		return "", fmt.Errorf("Failed to make service account %s an owner of %s: %w", account.Email, s.bucketName, err)
-	}
-
-	return key.PrivateKeyData, nil
-}
-
 // Note: prefix does not include s.root
 func (s *GCSStorage) applyRecursive(prefix string, fn func(obj *storage.ObjectHandle) error) error {
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
@@ -514,64 +383,6 @@ func (s *GCSStorage) getProjectID() (string, error) {
 	return s.projectID, nil
 }
 
-func (s *GCSStorage) enableRequiredServices() error {
-	projectID, err := s.getProjectID()
-	if err != nil {
-		return err
-	}
-
-	serviceusageClient, err := serviceusage.NewService(context.TODO())
-	if err != nil {
-		return fmt.Errorf("Failed to create GCP ServiceUsage client: %w", err)
-	}
-
-	enabledServices := []string{}
-	err = serviceusageClient.Services.List("projects/"+projectID).
-		PageSize(200).
-		Filter("state:ENABLED").
-		Pages(context.TODO(), func(resp *serviceusage.ListServicesResponse) error {
-			for _, service := range resp.Services {
-				name := service.Name
-				shortName := strings.Split(name, "/services/")[1]
-				enabledServices = append(enabledServices, shortName)
-			}
-			return nil
-		})
-	if err != nil {
-		return fmt.Errorf("Failed to list enabled Google Cloud APIs: %w", err)
-	}
-
-	newServices := []string{}
-	for _, name := range requiredServices {
-		if !slices.ContainsString(enabledServices, name) {
-			newServices = append(newServices, name)
-		}
-	}
-	if len(newServices) == 0 {
-		return nil
-	}
-
-	console.Info("Enabling Google Cloud APIs: %s", strings.Join(newServices, ", "))
-
-	op, err := serviceusageClient.Services.BatchEnable("projects/"+projectID, &serviceusage.BatchEnableServicesRequest{ServiceIds: newServices}).Do()
-	if err != nil {
-		return fmt.Errorf("Failed to enable required APIs: %s", err)
-	}
-	return waitForOperation(context.TODO(), func() (bool, error) {
-		op, err = serviceusageClient.Operations.Get(op.Name).Do()
-		if err != nil {
-			return false, err
-		}
-		if op.Error != nil {
-			return false, fmt.Errorf("%v", op.Error)
-		}
-		if op.Done {
-			return true, nil
-		}
-		return false, nil
-	})
-}
-
 func discoverProjectID() (string, error) {
 	cmd := exec.Command("gcloud", "config", "config-helper", "--format=value(configuration.properties.core.project)")
 	out, err := cmd.Output()
@@ -583,25 +394,4 @@ func discoverProjectID() (string, error) {
 		return "", fmt.Errorf("Failed to determine default GCP project (using gcloud config config-helper): %w\n%s", err, stderr)
 	}
 	return strings.TrimSpace(string(out)), nil
-}
-
-func waitForOperation(ctx context.Context, isDone func() (bool, error)) error {
-	ticker := time.NewTicker(waitRefreshInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("timeout waiting for operation to complete")
-		case <-ticker.C:
-			done, err := isDone()
-			if err != nil {
-				return fmt.Errorf("Operation failed: %s", err)
-			}
-
-			if done {
-				return nil
-			}
-		}
-	}
 }

@@ -4,9 +4,6 @@
       "path": "."
     },
     {
-      "path": "base-image-builder"
-    },
-    {
       "path": "cli"
     }
   ],

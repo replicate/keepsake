@@ -8,7 +8,12 @@ function DocsLayout({ title, children, ...props }) {
         <div className="breadcrumb">
           <a href="/">Home</a>&nbsp;
           {title ? (
-            <><a href="/docs"><span>Documentation</span></a>&nbsp;<h2>{title}</h2></>
+            <>
+              <a href="/docs">
+                <span>Documentation</span>
+              </a>
+              &nbsp;<h2>{title}</h2>
+            </>
           ) : (
             <h2>Documentation</h2>
           )}
@@ -27,8 +32,8 @@ function DocsLayout({ title, children, ...props }) {
                   <a href="/docs/tutorial">First steps</a>
                 </li>
                 <li>
-                  <a href="/docs/tutorial/remote-machines">
-                    Working with remote machines
+                  <a href="/docs/tutorial/cloud-storage">
+                    Store data in the cloud
                   </a>
                 </li>
               </ol>

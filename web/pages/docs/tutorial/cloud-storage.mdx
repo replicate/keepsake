@@ -1,0 +1,118 @@
+import CodeBlock from "../../../components/code-block";
+import DocsLayout from "../../../layouts/docs";
+import Note from "../../../components/note";
+import {
+  StatefulTabs,
+  TabState,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+} from "../../../components/tabs";
+
+<TabState>
+<DocsLayout title="Store data in the cloud">
+
+
+You can store your experiment data in the cloud on Google Cloud Storage or Amazon S3.
+
+This means you store results from multiple training machines in one place and collaborate with other people.
+
+When you run `replicate ls` on your local machine, it will list all of the experiments that have run anywhere by anyone, so you can easily compare between them and download the results.
+
+<StatefulTabs>
+<TabList>
+<Tab>Google Cloud Storage</Tab>
+<Tab>Amazon S3</Tab>
+</TabList>
+<TabPanels>
+<TabPanel>
+
+
+### Log in to Google Cloud
+
+To store data on Google Cloud Storage, you first need to [install the Google Cloud SDK](https://cloud.google.com/sdk/docs) if you haven't already. Then, run `gcloud init` and follow its instructions:
+
+- Log in to your Google account when prompted.
+- If it asks to choose a project, pick the default or first option.
+- If it asks to pick a default region, hit enter and select `1` (you want a default region, but it doesn't matter which one).
+
+Next, run this, because Cloud SDK needs you to log in a second time to let other applications use your Google Cloud account:
+
+```shell-session
+gcloud auth application-default login
+```
+
+### Point Replicate at Google Cloud
+
+Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[your username]` with your name, or some other unique string:
+
+```yaml
+storage: "gs://replicate-[your username]-iris-classifier"
+```
+
+</TabPanel>
+<TabPanel>
+
+
+### Log in to Amazon Web Services
+
+First, you need to install and configure the Amazon Web Services CLI if you haven't already. The easiest way to do this on macOS is to install it with Homebrew:
+
+1. If you haven't already, install [Homebrew](https://brew.sh/).
+1. Run `brew install aws`
+1. If you haven't already got an Amazon Web Services account, [sign up for Amazon Web Services](https://aws.amazon.com/free/).
+1. Run `aws configure` and [follow these instructions to configure it](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). You will need to get an access key ID and secret access key and set the region to `us-east-1. You don't need to set an output format, or profile.
+
+If you're on another platform, [follow these instructions to install the Amazon Web Services CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
+
+### Point Replicate at Amazon S3
+
+Then, create `replicate.yaml` with this content, replacing `[your username]` with your name, or some other unique string:
+
+```yaml
+storage: "s3://replicate-[your username]-iris-classifier"
+```
+
+</TabPanel>
+</TabPanels>
+</StatefulTabs>
+
+
+Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this bucket.
+
+<Note>
+
+
+Replicate will automatically create the bucket for you if it doesn't exist.
+
+</Note>
+
+
+If you're following along from [the tutorial](/docs/tutorial), run `python train.py` again. This time it will save your experiments to cloud storage. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
+
+Now, when you run `replicate ls`, it will list experiments from the bucket.
+
+<Note>
+
+
+You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to a remote bucket, it will no longer list your local experiments.
+
+It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
+
+</Note>
+
+
+## What's next
+
+You might want to take a look at:
+
+- [How Replicate works under the hood](/docs/learn/how-it-works)
+- [The `replicate.yaml` reference](/docs/reference/yaml)
+
+If something doesn't make sense, doesn't work, or you just have some questions, please email us: [team@replicate.ai](mailto:team@replicate.ai). We love hearing from you!
+
+</DocsLayout>
+</TabState>
+````
+

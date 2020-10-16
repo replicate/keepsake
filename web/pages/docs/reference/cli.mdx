@@ -19,7 +19,6 @@ To install the command-line interface, [see the installation instructions](/docs
 * [`replicate ls`](#replicate-ls) – List experiments in this project
 * [`replicate ps`](#replicate-ps) – List running experiments in this project
 * [`replicate rm`](#replicate-rm) – Remove experiments or checkpoint
-* [`replicate run`](#replicate-run) – Run a command on a remote machine
 * [`replicate show`](#replicate-show) – View information about an experiment or checkpoint
 
 ## `replicate analytics`
@@ -172,28 +171,6 @@ replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [fla
 ```
   -h, --help                 help for rm
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
-
-      --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
-  -v, --verbose                    Verbose output
-```
-## `replicate run`
-
-Run a command on a remote machine
-
-### Usage
-
-```
-replicate run [flags] <command> [arg...]
-```
-
-### Flags
-
-```
-  -h, --help                   help for run
-  -H, --host string            SSH host to run command on, in form [username@]hostname[:port]
-  -i, --identity-file string   SSH private key path
-  -m, --mount stringArray      Mount directories from the host to Replicate's Docker container. Format: --mount <host-directory>:<container-directory>
 
       --color                      Display color in output (default true)
   -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
