@@ -8,6 +8,7 @@ import os
 import pytest  # type: ignore
 import tarfile
 import tempfile
+from pathlib import Path
 
 import replicate
 from replicate.exceptions import DoesNotExistError
@@ -219,6 +220,51 @@ class TestExperiment:
         assert len(experiment.checkpoints) == 2
         assert experiment.checkpoints[0].id == chk1.id
         assert experiment.checkpoints[1].id == chk2.id
+
+    def test_delete(self, temp_workdir):
+        project = Project()
+
+        with open("foo.txt", "w") as f:
+            f.write("hello")
+
+        experiment = project.experiments.create(path=".", params={"foo": "bar"})
+        with open("model.txt", "w") as f:
+            f.write("i'm a model")
+        chk = experiment.checkpoint(path="model.txt", metrics={"accuracy": "awesome"})
+
+        def get_paths():
+            return set(
+                str(p).replace(".replicate/", "") for p in Path(".replicate").rglob("*")
+            )
+
+        paths = get_paths()
+        expected = set(
+            [
+                "storage",
+                "storage/metadata/experiments/{}.json".format(experiment.id),
+                "storage/experiments",
+                "storage/checkpoints/{}.tar.gz".format(chk.id),
+                "storage/metadata",
+                "storage/metadata/experiments",
+                "storage/experiments/{}.tar.gz".format(experiment.id),
+                "storage/checkpoints",
+            ]
+        )
+        assert paths == expected
+
+        experiment.delete()
+
+        paths = get_paths()
+        expected = set(
+            [
+                "storage",
+                "storage/experiments",
+                "storage/metadata",
+                "storage/metadata/experiments",
+                "storage/checkpoints",
+            ]
+        )
+        assert paths == expected
 
 
 class TestExperimentCollection:

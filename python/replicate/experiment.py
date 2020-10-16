@@ -128,7 +128,7 @@ class Experiment:
 
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if checkpoint.path is not None:
-            tar_path = "checkpoints/{}.tar.gz".format(checkpoint.id)
+            tar_path = checkpoint._storage_tar_path()
             storage = self._project._get_storage()
             storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
@@ -146,7 +146,7 @@ class Experiment:
         """
         storage = self._project._get_storage()
         storage.put(
-            "metadata/experiments/{}.json".format(self.id),
+            self._metadata_path(),
             json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
         )
 
@@ -176,9 +176,30 @@ class Experiment:
         self._heartbeat = Heartbeat(
             experiment_id=self.id,
             storage_url=self._project._get_config()["storage"],
-            path="metadata/heartbeats/{}.json".format(self.id),
+            path=self._heartbeat_path(),
         )
         self._heartbeat.start()
+
+    def delete(self):
+        # TODO(andreas): this logic should probably live in go,
+        # which could then also be parallelized easily
+        storage = self._project._get_storage()
+        for checkpoint in self.checkpoints:
+            console.info("Deleting checkpoint: {}".format(checkpoint.id))
+            storage.delete(checkpoint._storage_tar_path())
+        console.info("Deleting experiment: {}".format(self.id))
+        storage.delete(self._heartbeat_path())
+        storage.delete(self._storage_tar_path())
+        storage.delete(self._metadata_path())
+
+    def _heartbeat_path(self) -> str:
+        return "metadata/heartbeats/{}.json".format(self.id)
+
+    def _storage_tar_path(self) -> str:
+        return "experiments/{}.tar.gz".format(self.id)
+
+    def _metadata_path(self) -> str:
+        return "metadata/experiments/{}.json".format(self.id)
 
 
 @dataclass
@@ -226,7 +247,7 @@ class ExperimentCollection:
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if experiment.path is not None:
             storage = self.project._get_storage()
-            tar_path = "experiments/{}.tar.gz".format(experiment.id)
+            tar_path = experiment._storage_tar_path()
             storage.put_path_tar(self.project.directory, tar_path, experiment.path)
 
         experiment.save()

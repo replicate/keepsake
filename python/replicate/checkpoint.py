@@ -107,3 +107,6 @@ class Checkpoint(object):
             errors.extend(check_path("checkpoint", self.path))
 
         return errors
+
+    def _storage_tar_path(self) -> str:
+        return "checkpoints/{}.tar.gz".format(self.id)

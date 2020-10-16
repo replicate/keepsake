@@ -97,4 +97,12 @@ class S3Storage(Storage):
         pass
 
     def delete(self, path: str):
-        pass
+        """
+        Recursively delete path
+        """
+        shared.call(
+            "S3Storage.Delete",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            Path=str(path),  # typecast for pathlib
+        )

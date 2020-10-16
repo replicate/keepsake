@@ -144,3 +144,25 @@ baz.txt
         temp_bucket.blob("folder/qux.xyz").download_as_bytes()
     with pytest.raises(NotFound):
         temp_bucket.blob("folder/bar/quux.xyz").download_as_bytes()
+
+
+def test_delete(temp_bucket, tmpdir):
+    storage = GCSStorage(bucket=temp_bucket.name, root="")
+
+    storage.put("some/file", "nice")
+    assert storage.get("some/file") == b"nice"
+
+    storage.delete("some/file")
+    with pytest.raises(DoesNotExistError):
+        storage.get("some/file")
+
+
+def test_delete_with_root(temp_bucket, tmpdir):
+    storage = GCSStorage(bucket=temp_bucket.name, root="my-root")
+
+    storage.put("some/file", "nice")
+    assert storage.get("some/file") == b"nice"
+
+    storage.delete("some/file")
+    with pytest.raises(DoesNotExistError):
+        storage.get("some/file")

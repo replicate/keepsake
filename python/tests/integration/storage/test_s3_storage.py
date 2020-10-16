@@ -6,6 +6,7 @@ import boto3
 import replicate
 from replicate.hash import random_hash
 from replicate.storage.s3_storage import S3Storage
+from replicate.exceptions import DoesNotExistError
 
 
 @pytest.fixture(scope="function")
@@ -83,3 +84,25 @@ def s3_read(bucket, path):
 
 def s3_read_json(bucket, path):
     return json.loads(s3_read(bucket, path))
+
+
+def test_delete(temp_bucket, tmpdir):
+    storage = S3Storage(bucket=temp_bucket, root="")
+
+    storage.put("some/file", "nice")
+    assert storage.get("some/file") == b"nice"
+
+    storage.delete("some/file")
+    with pytest.raises(DoesNotExistError):
+        storage.get("some/file")
+
+
+def test_delete_with_root(temp_bucket, tmpdir):
+    storage = S3Storage(bucket=temp_bucket, root="my-root")
+
+    storage.put("some/file", "nice")
+    assert storage.get("some/file") == b"nice"
+
+    storage.delete("some/file")
+    with pytest.raises(DoesNotExistError):
+        storage.get("some/file")

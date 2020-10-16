@@ -73,7 +73,7 @@ class DiskStorage(Storage):
     def list(self, path: str) -> List[str]:
         """
         Returns a list of files at path, but not any subdirectories.
-         
+
         Returned paths are prefixed with the given path, that can be passed straight to Get().
         Directories are not listed.
         If path does not exist, an empty list will be returned.
@@ -87,10 +87,12 @@ class DiskStorage(Storage):
 
     def delete(self, path: str):
         """
-        Delete single file at path
+        Recursively delete path
         """
-        full_path = os.path.join(self.root, path)
-        try:
-            os.unlink(full_path)
-        except FileNotFoundError:
-            raise DoesNotExistError("No such path: '{}'".format(full_path))
+        # Even though it's a simple operation we use the shared
+        # library to ensure consistent semantics.
+        shared.call(
+            "DiskStorage.Delete",
+            Root=self.root,
+            Path=str(path),  # typecast for pathlib
+        )
