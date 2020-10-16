@@ -1,11 +1,12 @@
 # type: ignore
+# setuptools must be imported before distutils
+import setuptools
+from setuptools.command.develop import develop as _develop
 from distutils.command.build_scripts import build_scripts as _build_scripts
 from distutils.util import convert_path, get_platform
 import os
 from pathlib import Path
 import re
-import setuptools
-from setuptools.command.develop import develop as _develop
 import shutil
 
 with open("README.md", "r", encoding="utf-8") as fh:
