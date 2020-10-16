@@ -34,6 +34,10 @@ type ListReturn struct {
 	Paths []string
 }
 
+type DeleteArgs struct {
+	Bucket, Root, Path string
+}
+
 type GCSStorage struct{}
 
 func (GCSStorage) Get(args GetArgs, ret *GetReturn) error {
@@ -81,6 +85,14 @@ func (GCSStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
 		return err
 	}
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
+}
+
+func (GCSStorage) Delete(args DeleteArgs, _ *int) error {
+	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	return st.Delete(args.Path)
 }
 
 type S3Storage struct{}
@@ -132,6 +144,14 @@ func (S3Storage) PutPathTar(args PutPathTarArgs, _ *int) error {
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
 }
 
+func (S3Storage) Delete(args DeleteArgs, _ *int) error {
+	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+	if err != nil {
+		return err
+	}
+	return st.Delete(args.Path)
+}
+
 type DiskStorage struct{}
 
 func (DiskStorage) PutPath(args PutPathArgs, _ *int) error {
@@ -148,4 +168,12 @@ func (DiskStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
 		return err
 	}
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
+}
+
+func (DiskStorage) Delete(args DeleteArgs, _ *int) error {
+	st, err := storage.NewDiskStorage(args.Root)
+	if err != nil {
+		return err
+	}
+	return st.Delete(args.Path)
 }

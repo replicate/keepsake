@@ -90,5 +90,12 @@ class GCSStorage(Storage):
         return result["Paths"]
 
     def delete(self, path: str):
-        # TODO
-        pass
+        """
+        Recursively delete path
+        """
+        shared.call(
+            "GCSStorage.Delete",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            Path=str(path),  # typecast for pathlib
+        )
