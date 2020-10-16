@@ -246,6 +246,13 @@ func (s *S3Storage) GetPathTar(tarPath, localPath string) error {
 	if err := s.GetPath(tarPath, tmptarball); err != nil {
 		return err
 	}
+	exists, err := files.FileExists(tmptarball)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+	}
 	return extractTar(tmptarball, localPath)
 }
 

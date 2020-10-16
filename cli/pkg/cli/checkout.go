@@ -12,6 +12,7 @@ import (
 	"replicate.ai/cli/pkg/files"
 	"replicate.ai/cli/pkg/interact"
 	"replicate.ai/cli/pkg/project"
+	"replicate.ai/cli/pkg/storage"
 )
 
 func newCheckoutCommand() *cobra.Command {
@@ -113,22 +114,36 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		checkpoint := result.Checkpoint
 
 		if err := store.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
-			return err
+			// Ignore does not exist errors
+			if _, ok := err.(*storage.DoesNotExistError); !ok {
+				return err
+			}
 		}
 		// Overlay checkpoint on top of experiment
 		if err := store.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
+			if _, ok := err.(*storage.DoesNotExistError); ok {
+				return fmt.Errorf(`Could not check out this checkpoint because it does not have any files associated with it.
+
+You need to set the 'path' option on 'checkpoint()' to check them out.`)
+			}
 			return err
 		}
 
-		msg += fmt.Sprintf("Copied the code and data from checkpoint %s to %q\n", checkpoint.ShortID(), outputDir)
+		// TODO: actually mention which files were checked out
+		msg += fmt.Sprintf("Copied the files from checkpoint %s to %q\n", checkpoint.ShortID(), outputDir)
 
 	} else {
 		// Checking out experiment
 		if err := store.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
+			if _, ok := err.(*storage.DoesNotExistError); ok {
+				return fmt.Errorf(`Could not check out this experiment because it does not have any files associated with it.
+
+You need to set the 'path' option on 'init()' to check experiments out.`)
+			}
 			return err
 		}
 
-		msg += fmt.Sprintf("Copied the code from experiment %s to %q\n", experiment.ShortID(), outputDir)
+		msg += fmt.Sprintf("Copied the files from experiment %s to %q\n", experiment.ShortID(), outputDir)
 	}
 
 	msg += "\n"

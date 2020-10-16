@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"replicate.ai/cli/pkg/files"
 )
 
 func TestDiskStorageGet(t *testing.T) {
@@ -26,6 +28,19 @@ func TestDiskStorageGet(t *testing.T) {
 	content, err := storage.Get("some-file")
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), content)
+}
+func TestDiskGetPathTar(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	storage, err := NewDiskStorage(dir)
+	require.NoError(t, err)
+
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+	err = storage.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	require.IsType(t, &DoesNotExistError{}, err)
 }
 
 func TestDiskStoragePut(t *testing.T) {

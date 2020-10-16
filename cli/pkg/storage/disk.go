@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/otiai10/copy"
+
+	"replicate.ai/cli/pkg/files"
 )
 
 type DiskStorage struct {
@@ -48,7 +50,15 @@ func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
 //
 // See storage.go for full documentation.
 func (s *DiskStorage) GetPathTar(tarPath, localPath string) error {
-	return extractTar(path.Join(s.rootDir, tarPath), localPath)
+	fullTarPath := path.Join(s.rootDir, tarPath)
+	exists, err := files.FileExists(fullTarPath)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + fullTarPath}
+	}
+	return extractTar(fullTarPath, localPath)
 }
 
 // Put data at path
