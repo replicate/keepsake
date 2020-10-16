@@ -76,6 +76,21 @@ func TestGCSStorageGet(t *testing.T) {
 	require.Equal(t, []byte("hello"), data)
 }
 
+func TestGCSGetPathTar(t *testing.T) {
+	client, err := storage.NewClient(context.TODO())
+	require.NoError(t, err)
+	bucket, bucketName := createGCSBucket(t, client)
+	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
+
+	storage, err := NewGCSStorage(bucketName, "")
+	require.NoError(t, err)
+
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+	err = storage.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	require.IsType(t, &DoesNotExistError{}, err)
+}
+
 func TestGCSStoragePut(t *testing.T) {
 	client, err := storage.NewClient(context.TODO())
 	require.NoError(t, err)

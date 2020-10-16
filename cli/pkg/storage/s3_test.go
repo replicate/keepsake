@@ -39,6 +39,19 @@ func TestS3StorageGet(t *testing.T) {
 	require.IsType(t, &DoesNotExistError{}, err)
 }
 
+func TestS3GetPathTar(t *testing.T) {
+	bucketName, _ := createS3Bucket(t)
+	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
+
+	storage, err := NewS3Storage(bucketName, "root")
+	require.NoError(t, err)
+
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+	err = storage.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	require.IsType(t, &DoesNotExistError{}, err)
+}
+
 func TestS3StoragePutPath(t *testing.T) {
 	bucketName, svc := createS3Bucket(t)
 	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
@@ -97,11 +110,6 @@ func TestS3ListRecursive(t *testing.T) {
 }
 
 func createS3Bucket(t *testing.T) (string, *s3.S3) {
-	// TODO (bfirsh): do this more loudly
-	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
-		t.Skip("skipping S3 test because AWS_ACCESS_KEY_ID not set")
-	}
-
 	bucketName := "replicate-test-" + hash.Random()[0:10]
 	err := CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(t, err)
