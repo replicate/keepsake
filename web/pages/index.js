@@ -137,9 +137,6 @@ def train():
                 <li>
                   <a href="#anchor-3">Commit to Git, after the fact</a>
                 </li>
-                <li>
-                  <a href="#anchor-4">Run experiments on a remote machine</a>
-                </li>
               </ol>
             </li>
           </ol>
@@ -191,24 +188,6 @@ Copying code and weights to working directory...
 
 # save the code to git
 $ git commit -am "Use hinge loss"`}
-          </CodeBlock>
-
-          <h3 id="anchor-4">Run experiments on a remote machine</h3>
-          <p>
-            Replicate has a handy shortcut for this. It'll SSH in, check the
-            GPUs are set up correctly, copy over your code, then start your
-            experiment inside Docker. All the results are stored on S3 so you
-            can access them from your laptop.
-          </p>
-          <CodeBlock language="shell-session">
-            {`$ replicate run -H 10.52.63.24 python train.py
-═══╡ Checking 10.52.63.24 is set up correctly...
-✔️ NVIDIA drivers 361.93 installed.
-✔️ 2x NVIDIA K80 GPUs found.
-✔️ CUDA 10.1 installed.
-═══╡ Copying code...
-═══╡ Building Docker image...
-═══╡ Running 'python train.py' as experiment 35354d3...`}
           </CodeBlock>
         </div>
       </section>

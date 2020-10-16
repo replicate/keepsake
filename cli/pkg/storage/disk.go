@@ -198,10 +198,6 @@ func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder 
 	close(results)
 }
 
-func (s *DiskStorage) PrepareRunEnv() ([]string, error) {
-	return []string{}, nil
-}
-
 func md5File(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {

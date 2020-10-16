@@ -7,23 +7,17 @@ from .utils import get_env
 
 
 @pytest.mark.parametrize(
-    "storage_backend,use_root,use_replicate_run",
+    "storage_backend,use_root",
     [
-        ("gcs", False, False),
-        ("gcs", True, False),
-        ("gcs", False, True),
-        ("s3", False, False),
-        ("s3", True, False),
-        ("s3", False, True),
-        ("file", False, False),
-        # this test is broken, but we're getting rid of run anyway
-        # ("file", False, True),
-        pytest.param("undefined", False, False, marks=pytest.mark.fast),
+        ("gcs", False),
+        ("gcs", True),
+        ("s3", False),
+        ("s3", True),
+        ("file", False),
+        pytest.param("undefined", False, marks=pytest.mark.fast),
     ],
 )
-def test_list(
-    storage_backend, use_replicate_run, use_root, tmpdir, temp_bucket, tmpdir_factory
-):
+def test_list(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
     if storage_backend == "s3":
         storage = "s3://" + temp_bucket
@@ -64,11 +58,7 @@ if __name__ == "__main__":
 
     env = get_env()
 
-    if use_replicate_run:
-        cmd = ["replicate", "run", "-v", "train.py", "--foo"]
-    else:
-        cmd = ["python", "train.py", "--foo"]
-    subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
+    subprocess.run(["python", "train.py", "--foo"], cwd=tmpdir, env=env, check=True)
 
     experiments = json.loads(
         subprocess.run(
@@ -86,10 +76,7 @@ if __name__ == "__main__":
     assert len(exp["id"]) == 64
     assert exp["params"] == {"my_param": "my-value"}
     assert exp["num_checkpoints"] == 3
-    if use_replicate_run:
-        assert exp["command"] == "python -u train.py --foo"
-    else:
-        assert exp["command"] == "train.py --foo"
+    assert exp["command"] == "train.py --foo"
     latest = exp["latest_checkpoint"]
     assert len(latest["id"]) == 64
     # FIXME: now rfc3339 strings

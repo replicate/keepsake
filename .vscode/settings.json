@@ -1,6 +1,5 @@
 {
   "files.exclude": {
-    "base-image-builder": true,
     "cli": true
   }
 }
