@@ -54,6 +54,6 @@ func (c *Checkpoint) ShortID() string {
 	return c.ID[:7]
 }
 
-func (c *Checkpoint) StorageDir() string {
-	return "checkpoints/" + c.ID
+func (c *Checkpoint) StorageTarPath() string {
+	return "checkpoints/" + c.ID + ".tar.gz"
 }

@@ -72,8 +72,8 @@ func (e *Experiment) HeartbeatPath() string {
 	return "metadata/heartbeats/" + e.ID + ".json"
 }
 
-func (e *Experiment) StorageDir() string {
-	return "experiments/" + e.ID
+func (e *Experiment) StorageTarPath() string {
+	return "experiments/" + e.ID + ".tar.gz"
 }
 
 // LatestCheckpoint returns the latest checkpoint for an experiment

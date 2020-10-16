@@ -100,9 +100,9 @@ func (p *Project) CheckpointOrExperimentFromPrefix(prefix string) (*CheckpointOr
 }
 
 func (p *Project) DeleteCheckpoint(com *Checkpoint) error {
-	if err := p.store.Delete(com.StorageDir()); err != nil {
+	if err := p.store.Delete(com.StorageTarPath()); err != nil {
 		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
-		console.Warn("Failed to delete checkpoint storage directory %s: %s", com.StorageDir(), err)
+		console.Warn("Failed to delete checkpoint storage directory %s: %s", com.StorageTarPath(), err)
 	}
 	return nil
 }
@@ -112,9 +112,9 @@ func (p *Project) DeleteExperiment(exp *Experiment) error {
 		// TODO(andreas): return err if exp.HeartbeatPath() exists but some other error occurs
 		console.Warn("Failed to delete heartbeat file %s: %s", exp.HeartbeatPath(), err)
 	}
-	if err := p.store.Delete(exp.StorageDir()); err != nil {
+	if err := p.store.Delete(exp.StorageTarPath()); err != nil {
 		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
-		console.Warn("Failed to delete checkpoint storage directory %s: %s", exp.StorageDir(), err)
+		console.Warn("Failed to delete checkpoint storage directory %s: %s", exp.StorageTarPath(), err)
 	}
 	if err := p.store.Delete(exp.MetadataPath()); err != nil {
 		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
