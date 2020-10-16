@@ -89,7 +89,7 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 	return nil
 }
 
-func Experiments(store storage.Storage, format Format, allParams bool, filters *param.Filters, sorter *param.Sorter) error {
+func Experiments(store storage.Storage, format Format, all bool, filters *param.Filters, sorter *param.Sorter) error {
 	proj := project.NewProject(store)
 	listExperiments, err := createListExperiments(proj, filters)
 	if err != nil {
@@ -103,7 +103,7 @@ func Experiments(store storage.Storage, format Format, allParams bool, filters *
 	case FormatJSON:
 		return outputJSON(listExperiments)
 	case FormatTable:
-		return outputTable(listExperiments, allParams)
+		return outputTable(listExperiments, all)
 	case FormatQuiet:
 		return outputQuiet(listExperiments)
 	}
@@ -127,14 +127,14 @@ func outputJSON(experiments []*ListExperiment) error {
 // experiment  started             status   host      user     param-1  latest   step  metric-1  best     step  metric-1
 // 1eeeeee     10 seconds ago      running  10.1.1.1  andreas  100      3cccccc  20    0.02     2cccccc  20    0.01
 // 2eeeeee     about a second ago  stopped  10.1.1.2  andreas  200      4cccccc  5              N/A
-func outputTable(experiments []*ListExperiment, allParams bool) error {
+func outputTable(experiments []*ListExperiment, all bool) error {
 	if len(experiments) == 0 {
 		fmt.Println("No experiments found")
 		return nil
 	}
 
-	paramsToDisplay := getParamsToDisplay(experiments, !allParams)
-	metricsToDisplay := getMetricsToDisplay(experiments)
+	paramsToDisplay := getParamsToDisplay(experiments, all)
+	metricsToDisplay := getMetricsToDisplay(experiments, all)
 
 	// does any experiment have a primary metric?
 	hasBestCheckpoint := false
@@ -240,10 +240,20 @@ func outputTable(experiments []*ListExperiment, allParams bool) error {
 
 // Get experiment params to display in list. If onlyChangedParams is true, only return
 // params which have changed across experiments.
-func getParamsToDisplay(experiments []*ListExperiment, onlyChangedParams bool) []string {
+func getParamsToDisplay(experiments []*ListExperiment, all bool) []string {
 	expHeadingSet := map[string]bool{}
 
-	if onlyChangedParams {
+	if all {
+		for _, exp := range experiments {
+			for key, val := range exp.Params {
+				// Don't show objects in list view, because they're likely long and not very helpful
+				if val.Type() == param.TypeObject {
+					continue
+				}
+				expHeadingSet[key] = true
+			}
+		}
+	} else {
 		paramValues := map[string]*param.Value{}
 		for _, exp := range experiments {
 			for key, val := range exp.Params {
@@ -265,32 +275,34 @@ func getParamsToDisplay(experiments []*ListExperiment, onlyChangedParams bool) [
 				}
 			}
 		}
-	} else {
-		for _, exp := range experiments {
-			for key, val := range exp.Params {
-				// Don't show objects in list view, because they're likely long and not very helpful
-				if val.Type() == param.TypeObject {
-					continue
-				}
-				expHeadingSet[key] = true
-			}
-		}
 	}
 
 	return slices.StringKeys(expHeadingSet)
 }
 
 // Get metrics to display for each checkpoint shown in list
-func getMetricsToDisplay(experiments []*ListExperiment) []string {
-	// TODO (bfirsh): make --all display all metrics from checkpoint
-
+func getMetricsToDisplay(experiments []*ListExperiment, all bool) []string {
 	metricsToDisplay := map[string]bool{}
 
-	for _, exp := range experiments {
-		if exp.BestCheckpoint == nil {
-			continue
+	if all {
+		for _, experiment := range experiments {
+			checkpoint := experiment.BestCheckpoint
+			if checkpoint == nil {
+				checkpoint = experiment.LatestCheckpoint
+			}
+			if checkpoint != nil {
+				for metric := range checkpoint.Metrics {
+					metricsToDisplay[metric] = true
+				}
+			}
 		}
-		metricsToDisplay[exp.BestCheckpoint.PrimaryMetric.Name] = true
+	} else {
+		for _, exp := range experiments {
+			if exp.BestCheckpoint == nil {
+				continue
+			}
+			metricsToDisplay[exp.BestCheckpoint.PrimaryMetric.Name] = true
+		}
 	}
 
 	return slices.StringKeys(metricsToDisplay)
