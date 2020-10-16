@@ -145,9 +145,28 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 		}
 	}
 
+	// Hide various fields if they are all the same
+	displayHost := false
+	displayUser := false
+	prevExp := experiments[0]
+	for _, exp := range experiments {
+		if exp.Host != prevExp.Host {
+			displayHost = true
+		}
+		if exp.User != prevExp.User {
+			displayUser = true
+		}
+	}
+
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	keys := []string{"EXPERIMENT", "STARTED", "STATUS", "HOST", "USER"}
+	keys := []string{"EXPERIMENT", "STARTED", "STATUS"}
+	if displayHost {
+		keys = append(keys, "HOST")
+	}
+	if displayUser {
+		keys = append(keys, "USER")
+	}
 	keys = append(keys, upper(paramsToDisplay)...)
 	keys = append(keys, "LATEST CHECKPOINT")
 	keys = append(keys, upper(metricsToDisplay)...)
@@ -178,11 +197,13 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 			fmt.Fprint(tw, "stopped\t")
 		}
 
-		// host
-		fmt.Fprintf(tw, "%s\t", exp.Host)
+		if displayHost {
+			fmt.Fprintf(tw, "%s\t", exp.Host)
+		}
 
-		// user
-		fmt.Fprintf(tw, "%s\t", exp.User)
+		if displayUser {
+			fmt.Fprintf(tw, "%s\t", exp.User)
+		}
 
 		// experiment params
 		for _, heading := range paramsToDisplay {
