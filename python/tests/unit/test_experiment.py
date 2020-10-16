@@ -109,9 +109,6 @@ def test_init_and_checkpoint(temp_workdir):
     )
 
     # checkpoint: various path problems
-    with pytest.raises(TypeError, match="missing 1 required positional argument"):
-        # pylint: disable=no-value-for-parameter
-        checkpoint = experiment.checkpoint()
     with pytest.raises(
         ValueError,
         match=r"The path passed to checkpoint\(\) must not start with '..' or '/'.",
