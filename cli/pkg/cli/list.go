@@ -31,7 +31,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	format, allParams, err := parseListFormatFlags(cmd)
+	format, all, err := parseListFormatFlags(cmd)
 	if err != nil {
 		return err
 	}
@@ -47,17 +47,17 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, allParams, filters, sortKey)
+	return list.Experiments(store, format, all, filters, sortKey)
 }
 
 func addListFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("json", false, "Print output in JSON format")
-	cmd.Flags().BoolP("all-params", "p", false, "Output all experiment params (by default, outputs only parameters that change between experiments)")
+	cmd.Flags().Bool("all", false, "Output all params and metrics. Default: only params/metrics that differ")
 	cmd.Flags().BoolP("quiet", "q", false, "Only print experiment IDs")
 }
 
 // FIXME(bfirsh): use an opts struct and the "Var" version of flag functions to get rid of this
-func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams bool, err error) {
+func parseListFormatFlags(cmd *cobra.Command) (format list.Format, all bool, err error) {
 	json, err := cmd.Flags().GetBool("json")
 	if err != nil {
 		return 0, false, err
@@ -76,18 +76,18 @@ func parseListFormatFlags(cmd *cobra.Command) (format list.Format, allParams boo
 		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --json")
 	}
 
-	allParams, err = cmd.Flags().GetBool("all-params")
+	all, err = cmd.Flags().GetBool("all")
 	if err != nil {
 		return 0, false, err
 	}
-	if quiet && allParams {
-		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --all-params")
+	if quiet && all {
+		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --all")
 	}
 	if quiet {
 		format = list.FormatQuiet
 	}
 
-	return format, allParams, nil
+	return format, all, nil
 }
 
 func addListFilterFlag(cmd *cobra.Command) {

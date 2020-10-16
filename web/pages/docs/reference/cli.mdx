@@ -6,9 +6,7 @@ import DocsLayout from "../../../layouts/docs";
 
 <DocsLayout title="CLI reference">
 
-This is the reference for the Replicate command-line interface. 
-
-You can also see this in the terminal by running `replicate --help` or `replicate command --help`.
+This is the reference for the Replicate command-line interface. You can also see this in the terminal by running `replicate --help` or `replicate command --help`.
 
 To install the command-line interface, [see the installation instructions](/docs).
 
@@ -119,7 +117,7 @@ replicate ls [flags]
 ### Flags
 
 ```
-  -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
+      --all                  Output all params and metrics. Default: only params/metrics that differ
   -f, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -h, --help                 help for ls
       --json                 Print output in JSON format
@@ -144,7 +142,7 @@ replicate ps [flags]
 ### Flags
 
 ```
-  -p, --all-params           Output all experiment params (by default, outputs only parameters that change between experiments)
+      --all                  Output all params and metrics. Default: only params/metrics that differ
   -f, --filter stringArray   Filters (format: "<name> <operator> <value>")
   -h, --help                 help for ps
       --json                 Print output in JSON format
@@ -215,6 +213,7 @@ replicate show <experiment or checkpoint ID> [flags]
 
 ```
   -h, --help                 help for show
+      --json                 Print output in JSON format
   -S, --storage-url string   Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)
 
       --color                      Display color in output (default true)
