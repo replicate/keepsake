@@ -18,6 +18,7 @@ from . import console
 from .json import CustomJSONEncoder
 from .hash import random_hash
 from .metadata import rfc3339_datetime, parse_rfc3339
+from .validate import check_path
 
 
 class PrimaryMetric(TypedDict):
@@ -101,5 +102,8 @@ class Checkpoint(object):
                 "Primary metric goal must be either 'maximize' or 'minimize'. "
                 "For example: ('loss', 'minimize')"
             )
+
+        if self.path is not None and isinstance(self.path, str):
+            errors.extend(check_path("checkpoint", self.path))
 
         return errors

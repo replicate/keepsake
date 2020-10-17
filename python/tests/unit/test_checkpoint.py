@@ -53,6 +53,22 @@ class TestCheckpoint:
             in checkpoint.validate()[0]
         )
 
+        checkpoint = Checkpoint(path="..", **kwargs)
+        assert (
+            "The path passed to the checkpoint must not start with '..' or '/'."
+            in checkpoint.validate()[0]
+        )
+        checkpoint = Checkpoint(path="/", **kwargs)
+        assert (
+            "The path passed to the checkpoint must not start with '..' or '/'."
+            in checkpoint.validate()[0]
+        )
+        checkpoint = Checkpoint(path="blah", **kwargs)
+        assert (
+            "The path passed to the checkpoint does not exist: blah"
+            in checkpoint.validate()[0]
+        )
+
     def test_from_json(self, temp_workdir):
         data = {
             "id": "a1a973fcbead997a3b253c960b9fad1bb1386681beefd7ba8703e25548beb11c",
