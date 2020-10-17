@@ -22,6 +22,7 @@ type Experiment struct {
 	User        string                  `json:"user"`
 	Config      *config.Config          `json:"config"`
 	Command     string                  `json:"command"`
+	Path        string                  `json:"path"`
 	Checkpoints []*Checkpoint           `json:"checkpoints"`
 }
 

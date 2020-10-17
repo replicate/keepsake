@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
@@ -83,12 +84,19 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	displayPath := filepath.Join(outputDir, result.Experiment.Path)
+
+	// FIXME(bfirsh): this is a bodge and isn't always quite right -- if no experiment path set, and we're checking out checkpoint, display the checkpoint path
+	if result.Experiment.Path == "" && result.Checkpoint != nil {
+		displayPath = filepath.Join(outputDir, result.Checkpoint.Path)
+	}
+
 	isEmpty, err := files.DirIsEmpty(outputDir)
 	if err != nil {
 		return err
 	}
 	if !isEmpty && !force {
-		console.Warn("The directory %q is not empty.", outputDir)
+		console.Warn("The directory %q is not empty.", displayPath)
 		console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
 		fmt.Println()
 		// TODO(andreas): tell the user which files may get
@@ -130,7 +138,7 @@ You need to set the 'path' option on 'checkpoint()' to check them out.`)
 		}
 
 		// TODO: actually mention which files were checked out
-		msg += fmt.Sprintf("Copied the files from checkpoint %s to %q\n", checkpoint.ShortID(), outputDir)
+		msg += fmt.Sprintf("Copied the files from checkpoint %s to %q\n", checkpoint.ShortID(), displayPath)
 
 	} else {
 		// Checking out experiment
@@ -143,7 +151,7 @@ You need to set the 'path' option on 'init()' to check experiments out.`)
 			return err
 		}
 
-		msg += fmt.Sprintf("Copied the files from experiment %s to %q\n", experiment.ShortID(), outputDir)
+		msg += fmt.Sprintf("Copied the files from experiment %s to %q\n", experiment.ShortID(), displayPath)
 	}
 
 	msg += "\n"
