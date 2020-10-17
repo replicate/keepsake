@@ -191,7 +191,7 @@ func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project
 	metrics := com.SortedMetrics()
 	if len(metrics) > 0 {
 		for _, lab := range metrics {
-			if com.PrimaryMetric.Name == lab.Name {
+			if com.PrimaryMetric != nil && com.PrimaryMetric.Name == lab.Name {
 				fmt.Fprintf(w, "%s:\t%s (primary, %s)\n", lab.Name, lab.Value.String(), com.PrimaryMetric.Goal)
 			} else {
 				fmt.Fprintf(w, "%s:\t%s\n", lab.Name, lab.Value.String())
