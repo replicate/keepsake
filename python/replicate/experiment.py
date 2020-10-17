@@ -24,6 +24,7 @@ from .hash import random_hash
 from .heartbeat import Heartbeat
 from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
+from .validate import check_path
 
 
 @dataclass
@@ -68,6 +69,9 @@ class Experiment:
             else:
                 errors.append("params must be a dictionary")
 
+        if self.path is not None:
+            errors.extend(check_path("experiment", self.path))
+
         return errors
 
     def checkpoint(
@@ -83,10 +87,6 @@ class Experiment:
 
         This saves the metrics at this point, and makes a copy of the file or directory passed to `path`, which could be weights or any other artifact.
         """
-        if path is not None:
-            # TODO: Migrate this to validate
-            check_path(path)
-
         # TODO(bfirsh): display warning if primary_metric changes in an experiment
         # FIXME: store as tuple throughout for consistency?
         primary_metric_dict: Optional[PrimaryMetric] = None
@@ -271,28 +271,6 @@ class ExperimentCollection:
         return result
 
 
-CHECK_PATH_HELP_TEXT = """
-
-It is relative to the project directory, which is the directory that contains replicate.yaml. You probably just want to set it to path=\".\" to save everything, or path=\"somedir/\" to just save a particular directory.
-
-To learn more, see the documentation: https://beta.replicate.ai/docs/python"""
-
-
-def check_path(path: str):
-    func_name = inspect.stack()[1].function
-    # There are few other ways this can break (e.g. "dir/../../") but this will cover most ways users can trip up
-    if path.startswith("/") or path.startswith(".."):
-        raise ValueError(
-            "The path passed to {}() must not start with '..' or '/'.".format(func_name)
-            + CHECK_PATH_HELP_TEXT
-        )
-    if not os.path.exists(path):
-        raise ValueError(
-            "The path passed to {}() does not exist: {}".format(func_name, path)
-            + CHECK_PATH_HELP_TEXT
-        )
-
-
 def init(
     path: Optional[str] = None,
     params: Optional[Dict[str, Any]] = None,
@@ -301,10 +279,6 @@ def init(
     """
     Create a new experiment.
     """
-    if path is not None:
-        # TODO: Migrate this to validate
-        check_path(path)
-
     # circular import
     from .project import Project
 

@@ -108,18 +108,6 @@ def test_init_and_checkpoint(temp_workdir):
         ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
     )
 
-    # checkpoint: various path problems
-    with pytest.raises(
-        ValueError,
-        match=r"The path passed to checkpoint\(\) must not start with '..' or '/'.",
-    ):
-        experiment.checkpoint(path="..")
-        experiment.checkpoint(path="/")
-    with pytest.raises(
-        ValueError, match=r"The path passed to checkpoint\(\) does not exist: blah",
-    ):
-        experiment.checkpoint(path="blah")
-
     # experiment with file
     experiment = replicate.init(
         path="train.py", params={"learning_rate": 0.002}, disable_heartbeat=True
@@ -149,18 +137,6 @@ def test_init_and_checkpoint(temp_workdir):
     assert not os.path.exists(
         ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
     )
-
-    # experiment: various path problems
-    with pytest.raises(
-        ValueError,
-        match=r"The path passed to init\(\) must not start with '..' or '/'.",
-    ):
-        replicate.init(path="..")
-        replicate.init(path="/")
-    with pytest.raises(
-        ValueError, match=r"The path passed to init\(\) does not exist: blah",
-    ):
-        replicate.init(path="blah")
 
 
 def test_heartbeat(temp_workdir):
@@ -193,6 +169,22 @@ class TestExperiment:
 
         experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
         assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
+
+        experiment = Experiment(path="..", **kwargs)
+        assert (
+            "The path passed to the experiment must not start with '..' or '/'."
+            in experiment.validate()[0]
+        )
+        experiment = Experiment(path="/", **kwargs)
+        assert (
+            "The path passed to the experiment must not start with '..' or '/'."
+            in experiment.validate()[0]
+        )
+        experiment = Experiment(path="blah", **kwargs)
+        assert (
+            "The path passed to the experiment does not exist: blah"
+            in experiment.validate()[0]
+        )
 
     def test_from_json(self):
         data = {
