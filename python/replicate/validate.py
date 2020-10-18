@@ -21,4 +21,3 @@ def check_path(thing: str, path: str):
             + CHECK_PATH_HELP_TEXT
         )
     return errors
-

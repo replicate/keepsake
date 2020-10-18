@@ -6,25 +6,25 @@ except ImportError:
 import getpass
 import os
 import datetime
-import inspect
 import json
 import shlex
 import sys
-from typing import Dict, Any, Optional, Tuple, List
-import warnings
+from typing import Dict, Any, Optional, Tuple, List, TYPE_CHECKING
 
 from . import console
 from .exceptions import DoesNotExistError
 from .checkpoint import (
     Checkpoint,
     PrimaryMetric,
-    CustomJSONEncoder,
 )
 from .hash import random_hash
 from .heartbeat import Heartbeat
 from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .validate import check_path
+
+if TYPE_CHECKING:
+    from .project import Project
 
 
 @dataclass
@@ -33,7 +33,7 @@ class Experiment:
     A run of a training script.
     """
 
-    project: InitVar[Any]
+    project: InitVar["Project"]
 
     id: str
     created: datetime.datetime
@@ -45,7 +45,7 @@ class Experiment:
     params: Optional[Dict[str, Any]] = None
     checkpoints: List[Checkpoint] = field(default_factory=list)
 
-    def __post_init__(self, project):
+    def __post_init__(self, project: "Project"):
         self._project = project
         self._heartbeat = None
 
@@ -116,7 +116,7 @@ class Experiment:
                     "Creating checkpoint {}: copying '{}' to '{}'...".format(
                         checkpoint.short_id(),
                         checkpoint.path,
-                        self._project.storage.root_url(),
+                        self._project._get_storage().root_url(),
                     )
                 )
 
@@ -129,9 +129,8 @@ class Experiment:
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if checkpoint.path is not None:
             tar_path = "checkpoints/{}.tar.gz".format(checkpoint.id)
-            self._project.storage.put_path_tar(
-                self._project.dir, tar_path, checkpoint.path
-            )
+            storage = self._project._get_storage()
+            storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
         self.checkpoints.append(checkpoint)
         self.save()
@@ -145,13 +144,14 @@ class Experiment:
         """
         Save this experiment's metadata to storage.
         """
-        self._project.storage.put(
+        storage = self._project._get_storage()
+        storage.put(
             "metadata/experiments/{}.json".format(self.id),
             json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
         )
 
     @classmethod
-    def from_json(self, project: Any, data: Dict[str, Any]) -> "Experiment":
+    def from_json(self, project: "Project", data: Dict[str, Any]) -> "Experiment":
         data = data.copy()
         data["created"] = parse_rfc3339(data["created"])
         data["checkpoints"] = [
@@ -175,7 +175,7 @@ class Experiment:
     def start_heartbeat(self):
         self._heartbeat = Heartbeat(
             experiment_id=self.id,
-            storage_url=self._project.config["storage"],
+            storage_url=self._project._get_config()["storage"],
             path="metadata/heartbeats/{}.json".format(self.id),
         )
         self._heartbeat.start()
@@ -187,7 +187,9 @@ class ExperimentCollection:
     An object for managing experiments in a project.
     """
 
-    project: Any  # circular import
+    # ExperimentCollection is initialized on import, so don't do anything slow on init
+
+    project: "Project"
 
     def create(self, path=None, params=None, quiet=False) -> Experiment:
         command = " ".join(map(shlex.quote, sys.argv))
@@ -197,7 +199,7 @@ class ExperimentCollection:
             created=datetime.datetime.utcnow(),
             path=path,
             params=params,
-            config=self.project.config,
+            config=self.project._get_config(),
             user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
             host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
@@ -211,7 +213,7 @@ class ExperimentCollection:
                     "Creating experiment {}: copying '{}' to '{}'...".format(
                         experiment.short_id(),
                         experiment.path,
-                        self.project.storage.root_url(),
+                        self.project._get_storage().root_url(),
                     )
                 )
 
@@ -223,10 +225,9 @@ class ExperimentCollection:
 
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if experiment.path is not None:
+            storage = self.project._get_storage()
             tar_path = "experiments/{}.tar.gz".format(experiment.id)
-            self.project.storage.put_path_tar(
-                self.project.dir, tar_path, experiment.path
-            )
+            storage.put_path_tar(self.project.directory, tar_path, experiment.path)
 
         experiment.save()
 
@@ -236,7 +237,7 @@ class ExperimentCollection:
         """
         Returns the experiment with the given ID.
         """
-        storage = self.project.storage
+        storage = self.project._get_storage()
         ids = []
         for path in storage.list("metadata/experiments/"):
             ids.append(os.path.basename(path).split(".")[0])
@@ -262,30 +263,10 @@ class ExperimentCollection:
         """
         Return all experiments for a project, sorted by creation date.
         """
-        storage = self.project.storage
+        storage = self.project._get_storage()
         result: List[Experiment] = []
         for path in storage.list("metadata/experiments/"):
             data = json.loads(storage.get(path))
             result.append(Experiment.from_json(self.project, data))
         result.sort(key=lambda e: e.created)
         return result
-
-
-def init(
-    path: Optional[str] = None,
-    params: Optional[Dict[str, Any]] = None,
-    disable_heartbeat: bool = False,
-) -> Experiment:
-    """
-    Create a new experiment.
-    """
-    # circular import
-    from .project import Project
-
-    project = Project()
-    experiment = project.experiments.create(path=path, params=params)
-
-    if not disable_heartbeat:
-        experiment.start_heartbeat()
-
-    return experiment
