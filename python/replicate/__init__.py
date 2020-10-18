@@ -1,3 +1,6 @@
-from .experiment import init
+from .project import Project, init
 
-__all__ = ["init"]
+default_project = Project()
+experiments = default_project.experiments
+
+__all__ = ["default_project", "experiments", "init", "Project"]

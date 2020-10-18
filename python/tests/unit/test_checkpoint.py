@@ -5,8 +5,6 @@ except ImportError:
 import datetime
 
 from replicate.checkpoint import Checkpoint
-from replicate.experiment import Experiment
-from replicate.project import Project
 
 
 class Blah:

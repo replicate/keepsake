@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Dict, Any
 
 from ._vendor import yaml
 
@@ -8,7 +8,7 @@ class ConfigValidationError(Exception):
     pass
 
 
-def load_config(project_dir):
+def load_config(project_dir: str) -> Dict[str, Any]:
     """
     Loads config from directory
     """
@@ -36,7 +36,7 @@ VALID_KEYS = ["storage", "python", "cuda", "python_requirements", "install", "me
 REQUIRED_KEYS: List[str] = []
 
 
-def validate_and_set_defaults(data, project_dir):
+def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[str, Any]:
     # TODO (bfirsh): just really simple for now. JSON schema is probably right way (aanand says that is only decent solution)
     for key in REQUIRED_KEYS:
         if key not in data:
