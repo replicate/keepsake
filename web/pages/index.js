@@ -96,7 +96,7 @@ def train():
       <section className="control">
         <div>
           <h2>
-            <span>{num()}</span> Fully open source
+            <span>{num()}</span> Open source
           </h2>
           <p>It won't stop working if a startup goes out of business.</p>
         </div>
