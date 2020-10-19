@@ -12,6 +12,7 @@
     "editor.formatOnType": true,
     "editor.formatOnPaste": true,
     "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
     "go.coverOnTestPackage": false,
     "go.lintTool": "golangci-lint",
     "go.useLanguageServer": true,
