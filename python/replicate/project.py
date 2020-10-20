@@ -19,6 +19,7 @@ class Project:
         self._directory = directory
         self._config: Optional[Dict[str, Any]] = None
         self._storage: Optional[Storage] = None
+        self._storage_url: Optional[str] = None
 
     @property
     def directory(self) -> str:
@@ -27,14 +28,24 @@ class Project:
         return self._directory
 
     def _get_config(self) -> Dict[str, Any]:
-        if self._config is None:
-            self._config = load_config(self.directory)
-        return self._config
+        return load_config(self.directory)
 
     def _get_storage(self) -> Storage:
-        if self._storage is None:
-            self._storage = storage_for_url(self._get_config()["storage"])
-        return self._storage
+        reload_storage = self._storage is None
+        if self._storage_url is not None:
+            config = self._get_config()
+            if config["storage"] != self._storage_url:
+                reload_storage = True
+                self._storage_url = config["storage"]
+
+        if reload_storage:
+            if self._storage_url is None:
+                config = self._get_config()
+                self._storage_url = config["storage"]
+
+            self._storage = storage_for_url(self._storage_url)
+
+        return self._storage  # type: ignore
 
     @property
     def experiments(self) -> ExperimentCollection:
