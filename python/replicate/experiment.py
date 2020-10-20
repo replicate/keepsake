@@ -9,7 +9,16 @@ import datetime
 import json
 import shlex
 import sys
-from typing import Dict, Any, Optional, Tuple, List, TYPE_CHECKING
+from typing import (
+    Dict,
+    Any,
+    Optional,
+    Tuple,
+    List,
+    TYPE_CHECKING,
+    MutableSequence,
+    Callable,
+)
 
 from . import console
 from .exceptions import DoesNotExistError
@@ -181,16 +190,71 @@ class Experiment:
         self._heartbeat.start()
 
     def delete(self):
+        """
+        Delete this experiment and all associated checkpoints.
+        """
         # TODO(andreas): this logic should probably live in go,
         # which could then also be parallelized easily
         storage = self._project._get_storage()
+        console.info(
+            "Deleting {} checkpoints in experiment {}".format(
+                len(self.checkpoints), self.short_id()
+            )
+        )
         for checkpoint in self.checkpoints:
-            console.info("Deleting checkpoint: {}".format(checkpoint.id))
             storage.delete(checkpoint._storage_tar_path())
-        console.info("Deleting experiment: {}".format(self.id))
+        console.info("Deleting experiment: {}".format(self.short_id()))
         storage.delete(self._heartbeat_path())
         storage.delete(self._storage_tar_path())
         storage.delete(self._metadata_path())
+
+    def latest(self) -> Optional[Checkpoint]:
+        """
+        Get the latest checkpoint in this experiment, or None
+        if there are no checkpoints.
+        """
+        if self.checkpoints:
+            return self.checkpoints[-1]
+        return None
+
+    def best(self) -> Optional[Checkpoint]:
+        """
+        Get the best checkpoint in this experiment, or None
+        if there are no checkpoints or no checkpoint has a primary
+        metric.
+        """
+        if not self.checkpoints:
+            return None
+        primary_metric_checkpoints = [
+            chk for chk in self.checkpoints if chk.primary_metric
+        ]
+        if not primary_metric_checkpoints:
+            return None
+        name = primary_metric_checkpoints[0].primary_metric["name"]  # type: ignore
+        goal = primary_metric_checkpoints[0].primary_metric["goal"]  # type: ignore
+        if not all(
+            chk.primary_metric["name"] == name for chk in primary_metric_checkpoints  # type: ignore
+        ):
+            console.warn(
+                "Not all checkpoints in experiment {} have the same primary metric name".format(
+                    self.short_id()
+                )
+            )
+        if not all(
+            chk.primary_metric["goal"] == goal for chk in primary_metric_checkpoints  # type: ignore
+        ):
+            console.warn(
+                "Not all checkpoints in experiment {} have the same primary metric goal".format(
+                    self.short_id()
+                )
+            )
+
+        if goal == "minimize":
+            key = lambda chk: -chk.metrics[name]
+        else:
+            key = lambda chk: chk.metrics[name]
+
+        return sorted(primary_metric_checkpoints, key=key)[-1]
 
     def _heartbeat_path(self) -> str:
         return "metadata/heartbeats/{}.json".format(self.id)
@@ -280,14 +344,153 @@ class ExperimentCollection:
         )
         return Experiment.from_json(self.project, data)
 
-    def list(self) -> List[Experiment]:
+    def list(self, filter: Optional[Callable[[Any], bool]] = None) -> List[Experiment]:
         """
         Return all experiments for a project, sorted by creation date.
         """
         storage = self.project._get_storage()
-        result: List[Experiment] = []
+        result: ExperimentList = ExperimentList()
         for path in storage.list("metadata/experiments/"):
             data = json.loads(storage.get(path))
-            result.append(Experiment.from_json(self.project, data))
+            exp = Experiment.from_json(self.project, data)
+            if filter is not None:
+                include = False
+                try:
+                    include = filter(exp)
+                except Exception as e:
+                    console.warn(
+                        "Failed to apply filter to experiment {}: {}".format(
+                            exp.short_id(), e
+                        )
+                    )
+                if include:
+                    result.append(exp)
+            else:
+                result.append(exp)
         result.sort(key=lambda e: e.created)
         return result
+
+
+class ExperimentList(list, MutableSequence[Experiment]):
+    def primary_metric(self) -> str:
+        """
+        Get the shared primary metric for all experiments in this list
+        of experiments. If no shared primary metric exists, raises
+        ValueError.
+        """
+        primary_metric = None
+        for exp in self:
+            for chk in exp.checkpoints:
+                pm = chk.primary_metric["name"]
+                if pm is None:
+                    continue
+                if primary_metric is not None and primary_metric != pm:
+                    # TODO(andreas): should this be another standard error type?
+                    raise ValueError(
+                        "The primary metric differs between the checkpoints in these experiments"
+                    )
+                primary_metric = pm
+        if primary_metric is None:
+            raise ValueError(
+                "No primary metric is defined for the checkpoints in these experiments"
+            )
+
+        return primary_metric
+
+    def plot(self, metric: Optional[str] = None, logy=False):
+        """
+        Plot a metric for all the checkpoints in this list of
+        experiments. If no metric is specified, defaults to the
+        shared primary metric.
+        """
+        # TODO(andreas): smoothing
+        import matplotlib.pyplot as plt  # type: ignore
+
+        if metric is None:
+            metric = self.primary_metric()
+
+        for exp in self:
+            data = []
+            for chk in exp.checkpoints:
+                if metric in chk.metrics:
+                    # TODO(andreas): handle non-numeric metric
+                    # TODO(andreas): warn if metric doesn't exist in any experiment
+                    data.append(chk.metrics[metric])
+                else:
+                    data.append(None)
+
+            every_checkpoint_has_step = True
+            steps = []
+            for chk in exp.checkpoints:
+                if chk.step is None:
+                    every_checkpoint_has_step = False
+                    break
+                steps.append(chk.step)
+            if not every_checkpoint_has_step:
+                steps = list(range(len(data)))
+
+            plt.plot(steps, data, label=exp.short_id())
+
+        plt.legend(bbox_to_anchor=(1, 1))
+        plt.xlabel("step")
+        plt.ylabel(metric)
+
+        if logy:
+            plt.yscale("log")
+
+    def scatter(self, param: str, metric: Optional[str] = None, logx=False, logy=False):
+        """
+        Plot a metric against a parameter for all experiments in
+        this list. If the experiments define primary metric, the
+        metric of best checkpoint will be used, otherwise the metric
+        will come from the latest checkpoint.
+        """
+        import matplotlib.pyplot as plt  # type: ignore
+
+        if metric is None:
+            metric = self.primary_metric()
+
+        names = []
+        for exp in self:
+            chk = exp.best()
+            if chk is None:
+                chk = exp.latest()
+            if chk is None:
+                console.warn(
+                    "Experiment '{}' does not have any checkpoints".format(
+                        exp.short_id()
+                    )
+                )
+                continue
+            if metric not in chk.metrics:
+                console.warn(
+                    "Metric '{}' does not exist in checkpoint {} in experiment {}".format(
+                        metric, chk.short_id(), exp.short_id()
+                    )
+                )
+                continue
+            if param not in exp.params:
+                console.warn(
+                    "Parameter '{}' does not exist in experiment {}".format(
+                        param, exp.short_id()
+                    )
+                )
+                continue
+            plt.scatter([exp.params[param]], [chk.metrics[metric]])
+            names.append(exp.short_id())
+
+        plt.legend(names, bbox_to_anchor=(1, 1))
+        plt.xlabel(param)
+        plt.ylabel(metric)
+
+        if logx:
+            plt.xscale("log")
+        if logy:
+            plt.yscale("log")
+
+    def delete(self):
+        """
+        Delete all experiments in this list of experiments.
+        """
+        for exp in self:
+            exp.delete()
