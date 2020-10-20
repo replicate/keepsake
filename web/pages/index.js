@@ -17,16 +17,7 @@ export default function Home() {
   return (
     <Layout title="Replicate – Version control for machine learning">
       <Header className="homepage">
-        {/* <p>
-          Lightweight and open source. <a href="/docs">Get started</a> or{" "}
-          <a href="https://github.com/replicate/replicate">view on GitHub</a>
-        </p> */}
-        <p>
-          Lightweight and open source.
-          <a className="button" href="/docs">
-            Get started
-          </a>
-        </p>
+        <p><a class="button" href="/docs">Get Started</a> Lightweight and open source. </p>
         <section className="info">
           <div>
             <h2>
