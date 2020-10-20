@@ -20,10 +20,6 @@ function Layout({ title, children }) {
           know somebody who might like it, email us:{" "}
           <a href="mailto:team@replicate.ai">team@replicate.ai</a>
         </p>
-        <nav>
-          <a href="/docs">Docs</a>
-          <a href="https://github.com/replicate/replicate">GitHub</a>
-        </nav>
       </div>
 
       <div className="layout">
@@ -42,31 +38,44 @@ function Layout({ title, children }) {
           </h2>
           <div id="contributors">
             <h3>Made by</h3>
-            <ul>
-              <li>
-                <img src="/images/ben.jpg" />
-                <h4>Ben Firshman</h4>
-                <p>Product at Docker, creator of Docker&nbsp;Compose.</p>
-                <p>
-                  <a href="https://github.com/bfirsh" className="link">
-                    <FontAwesomeIcon icon={faGithub} />
-                  </a>
-                  <a href="https://twitter.com/bfirsh" className="link">
-                    <FontAwesomeIcon icon={faTwitter} />
-                  </a>
-                </p>
-              </li>
-              <li>
-                <img src="/images/andreas.jpg" />
-                <h4>Andreas Jansson</h4>
-                <p>ML infrastructure lead &amp; researcher at Spotify.</p>
-                <p>
-                  <a href="https://github.com/andreasjansson" className="link">
-                    <FontAwesomeIcon icon={faGithub} />
-                  </a>
-                </p>
-              </li>
-            </ul>
+            <div>
+              <figure>
+                <div
+                  style={{ backgroundImage: "url(" + "/images/ben.jpg" + ")" }}
+                ></div>
+                <figcaption>
+                  <h4>Ben Firshman</h4>
+                  <p>Product at Docker, creator of Docker&nbsp;Compose.</p>
+                  <p>
+                    <a href="https://github.com/bfirsh" className="link">
+                      <FontAwesomeIcon icon={faGithub} />
+                    </a>
+                    <a href="https://twitter.com/bfirsh" className="link">
+                      <FontAwesomeIcon icon={faTwitter} />
+                    </a>
+                  </p>
+                </figcaption>
+              </figure>
+              <figure>
+                <div
+                  style={{
+                    backgroundImage: "url(" + "/images/andreas.jpg" + ")",
+                  }}
+                ></div>
+                <figcaption>
+                  <h4>Andreas Jansson</h4>
+                  <p>ML infrastructure lead and researcher at Spotify.</p>
+                  <p>
+                    <a
+                      href="https://github.com/andreasjansson"
+                      className="link"
+                    >
+                      <FontAwesomeIcon icon={faGithub} />
+                    </a>
+                  </p>
+                </figcaption>
+              </figure>
+            </div>
             <p>
               Together, we also made{" "}
               <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
