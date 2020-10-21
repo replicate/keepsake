@@ -189,6 +189,18 @@ class Experiment:
         )
         self._heartbeat.start()
 
+    def stop(self):
+        """
+        Stop an experiment.
+
+        Experiments running in a script will eventually timeout, but when running in a notebook,
+        you are required to call this method to mark an experiment as stopped.
+        """
+        if self._heartbeat is not None:
+            self._heartbeat.kill()
+            self._heartbeat = None
+        self._project._get_storage().delete(self._heartbeat_path())
+
     def delete(self):
         """
         Delete this experiment and all associated checkpoints.
