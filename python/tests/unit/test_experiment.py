@@ -7,8 +7,10 @@ import json
 import os
 import pytest  # type: ignore
 import tarfile
+import time
 import tempfile
 from pathlib import Path
+from waiting import wait
 
 import replicate
 from replicate.exceptions import DoesNotExistError
@@ -141,12 +143,16 @@ def test_init_and_checkpoint(temp_workdir):
 
 
 def test_heartbeat(temp_workdir):
-    experiment = replicate.init(path=".")
-    # Don't write heartbeat
-    experiment._heartbeat.kill()
-    assert experiment._heartbeat.path == "metadata/heartbeats/{}.json".format(
-        experiment.id
-    )
+    experiment = replicate.init()
+    heartbeat_path = f".replicate/storage/metadata/heartbeats/{experiment.id}.json"
+    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+    assert json.load(open(heartbeat_path))["experiment_id"] == experiment.id
+    experiment.stop()
+    assert not os.path.exists(heartbeat_path)
+
+    # check starting and stopping immediately doesn't do anything weird
+    experiment = replicate.init()
+    experiment.stop()
 
 
 class Blah:

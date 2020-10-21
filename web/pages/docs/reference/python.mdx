@@ -61,5 +61,17 @@ For example:
 ... )
 ```
 
-</DocsLayout>
+### `experiment.stop()`
 
+Stop an experiment.
+
+Experiments running in a script will eventually time out, but when you're using a notebook, you must to call this method to mark an experiment as stopped.
+
+For example:
+
+```python:
+>>> experiment.stop()
+```
+
+</DocsLayout>
+```
