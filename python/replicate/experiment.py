@@ -347,6 +347,23 @@ class Experiment:
             if logy:
                 plt.yscale("log")
 
+    @property
+    def metrics(self):
+        return ExperimentMetrics(self)
+
+
+class ExperimentMetrics:
+    def __init__(self, experiment: Experiment):
+        self.experiment = experiment
+
+    def __getitem__(self, name: str) -> List[Any]:
+        values = [
+            chk.metrics.get(name) for chk in self.experiment.checkpoints if chk.metrics
+        ]
+        if all([v is None for v in values]):
+            raise KeyError("Metric {} does not exist in experiment".format(name))
+        return values
+
 
 @dataclass
 class ExperimentCollection:
