@@ -22,12 +22,12 @@ type PrimaryMetric struct {
 
 // Checkpoint is a snapshot of an experiment's filesystem
 type Checkpoint struct {
-	ID            string                  `json:"id"`
-	Created       time.Time               `json:"created"`
-	Metrics       map[string]*param.Value `json:"metrics"`
-	Step          int                     `json:"step"`
-	Path          string                  `json:"path"`
-	PrimaryMetric *PrimaryMetric          `json:"primary_metric"`
+	ID            string         `json:"id"`
+	Created       time.Time      `json:"created"`
+	Metrics       param.ValueMap `json:"metrics"`
+	Step          int            `json:"step"`
+	Path          string         `json:"path"`
+	PrimaryMetric *PrimaryMetric `json:"primary_metric"`
 }
 
 // NewCheckpoint creates a checkpoint with default values
