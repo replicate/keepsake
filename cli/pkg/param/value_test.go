@@ -109,18 +109,27 @@ func TestEqual(t *testing.T) {
 	require.Equal(t, shim(true, nil), shim(foobar.Equal(Object(map[string]interface{}{"foo": "bar"}))))
 	require.Equal(t, shim(false, nil), shim(foobar.Equal(Object(map[string]interface{}{"foo": "baz"}))))
 	require.Equal(t, shim(false, nil), shim(foobar.Equal(Object([]interface{}{"foo", "baz"}))))
+	require.Equal(t, shim(true, nil), shim(None().Equal(None())))
+	require.Equal(t, shim(false, nil), shim(Int(1).Equal(None())))
+	require.Equal(t, shim(false, nil), shim(None().Equal(Int(1))))
 }
 
 func TestGreaterThan(t *testing.T) {
 	require.Equal(t, shim(true, nil), shim(Float(1.5).GreaterThan(Int(1))))
 	require.Equal(t, shim(false, nil), shim(Int(1).GreaterThan(Float(1.5))))
 	require.Equal(t, shim(false, nil), shim(Object(map[string]interface{}{"foo": "bar"}).GreaterThan(Object(map[string]interface{}{"foo": "bar"}))))
+	require.Equal(t, shim(false, nil), shim(None().GreaterThan(None())))
+	require.Equal(t, shim(false, nil), shim(None().GreaterThan(Int(1))))
+	require.Equal(t, shim(false, nil), shim(Int(1).GreaterThan(None())))
 }
 
 func TestLessThan(t *testing.T) {
 	require.Equal(t, shim(false, nil), shim(Float(1.5).LessThan(Int(1))))
 	require.Equal(t, shim(true, nil), shim(Int(1).LessThan(Float(1.5))))
 	require.Equal(t, shim(false, nil), shim(Object(map[string]interface{}{"foo": "bar"}).GreaterThan(Object(map[string]interface{}{"foo": "bar"}))))
+	require.Equal(t, shim(false, nil), shim(None().LessThan(None())))
+	require.Equal(t, shim(false, nil), shim(None().LessThan(Int(1))))
+	require.Equal(t, shim(false, nil), shim(Int(1).LessThan(None())))
 }
 
 func TestType(t *testing.T) {
