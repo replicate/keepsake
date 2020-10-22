@@ -28,12 +28,12 @@ type Experiment struct {
 
 type NamedParam struct {
 	Name  string
-	Value *param.Value
+	Value param.Value
 }
 
 // NewExperiment creates an experiment, setting ID and Created
 // TODO(andreas): can we get rid of this function?
-func NewExperiment(params map[string]*param.Value) *Experiment {
+func NewExperiment(params param.ValueMap) *Experiment {
 	return &Experiment{
 		ID:      hash.Random(),
 		Created: time.Now().UTC(),

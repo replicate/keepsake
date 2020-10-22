@@ -33,7 +33,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
 		Created: fixedTime.Add(-10 * time.Minute),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
 		},
@@ -46,7 +46,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 				ID:      "1ccccccccc",
 				Created: fixedTime.Add(-5 * time.Minute),
 				Path:    "data",
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.1),
 					"metric-2": param.Int(2),
 				},
@@ -59,7 +59,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 				ID:      "2ccccccccc",
 				Created: fixedTime.Add(-4 * time.Minute),
 				Path:    "data",
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.01),
 					"metric-2": param.Int(2),
 				},
@@ -72,7 +72,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 				ID:      "3ccccccccc",
 				Created: fixedTime.Add(-3 * time.Minute),
 				Path:    "data",
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.02),
 					"metric-2": param.Int(2),
 				},
@@ -86,7 +86,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: fixedTime.Add(-1 * time.Minute),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"param-1": param.Int(200),
 			"param-2": param.String("hello"),
 			"param-3": param.String("hi"),
@@ -99,7 +99,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 				ID:      "4ccccccccc",
 				Created: fixedTime.Add(-2 * time.Minute),
 				Path:    "data",
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-3": param.Float(0.5),
 				},
 				Step: 5,

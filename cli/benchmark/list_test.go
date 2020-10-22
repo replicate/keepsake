@@ -81,7 +81,7 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 
 	for i := 0; i < numExperiments; i++ {
 		err := queue.Go(func() error {
-			exp := project.NewExperiment(map[string]*param.Value{
+			exp := project.NewExperiment(param.ValueMap{
 				"learning_rate": param.Float(0.001),
 			})
 			if err := exp.Save(storage); err != nil {
@@ -94,7 +94,7 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 
 			exp.Checkpoints = []*project.Checkpoint{}
 			for j := 0; j < numCheckpoints; j++ {
-				exp.Checkpoints = append(exp.Checkpoints, project.NewCheckpoint(map[string]*param.Value{
+				exp.Checkpoints = append(exp.Checkpoints, project.NewCheckpoint(param.ValueMap{
 					"accuracy": param.Float(0.987),
 				}))
 			}

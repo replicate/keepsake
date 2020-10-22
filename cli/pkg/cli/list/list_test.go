@@ -27,7 +27,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	var experiments = []*project.Experiment{{
 		ID:      "1eeeeeeeee",
 		Created: time.Now().UTC(),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
 		},
@@ -39,7 +39,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			{
 				ID:      "1ccccccccc",
 				Created: time.Now().UTC().Add(-1 * time.Minute),
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.1),
 					"metric-2": param.Int(2),
 				},
@@ -51,7 +51,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			}, {
 				ID:      "2ccccccccc",
 				Created: time.Now().UTC(),
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.01),
 					"metric-2": param.Int(2),
 				},
@@ -63,9 +63,11 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			}, {
 				ID:      "3ccccccccc",
 				Created: time.Now().UTC(),
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-1": param.Float(0.02),
 					"metric-2": param.Int(2),
+					// test it works with None
+					"metric-3": param.None(),
 				},
 				PrimaryMetric: &project.PrimaryMetric{
 					Name: "metric-1",
@@ -77,7 +79,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	}, {
 		ID:      "2eeeeeeeee",
 		Created: time.Now().UTC().Add(-1 * time.Minute),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"param-1": param.Int(200),
 			"param-2": param.String("hello"),
 			"param-3": param.String("hi"),
@@ -89,7 +91,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 			{
 				ID:      "4ccccccccc",
 				Created: time.Now().UTC(),
-				Metrics: map[string]*param.Value{
+				Metrics: param.ValueMap{
 					"metric-3": param.Float(0.5),
 				},
 				PrimaryMetric: &project.PrimaryMetric{
@@ -102,10 +104,12 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 	}, {
 		ID:      "3eeeeeeeee",
 		Created: time.Now().UTC().Add(-2 * time.Minute),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"param-1": param.Int(200),
 			"param-2": param.String("hello"),
 			"param-3": param.String("hi"),
+			// test it works with None
+			"param-4": param.None(),
 		},
 		Host:   "10.1.1.2",
 		User:   "ben",
@@ -158,10 +162,10 @@ func TestListOutputTableWithPrimaryMetricAll(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  LATEST CHECKPOINT  METRIC-1  METRIC-2  METRIC-3  BEST CHECKPOINT    METRIC-1  METRIC-2  METRIC-3
-3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi       4cccccc (step 5)                       0.5
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello             3cccccc (step 20)  0.02      2                   2cccccc (step 20)  0.01      2
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  PARAM-4  LATEST CHECKPOINT  METRIC-1  METRIC-2  METRIC-3  BEST CHECKPOINT    METRIC-1  METRIC-2  METRIC-3
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi       null
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi                4cccccc (step 5)                       0.5
+1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello                      3cccccc (step 20)  0.02      2         null      2cccccc (step 20)  0.01      2
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -254,12 +258,12 @@ func TestListJSON(t *testing.T) {
 	exp := &project.Experiment{
 		ID:      hash.Random(),
 		Created: time.Now().UTC(),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"learning_rate": param.Float(0.001),
 		},
 		Command: "train.py --gamma 1.2",
 		Checkpoints: []*project.Checkpoint{
-			project.NewCheckpoint(map[string]*param.Value{
+			project.NewCheckpoint(param.ValueMap{
 				"accuracy": param.Float(0.987),
 			}),
 		},
@@ -272,12 +276,12 @@ func TestListJSON(t *testing.T) {
 	exp = &project.Experiment{
 		ID:      hash.Random(),
 		Created: time.Now().UTC(),
-		Params: map[string]*param.Value{
+		Params: param.ValueMap{
 			"learning_rate": param.Float(0.002),
 		},
 		Command: "train.py --gamma 1.5",
 		Checkpoints: []*project.Checkpoint{
-			project.NewCheckpoint(map[string]*param.Value{
+			project.NewCheckpoint(param.ValueMap{
 				"accuracy": param.Float(0.987),
 			}),
 		},
