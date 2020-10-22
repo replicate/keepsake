@@ -249,7 +249,10 @@ func (v *Value) PythonString() string {
 	panic("Uninitialized param.Value")
 }
 
-func (v *Value) Equal(other *Value) (bool, error) {
+func (v Value) Equal(other *Value) (bool, error) {
+	if !v.IsNone() && other.IsNone() || v.IsNone() && !other.IsNone() {
+		return false, nil
+	}
 	if v.Type() != other.Type() {
 		return false, fmt.Errorf("Comparing values of different types: %s and %s", v.Type(), other.Type())
 	}
@@ -264,6 +267,8 @@ func (v *Value) Equal(other *Value) (bool, error) {
 		return v.StringVal() == other.StringVal(), nil
 	case TypeObject:
 		return reflect.DeepEqual(v.ObjectVal(), other.ObjectVal()), nil
+	case TypeNone:
+		return other.IsNone(), nil
 	}
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
@@ -284,6 +289,9 @@ func (v *Value) GreaterThan(other *Value) (bool, error) {
 	if v.Type() == TypeInt && other.Type() == TypeFloat {
 		return float64(v.IntVal()) > other.FloatVal(), nil
 	}
+	if v.IsNone() || other.IsNone() {
+		return false, nil
+	}
 
 	if v.Type() != other.Type() {
 		return false, fmt.Errorf("Comparing values of different types: %s and %s", v.Type(), other.Type())
@@ -298,6 +306,8 @@ func (v *Value) GreaterThan(other *Value) (bool, error) {
 	case TypeString:
 		return v.StringVal() > other.StringVal(), nil
 	case TypeObject:
+		return false, nil
+	case TypeNone:
 		return false, nil
 	}
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
@@ -323,6 +333,9 @@ func (v *Value) LessThan(other *Value) (bool, error) {
 	if v.Type() == TypeInt && other.Type() == TypeFloat {
 		return float64(v.IntVal()) < other.FloatVal(), nil
 	}
+	if v.IsNone() || other.IsNone() {
+		return false, nil
+	}
 
 	if v.Type() != other.Type() {
 		return false, fmt.Errorf("Comparing values of different types: %s and %s", v.Type(), other.Type())
@@ -336,6 +349,8 @@ func (v *Value) LessThan(other *Value) (bool, error) {
 		return v.FloatVal() < other.FloatVal(), nil
 	case TypeString:
 		return v.StringVal() < other.StringVal(), nil
+	case TypeNone:
+		return false, nil
 	}
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
