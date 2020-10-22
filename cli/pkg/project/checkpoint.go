@@ -31,7 +31,7 @@ type Checkpoint struct {
 }
 
 // NewCheckpoint creates a checkpoint with default values
-func NewCheckpoint(metrics map[string]*param.Value) *Checkpoint {
+func NewCheckpoint(metrics param.ValueMap) *Checkpoint {
 	return &Checkpoint{
 		ID:      hash.Random(),
 		Created: time.Now().UTC(),

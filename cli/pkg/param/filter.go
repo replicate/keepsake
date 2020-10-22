@@ -9,7 +9,7 @@ import (
 )
 
 type ValueGetter interface {
-	GetValue(name string) *Value
+	GetValue(name string) Value
 }
 
 type Filters struct {
@@ -19,7 +19,7 @@ type Filters struct {
 type filter struct {
 	name     string
 	operator Operator
-	value    *Value
+	value    Value
 }
 
 type Operator int
@@ -47,7 +47,7 @@ func MakeFilters(strings []string) (*Filters, error) {
 
 // SetExclusive sets a filter exclusively, deleting any previous
 // filters with that name
-func (fs *Filters) SetExclusive(name string, operator Operator, value *Value) {
+func (fs *Filters) SetExclusive(name string, operator Operator, value Value) {
 	filters := []*filter{{
 		name:     name,
 		operator: operator,
@@ -85,9 +85,6 @@ func (fs *Filters) Matches(obj ValueGetter) (bool, error) {
 
 func (f *filter) matches(obj ValueGetter) (bool, error) {
 	value := obj.GetValue(f.name)
-	if value == nil {
-		return f.value.IsNone() && f.operator == OperatorEqual, nil
-	}
 	if f.value.IsNone() {
 		if f.operator == OperatorEqual {
 			return value.IsNone(), nil

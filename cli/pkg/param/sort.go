@@ -25,16 +25,10 @@ func (s *Sorter) LessThan(x ValueGetter, y ValueGetter) bool {
 	xVal := x.GetValue(s.Key)
 	yVal := y.GetValue(s.Key)
 	var isLess bool
-	if xVal == nil {
-		isLess = true
-	} else if yVal == nil {
-		isLess = false
-	} else {
-		var err error
-		isLess, err = xVal.LessThan(yVal)
-		if err != nil {
-			panic(err)
-		}
+	var err error
+	isLess, err = xVal.LessThan(yVal)
+	if err != nil {
+		panic(err)
 	}
 	if s.Descending {
 		return !isLess

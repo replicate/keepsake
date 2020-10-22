@@ -156,7 +156,7 @@ func experimentToMap(exp *project.Experiment) map[string]string {
 	}
 }
 
-func paramMapToStringMap(params map[string]*param.Value) map[string]string {
+func paramMapToStringMap(params param.ValueMap) map[string]string {
 	result := make(map[string]string)
 	for k, v := range params {
 		result[k] = v.String()

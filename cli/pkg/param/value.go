@@ -36,7 +36,7 @@ type Value struct {
 	isNone    bool
 }
 
-func (v *Value) MarshalJSON() ([]byte, error) {
+func (v Value) MarshalJSON() ([]byte, error) {
 	switch {
 	case v.boolVal != nil:
 		return json.Marshal(v.boolVal)
@@ -54,6 +54,8 @@ func (v *Value) MarshalJSON() ([]byte, error) {
 	return nil, fmt.Errorf("No default parameter has been defined")
 }
 
+// Note that unlike everywhere else, this function uses a pointer for v. This is because this
+// function needs to modify the struct in place.
 func (v *Value) UnmarshalJSON(data []byte) error {
 	// FIXME(bfirsh): this might be more robust if it unmarshalled to interface{}
 	// then we used reflect? the error returned from json.Unmarshal might be other things
@@ -82,9 +84,9 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 
 // ParseFromString attempts to turn a string passed to a filter into a value.
 // They aren't valid JSON because they're provided by a human (strings might not have quotes, etc).
-func ParseFromString(s string) *Value {
+func ParseFromString(s string) Value {
 	data := []byte(s)
-	v := &Value{}
+	v := Value{}
 	if s == "null" || s == "None" {
 		v.isNone = true
 		return v
@@ -114,7 +116,7 @@ func ParseFromString(s string) *Value {
 	return v
 }
 
-func (v *Value) String() string {
+func (v Value) String() string {
 	if v.Type() == TypeString {
 		return v.StringVal()
 	}
@@ -142,7 +144,7 @@ func Truncate(s string, maxLength int) string {
 //
 // TODO: some interesting stuff could be done with color here (e.g. "..." and "none" could be dimmed)
 // so maybe this should be lifted out into a generic shortener in the console package.
-func (v *Value) ShortString(maxLength int, precision int) string {
+func (v Value) ShortString(maxLength int, precision int) string {
 	switch v.Type() {
 	case TypeFloat:
 		f := v.FloatVal()
@@ -163,7 +165,7 @@ func (v *Value) ShortString(maxLength int, precision int) string {
 	return v.String()
 }
 
-func (v *Value) Type() Type {
+func (v Value) Type() Type {
 	switch {
 	case v.boolVal != nil:
 		return TypeBool
@@ -181,46 +183,46 @@ func (v *Value) Type() Type {
 	panic("Uninitialized param.Value")
 }
 
-func (v *Value) IsNone() bool {
+func (v Value) IsNone() bool {
 	return v.isNone
 }
 
-func (v *Value) BoolVal() bool {
+func (v Value) BoolVal() bool {
 	if v.Type() != TypeBool {
 		panic(fmt.Sprintf("Can't use %s as bool", v))
 	}
 	return *v.boolVal
 }
 
-func (v *Value) IntVal() int {
+func (v Value) IntVal() int {
 	if v.Type() != TypeInt {
 		panic(fmt.Sprintf("Can't use %s as int", v))
 	}
 	return *v.intVal
 }
 
-func (v *Value) FloatVal() float64 {
+func (v Value) FloatVal() float64 {
 	if v.Type() != TypeFloat {
 		panic(fmt.Sprintf("Can't use %s as float", v))
 	}
 	return *v.floatVal
 }
 
-func (v *Value) StringVal() string {
+func (v Value) StringVal() string {
 	if v.Type() != TypeString {
 		panic(fmt.Sprintf("Can't use %s as string", v))
 	}
 	return *v.stringVal
 }
 
-func (v *Value) ObjectVal() interface{} {
+func (v Value) ObjectVal() interface{} {
 	if v.Type() != TypeObject {
 		panic(fmt.Sprintf("Can't use %s as object", v))
 	}
 	return v.objectVal
 }
 
-func (v *Value) PythonString() string {
+func (v Value) PythonString() string {
 	switch v.Type() {
 	case TypeBool:
 		if *v.boolVal {
@@ -249,7 +251,7 @@ func (v *Value) PythonString() string {
 	panic("Uninitialized param.Value")
 }
 
-func (v Value) Equal(other *Value) (bool, error) {
+func (v Value) Equal(other Value) (bool, error) {
 	if !v.IsNone() && other.IsNone() || v.IsNone() && !other.IsNone() {
 		return false, nil
 	}
@@ -273,7 +275,7 @@ func (v Value) Equal(other *Value) (bool, error) {
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
 
-func (v *Value) NotEqual(other *Value) (bool, error) {
+func (v Value) NotEqual(other Value) (bool, error) {
 	eq, err := v.Equal(other)
 	if err != nil {
 		return false, err
@@ -281,7 +283,7 @@ func (v *Value) NotEqual(other *Value) (bool, error) {
 	return !eq, nil
 }
 
-func (v *Value) GreaterThan(other *Value) (bool, error) {
+func (v Value) GreaterThan(other Value) (bool, error) {
 	// Special cases
 	if v.Type() == TypeFloat && other.Type() == TypeInt {
 		return v.FloatVal() > float64(other.IntVal()), nil
@@ -313,7 +315,7 @@ func (v *Value) GreaterThan(other *Value) (bool, error) {
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
 
-func (v *Value) GreaterOrEqual(other *Value) (bool, error) {
+func (v Value) GreaterOrEqual(other Value) (bool, error) {
 	gt, err := v.GreaterThan(other)
 	if err != nil {
 		return false, err
@@ -325,7 +327,7 @@ func (v *Value) GreaterOrEqual(other *Value) (bool, error) {
 	return gt || eq, nil
 }
 
-func (v *Value) LessThan(other *Value) (bool, error) {
+func (v Value) LessThan(other Value) (bool, error) {
 	// Special cases
 	if v.Type() == TypeFloat && other.Type() == TypeInt {
 		return v.FloatVal() < float64(other.IntVal()), nil
@@ -355,7 +357,7 @@ func (v *Value) LessThan(other *Value) (bool, error) {
 	return false, fmt.Errorf("Unknown value type: %s", v.Type())
 }
 
-func (v *Value) LessOrEqual(other *Value) (bool, error) {
+func (v Value) LessOrEqual(other Value) (bool, error) {
 	lt, err := v.LessThan(other)
 	if err != nil {
 		return false, err
@@ -367,31 +369,31 @@ func (v *Value) LessOrEqual(other *Value) (bool, error) {
 	return lt || eq, nil
 }
 
-func Bool(v bool) *Value {
-	return &Value{boolVal: &v}
+func Bool(v bool) Value {
+	return Value{boolVal: &v}
 }
 
-func Int(v int) *Value {
-	return &Value{intVal: &v}
+func Int(v int) Value {
+	return Value{intVal: &v}
 }
 
-func Float(v float64) *Value {
-	return &Value{floatVal: &v}
+func Float(v float64) Value {
+	return Value{floatVal: &v}
 }
 
-func String(v string) *Value {
-	return &Value{stringVal: &v}
+func String(v string) Value {
+	return Value{stringVal: &v}
 }
 
-func Object(v interface{}) *Value {
-	return &Value{objectVal: v}
+func Object(v interface{}) Value {
+	return Value{objectVal: v}
 }
 
-func None() *Value {
-	return &Value{isNone: true}
+func None() Value {
+	return Value{isNone: true}
 }
 
-func ToJSON(params map[string]*Value) (string, error) {
+func ToJSON(params ValueMap) (string, error) {
 	j, err := json.Marshal(params)
 	if err != nil {
 		return "", fmt.Errorf("Failed to convert params to JSON: %s", err)
@@ -399,8 +401,8 @@ func ToJSON(params map[string]*Value) (string, error) {
 	return string(j), nil
 }
 
-func FromJSON(j string) (map[string]*Value, error) {
-	params := map[string]*Value{}
+func FromJSON(j string) (ValueMap, error) {
+	params := ValueMap{}
 	err := json.Unmarshal([]byte(j), &params)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load params from JSON: %s", err)

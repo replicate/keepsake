@@ -36,23 +36,23 @@ type Metric struct {
 }
 
 type ListExperiment struct {
-	ID               string                  `json:"id"`
-	Created          time.Time               `json:"created"`
-	Params           map[string]*param.Value `json:"params"`
-	Command          string                  `json:"command"`
-	NumCheckpoints   int                     `json:"num_checkpoints"`
-	LatestCheckpoint *project.Checkpoint     `json:"latest_checkpoint"`
-	BestCheckpoint   *project.Checkpoint     `json:"best_checkpoint"`
-	User             string                  `json:"user"`
-	Host             string                  `json:"host"`
-	Running          bool                    `json:"running"`
+	ID               string              `json:"id"`
+	Created          time.Time           `json:"created"`
+	Params           param.ValueMap      `json:"params"`
+	Command          string              `json:"command"`
+	NumCheckpoints   int                 `json:"num_checkpoints"`
+	LatestCheckpoint *project.Checkpoint `json:"latest_checkpoint"`
+	BestCheckpoint   *project.Checkpoint `json:"best_checkpoint"`
+	User             string              `json:"user"`
+	Host             string              `json:"host"`
+	Running          bool                `json:"running"`
 
 	// exclude config from json output
 	Config *config.Config `json:"-"`
 }
 
 // TODO(andreas): make this safer and validate user inputs against these strings
-func (exp *ListExperiment) GetValue(name string) *param.Value {
+func (exp *ListExperiment) GetValue(name string) param.Value {
 	if name == "started" {
 		// floating point timestamp used in sorting
 		return param.Float(float64(exp.Created.Unix()))
@@ -86,7 +86,7 @@ func (exp *ListExperiment) GetValue(name string) *param.Value {
 	if val, ok := exp.Params[name]; ok {
 		return val
 	}
-	return nil
+	return param.None()
 }
 
 func Experiments(store storage.Storage, format Format, all bool, filters *param.Filters, sorter *param.Sorter) error {
@@ -275,7 +275,7 @@ func getParamsToDisplay(experiments []*ListExperiment, all bool) []string {
 			}
 		}
 	} else {
-		paramValues := map[string]*param.Value{}
+		paramValues := param.ValueMap{}
 		for _, exp := range experiments {
 			for key, val := range exp.Params {
 				// Don't show objects in list view, because they're likely long and not very helpful
