@@ -278,6 +278,75 @@ class Experiment:
     def _metadata_path(self) -> str:
         return "metadata/experiments/{}.json".format(self.id)
 
+    def primary_metric(self) -> str:
+        """
+        Get the shared primary metric for the list of checkpoints in
+        this experiment. If no shared primary metric exists, raises
+        ValueError.
+        """
+        primary_metric = None
+        for chk in self.checkpoints:
+            if chk.primary_metric is None:
+                continue
+
+            pm = chk.primary_metric["name"]
+            if pm is None:
+                continue
+            if primary_metric is not None and primary_metric != pm:
+                # TODO(andreas): should this be another standard error type?
+                raise ValueError(
+                    "The primary metric differs between the checkpoints in this experiments"
+                )
+            primary_metric = pm
+
+        if primary_metric is None:
+            raise ValueError(
+                "No primary metric is defined for the checkpoints in theis experiment"
+            )
+
+        return primary_metric
+
+    def plot(self, metric: Optional[str] = None, logy=False, plot_only=False):
+        """
+        Plot a metric for all the checkpoints in this experiment. If
+        no metric is specified, defaults to the shared primary metric.
+        """
+
+        # TODO(andreas): smoothing
+        import matplotlib.pyplot as plt  # type: ignore
+
+        if metric is None:
+            metric = self.primary_metric()
+
+        data = []
+        for chk in self.checkpoints:
+            if chk.metrics and metric in chk.metrics:
+                # TODO(andreas): handle non-numeric metric
+                # TODO(andreas): warn if metric doesn't exist in any experiment
+                data.append(chk.metrics[metric])
+            else:
+                data.append(None)
+
+        every_checkpoint_has_step = True
+        steps = []
+        for chk in self.checkpoints:
+            if chk.step is None:
+                every_checkpoint_has_step = False
+                break
+            steps.append(chk.step)
+        if not every_checkpoint_has_step:
+            steps = list(range(len(data)))
+
+        plt.plot(steps, data, label=self.short_id())
+
+        if not plot_only:
+            plt.legend(bbox_to_anchor=(1, 1))
+            plt.xlabel("step")
+            plt.ylabel(metric)
+
+            if logy:
+                plt.yscale("log")
+
 
 @dataclass
 class ExperimentCollection:
@@ -423,26 +492,7 @@ class ExperimentList(list, MutableSequence[Experiment]):
             metric = self.primary_metric()
 
         for exp in self:
-            data = []
-            for chk in exp.checkpoints:
-                if metric in chk.metrics:
-                    # TODO(andreas): handle non-numeric metric
-                    # TODO(andreas): warn if metric doesn't exist in any experiment
-                    data.append(chk.metrics[metric])
-                else:
-                    data.append(None)
-
-            every_checkpoint_has_step = True
-            steps = []
-            for chk in exp.checkpoints:
-                if chk.step is None:
-                    every_checkpoint_has_step = False
-                    break
-                steps.append(chk.step)
-            if not every_checkpoint_has_step:
-                steps = list(range(len(data)))
-
-            plt.plot(steps, data, label=exp.short_id())
+            exp.plot(metric, plot_only=True)
 
         plt.legend(bbox_to_anchor=(1, 1))
         plt.xlabel("step")
