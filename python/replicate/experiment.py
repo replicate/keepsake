@@ -5,6 +5,7 @@ except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
 import getpass
 import os
+import html
 import datetime
 import json
 import shlex
@@ -506,3 +507,75 @@ class ExperimentList(list, MutableSequence[Experiment]):
         """
         for exp in self:
             exp.delete()
+
+    def _repr_html_(self):
+        show_user = False
+        user = None
+        for exp in self:
+            if user is not None and user != exp.user:
+                show_user = True
+                break
+            user = exp.user
+
+        show_host = False
+        host = None
+        for exp in self:
+            if host is not None and host != exp.host:
+                show_host = True
+                break
+            host = exp.host
+        if host == "":
+            show_host = False
+
+        def format_checkpoint(chk: Optional[Checkpoint]) -> str:
+            if not chk:
+                return ""
+            parens = []
+            if chk.step is not None:
+                parens.append("step {}".format(chk.step))
+            if (
+                chk.primary_metric
+                and chk.metrics
+                and chk.metrics.get(chk.primary_metric["name"]) is not None
+            ):
+                parens.append(
+                    "{}: {}".format(
+                        chk.primary_metric["name"],
+                        chk.metrics[chk.primary_metric["name"]],
+                    )
+                )
+            if parens:
+                return "{} ({})".format(chk.short_id(), "; ".join(parens))
+            return chk.short_id()
+
+        headings = ["id", "created"]
+        if show_user:
+            headings.append("user")
+        if show_host:
+            headings.append("host")
+        headings += ["params", "latest_checkpoint", "best_checkpoint"]
+        out = ["<table>"]
+        out.append("<tr>")
+        for h in headings:
+            out.append("<th>")
+            out.append(html.escape(h))
+            out.append("</th>")
+        out.append("</tr>")
+        for experiment in self:
+            out.append("<tr>")
+            for h in headings:
+                if h == "latest_checkpoint":
+                    d = format_checkpoint(exp.latest())
+                elif h == "best_checkpoint":
+                    d = format_checkpoint(exp.best())
+                else:
+                    d = getattr(experiment, h)
+                    d = str(d)
+                    if h == "id":
+                        d = d[:7]
+                out.append("<th>")
+                out.append(html.escape(d))
+                out.append("</th>")
+            out.append("</tr>")
+        out.append("</table>")
+        return "".join(out)
