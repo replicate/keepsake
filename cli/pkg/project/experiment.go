@@ -15,15 +15,15 @@ import (
 
 // Experiment represents a training run
 type Experiment struct {
-	ID          string                  `json:"id"`
-	Created     time.Time               `json:"created"`
-	Params      map[string]*param.Value `json:"params"`
-	Host        string                  `json:"host"`
-	User        string                  `json:"user"`
-	Config      *config.Config          `json:"config"`
-	Command     string                  `json:"command"`
-	Path        string                  `json:"path"`
-	Checkpoints []*Checkpoint           `json:"checkpoints"`
+	ID          string         `json:"id"`
+	Created     time.Time      `json:"created"`
+	Params      param.ValueMap `json:"params"`
+	Host        string         `json:"host"`
+	User        string         `json:"user"`
+	Config      *config.Config `json:"config"`
+	Command     string         `json:"command"`
+	Path        string         `json:"path"`
+	Checkpoints []*Checkpoint  `json:"checkpoints"`
 }
 
 type NamedParam struct {
