@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "export": "next export"
+    "export": "next export",
+    "fmt": "prettier --write --ignore-unknown ."
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
@@ -16,6 +17,7 @@
     "@next/mdx": "^9.5.3",
     "@reach/tabs": "^0.11.2",
     "next": "9.5.4",
+    "prettier": "^2.1.2",
     "prism-react-renderer": "^1.1.1",
     "prismjs": "^1.21.0",
     "raw-loader": "^4.0.1",
