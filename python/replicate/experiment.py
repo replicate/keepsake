@@ -361,21 +361,21 @@ class Experiment:
         return last.created - first.created
 
     def _repr_html_(self):
-        out = '<p><b><pre style="display: inline">id:       </pre> {}</b></p>'.format(
+        out = '<p><b><pre style="display: inline">Experiment(id="{}")</pre></b></p>'.format(
             self.id
         )
         out += "<p>"
         # TODO(andreas): add status
         for field in ["created", "host", "user", "command", "duration"]:
             out += '<pre style="display: inline">{:10s}</pre> {}<br/>'.format(
-                field + ":", getattr(self, field)
+                html.escape(field) + ":", html.escape(str(getattr(self, field)))
             )
         out += "</p>"
         out += '<p><b><pre style="display: inline">params:</pre></b></p>'
         out += '<table><tr><th style="text-align: left">Name</th><th style="text-align: left">Value</th></tr>'
         for key, value in self.params.items():
             out += '<tr><td style="text-align: left"><pre>{}</pre></td><td style="text-align: left">{}</td>'.format(
-                key, value
+                html.escape(key), html.escape(str(value))
             )
         out += "</table>"
 
@@ -385,11 +385,13 @@ class Experiment:
             metrics |= set(chk.metrics.keys())
 
         chk_headings = ["short_id", "step", "created"] + [
-            'metrics["{}"]'.format(m) for m in metrics
+            'metrics["{}"]'.format(html.escape(str(m))) for m in metrics
         ]
         out += "<table><tr>"
         for heading in chk_headings:
-            out += '<th style="text-align: left"><pre>{}</pre></th>'.format(heading)
+            out += '<th style="text-align: left"><pre>{}</pre></th>'.format(
+                html.escape(heading)
+            )
         out += "</tr>"
         best = self.best()
         for chk in self.checkpoints:
@@ -405,20 +407,20 @@ class Experiment:
                         and chk.primary_metric
                         and chk.primary_metric["name"] == name
                     ):
-                        value = str(value) + " (best)"
+                        value = html.escape(str(value)) + " (best)"
                         is_best = True
                 elif heading == "short_id":
                     value = chk.short_id()
                 else:
-                    value = getattr(chk, heading)
+                    value = html.escape(str(getattr(chk, heading)))
                 values.append(value)
 
             for value in values:
                 out += '<td style="text-align: left">'
                 if is_best:
-                    out += "<b>{}</b>".format(value)
+                    out += "<b>{}</b>".format(html.escape(str(value)))
                 else:
-                    out += str(value)
+                    out += html.escape(str(value))
             out += "</tr>"
         out += "</table>"
 
