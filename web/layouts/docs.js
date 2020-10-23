@@ -42,6 +42,9 @@ function DocsLayout({ title, children, ...props }) {
               <h2>Guides</h2>
               <ol>
                 <li>
+                  <a href="/docs/guides/notebooks">Working in notebooks</a>
+                </li>
+                <li>
                   <a href="/docs/guides/keras-integration">Keras integration</a>
                 </li>
               </ol>
