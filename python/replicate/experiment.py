@@ -360,7 +360,7 @@ class Experiment:
 
         return last.created - first.created
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         out = '<p><b><pre style="display: inline">Experiment(id="{}")</pre></b></p>'.format(
             self.id
         )
@@ -373,16 +373,18 @@ class Experiment:
         out += "</p>"
         out += '<p><b><pre style="display: inline">params:</pre></b></p>'
         out += '<table><tr><th style="text-align: left">Name</th><th style="text-align: left">Value</th></tr>'
-        for key, value in self.params.items():
-            out += '<tr><td style="text-align: left"><pre>{}</pre></td><td style="text-align: left">{}</td>'.format(
-                html.escape(key), html.escape(str(value))
-            )
+        if self.params is not None:
+            for key, value in self.params.items():
+                out += '<tr><td style="text-align: left"><pre>{}</pre></td><td style="text-align: left">{}</td>'.format(
+                    html.escape(key), html.escape(str(value))
+                )
         out += "</table>"
 
         out += '<p><b><pre style="display: inline">checkpoints:</pre></b></p>'
         metrics = set()
         for chk in self.checkpoints:
-            metrics |= set(chk.metrics.keys())
+            if chk.metrics is not None:
+                metrics |= set(chk.metrics.keys())
 
         chk_headings = ["short_id", "step", "created"] + [
             'metrics["{}"]'.format(html.escape(str(m))) for m in metrics
@@ -401,7 +403,10 @@ class Experiment:
             for heading in chk_headings:
                 if heading.startswith('metrics["'):
                     name = heading.split('"')[1].split('"')[0]
-                    value = chk.metrics[name]
+                    if chk.metrics is None:
+                        value = ""
+                    else:
+                        value = chk.metrics.get(name)
                     if (
                         chk == best
                         and chk.primary_metric
