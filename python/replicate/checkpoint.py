@@ -8,6 +8,7 @@ import os
 import json
 import sys
 from typing import Optional, Dict, Any, List
+import html
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -110,3 +111,25 @@ class Checkpoint(object):
 
     def _storage_tar_path(self) -> str:
         return "checkpoints/{}.tar.gz".format(self.id)
+
+    def _repr_html_(self) -> str:
+        out = '<p><b><pre style="display: inline">Checkpoint(id="{}")</pre></b></p>'.format(
+            self.id
+        )
+        out += "<p>"
+        for field in ["created", "path", "step"]:
+            out += '<pre style="display: inline">{:10s}</pre> {}<br/>'.format(
+                html.escape(field) + ":", html.escape(str(getattr(self, field)))
+            )
+        out += "</p>"
+
+        out += '<p><b><pre style="display: inline">metrics:</pre></b></p>'
+        out += '<table><tr><th style="text-align: left">Name</th><th style="text-align: left">Value</th></tr>'
+        if self.metrics is not None:
+            for key, value in self.metrics.items():
+                out += '<tr><td style="text-align: left"><pre>{}</pre></td><td style="text-align: left">{}</td>'.format(
+                    html.escape(key), html.escape(str(value))
+                )
+        out += "</table>"
+
+        return out
