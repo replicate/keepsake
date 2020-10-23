@@ -190,10 +190,10 @@ $ git commit -am "Use hinge loss"`}
           </CodeBlock>
           <h3 id="anchor-3">Analyze in a notebook</h3>
           <p>
-            Use the Python API to filter, analyze, and plot your results. It's
-            like a programmable Tensorboard.
+            Use the Python API to retrieve, analyze, and plot your results.
+            Think of it like a programmable Tensorboard.
           </p>
-          <img src="images/notebook.png" width="700" />
+          <img src="images/notebook.png" width="900" />
         </div>
       </section>
     </Layout>

@@ -958,6 +958,8 @@ header {
     }
 
     img {
+      margin: $whitespace-vertical 0;
+      border: 1px solid $panel;
       max-width: 100%;
     }
   }
