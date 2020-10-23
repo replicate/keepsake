@@ -189,6 +189,12 @@ Copying code and weights to working directory...
 # save the code to git
 $ git commit -am "Use hinge loss"`}
           </CodeBlock>
+          <h3 id="anchor-3">Analyze in a notebook</h3>
+          <p>
+            Use the Python API to filter, analyze, and plot your results. It's
+            like a programmable Tensorboard.
+          </p>
+          <img src="images/notebook.png" width="700" />
         </div>
       </section>
     </Layout>
