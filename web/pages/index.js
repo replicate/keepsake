@@ -133,6 +133,9 @@ def train():
                 <li>
                   <a href="#anchor-3">Commit to Git, after the fact</a>
                 </li>
+                <li>
+                  <a href="#anchor-4">Analyze in a notebook</a>
+                </li>
               </ol>
             </li>
           </ol>
@@ -188,9 +191,9 @@ Copying code and weights to working directory...
 # save the code to git
 $ git commit -am "Use hinge loss"`}
           </CodeBlock>
-          <h3 id="anchor-3">Analyze in a notebook</h3>
+          <h3 id="anchor-4">Analyze in a notebook</h3>
           <p>
-            Use the Python API to retrieve, analyze, and plot your results.
+            You can retrieve, analyze, and plot your results from within Python.
             Think of it like a programmable Tensorboard.
           </p>
           <img src="images/notebook.png" width="900" />
