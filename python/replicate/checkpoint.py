@@ -1,14 +1,16 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
-    from dataclasses import dataclass
+    from dataclasses import dataclass, InitVar
 except ImportError:
-    from ._vendor.dataclasses import dataclass
+    from ._vendor.dataclasses import dataclass, InitVar
 import datetime
 import os
+import io
+import tempfile
 import json
 import sys
-from typing import Optional, Dict, Any, List
 import html
+from typing import Optional, Dict, Any, List, BinaryIO, TYPE_CHECKING
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -20,6 +22,9 @@ from .json import CustomJSONEncoder
 from .hash import random_hash
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .validate import check_path
+
+if TYPE_CHECKING:
+    from .experiment import Experiment
 
 
 class PrimaryMetric(TypedDict):
@@ -40,8 +45,7 @@ class Checkpoint(object):
     metrics: Optional[Dict[str, Any]] = None
     primary_metric: Optional[PrimaryMetric] = None
 
-    # type is Experiment but can't import that because of circular imports
-    experiment: Optional[Any] = None
+    _experiment: Optional["Experiment"] = None
 
     def short_id(self) -> str:
         return self.id[:7]
@@ -118,16 +122,28 @@ class Checkpoint(object):
         """
         os.makedirs(output_directory, exist_ok=True)
 
-        assert self.experiment is not None
-        storage = self.experiment._project._get_storage()
+        assert self._experiment is not None
+        storage = self._experiment._project._get_storage()
         storage.get_path_tar(self._storage_tar_path(), output_directory)
-        storage.get_path_tar(self.experiment._storage_tar_path(), output_directory)
+        storage.get_path_tar(self._experiment._storage_tar_path(), output_directory)
         if not quiet:
             console.info(
                 "Copied the files from checkpoint {} to {}".format(
                     self.short_id(), output_directory
                 )
             )
+
+    def load(self, path: str) -> BinaryIO:
+        """
+        Read a single file from this checkpoint into memory.
+        Returns a file-like object.
+        """
+        with tempfile.TemporaryDirectory() as tempdir:
+            self.checkout(tempdir, quiet=True)
+            with open(os.path.join(tempdir, path), "rb") as f:
+                # TODO(andreas): don't load entire file into memory at once, in case it's huge
+                out_f = io.BytesIO(f.read())
+            return out_f
 
     def _storage_tar_path(self) -> str:
         return "checkpoints/{}.tar.gz".format(self.id)

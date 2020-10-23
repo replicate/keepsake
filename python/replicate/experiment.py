@@ -144,7 +144,7 @@ class Experiment:
             storage = self._project._get_storage()
             storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
-        checkpoint.experiment = self
+        checkpoint._experiment = self
         self.checkpoints.append(checkpoint)
         self.save()
 
@@ -172,7 +172,7 @@ class Experiment:
         ]
         experiment = Experiment(project=project, **data)
         for chk in experiment.checkpoints:
-            chk.experiment = experiment
+            chk._experiment = experiment
         return experiment
 
     def to_json(self) -> Dict[str, Any]:
