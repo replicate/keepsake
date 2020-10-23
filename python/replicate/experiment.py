@@ -347,6 +347,80 @@ class Experiment:
             if logy:
                 plt.yscale("log")
 
+    @property
+    def duration(self) -> Optional[datetime.timedelta]:
+        if not self.checkpoints:
+            return None
+
+        first = self.checkpoints[0]
+        last = self.checkpoints[-1]
+
+        return last.created - first.created
+
+    def _repr_html_(self):
+        out = '<p><b><pre style="display: inline">id:       </pre> {}</b></p>'.format(
+            self.id
+        )
+        out += "<p>"
+        # TODO(andreas): add status
+        for field in ["created", "host", "user", "command", "duration"]:
+            out += '<pre style="display: inline">{:10s}</pre> {}<br/>'.format(
+                field + ":", getattr(self, field)
+            )
+        out += "</p>"
+        out += '<p><b><pre style="display: inline">params:</pre></b></p>'
+        out += '<table><tr><th style="text-align: left">Name</th><th style="text-align: left">Value</th></tr>'
+        for key, value in self.params.items():
+            out += '<tr><td style="text-align: left"><pre>{}</pre></td><td style="text-align: left">{}</td>'.format(
+                key, value
+            )
+        out += "</table>"
+
+        out += '<p><b><pre style="display: inline">checkpoints:</pre></b></p>'
+        metrics = set()
+        for chk in self.checkpoints:
+            metrics |= set(chk.metrics.keys())
+
+        chk_headings = ["short_id", "step", "created"] + [
+            'metrics["{}"]'.format(m) for m in metrics
+        ]
+        out += "<table><tr>"
+        for heading in chk_headings:
+            out += '<th style="text-align: left"><pre>{}</pre></th>'.format(heading)
+        out += "</tr>"
+        best = self.best()
+        for chk in self.checkpoints:
+            out += "<tr>"
+            is_best = False
+            values = []
+            for heading in chk_headings:
+                if heading.startswith('metrics["'):
+                    name = heading.split('"')[1].split('"')[0]
+                    value = chk.metrics[name]
+                    if (
+                        chk == best
+                        and chk.primary_metric
+                        and chk.primary_metric["name"] == name
+                    ):
+                        value = str(value) + " (best)"
+                        is_best = True
+                elif heading == "short_id":
+                    value = chk.short_id()
+                else:
+                    value = getattr(chk, heading)
+                values.append(value)
+
+            for value in values:
+                out += '<td style="text-align: left">'
+                if is_best:
+                    out += "<b>{}</b>".format(value)
+                else:
+                    out += str(value)
+            out += "</tr>"
+        out += "</table>"
+
+        return out
+
 
 @dataclass
 class ExperimentCollection:
