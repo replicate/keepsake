@@ -932,6 +932,10 @@ header {
         margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
       }
     }
+
+    img {
+      max-width: 100%;
+    }
   }
   &.documentation {
     nav {
