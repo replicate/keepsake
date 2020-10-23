@@ -40,6 +40,9 @@ class Checkpoint(object):
     metrics: Optional[Dict[str, Any]] = None
     primary_metric: Optional[PrimaryMetric] = None
 
+    # type is Experiment but can't import that because of circular imports
+    experiment: Optional[Any] = None
+
     def short_id(self) -> str:
         return self.id[:7]
 
@@ -108,6 +111,23 @@ class Checkpoint(object):
             errors.extend(check_path("checkpoint", self.path))
 
         return errors
+
+    def checkout(self, output_directory: str, quiet: bool = False):
+        """
+        Copy files from this checkpoint to the output directory.
+        """
+        os.makedirs(output_directory, exist_ok=True)
+
+        assert self.experiment is not None
+        storage = self.experiment._project._get_storage()
+        storage.get_path_tar(self._storage_tar_path(), output_directory)
+        storage.get_path_tar(self.experiment._storage_tar_path(), output_directory)
+        if not quiet:
+            console.info(
+                "Copied the files from checkpoint {} to {}".format(
+                    self.short_id(), output_directory
+                )
+            )
 
     def _storage_tar_path(self) -> str:
         return "checkpoints/{}.tar.gz".format(self.id)

@@ -106,3 +106,19 @@ class S3Storage(Storage):
             Root=self.root,
             Path=str(path),  # typecast for pathlib
         )
+
+    def get_path_tar(self, tar_path: str, local_path: str):
+        """
+        Extracts tarball from tar_path to local_path.
+        The first component of the tarball is stripped. E.g.
+        extracting a tarball with `abc123/weights` in it to
+        `/code` would create `/code/weights`.
+        """
+        # TODO(andreas): add tests
+        shared.call(
+            "S3Storage.GetPathTar",
+            Bucket=self.bucket_name,
+            Root=self.root,
+            TarPath=str(tar_path),
+            LocalPath=str(local_path),
+        )

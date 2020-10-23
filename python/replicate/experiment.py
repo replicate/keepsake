@@ -144,6 +144,7 @@ class Experiment:
             storage = self._project._get_storage()
             storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
+        checkpoint.experiment = self
         self.checkpoints.append(checkpoint)
         self.save()
 
@@ -163,13 +164,16 @@ class Experiment:
         )
 
     @classmethod
-    def from_json(self, project: "Project", data: Dict[str, Any]) -> "Experiment":
+    def from_json(cls, project: "Project", data: Dict[str, Any]) -> "Experiment":
         data = data.copy()
         data["created"] = parse_rfc3339(data["created"])
         data["checkpoints"] = [
             Checkpoint.from_json(d) for d in data.get("checkpoints", [])
         ]
-        return Experiment(project=project, **data)
+        experiment = Experiment(project=project, **data)
+        for chk in experiment.checkpoints:
+            chk.experiment = experiment
+        return experiment
 
     def to_json(self) -> Dict[str, Any]:
         return {
