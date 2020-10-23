@@ -36,6 +36,9 @@ ID:                       1eeeeee                        1eeeeee
 Params
 (no difference)
 
+Python Packages
+(no difference)
+
 Checkpoint
 ID:                       2cccccc                        3cccccc
 Created:                  Mon, 02 Jan 2006 23:00:05 +08  Mon, 02 Jan 2006 23:01:05 +08
@@ -74,6 +77,9 @@ Host:                     10.1.1.1                       10.1.1.2
 Params
 param-1:                  100                            200
 param-3:                  (not set)                      hi
+
+Python Packages
+foo:                      1.2.3                          (not set)
 
 Checkpoint
 ID:                       2cccccc                        4cccccc

@@ -45,6 +45,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
         del actual_experiment_meta["host"]
         del actual_experiment_meta["user"]
         del actual_experiment_meta["command"]
+        del actual_experiment_meta["python_packages"]
 
         expected_experiment_meta = {
             "id": experiment.id,

@@ -85,8 +85,13 @@ func printDiff(out io.Writer, au aurora.Aurora, proj *project.Project, prefix1 s
 	}
 
 	br(w)
+
 	heading(w, au, "Params")
 	printMapDiff(w, au, paramMapToStringMap(exp1.Params), paramMapToStringMap(exp2.Params))
+	br(w)
+
+	heading(w, au, "Python Packages")
+	printMapDiff(w, au, exp1.PythonPackages, exp2.PythonPackages)
 	br(w)
 
 	heading(w, au, "Checkpoint")

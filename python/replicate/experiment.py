@@ -31,6 +31,7 @@ from .hash import random_hash
 from .heartbeat import Heartbeat
 from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
+from .packages import get_imported_packages
 from .validate import check_path
 
 if TYPE_CHECKING:
@@ -53,6 +54,7 @@ class Experiment:
     config: dict
     path: Optional[str]
     params: Optional[Dict[str, Any]] = None
+    python_packages: Optional[Dict[str, str]] = None
     checkpoints: List[Checkpoint] = field(default_factory=list)
 
     def __post_init__(self, project: "Project"):
@@ -179,6 +181,7 @@ class Experiment:
             "command": self.command,
             "config": self.config,
             "path": self.path,
+            "python_packages": self.python_packages,
             "checkpoints": [c.to_json() for c in self.checkpoints],
         }
 
@@ -301,6 +304,7 @@ class ExperimentCollection:
             user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
             host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
+            python_packages=get_imported_packages(),
         )
 
         if not quiet:
