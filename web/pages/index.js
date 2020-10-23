@@ -164,6 +164,9 @@ Experiment:       e510303     9e97e07
 Params
 learning_rate:    0.001       0.002
 
+Python Packages
+tensorflow:       2.3.0       2.3.1
+
 Metrics
 train_loss:       0.4626      0.8155
 train_accuracy:   0.7909      0.7254

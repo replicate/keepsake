@@ -203,6 +203,7 @@ class TestExperiment:
             "command": "train.py",
             "config": {"python": "3.8", "storage": ".replicate/storage/"},
             "path": ".",
+            "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
         }
         exp = Experiment.from_json(None, data)
@@ -215,6 +216,7 @@ class TestExperiment:
             "command": "train.py",
             "config": {"python": "3.8", "storage": ".replicate/storage/"},
             "path": ".",
+            "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
         }
 

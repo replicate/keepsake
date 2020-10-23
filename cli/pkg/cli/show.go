@@ -184,6 +184,21 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	}
 
 	fmt.Fprintf(w, "\t\n")
+	fmt.Fprintf(w, "%s\t\n", au.Bold("Python Packages"))
+	if len(exp.PythonPackages) > 0 {
+		packageNames := []string{}
+		for name := range exp.PythonPackages {
+			packageNames = append(packageNames, name)
+		}
+		sort.Strings(packageNames)
+		for _, name := range packageNames {
+			fmt.Fprintf(w, "%s:\t%s\n", name, exp.PythonPackages[name])
+		}
+	} else {
+		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
+	}
+
+	fmt.Fprintf(w, "\t\n")
 }
 
 func writeCheckpointMetrics(au aurora.Aurora, w *tabwriter.Writer, proj *project.Project, com *project.Checkpoint) error {

@@ -37,10 +37,11 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 			"param-1": param.Int(100),
 			"param-2": param.String("hello"),
 		},
-		Command: "train.py --gamma=1.2 -x",
-		Host:    "10.1.1.1",
-		User:    "andreas",
-		Config:  conf,
+		Command:        "train.py --gamma=1.2 -x",
+		Host:           "10.1.1.1",
+		User:           "andreas",
+		Config:         conf,
+		PythonPackages: map[string]string{"foo": "1.2.3"},
 		Checkpoints: []*project.Checkpoint{
 			{
 				ID:      "1ccccccccc",
@@ -137,25 +138,28 @@ func TestShowCheckpoint(t *testing.T) {
 	expected := `
 Checkpoint: 3ccccccccc
 
-Created:    Mon, 02 Jan 2006 23:01:05 +08
-Path:       data
-Step:       20
+Created:         Mon, 02 Jan 2006 23:01:05 +08
+Path:            data
+Step:            20
 
 Experiment
-ID:         1eeeeeeeee
-Created:    Mon, 02 Jan 2006 22:54:05 +08
-Status:     running
-Host:       10.1.1.1
-User:       andreas
-Command:    train.py --gamma=1.2 -x
+ID:              1eeeeeeeee
+Created:         Mon, 02 Jan 2006 22:54:05 +08
+Status:          running
+Host:            10.1.1.1
+User:            andreas
+Command:         train.py --gamma=1.2 -x
 
 Params
-param-1:    100
-param-2:    hello
+param-1:         100
+param-2:         hello
+
+Python Packages
+foo:             1.2.3
 
 Metrics
-metric-1:   0.02 (primary, minimize)
-metric-2:   2
+metric-1:        0.02 (primary, minimize)
+metric-2:        2
 
 `
 	// remove initial newline
@@ -193,15 +197,18 @@ func TestShowExperiment(t *testing.T) {
 	expected := `
 Experiment: 1eeeeeeeee
 
-Created:  Mon, 02 Jan 2006 22:54:05 +08
-Status:   running
-Host:     10.1.1.1
-User:     andreas
-Command:  train.py --gamma=1.2 -x
+Created:         Mon, 02 Jan 2006 22:54:05 +08
+Status:          running
+Host:            10.1.1.1
+User:            andreas
+Command:         train.py --gamma=1.2 -x
 
 Params
-param-1:  100
-param-2:  hello
+param-1:         100
+param-2:         hello
+
+Python Packages
+foo:             1.2.3
 
 Checkpoints
 ID       STEP  CREATED     METRIC-1     METRIC-2
