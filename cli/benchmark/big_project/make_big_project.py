@@ -19,7 +19,7 @@ with tempfile.TemporaryDirectory() as project_dir:
         if i % 10 == 0:
             print("Experiment", i)
         experiment = project.experiments.create(
-            path=None, params={"foo": "bar"}, quiet=True
+            path=None, params={"foo": "bar"}, quiet=True, disable_heartbeat=True
         )
         for j in range(100):
             experiment.checkpoint(path=None, metrics={"loss": 0.00001}, quiet=True)
@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as project_dir:
         experiment.checkpoint(path=None, metrics={"loss": 0.00001}, quiet=True)
     for i in range(10):
         experiment = project.experiments.create(
-            path=None, params={"foo": "bar"}, quiet=True
+            path=None, params={"foo": "bar"}, quiet=True, disable_heartbeat=True
         )
         for j in range(100):
             experiment.checkpoint(path=None, metrics={"loss": 0.00001}, quiet=True)
