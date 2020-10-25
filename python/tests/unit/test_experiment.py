@@ -7,14 +7,14 @@ import json
 import os
 import pytest  # type: ignore
 import tarfile
-import time
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 from waiting import wait
 
 import replicate
 from replicate.exceptions import DoesNotExistError
-from replicate.experiment import Experiment
+from replicate.experiment import Experiment, BrokenExperiment
 from replicate.project import Project
 
 
@@ -155,6 +155,16 @@ def test_heartbeat(temp_workdir):
     experiment.stop()
 
 
+@patch.object(Experiment, "save")
+def test_broken_experiment(mock_save):
+    mock_save.side_effect = Exception()
+    # Shouldn't raise an exception
+    experiment = replicate.init()
+    assert isinstance(experiment, BrokenExperiment)
+    experiment.checkpoint()
+    experiment.stop()
+
+
 class Blah:
     pass
 
@@ -222,7 +232,9 @@ class TestExperiment:
 
     def test_checkpoints(self, temp_workdir):
         project = Project()
-        experiment = project.experiments.create(path=None, params={"foo": "bar"})
+        experiment = project.experiments.create(
+            path=None, params={"foo": "bar"}, disable_heartbeat=True
+        )
         chk1 = experiment.checkpoint(path=None, metrics={"accuracy": "ok"})
         chk2 = experiment.checkpoint(path=None, metrics={"accuracy": "super"})
         assert len(experiment.checkpoints) == 2
@@ -235,7 +247,9 @@ class TestExperiment:
         with open("foo.txt", "w") as f:
             f.write("hello")
 
-        experiment = project.experiments.create(path=".", params={"foo": "bar"})
+        experiment = project.experiments.create(
+            path=".", params={"foo": "bar"}, disable_heartbeat=True
+        )
         with open("model.txt", "w") as f:
             f.write("i'm a model")
         chk = experiment.checkpoint(path="model.txt", metrics={"accuracy": "awesome"})
@@ -278,9 +292,13 @@ class TestExperiment:
 class TestExperimentCollection:
     def test_get(self, temp_workdir):
         project = Project()
-        exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp1 = project.experiments.create(
+            path=None, params={"foo": "bar"}, disable_heartbeat=True
+        )
         exp1.checkpoint(path=None, metrics={"accuracy": "wicked"})
-        exp2 = project.experiments.create(path=None, params={"foo": "baz"})
+        exp2 = project.experiments.create(
+            path=None, params={"foo": "baz"}, disable_heartbeat=True
+        )
 
         actual_exp = project.experiments.get(exp1.id)
         assert actual_exp.created == exp1.created
@@ -294,9 +312,13 @@ class TestExperimentCollection:
 
     def test_list(self, temp_workdir):
         project = Project()
-        exp1 = project.experiments.create(path=None, params={"foo": "bar"})
+        exp1 = project.experiments.create(
+            path=None, params={"foo": "bar"}, disable_heartbeat=True
+        )
         exp1.checkpoint(path=None, metrics={"accuracy": "wicked"})
-        exp2 = project.experiments.create(path=None, params={"foo": "baz"})
+        exp2 = project.experiments.create(
+            path=None, params={"foo": "baz"}, disable_heartbeat=True
+        )
 
         experiments = project.experiments.list()
         assert len(experiments) == 2

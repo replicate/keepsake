@@ -86,6 +86,7 @@ class Experiment:
 
         return errors
 
+    @console.catch_and_print_exceptions(msg="Error creating checkpoint")
     def checkpoint(
         self,
         path: Optional[str] = None,
@@ -104,13 +105,15 @@ class Experiment:
         primary_metric_dict: Optional[PrimaryMetric] = None
         if primary_metric is not None:
             if len(primary_metric) != 2:
-                raise ValueError(
-                    "primary_metric must be a tuple of (name, goal), where name corresponds to a metric key, and goal is either 'maximize' or 'minimize'"
+                # Not having a primary_metric isn't a fatal problem
+                console.error(
+                    "Not setting primary_metric on checkpoint: it must be a tuple of (name, goal), where name corresponds to a metric key, and goal is either 'maximize' or 'minimize'"
                 )
-            primary_metric_dict = {
-                "name": primary_metric[0],
-                "goal": primary_metric[1],
-            }
+            else:
+                primary_metric_dict = {
+                    "name": primary_metric[0],
+                    "goal": primary_metric[1],
+                }
 
         checkpoint = Checkpoint(
             id=random_hash(),
@@ -437,6 +440,16 @@ class Experiment:
         return out
 
 
+class BrokenExperiment:
+    def checkpoint(self, *args, **kwargs):
+        console.error(
+            "Error creating experiment, so not saving checkpoint. See above for the error."
+        )
+
+    def stop(self, *args, **kwargs):
+        pass
+
+
 @dataclass
 class ExperimentCollection:
     """
@@ -447,7 +460,12 @@ class ExperimentCollection:
 
     project: "Project"
 
-    def create(self, path=None, params=None, quiet=False) -> Experiment:
+    @console.catch_and_print_exceptions(
+        msg="Error creating experiment", return_value=BrokenExperiment()
+    )
+    def create(
+        self, path=None, params=None, quiet=False, disable_heartbeat=False
+    ) -> Experiment:
         command = " ".join(map(shlex.quote, sys.argv))
         experiment = Experiment(
             project=self.project,
@@ -487,6 +505,9 @@ class ExperimentCollection:
             storage.put_path_tar(self.project.directory, tar_path, experiment.path)
 
         experiment.save()
+
+        if not disable_heartbeat:
+            experiment.start_heartbeat()
 
         return experiment
 
@@ -529,7 +550,7 @@ class ExperimentCollection:
                 include = False
                 try:
                     include = filter(exp)
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-except
                     console.warn(
                         "Failed to apply filter to experiment {}: {}".format(
                             exp.short_id(), e

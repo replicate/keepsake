@@ -93,7 +93,9 @@ class TestCheckpoint:
         with open("foo.txt", "w") as f:
             f.write("foo")
 
-        exp = project.experiments.create(path=".", params={"foo": "bar"})
+        exp = project.experiments.create(
+            path=".", params={"foo": "bar"}, disable_heartbeat=True
+        )
         with open("bar.txt", "w") as f:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
@@ -121,7 +123,9 @@ class TestCheckpoint:
         with open("foo.txt", "w") as f:
             f.write("foo")
 
-        exp = project.experiments.create(path=".", params={"foo": "bar"})
+        exp = project.experiments.create(
+            path=".", params={"foo": "bar"}, disable_heartbeat=True
+        )
         with open("bar.txt", "w") as f:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})

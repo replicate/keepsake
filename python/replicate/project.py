@@ -61,12 +61,9 @@ def init(
     Create a new experiment.
     """
     project = Project()
-    experiment = project.experiments.create(path=path, params=params)
-
-    if not disable_heartbeat:
-        experiment.start_heartbeat()
-
-    return experiment
+    return project.experiments.create(
+        path=path, params=params, disable_heartbeat=disable_heartbeat
+    )
 
 
 def get_project_dir() -> str:

@@ -1,4 +1,5 @@
 import enum
+from functools import wraps
 import sys
 
 from ._vendor.colors import color
@@ -46,3 +47,22 @@ def log(s: str, level: Level):
             print(prompt + line, file=sys.stderr)
         else:
             print(continuation_prompt + line, file=sys.stderr)
+
+
+# Replicate should never break your training
+def catch_and_print_exceptions(msg=None, return_value=None):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except Exception as e:  # pylint: disable=broad-except
+                if msg is not None:
+                    error(f"{msg}: {str(e)}")
+                else:
+                    error(str(e))
+                return return_value
+
+        return wrapper
+
+    return decorator
