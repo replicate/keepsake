@@ -26,12 +26,11 @@ export default function Home() {
         <section className="info">
           <div>
             <h2>
-              <span>{num()}</span> Never lose anything
+              <span>{num()}</span> Track experiments
             </h2>
             <p>
-              On every training run, Replicate automatically saves
-              hyperparameters, code, training data, weights, metrics, Python
-              version, Python dependencies — <em>everything</em>.
+              Automatically track code, hyperparameters, training data, weights,
+              metrics, Python dependencies — <em>everything</em>.
             </p>
           </div>
           <div>
@@ -39,9 +38,8 @@ export default function Home() {
               <span>{num()}</span> Go back in time
             </h2>
             <p>
-              You can get back the code and weights from any checkpoint if you
-              need to figure out how a model was trained or commit to Git after
-              the fact.
+              Get back the code and weights from any checkpoint if you need to
+              replicate your results or commit to Git after the fact.
             </p>
           </div>
           <div>
@@ -49,9 +47,8 @@ export default function Home() {
               <span>{num()}</span> Version your models
             </h2>
             <p>
-              All the model weights are versioned and stored on your own Amazon
-              S3 or Google Cloud bucket, so it's really easy to feed them into
-              production systems.
+              Model weights are stored on your own Amazon S3 or Google Cloud
+              bucket, so it's really easy to feed them into production systems.
             </p>
           </div>
         </section>
@@ -102,7 +99,7 @@ def train():
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud bucket
-            as plain old files.
+            as plain old files. There's no server to run.
           </p>
         </div>
         <div>
@@ -111,7 +108,7 @@ def train():
           </h2>
           <p>
             Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It's just
-            saving files – export however you want.
+            saving files and dictionaries – export however you want.
           </p>
         </div>
       </section>
@@ -131,10 +128,16 @@ def train():
                   <a href="#anchor-2">Compare experiments</a>
                 </li>
                 <li>
-                  <a href="#anchor-3">Commit to Git, after the fact</a>
+                  <a href="#anchor-3">Analyze in a notebook</a>
                 </li>
                 <li>
-                  <a href="#anchor-4">Analyze in a notebook</a>
+                  <a href="#anchor-4">Commit to Git, after the fact</a>
+                </li>
+                <li>
+                  <a href="#anchor-5">Load models in production</a>
+                </li>
+                <li>
+                  <a href="#anchor-6">A platform to build upon</a>
                 </li>
               </ol>
             </li>
@@ -177,7 +180,15 @@ val_loss:         0.1484      0.1989
 val_accuracy:     0.9607      0.9411`}
           </CodeBlock>
 
-          <h3 id="anchor-3">Commit to Git, after the fact</h3>
+          <h3 id="anchor-3">Analyze in a notebook</h3>
+          <p>
+            Don't like the CLI? No problem. You can retrieve, analyze, and plot
+            your results from within a notebook. Think of it like a programmable
+            Tensorboard.
+          </p>
+          <img src="images/notebook.png" width="900" />
+
+          <h3 id="anchor-4">Commit to Git, after the fact</h3>
           <p>
             There's no need to carefully commit everything to Git. Replicate
             lets you get back to any point you called{" "}
@@ -191,12 +202,24 @@ Copying code and weights to working directory...
 # save the code to git
 $ git commit -am "Use hinge loss"`}
           </CodeBlock>
-          <h3 id="anchor-4">Analyze in a notebook</h3>
+
+          <h3 id="anchor-5">Load models in production</h3>
           <p>
-            You can retrieve, analyze, and plot your results from within Python.
-            Think of it like a programmable Tensorboard.
+            You can use Replicate to feed your models into production systems.
+            Connect them back to how they were trained, who trained them, and
+            what their metrics were.
           </p>
-          <img src="images/notebook.png" width="900" />
+          <CodeBlock language="python">
+            {`import replicate
+model = torch.load(replicate.checkpoints.get("e45a203").open("model.pth"))`}
+          </CodeBlock>
+
+          <h3 id="anchor-6">A platform to build upon</h3>
+          <p>
+            Replicate is intentionally lightweight and doesn't try to do too
+            much. Instead, we give you Python and command-line APIs so you can
+            integrate it with your own tools and workflow.
+          </p>
         </div>
       </section>
     </Layout>
