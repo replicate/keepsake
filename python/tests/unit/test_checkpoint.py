@@ -116,7 +116,7 @@ class TestCheckpoint:
         with open(tmpdir / "bar.txt") as f:
             assert f.read() == "bar"
 
-    def test_load(self, temp_workdir):
+    def test_open(self, temp_workdir):
         project = Project()
         with open("foo.txt", "w") as f:
             f.write("foo")
@@ -127,11 +127,11 @@ class TestCheckpoint:
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
         # test with already existing checkpoint
-        assert chk.load("foo.txt").read().decode() == "foo"
-        assert chk.load("bar.txt").read().decode() == "bar"
+        assert chk.open("foo.txt").read().decode() == "foo"
+        assert chk.open("bar.txt").read().decode() == "bar"
 
         # test with checkpoint from replicate.experiments.list()
         exp = project.experiments.list()[0]
         chk = exp.checkpoints[0]
-        assert chk.load("foo.txt").read().decode() == "foo"
-        assert chk.load("bar.txt").read().decode() == "bar"
+        assert chk.open("foo.txt").read().decode() == "foo"
+        assert chk.open("bar.txt").read().decode() == "bar"

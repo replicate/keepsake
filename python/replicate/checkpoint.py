@@ -134,7 +134,7 @@ class Checkpoint(object):
                 )
             )
 
-    def load(self, path: str) -> BinaryIO:
+    def open(self, path: str) -> BinaryIO:
         """
         Read a single file from this checkpoint into memory.
         Returns a file-like object.
