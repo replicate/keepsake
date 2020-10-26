@@ -2,8 +2,9 @@ import time
 import json
 import os
 import datetime
-import dateutil
+import dateutil.parser
 from dateutil.tz import tzutc
+from waiting import wait
 
 from replicate.heartbeat import Heartbeat
 
@@ -40,12 +41,15 @@ def test_heartbeat_write(tmpdir):
         "experiment-id-foo",
         tmpdir,
         path,
-        refresh_interval=datetime.timedelta(seconds=1),
+        refresh_interval=datetime.timedelta(seconds=0.1),
     )
     heartbeat.start()
-    time.sleep(2.0)
 
-    with open(os.path.join(tmpdir, "foo", "heartbeat.json")) as f:
+    heartbeat_path = os.path.join(tmpdir, "foo", "heartbeat.json")
+
+    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+
+    with open(heartbeat_path) as f:
         obj = json.loads(f.read())
     last_heartbeat = dateutil.parser.parse(obj["last_heartbeat"])
 
@@ -53,9 +57,9 @@ def test_heartbeat_write(tmpdir):
 
     assert t1 < last_heartbeat < t2
 
-    time.sleep(2)
+    time.sleep(0.2)
 
-    with open(os.path.join(tmpdir, "foo", "heartbeat.json")) as f:
+    with open(heartbeat_path) as f:
         obj = json.loads(f.read())
     new_last_heartbeat = dateutil.parser.parse(obj["last_heartbeat"])
 
