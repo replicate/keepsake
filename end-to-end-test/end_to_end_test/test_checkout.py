@@ -96,10 +96,14 @@ if __name__ == "__main__":
     with open(os.path.join(output_dir, rand, rand)) as f:
         assert f.read() == rand
 
+    # Checkout out experiment checks out latest checkpoint
+    with open(os.path.join(output_dir, "data/weights")) as f:
+        assert f.read() == "42 lbs"
+
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "train.py", rand, "cicada.ogg"]
+    expected_paths = ["replicate.yaml", "train.py", "data", rand, "cicada.ogg"]
     assert set(actual_paths) == set(expected_paths)
 
     # checking out checkpoint
