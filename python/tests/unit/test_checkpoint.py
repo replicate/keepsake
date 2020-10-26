@@ -5,6 +5,8 @@ except ImportError:
 import datetime
 
 from replicate.checkpoint import Checkpoint
+from replicate.experiment import Experiment
+from replicate.project import Project
 
 
 class Blah:
@@ -85,3 +87,51 @@ class TestCheckpoint:
             "primary_metric": {"name": "loss", "goal": "minimize"},
             "step": 7,
         }
+
+    def test_checkout(self, temp_workdir, tmpdir_factory):
+        project = Project()
+        with open("foo.txt", "w") as f:
+            f.write("foo")
+
+        exp = project.experiments.create(path=".", params={"foo": "bar"})
+        with open("bar.txt", "w") as f:
+            f.write("bar")
+        chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+
+        # test with already existing checkpoint
+        tmpdir = tmpdir_factory.mktemp("checkout")
+        chk.checkout(output_directory=str(tmpdir))
+        with open(tmpdir / "foo.txt") as f:
+            assert f.read() == "foo"
+        with open(tmpdir / "bar.txt") as f:
+            assert f.read() == "bar"
+
+        # test with checkpoint from replicate.experiments.list()
+        exp = project.experiments.list()[0]
+        chk = exp.checkpoints[0]
+        tmpdir = tmpdir_factory.mktemp("checkout")
+        chk.checkout(output_directory=str(tmpdir))
+        with open(tmpdir / "foo.txt") as f:
+            assert f.read() == "foo"
+        with open(tmpdir / "bar.txt") as f:
+            assert f.read() == "bar"
+
+    def test_load(self, temp_workdir):
+        project = Project()
+        with open("foo.txt", "w") as f:
+            f.write("foo")
+
+        exp = project.experiments.create(path=".", params={"foo": "bar"})
+        with open("bar.txt", "w") as f:
+            f.write("bar")
+        chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+
+        # test with already existing checkpoint
+        assert chk.load("foo.txt").read().decode() == "foo"
+        assert chk.load("bar.txt").read().decode() == "bar"
+
+        # test with checkpoint from replicate.experiments.list()
+        exp = project.experiments.list()[0]
+        chk = exp.checkpoints[0]
+        assert chk.load("foo.txt").read().decode() == "foo"
+        assert chk.load("bar.txt").read().decode() == "bar"
