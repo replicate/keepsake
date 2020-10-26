@@ -1,8 +1,8 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
-    from dataclasses import dataclass, InitVar
+    from dataclasses import dataclass
 except ImportError:
-    from ._vendor.dataclasses import dataclass, InitVar
+    from ._vendor.dataclasses import dataclass
 import datetime
 import os
 import io
@@ -45,7 +45,8 @@ class Checkpoint(object):
     metrics: Optional[Dict[str, Any]] = None
     primary_metric: Optional[PrimaryMetric] = None
 
-    _experiment: Optional["Experiment"] = None
+    def __post_init__(self):
+        self._experiment: Optional["Experiment"] = None
 
     def short_id(self) -> str:
         return self.id[:7]

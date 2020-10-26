@@ -138,13 +138,14 @@ class Experiment:
                 console.error("Not saving checkpoint: " + error)
             return checkpoint
 
+        checkpoint._experiment = self
+
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if checkpoint.path is not None:
             tar_path = checkpoint._storage_tar_path()
             storage = self._project._get_storage()
             storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
-        checkpoint._experiment = self
         self.checkpoints.append(checkpoint)
         self.save()
 
