@@ -4,5 +4,5 @@ pytest==6.1.1
 tensorflow-cpu==2.3.1
 # for integration tests
 boto3==1.12.32
-google-cloud-storage==1.31.0
+google-cloud-storage==1.32.0
 waiting==1.4.1
