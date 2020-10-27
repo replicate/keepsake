@@ -91,9 +91,17 @@ The calls to the `replicate` Python library have saved your experiments locally.
 
 ```shell-session
 $ replicate ls
-EXPERIMENT  STARTED         STATUS   HOST  USER  LEARNING_RATE  LATEST CHECKPOINT  LOSS      BEST CHECKPOINT    LOSS
-b90ad56     12 seconds ago  stopped        ben   0.01           4941495 (step 99)  0.1176    4941495 (step 99)  0.1176
-9cce006     3 seconds ago   stopped        ben   0.2            a122e85 (step 99)  0.056486  a122e85 (step 99)  0.056486
+EXPERIMENT  STARTED         STATUS   LEARNING_RATE  LATEST CHECKPOINT  LOSS      BEST CHECKPOINT    LOSS
+b90ad56     12 seconds ago  stopped  0.01           4941495 (step 99)  0.1176    4941495 (step 99)  0.1176
+9cce006     3 seconds ago   stopped  0.2            a122e85 (step 99)  0.056486  a122e85 (step 99)  0.056486
+```
+
+The `--filter` flag allows you to narrow in on a subset of experiments:
+
+```shell-session
+$ replicate ls --filter "learning_rate = 0.2"
+EXPERIMENT  STARTED        STATUS   LEARNING_RATE  LATEST CHECKPOINT  LOSS      BEST CHECKPOINT    LOSS
+9cce006     3 seconds ago  stopped  0.2            a122e85 (step 99)  0.056486  a122e85 (step 99)  0.056486
 ```
 
 <Note>
