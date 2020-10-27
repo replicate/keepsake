@@ -18,6 +18,7 @@ else:
     from ._vendor.typing_extensions import TypedDict
 
 from . import console
+from .exceptions import DoesNotExistError
 from .json import CustomJSONEncoder
 from .hash import random_hash
 from .metadata import rfc3339_datetime, parse_rfc3339
@@ -125,8 +126,20 @@ class Checkpoint(object):
 
         assert self._experiment is not None
         storage = self._experiment._project._get_storage()
-        storage.get_path_tar(self._storage_tar_path(), output_directory)
-        storage.get_path_tar(self._experiment._storage_tar_path(), output_directory)
+        no_experiment_files = False
+        no_checkpoint_files = False
+        try:
+            storage.get_path_tar(self._storage_tar_path(), output_directory)
+        except DoesNotExistError:
+            no_experiment_files = True
+        try:
+            storage.get_path_tar(self._experiment._storage_tar_path(), output_directory)
+        except DoesNotExistError:
+            no_checkpoint_files = True
+        if no_experiment_files and no_checkpoint_files:
+            raise DoesNotExistError(
+                f"Could not find any files in checkpoint {self.short_id()} or its experiment {self._experiment.short_id()}. Did you pass the 'path' argument to init() or checkpoint()?"
+            )
         if not quiet:
             console.info(
                 "Copied the files from checkpoint {} to {}".format(
