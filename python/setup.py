@@ -110,7 +110,7 @@ class develop(_develop):
 # fmt: off
 setuptools.setup(
     name="replicate",
-    version="0.1.37",
+    version="0.1.38",
     author="",
     author_email="",
     description="",
