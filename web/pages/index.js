@@ -1,6 +1,7 @@
 import CodeBlock from "../components/code-block";
 import Header from "../components/header";
 import Layout from "../layouts/default";
+import Link from "next/link";
 
 export default function Home() {
   let _num = 1;
@@ -18,9 +19,9 @@ export default function Home() {
     <Layout title="Replicate – Version control for machine learning">
       <Header className="homepage">
         <p>
-          <a class="button" href="/docs">
-            Get Started
-          </a>{" "}
+          <Link href="/docs">
+            <a class="button">Get Started</a>
+          </Link>{" "}
           Lightweight and open source.{" "}
         </p>
         <section className="info">

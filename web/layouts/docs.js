@@ -13,9 +13,11 @@ function DocsLayout({ title, children, ...props }) {
           &nbsp;
           {title ? (
             <>
-              <a href="/docs">
-                <span>Documentation</span>
-              </a>
+              <Link href="/docs">
+                <a>
+                  <span>Documentation</span>
+                </a>
+              </Link>
               &nbsp;<h2>{title}</h2>
             </>
           ) : (
@@ -40,9 +42,9 @@ function DocsLayout({ title, children, ...props }) {
                   </Link>
                 </li>
                 <li>
-                  <a href="/docs/tutorial/cloud-storage">
-                    Store data in the cloud
-                  </a>
+                  <Link href="/docs/tutorial/cloud-storage">
+                    <a>Store data in the cloud</a>
+                  </Link>
                 </li>
               </ol>
             </li>
