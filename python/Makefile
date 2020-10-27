@@ -5,9 +5,16 @@ pre-commit: lint
 fmt:
 	black .
 
+# --import-mode makes pytest import from globally installed package by default instead of local replicate/ module.
+# This assumes you've run `make develop` before running tests
+# https://docs.pytest.org/en/stable/pythonpath.html#pythonpath
 .PHONY: test
-test:
-	tox
+test: lint
+	pytest --import-mode=importlib -m "not external"
+
+.PHONY: test-external
+test-external: lint
+	pytest --import-mode=importlib
 
 .PHONY: lint
 lint:

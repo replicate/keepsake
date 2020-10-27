@@ -9,12 +9,12 @@ from .utils import get_env
 @pytest.mark.parametrize(
     "storage_backend,use_root",
     [
-        ("gcs", False),
-        ("gcs", True),
-        ("s3", False),
-        ("s3", True),
+        ("undefined", False),
         ("file", False),
-        pytest.param("undefined", False, marks=pytest.mark.fast),
+        pytest.param("gcs", False, marks=pytest.mark.external),
+        pytest.param("gcs", True, marks=pytest.mark.external),
+        pytest.param("s3", False, marks=pytest.mark.external),
+        pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
 def test_list(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
@@ -121,4 +121,3 @@ experiment.checkpoint(path=".", step=3)
     exp = experiments[0]
     latest = exp["latest_checkpoint"]
     assert latest["step"] == 3
-

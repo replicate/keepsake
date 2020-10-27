@@ -1,57 +1,23 @@
 # Replicate Python library
 
-## Set up your local development environment
+## Development environment
 
-[Pyenv](https://github.com/pyenv/pyenv) makes it easy to switch between Python versions, and run tests against multiple Python version.
-
-You can install pyenv with Homebrew (`brew install pyenv`) or with [pyenv-installer](https://github.com/pyenv/pyenv-installer).
-
-Once it's installed, install Python 3.6, 3.7, and 3.8:
-
-    $ pyenv install 3.6.9
-    $ pyenv install 3.7.4
-    $ pyenv install 3.8.0
-
-Then make these versions available globally (or locally in the directory with `pyenv local` if you prefer).
-
-    $ pyenv global 3.7.4 3.8.0 3.6.9
-
-The first version is the one that is actually active, the other ones are made visible to tox (see below).
-
-If you work in virtualenvs, [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) neatly integrates virtualenv with pyenv.
-
-Install [tox](https://tox.readthedocs.io/en/latest/) to run tests.
-
-    $ pip install tox tox-wheel
-
-The Python library depends on the Go project, so you must build that first. Go up one directory, and build everything:
-
-    $ cd ..
-    $ make build
+See `README.md` in the parent directory for instructions.
 
 ## Run tests
 
-    $ tox
-
-[Tox](https://tox.readthedocs.io/en/latest/) creates virtual environments for various versions of Python, and runs the test suite against each environment.
+    $ (cd .. && make install-test-dependencies develop)
+    $ make test
 
 ### Run a single test
 
-    $ tox -e py37 -- tests/unit/storage/test_s3_storage.py -k test_delete_exists
+To test a file:
 
-### Run integration tests
+    $ pytest tests/test_config.py
 
-FIXME (bfirsh): document where to put keys
+Or, an individual test:
 
-## Install for development
-
-    $ python setup.py develop
-
-This will make `import replicate` work anywhere on your machine, symlinked to this directory so it updates as you code.
-
-## Build package
-
-You must build the entire project. See the README in the directory above.
+    $ pytest tests/test_config.py -k test_validate
 
 ## Format source code
 

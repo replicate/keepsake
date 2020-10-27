@@ -8,6 +8,9 @@ from replicate.hash import random_hash
 from replicate.storage.s3_storage import S3Storage
 from replicate.exceptions import DoesNotExistError
 
+# Disable this test with -m "not external"
+pytestmark = pytest.mark.external
+
 
 @pytest.fixture(scope="function")
 def temp_bucket():

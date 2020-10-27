@@ -10,11 +10,11 @@ from .utils import path_exists
 @pytest.mark.parametrize(
     "storage_backend,use_root",
     [
-        ("gcs", False),
-        ("gcs", True),
-        ("s3", False),
-        ("s3", True),
-        pytest.param("file", False, marks=pytest.mark.fast),
+        ("file", False),
+        pytest.param("gcs", False, marks=pytest.mark.external),
+        pytest.param("gcs", True, marks=pytest.mark.external),
+        pytest.param("s3", False, marks=pytest.mark.external),
+        pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
 def test_delete(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):

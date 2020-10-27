@@ -57,9 +57,13 @@ install: build
 clean:
 	rm -rf $(RELEASE_DIR)
 
+.PHONY: test
 test: check-fmt vet lint
 	go run gotest.tools/gotestsum -- -timeout 1200s -parallel 5 ./... $(ARGS)
 
+.PHONY: test-external
+test-external: check-fmt vet lint
+	go run gotest.tools/gotestsum -- -tags=external -timeout 1200s -parallel 5 ./... $(ARGS)
 
 BENCH := "."
 .PHONY: benchmark

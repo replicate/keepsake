@@ -1,8 +1,8 @@
 # Replicate command-line interface
 
-## Install
+## Build / install
 
-    make install
+See instructions in `README.md` in the parent directory.
 
 ## Run tests
 
