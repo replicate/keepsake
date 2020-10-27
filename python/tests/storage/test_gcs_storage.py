@@ -12,9 +12,11 @@ from replicate.storage.gcs_storage import GCSStorage
 # Disable this test with -m "not external"
 pytestmark = pytest.mark.external
 
-
-@pytest.fixture(scope="function")
-def temp_bucket():
+# We only create one bucket for these tests, because Google Cloud rate limits creating buckets
+# https://cloud.google.com/storage/quotas
+# This means these tests can't be run in parallel
+@pytest.fixture(scope="session")
+def temp_bucket_create():
     bucket_name = "replicate-test-" + "".join(
         random.choice(string.ascii_lowercase) for _ in range(20)
     )
@@ -27,6 +29,16 @@ def temp_bucket():
         yield bucket
     finally:
         bucket.delete(force=True)
+
+
+@pytest.fixture(scope="function")
+def temp_bucket(temp_bucket_create):
+    bucket = temp_bucket_create
+    # Clear bucket before each test
+    blobs = bucket.list_blobs()
+    for blob in blobs:
+        blob.delete()
+    yield bucket
 
 
 def test_put_get(temp_bucket):
