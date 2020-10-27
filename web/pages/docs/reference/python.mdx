@@ -4,20 +4,15 @@ import Note from "../../../components/note";
 
 <DocsLayout title="Python library reference">
 
+The Replicate Python library is used to create experiments and checkpoints in your training script. It also has functions for programmatically analyzing the experiments.
 
-The Replicate Python library is used to create experiments and checkpoints in your training script.
-
-This page is a comprehensive reference for it. To get an introduction on how to use it, see [the tutorial](/docs/tutorial).
+These two modes are comprehensively described below in the [Experiment tracking](#experiment-tracking) and [Analyze and plot experiments](#analyze-and-plot-experiments) sections. For an introduction of how to use the Python API, see [the tutorial](/docs/tutorial).
 
 To install the library, [see the installation instructions](/docs).
 
-<Note>
+## Experiment tracking
 
-
-We are working on a new API for reading and analyzing experiment data from Python. It isn't fully documented yet, but <a href="https://colab.research.google.com/drive/14zX3uYaZzHu0Sn7ylQTW1NalM363fcCf" target="_blank">see this notebook for examples of how to use it</a>.
-
-</Note>
-
+These functions implement the core functionality of Replicate, i.e. saving parameters, metrics, and code to storage. You use these functions during model training.
 
 ### `replicate.init()`
 
@@ -39,8 +34,8 @@ For example:
 ```python
 >>> import replicate
 >>> experiment = replicate.init(
-...     path=".",
-...     params={"learning_rate" 0.01},
+...   path=".",
+...   params={"learning_rate" 0.01},
 ... )
 ```
 
@@ -82,5 +77,158 @@ For example:
 >>> experiment.stop()
 ```
 
-</DocsLayout>
+## Analyze and plot experiments
+
+The Python API also contains a set of functions to analyze and plot the results of experiments. These functions are analogous to the commands found in [the CLI](/docs/reference/cli).
+
+For interactive examples of how to use these functions, <a href="https://colab.research.google.com/drive/14zX3uYaZzHu0Sn7ylQTW1NalM363fcCf" target="_blank">see this Colab notebook</a>
+
+### `replicate.experiments.list()`
+
+List the experiments in the current project. Returns a list of [Experiment](#the-experiment-class) objects.
+
+It takes one argument:
+
+- `filter` _(optional)_: A function with the signature `def filter(exp: replicate.Experiment): bool`. If this function returns true, the experiment is included in the returned list. If not provided, all experiments are returned.
+
+For example:
+
 ```
+>>> experiments = replicate.experiments.list(
+...   filter=lambda exp: exp.best().step >= 100
+... )
+```
+
+### `experiments.plot()`
+
+The list of experiments returned by `replicate.experiments.list()` can be plotted and compared graphically. `experiments.plot()` plots a single metric from the checkpoints of all experiments in a list of experiments.
+
+It takes two arguments:
+
+- `metric` _(optional)_: The name of the metric to plot. If omitted, defaults to the primary metric, or raises an error if no primary metric is defined.
+- `logy` _(optional)_: Whether to use a logarithmic Y-axis. Defaults to false.
+
+For example:
+
+```python
+>>> experiments = replicate.experiments.list()
+>>> experiments.plot(metric="loss")
+```
+
+### `experiments.scatter()`
+
+This function plots a metric against a hyperparameter for all the experiments in a list of experiments. If a primary metric is defined, the best checkpoint for each experiment is used, otherwise the latest checkpoint is used.
+
+It takes four arguments:
+
+- `param`: The name of the hyperparameter to plot on the X-axis.
+- `metric` _(optional)_: The name of the metric to plot. If omitted, defaults to the primary metric, or raises an error if no primary metric is defined.
+- `logx` _(optional)_: Whether to use a logarithmic X-axis. Defaults to false.
+- `logy` _(optional)_: Whether to use a logarithmic Y-axis. Defaults to false.
+
+For example:
+
+```python
+>>> experiments = replicate.experiments.list()
+>>> experiments.scatter(param="learning_rate", metric="loss")
+```
+
+### `experiments.delete()`
+
+Delete all experiments in this list of experiments.
+
+For example:
+
+```python
+>>> bad_experiments = replicate.experiments.list(
+...   lambda exp: exp.best().metrics["accuracy"] < 0.5
+... )
+>>> bad_experiments.delete()
+```
+
+### `replicate.experiments.get()`
+
+Returns a single [Experiment](#the-experiment-class) object.
+
+It takes a single argument:
+
+- `experiment_id`: The ID of the experiment to return. Can either be a full ID or an unambiguous prefix.
+
+For example:
+
+```python
+>>> exp = replicate.experiments.get("abcd")
+```
+
+### The `Experiment` class
+
+`Experiment` objects have the following fields:
+
+- `id`: The experiment ID
+- `created`: The `datetime.datetime` of when the experiment was created
+- `duration`: The time between the creation of the experiment and the latest checkpoint
+- `user`: The username of the person who started the experiment
+- `command`: The command that the experiment was started with
+- `path`: The path which was saved to storage by `replicate.init()`, relative to `replicate.yaml`
+- `params`: The dictionary of parameters that were defined in `replicate.init()`
+- `python_packages`: The Python packages and their versions which where imported when the experiment started
+- `checkpoints`: A list of (Checkpoint)[#the-checkpoint-class] objects
+
+### `experiment.latest()`
+
+Returns the latest checkpoint for this experiment.
+
+### `experiment.best()`
+
+Returns the best checkpoint for this experiment, according to the primary metric. If no primary metric is defined, returns `None`.
+
+### `experiment.delete()`
+
+Delete this experiment and its checkpoints.
+
+### The `Checkpoint` class
+
+`Checkpoint` objects have the following fields:
+
+- `id`: The checkpoint ID
+- `created`: The `datetime.datetime` of when the checkpoint was created
+- `path`: The path which was saved to storage by `experiment.checkpoint()`, relative to `replicate.yaml`
+- `step`: The step as defined in `experiment.checkpoint()`
+- `metrics`: The dictionary of metrics that were defined in `experiment.checkpoint()`
+- `primary_metric`: The primary metric as defined in `experiment.checkpoint()`
+
+### `checkpoint.checkout()`
+
+Similar to `replicate checkout` in the CLI, `checkpoint.checkout()` copies the files from the checkpoint and its parent experiment to a local directory.
+
+It takes two arguments:
+
+- `output_directory`: The directory to save the files to
+- `quiet` _(optional)_: Whether to output log messages, defaults to false
+
+For example:
+
+```python
+>>> exp = replicate.experiments.get("abcd")
+>>> chk = exp.best()
+>>> chk.checkout("/tmp/my-folder")
+```
+
+### `checkpoint.open()`
+
+Return a file-like objects to a single file in this checkpoint or its associated experiment.
+
+It takes a single argument:
+
+- `path`: The path to the file to open
+
+For example:
+
+```python
+>>> exp = replicate.experiments.get("abcd")
+>>> chk = exp.best()
+>>> model_file = chk.open("model.pkl")
+>>> model = torch.load(model_file)
+```
+
+</DocsLayout>
