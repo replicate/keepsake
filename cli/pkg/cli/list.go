@@ -16,6 +16,19 @@ func newListCommand() *cobra.Command {
 		Aliases: []string{"list"},
 		Run:     handleErrors(listExperiments),
 		Args:    cobra.NoArgs,
+		Example: `List all experiments in the current project:
+$ replicate ls
+
+List experiments that have run for 50 steps or less:
+$ replicate ls --filter "step <= 50"
+
+List experiments where the parameter "optimizer" is "adam" and
+the best "accuracy" metric is greater than 0.8:
+$ replicate ls --filter "optimizer = adam" --filter "accuracy > 0.8"
+
+Sort all stopped experiments by the metric "val_loss":
+$ replicate ls --sort "val_loss" --filter "status = stopped"
+`,
 	}
 
 	addStorageURLFlag(cmd)

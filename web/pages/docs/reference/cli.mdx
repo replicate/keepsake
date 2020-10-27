@@ -113,6 +113,24 @@ List experiments in this project
 replicate ls [flags]
 ```
 
+### Examples
+
+```
+List all experiments in the current project:
+$ replicate ls
+
+List experiments that have run for 50 steps or less:
+$ replicate ls --filter "step <= 50"
+
+List experiments where the parameter "optimizer" is "adam" and
+the best "accuracy" metric is greater than 0.8:
+$ replicate ls --filter "optimizer = adam" --filter "accuracy > 0.8"
+
+Sort all stopped experiments by the metric "val_loss":
+$ replicate ls --sort "val_loss" --filter "status = stopped"
+
+```
+
 ### Flags
 
 ```
@@ -164,6 +182,19 @@ To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 
 ```
 replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [flags]
+```
+
+### Examples
+
+```
+Delete an experiment and its checkpoints
+(where a1b2c3d4 is an experiment ID):
+replicate rm a1b2c3d4
+
+Delete all experiments where the metric "val_accuracy" is less
+than 0.2 at the best checkpoints:
+replicate rm $(replicate ls --filter "val_accuracy < 0.2")
+
 ```
 
 ### Flags

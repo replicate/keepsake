@@ -19,6 +19,14 @@ To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 		Args:       cobra.MinimumNArgs(1),
 		Aliases:    []string{"delete"},
 		SuggestFor: []string{"remove"},
+		Example: `Delete an experiment and its checkpoints
+(where a1b2c3d4 is an experiment ID):
+replicate rm a1b2c3d4
+
+Delete all experiments where the metric "val_accuracy" is less
+than 0.2 at the best checkpoints:
+replicate rm $(replicate ls --filter "val_accuracy < 0.2")
+`,
 	}
 
 	addStorageURLFlag(cmd)
