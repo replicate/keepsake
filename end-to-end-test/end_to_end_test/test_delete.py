@@ -77,7 +77,7 @@ if __name__ == "__main__":
     assert path_exists(storage, checkpoint_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", checkpoint_id], cwd=tmpdir, env=env, check=True
+        ["replicate", "delete", "--force", checkpoint_id], cwd=tmpdir, env=env, check=True
     )
 
     experiments = json.loads(
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     assert path_exists(storage, experiment_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", experiment_id], cwd=tmpdir, env=env, check=True
+        ["replicate", "delete", "--force", experiment_id], cwd=tmpdir, env=env, check=True
     )
 
     experiments = json.loads(
