@@ -4,7 +4,7 @@ The client for a simple RPC system to call Go.
 Each request is a subprocess, it passes the request via stdin and receives the response via stdout.
 It's like CGI RPC!
 
-The server is in cli/shared/main.go
+The server is in go/shared/main.go
 """
 
 import base64
