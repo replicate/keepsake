@@ -1,8 +1,12 @@
+import Link from "next/link";
+
 function Header({ className, children }) {
   return (
     <header className={className}>
       <nav>
-        <a href="/docs">Docs</a>
+        <Link href="/docs">
+          <a>Docs</a>
+        </Link>
         <a href="https://github.com/replicate/replicate">GitHub</a>
       </nav>
       <h1 className="tagline">

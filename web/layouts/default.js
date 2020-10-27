@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import {
   faGithub,
   faTwitter,
@@ -27,13 +28,15 @@ function Layout({ title, children }) {
         <footer>
           <h2>
             <div>
-              <a className="button" href="/docs">
-                Get started
-              </a>
+              <Link href="/docs">
+                <a className="button">Get started</a>
+              </Link>
             </div>
             <div> or, </div>
             <div>
-              <a href="/docs">learn more about how Replicate works</a>
+              <Link href="/docs/learn/how-it-works">
+                <a>learn more about how Replicate works</a>
+              </Link>
             </div>
           </h2>
           <div id="contributors">
@@ -95,7 +98,9 @@ function Layout({ title, children }) {
             </a>
           </div> */}
           <nav>
-            <a href="/docs">Docs</a>
+            <Link href="/docs">
+              <a>Docs</a>
+            </Link>
             <a href="https://github.com/replicate/replicate">GitHub</a>
             <a href="mailto:team@replicate.ai">team@replicate.ai</a>
           </nav>

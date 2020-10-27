@@ -1,12 +1,16 @@
 import Header from "../components/header";
 import Layout from "./default";
+import Link from "next/link";
 
 function DocsLayout({ title, children, ...props }) {
   return (
     <Layout {...props}>
       <Header className="documentation">
         <div className="breadcrumb">
-          <a href="/">Home</a>&nbsp;
+          <Link href="/">
+            <a>Home</a>
+          </Link>
+          &nbsp;
           {title ? (
             <>
               <a href="/docs">
@@ -25,11 +29,15 @@ function DocsLayout({ title, children, ...props }) {
           <ol>
             <li>
               <h2>
-                <a href="/docs/tutorial">Tutorial</a>
+                <Link href="/docs/tutorial">
+                  <a>Tutorial</a>
+                </Link>
               </h2>
               <ol>
                 <li>
-                  <a href="/docs/tutorial">First steps</a>
+                  <Link href="/docs/tutorial">
+                    <a>First steps</a>
+                  </Link>
                 </li>
                 <li>
                   <a href="/docs/tutorial/cloud-storage">
@@ -42,10 +50,14 @@ function DocsLayout({ title, children, ...props }) {
               <h2>Guides</h2>
               <ol>
                 <li>
-                  <a href="/docs/guides/notebooks">Working in notebooks</a>
+                  <Link href="/docs/guides/notebooks">
+                    <a>Working in notebooks</a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/docs/guides/keras-integration">Keras integration</a>
+                  <Link href="/docs/guides/keras-integration">
+                    <a>Keras integration</a>
+                  </Link>
                 </li>
               </ol>
             </li>
@@ -53,10 +65,14 @@ function DocsLayout({ title, children, ...props }) {
               <h2>Learning</h2>
               <ol>
                 <li>
-                  <a href="/docs/learn/how-it-works">How it works</a>
+                  <Link href="/docs/learn/how-it-works">
+                    <a>How it works</a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/docs/learn/analytics">Analytics</a>
+                  <Link href="/docs/learn/analytics">
+                    <a>Analytics</a>
+                  </Link>
                 </li>
               </ol>
             </li>
@@ -64,13 +80,19 @@ function DocsLayout({ title, children, ...props }) {
               <h2>Reference</h2>
               <ol>
                 <li>
-                  <a href="/docs/reference/python">Python library</a>
+                  <Link href="/docs/reference/python">
+                    <a>Python library</a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/docs/reference/yaml">replicate.yaml</a>
+                  <Link href="/docs/reference/yaml">
+                    <a>replicate.yaml</a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/docs/reference/cli">Command-line interface</a>
+                  <Link href="/docs/reference/cli">
+                    <a>Command-line interface</a>
+                  </Link>
                 </li>
               </ol>
             </li>
