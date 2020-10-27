@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "v*"
   pull_request:
@@ -28,14 +28,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -50,7 +50,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         run: make test-external
 
   test-python:
@@ -83,14 +83,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -106,7 +106,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         run: make test-external
 
   test-end-to-end:
@@ -138,14 +138,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -165,7 +165,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         run: make test-external
 
   release:
