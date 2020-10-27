@@ -1,6 +1,6 @@
 mypy==0.782
 black==19.10b0
-pytest==5.4.3
+pytest==6.1.1
 tensorflow-cpu==2.3.1
 # for integration tests
 boto3==1.12.32

@@ -11,6 +11,22 @@ develop:
 	cd cli && $(MAKE) install
 	cd python && python setup.py develop
 
+.PHONY: install-test-dependencies
+install-test-dependencies:
+	pip install -r requirements-test.txt
+
+.PHONY: test
+test: install-test-dependencies develop
+	cd cli && $(MAKE) test
+	cd python && $(MAKE) test
+	cd end-to-end-test && $(MAKE) test
+
+.PHONY: test-external
+test-external: install-test-dependencies develop
+	cd cli && $(MAKE) test-external
+	cd python && $(MAKE) test-external
+	cd end-to-end-test && $(MAKE) test-external
+
 .PHONY: release
 release: check-version-var verify-clean-master bump-version
 	git add cli/Makefile python/setup.py web/.env

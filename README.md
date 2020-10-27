@@ -14,6 +14,18 @@ Run this to install the CLI and Python library locally for development:
 
 This will set up a symlink for the Python library. If you make changes to Go code, you will need to re-run this to compile and install.
 
+## Test
+
+Run this to run the test suite:
+
+    make test
+
+This will run the three test suites in the `cli/`, `python/`, and `end-to-end-tests/` directories. You can also run `make test` in those directories to run the test suites individually, after running `make develop` in the root directory to install everything correctly.
+
+There are also some additional tests that hit Google Cloud and AWS. You first need to be signed into the `gcloud` and `aws` CLIs, and using test project/account. Then, run:
+
+    make test-external
+
 ## Build
 
 This will build the Go CLI and the Python package:

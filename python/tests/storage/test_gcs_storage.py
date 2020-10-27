@@ -9,6 +9,10 @@ from replicate.exceptions import DoesNotExistError
 from replicate.storage.gcs_storage import GCSStorage
 
 
+# Disable this test with -m "not external"
+pytestmark = pytest.mark.external
+
+
 @pytest.fixture(scope="function")
 def temp_bucket():
     bucket_name = "replicate-test-" + "".join(
