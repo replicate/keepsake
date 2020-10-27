@@ -115,10 +115,15 @@ class S3Storage(Storage):
         `/code` would create `/code/weights`.
         """
         # TODO(andreas): add tests
-        shared.call(
-            "S3Storage.GetPathTar",
-            Bucket=self.bucket_name,
-            Root=self.root,
-            TarPath=str(tar_path),
-            LocalPath=str(local_path),
-        )
+        try:
+            shared.call(
+                "S3Storage.GetPathTar",
+                Bucket=self.bucket_name,
+                Root=self.root,
+                TarPath=str(tar_path),
+                LocalPath=str(local_path),
+            )
+        except shared.SharedError as e:
+            if e.type == "DoesNotExistError":
+                raise DoesNotExistError(e.message)
+            raise

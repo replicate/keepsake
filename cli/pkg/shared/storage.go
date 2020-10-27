@@ -104,7 +104,13 @@ func (GCSStorage) GetPathTar(args GetPathTarArgs, _ *int) error {
 	if err != nil {
 		return err
 	}
-	return st.GetPathTar(args.TarPath, args.LocalPath)
+	err = st.GetPathTar(args.TarPath, args.LocalPath)
+	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
+	// predictable error name
+	if _, ok := err.(*storage.DoesNotExistError); ok {
+		return fmt.Errorf("DoesNotExistError:: %w", err)
+	}
+	return err
 }
 
 type S3Storage struct{}
@@ -169,7 +175,13 @@ func (S3Storage) GetPathTar(args GetPathTarArgs, _ *int) error {
 	if err != nil {
 		return err
 	}
-	return st.GetPathTar(args.TarPath, args.LocalPath)
+	err = st.GetPathTar(args.TarPath, args.LocalPath)
+	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
+	// predictable error name
+	if _, ok := err.(*storage.DoesNotExistError); ok {
+		return fmt.Errorf("DoesNotExistError:: %w", err)
+	}
+	return err
 }
 
 type DiskStorage struct{}
@@ -203,5 +215,11 @@ func (DiskStorage) GetPathTar(args GetPathTarArgs, _ *int) error {
 	if err != nil {
 		return err
 	}
-	return st.GetPathTar(args.TarPath, args.LocalPath)
+	err = st.GetPathTar(args.TarPath, args.LocalPath)
+	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
+	// predictable error name
+	if _, ok := err.(*storage.DoesNotExistError); ok {
+		return fmt.Errorf("DoesNotExistError:: %w", err)
+	}
+	return err
 }

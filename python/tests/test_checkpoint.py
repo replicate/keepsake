@@ -3,8 +3,11 @@ try:
 except ImportError:
     from replicate._vendor import dataclasses
 import datetime
+import os
+import pytest
 
 from replicate.checkpoint import Checkpoint
+from replicate.exceptions import DoesNotExistError
 from replicate.experiment import Experiment
 from replicate.project import Project
 
@@ -117,6 +120,33 @@ class TestCheckpoint:
             assert f.read() == "foo"
         with open(tmpdir / "bar.txt") as f:
             assert f.read() == "bar"
+
+        # test with no paths
+        exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
+        chk = exp.checkpoint(metrics={"accuracy": "awesome"})
+        tmpdir = tmpdir_factory.mktemp("checkout")
+        with pytest.raises(DoesNotExistError):
+            chk.checkout(output_directory=str(tmpdir))
+
+        # test experiment with no path
+        exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
+        chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+        tmpdir = tmpdir_factory.mktemp("checkout")
+        chk.checkout(output_directory=str(tmpdir))
+        assert not os.path.exists(tmpdir / "foo.txt")
+        with open(tmpdir / "bar.txt") as f:
+            assert f.read() == "bar"
+
+        # test checkpoint with no path
+        exp = project.experiments.create(
+            path="foo.txt", params={"foo": "bar"}, disable_heartbeat=True
+        )
+        chk = exp.checkpoint(metrics={"accuracy": "awesome"})
+        tmpdir = tmpdir_factory.mktemp("checkout")
+        chk.checkout(output_directory=str(tmpdir))
+        assert not os.path.exists(tmpdir / "bar.txt")
+        with open(tmpdir / "foo.txt") as f:
+            assert f.read() == "foo"
 
     def test_open(self, temp_workdir):
         project = Project()
