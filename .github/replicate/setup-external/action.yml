@@ -1,0 +1,18 @@
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS Credentials
+      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Setup GCP credentials
+      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: "290.0.1"
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true

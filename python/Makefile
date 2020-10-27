@@ -6,8 +6,12 @@ fmt:
 	black .
 
 .PHONY: test
-test:
-	tox
+test: lint
+	pytest -m "not external"
+
+.PHONY: test-external
+test-external: lint
+	pytest
 
 .PHONY: lint
 lint:

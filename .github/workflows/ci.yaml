@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+  pull_request:
+
+jobs:
+  test-go:
+    name: "Test (Go)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - uses: replicate/setup-external@v1
+      - name: "Build"
+        run: make build-all
+      - name: "Validate"
+        run: make validate
+      - name: Test
+        if: github.event_name == 'pull_request'
+        run: make test
+      - name: Test (external)
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        run: make test-external
+
+  test-python:
+    name: "Test (Python)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cli
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [3.6, 3.7, 3.8]
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: replicate/setup-external@v1
+      - name: Build project
+        run: cd ../make && build
+      - name: Install dependencies
+        run: pip install -r requirements-test.txt
+      - name: Test
+        if: github.event_name == 'pull_request'
+        run: make test
+      - name: Test (external)
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        run: make test-external
+
+  test-end-to-end:
+    name: "Test (end to end)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: end-to-end-test
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: replicate/setup-external@v1
+      - name: Write private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key.pem
+          chmod 400 /tmp/private_key.pem
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - name: Change /usr/local/bin permissions so we can install replicate in the test
+        run: sudo chmod 777 /usr/local/bin
+      - name: Install
+        run: |
+          (cd ../ && make build)
+          pip install $(echo ../python/dist/replicate-*-py3-none-manylinux1_x86_64.whl)
+      - name: Test
+        if: github.event_name == 'pull_request'
+        run: make test
+      - name: Test (external)
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        run: make test-external
+
+  release:
+    needs: [test-go, test-python, test-end-to-end]
+    if: startsWith(github.ref, 'refs/tags/v')

@@ -15,7 +15,7 @@ First, you need to install the Python library and CLI in a place accessible by t
 To just run a simple local end to end test in development, run:
 
 ```
-pytest -m fast
+make test
 ```
 
 To run the full test suite:
