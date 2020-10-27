@@ -50,4 +50,4 @@ jobs:
           (cd ../ && make build)
           pip install $(echo ../python/dist/replicate-*-py3-none-manylinux1_x86_64.whl)
       - name: End-to-end Test
-        run: pytest -s --aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" --aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" --ssh-private-key=/tmp/private_key.pem
+        run: pytest -n 10 -s --aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" --aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" --ssh-private-key=/tmp/private_key.pem
