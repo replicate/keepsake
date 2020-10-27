@@ -32,8 +32,8 @@ release: check-version-var verify-clean-master bump-version
 	git add cli/Makefile python/setup.py web/.env
 	git commit -m "Bump to version $(VERSION)"
 	git tag "v$(VERSION)"
-	git push
-	git push --tags
+	git push git@github.com:replicate/replicate.git master
+	git push git@github.com:replicate/replicate.git master --tags
 
 .PHONY: verify-version
 # quick and dirty
@@ -46,7 +46,7 @@ bump-version:
 verify-clean-master:
 	git diff-index --quiet HEAD  # make sure git is clean
 	git checkout master
-	git pull origin master
+	git pull git@github.com:replicate/replicate.git master
 
 .PHONY: release-manual
 release-manual: check-version-var verify-clean-master
