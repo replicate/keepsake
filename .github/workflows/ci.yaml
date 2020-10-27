@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: cli
+        working-directory: go
     steps:
       - uses: actions/checkout@master
       - uses: actions/setup-go@v2

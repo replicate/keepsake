@@ -4,7 +4,7 @@
       "path": "."
     },
     {
-      "path": "cli"
+      "path": "go"
     }
   ],
   "settings": {

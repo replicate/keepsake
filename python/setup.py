@@ -52,10 +52,10 @@ def plat_name_to_binary_path(plat_name):
 
 def copy_binaries(plat_name):
     """
-    Copy binaries for platform from ../cli into current directory
+    Copy binaries for platform from ../go into current directory
     """
     this_dir = Path(__file__).resolve().parent
-    binary_path = this_dir / "../cli/release" / plat_name_to_binary_path(plat_name)
+    binary_path = this_dir / "../go/release" / plat_name_to_binary_path(plat_name)
     (this_dir / "build/bin").mkdir(parents=True, exist_ok=True)
     (this_dir / "replicate/bin").mkdir(parents=True, exist_ok=True)
     shutil.copy(binary_path / "replicate", this_dir / "build/bin/replicate")

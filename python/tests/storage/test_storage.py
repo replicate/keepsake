@@ -7,7 +7,7 @@ from replicate.storage.gcs_storage import GCSStorage
 from replicate.exceptions import UnknownStorageBackend
 
 
-# parallel of cli/pkg/storage/storage_test.go
+# parallel of go/pkg/storage/storage_test.go
 
 
 def test_implicit_disk_storage():

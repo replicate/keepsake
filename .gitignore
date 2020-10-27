@@ -4,7 +4,7 @@
 *.egg-info/
 __pycache__/
 .tox
-cli/release
+go/release
 python/build
 python/dist
 python/replicate/bin
