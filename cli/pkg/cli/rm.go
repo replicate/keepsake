@@ -25,7 +25,7 @@ replicate rm a1b2c3d4
 
 Delete all experiments where the metric "val_accuracy" is less
 than 0.2 at the best checkpoints:
-replicate rm $(replicate ls --filter "val_accuracy < 0.2")
+replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
 `,
 	}
 
