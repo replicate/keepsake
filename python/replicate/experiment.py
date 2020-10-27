@@ -363,10 +363,8 @@ class Experiment:
         if not self.checkpoints:
             return None
 
-        first = self.checkpoints[0]
         last = self.checkpoints[-1]
-
-        return last.created - first.created
+        return last.created - self.created
 
     def _repr_html_(self) -> str:
         out = '<p><b><pre style="display: inline">Experiment(id="{}")</pre></b></p>'.format(
