@@ -158,6 +158,14 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
           </CodeBlock>
 
+          <h3 id="anchor-3">Analyze in a notebook</h3>
+          <p>
+            Don't like the CLI? No problem. You can retrieve, analyze, and plot
+            your results from within a notebook. Think of it like a programmable
+            Tensorboard.
+          </p>
+          <img src="images/notebook.png" width="900" />
+
           <h3 id="anchor-2">Compare experiments</h3>
           <p>
             It diffs everything, all the way down to versions of dependencies,
@@ -180,14 +188,6 @@ train_accuracy:   0.7909      0.7254
 val_loss:         0.1484      0.1989
 val_accuracy:     0.9607      0.9411`}
           </CodeBlock>
-
-          <h3 id="anchor-3">Analyze in a notebook</h3>
-          <p>
-            Don't like the CLI? No problem. You can retrieve, analyze, and plot
-            your results from within a notebook. Think of it like a programmable
-            Tensorboard.
-          </p>
-          <img src="images/notebook.png" width="900" />
 
           <h3 id="anchor-4">Commit to Git, after the fact</h3>
           <p>
