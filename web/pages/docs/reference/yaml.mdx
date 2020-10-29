@@ -11,10 +11,10 @@ The `replicate.yaml` file configures Replicate.
 It looks a bit like this:
 
 ```yaml
-storage: "s3://hooli-hotdog-model"
+repository: "s3://hooli-hotdog-model"
 ```
 
-## `storage`
+## `repository`
 
 The location where Replicate will store your project data (experiments, checkpoints, etc).
 
@@ -25,13 +25,13 @@ It supports several different storage mechanisms:
 - **Local disk**: If you pass a path, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
 
   ```yaml
-  storage: "/mnt/storage/"
+  repository: "/mnt/storage/"
   ```
 
 - **Amazon S3**: If you use the form `s3://bucket-name`, it will store the data on S3. For example:
 
   ```yaml
-  storage: "s3://hooli-hotdog-detector"
+  repository: "s3://hooli-hotdog-detector"
   ```
 
   You must [install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and run `aws configure` to authenticate with your Amazon account before using this method.
@@ -39,7 +39,7 @@ It supports several different storage mechanisms:
 - **Google Cloud Storage**: If you use the form `gs://bucket-name`, it will store the data on Google Cloud Storage. For example:
 
   ```yaml
-  storage: "gs://hooli-hotdog-detector"
+  repository: "gs://hooli-hotdog-detector"
   ```
 
   You must install the [Cloud SDK](https://cloud.google.com/sdk) and run `gcloud auth login` before using this method.

@@ -15,7 +15,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/config"
 	"github.com/replicate/replicate/go/pkg/param"
 	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 	"github.com/replicate/replicate/go/pkg/testutil"
 )
 
@@ -23,8 +23,8 @@ func init() {
 	timezone, _ = time.LoadLocation("Asia/Ulaanbaatar")
 }
 
-func createShowTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
-	store, err := storage.NewDiskStorage(path.Join(workingDir, ".replicate/storage"))
+func createShowTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate/storage"))
 	require.NoError(t, err)
 
 	fixedTime, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
@@ -108,13 +108,13 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) st
 		},
 	}}
 	for _, exp := range experiments {
-		require.NoError(t, exp.Save(store))
+		require.NoError(t, exp.Save(repo))
 	}
 
-	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
-	require.NoError(t, project.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
+	require.NoError(t, project.CreateHeartbeat(repo, experiments[0].ID, time.Now().UTC()))
+	require.NoError(t, project.CreateHeartbeat(repo, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
 
-	return store
+	return repo
 }
 
 func TestShowCheckpoint(t *testing.T) {
@@ -123,8 +123,8 @@ func TestShowCheckpoint(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(store)
+	repo := createShowTestData(t, workingDir, conf)
+	proj := project.NewProject(repo)
 	result, err := proj.CheckpointOrExperimentFromPrefix("3cc")
 	require.NoError(t, err)
 	require.NotNil(t, result.Checkpoint)
@@ -169,7 +169,7 @@ metric-2:        2
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{storageURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"3ccc"}, out)
+	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"3ccc"}, out)
 	require.NoError(t, err)
 	var chkpt project.Checkpoint
 	require.NoError(t, json.Unmarshal(out.Bytes(), &chkpt))
@@ -182,8 +182,8 @@ func TestShowExperiment(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(store)
+	repo := createShowTestData(t, workingDir, conf)
+	proj := project.NewProject(repo)
 	result, err := proj.CheckpointOrExperimentFromPrefix("1eee")
 	require.NoError(t, err)
 	require.NotNil(t, result.Experiment)
@@ -226,7 +226,7 @@ To see more details about a checkpoint, run:
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{storageURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"1eee"}, out)
+	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"1eee"}, out)
 	require.NoError(t, err)
 	var exp project.Experiment
 	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))

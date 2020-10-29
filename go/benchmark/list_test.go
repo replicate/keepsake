@@ -20,7 +20,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/hash"
 	"github.com/replicate/replicate/go/pkg/param"
 	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 // run a command and return stdout. If there is an error, print stdout/err and fail test
@@ -73,7 +73,7 @@ func createLotsOfFiles(b *testing.B, dir string) {
 }
 
 // Create lots of experiments and checkpoints
-func createLotsOfExperiments(workingDir string, storage storage.Storage, numExperiments int) error {
+func createLotsOfExperiments(workingDir string, repository repository.Repository, numExperiments int) error {
 	numCheckpoints := 50
 
 	maxWorkers := 25
@@ -84,11 +84,11 @@ func createLotsOfExperiments(workingDir string, storage storage.Storage, numExpe
 			exp := project.NewExperiment(param.ValueMap{
 				"learning_rate": param.Float(0.001),
 			})
-			if err := exp.Save(storage); err != nil {
+			if err := exp.Save(repository); err != nil {
 				return fmt.Errorf("Error saving experiment: %w", err)
 			}
 
-			if err := project.CreateHeartbeat(storage, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
+			if err := project.CreateHeartbeat(repository, exp.ID, time.Now().Add(-24*time.Hour)); err != nil {
 				return fmt.Errorf("Error creating heartbeat: %w", err)
 			}
 
@@ -115,13 +115,13 @@ func BenchmarkReplicateDisk(b *testing.B) {
 
 	createLotsOfFiles(b, workingDir)
 
-	// Create storage
-	storageDir := path.Join(workingDir, ".replicate/storage")
-	storage, err := storage.NewDiskStorage(storageDir)
+	// Create repository
+	repositoryDir := path.Join(workingDir, ".replicate/repository")
+	repository, err := repository.NewDiskRepository(repositoryDir)
 	require.NoError(b, err)
-	defer os.RemoveAll(storageDir)
+	defer os.RemoveAll(repositoryDir)
 
-	err = createLotsOfExperiments(workingDir, storage, 10)
+	err = createLotsOfExperiments(workingDir, repository, 10)
 	require.NoError(b, err)
 
 	b.Run("list first run with 10 experiments", func(b *testing.B) {
@@ -130,7 +130,7 @@ func BenchmarkReplicateDisk(b *testing.B) {
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 10)
+	err = createLotsOfExperiments(workingDir, repository, 10)
 	require.NoError(b, err)
 
 	b.Run("list first run with 20 experiments", func(b *testing.B) {
@@ -139,7 +139,7 @@ func BenchmarkReplicateDisk(b *testing.B) {
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 10)
+	err = createLotsOfExperiments(workingDir, repository, 10)
 	require.NoError(b, err)
 
 	b.Run("list first run with 30 experiments", func(b *testing.B) {
@@ -162,10 +162,10 @@ func BenchmarkReplicateS3(b *testing.B) {
 
 	// Create a bucket
 	bucketName := "replicate-test-benchmark-" + hash.Random()[0:10]
-	err = storage.CreateS3Bucket("us-east-1", bucketName)
+	err = repository.CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(b, err)
 	defer func() {
-		require.NoError(b, storage.DeleteS3Bucket("us-east-1", bucketName))
+		require.NoError(b, repository.DeleteS3Bucket("us-east-1", bucketName))
 	}()
 	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
 	time.Sleep(1 * time.Second)
@@ -173,14 +173,14 @@ func BenchmarkReplicateS3(b *testing.B) {
 	// replicate.yaml
 	err = ioutil.WriteFile(
 		path.Join(workingDir, "replicate.yaml"),
-		[]byte(fmt.Sprintf("storage: s3://%s", bucketName)), 0644)
+		[]byte(fmt.Sprintf("repository: s3://%s", bucketName)), 0644)
 	require.NoError(b, err)
 
-	// Create storage
-	storage, err := storage.NewS3Storage(bucketName, "root")
+	// Create repository
+	repository, err := repository.NewS3Repository(bucketName, "root")
 	require.NoError(b, err)
 
-	err = createLotsOfExperiments(workingDir, storage, 5)
+	err = createLotsOfExperiments(workingDir, repository, 5)
 	require.NoError(b, err)
 
 	b.Run("list first run with 5 experiments", func(b *testing.B) {
@@ -197,7 +197,7 @@ func BenchmarkReplicateS3(b *testing.B) {
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 5)
+	err = createLotsOfExperiments(workingDir, repository, 5)
 	require.NoError(b, err)
 
 	b.Run("list first run with 10 experiments", func(b *testing.B) {
@@ -214,7 +214,7 @@ func BenchmarkReplicateS3(b *testing.B) {
 		}
 	})
 
-	err = createLotsOfExperiments(workingDir, storage, 5)
+	err = createLotsOfExperiments(workingDir, repository, 5)
 	require.NoError(b, err)
 
 	b.Run("list first run with 15 experiments", func(b *testing.B) {

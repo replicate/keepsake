@@ -20,8 +20,8 @@ func TestDiffSameExperiment(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(store)
+	repo := createShowTestData(t, workingDir, conf)
+	proj := project.NewProject(repo)
 
 	au := aurora.NewAurora(false)
 	out := new(bytes.Buffer)
@@ -58,8 +58,8 @@ func TestDiffDifferentExperiment(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(store)
+	repo := createShowTestData(t, workingDir, conf)
+	proj := project.NewProject(repo)
 
 	au := aurora.NewAurora(false)
 	out := new(bytes.Buffer)

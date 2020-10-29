@@ -11,12 +11,14 @@ import (
 
 // Config is replicate.yaml
 type Config struct {
-	Storage            string   `json:"storage"`
+	Repository         string   `json:"repository"`
 	Python             string   `json:"python"`
 	CUDA               string   `json:"cuda"`
 	PythonRequirements string   `json:"python_requirements"`
 	Install            []string `json:"install"`
 	InstallScript      string   `json:"install_script"`
+
+	Storage string `json:"storage"` // deprecated
 }
 
 // ReadPythonRequirements returns trimmed lines of text from
@@ -50,7 +52,7 @@ func (conf *Config) ReadPythonRequirements(projectDir string) (lines []string, e
 func getDefaultConfig(workingDir string) *Config {
 	// should match defaults in config.py
 	return &Config{
-		Storage:            path.Join(workingDir, ".replicate/storage/"),
+		Repository:         path.Join(workingDir, ".replicate/storage/"),
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},

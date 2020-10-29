@@ -13,7 +13,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/interact"
 	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 func newCheckoutCommand() *cobra.Command {
@@ -24,7 +24,7 @@ func newCheckoutCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 
-	addStorageURLFlag(cmd)
+	addRepositoryURLFlag(cmd)
 	cmd.Flags().StringP("output-directory", "o", "", "Output directory (defaults to working directory or directory with replicate.yaml in it)")
 	cmd.Flags().BoolP("force", "f", false, "Force checkout without prompt, even if the directory is not empty")
 
@@ -51,11 +51,11 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	proj := project.NewProject(store)
+	proj := project.NewProject(repo)
 	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err
@@ -139,9 +139,9 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	experimentFilesExist := true
 	checkpointFilesExist := true
 
-	if err := store.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
+	if err := repo.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
 		// Ignore does not exist errors
-		if _, ok := err.(*storage.DoesNotExistError); ok {
+		if _, ok := err.(*repository.DoesNotExistError); ok {
 			console.Debug("No experiment data found")
 			experimentFilesExist = false
 		} else {
@@ -154,8 +154,8 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 	// Overlay checkpoint on top of experiment
 	if checkpoint != nil {
 
-		if err := store.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
-			if _, ok := err.(*storage.DoesNotExistError); ok {
+		if err := repo.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
+			if _, ok := err.(*repository.DoesNotExistError); ok {
 				console.Debug("No checkpoint data found")
 				checkpointFilesExist = false
 			} else {

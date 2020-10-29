@@ -1,4 +1,4 @@
-package storage
+package repository
 
 type DoesNotExistError struct {
 	msg string

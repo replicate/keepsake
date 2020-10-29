@@ -3,6 +3,8 @@ from typing import List, Dict, Any
 
 from ._vendor import yaml
 
+from . import console
+
 # TODO (bfirsh): send users to replicate.yaml reference if this is raised!
 class ConfigValidationError(Exception):
     pass
@@ -22,17 +24,25 @@ def load_config(project_dir: str) -> Dict[str, Any]:
     if data is None:
         data = {}
 
-    # if replicate is running inside docker and storage is disk,
-    # REPLICATE_STORAGE is mounted to the value of storage: in
+    # if replicate is running inside docker and repository is disk,
+    # REPLICATE_REPOSITORY is mounted to the value of repository: in
     # replicate.yaml
-    if "REPLICATE_STORAGE" in os.environ:
-        data["storage"] = os.environ["REPLICATE_STORAGE"]
+    if "REPLICATE_REPOSITORY" in os.environ:
+        data["repository"] = os.environ["REPLICATE_REPOSITORY"]
 
     return validate_and_set_defaults(data, project_dir)
 
 
 # TODO(andreas): more rigorous validation
-VALID_KEYS = ["storage", "python", "cuda", "python_requirements", "install", "metrics"]
+VALID_KEYS = [
+    "repository",
+    "python",
+    "cuda",
+    "python_requirements",
+    "install",
+    "metrics",
+    "storage",
+]
 REQUIRED_KEYS: List[str] = []
 
 
@@ -47,7 +57,7 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
             )
 
     defaults = {
-        "storage": os.path.join(project_dir, ".replicate/storage/"),
+        "repository": os.path.join(project_dir, ".replicate/storage/"),
         "python": "3.7",
     }
 
@@ -63,10 +73,15 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
                 )
             )
 
-        if key == "storage":
+        if key == "repository":
             if not isinstance(value, str):
                 raise ConfigValidationError(
-                    "The option 'storage' in replicate.yaml needs to be a string."
+                    "The option 'repository' in replicate.yaml needs to be a string."
                 )
+
+        if key == "storage":
+            console.warn(
+                "'storage' is deprecated in replicate.yaml, please use 'repository'"
+            )
 
     return data

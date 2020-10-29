@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func shim(v ...interface{}) []interface{} {
 	return v
 }
 
-// parallel of python/tests/unit/storage/test_storage.py
+// parallel of python/tests/unit/repository/test_repository.py
 func TestSplitURL(t *testing.T) {
 	require.Equal(t, shim(SchemeDisk, "", "/foo/bar", nil), shim(SplitURL("/foo/bar")))
 	require.Equal(t, shim(SchemeDisk, "", "foo/bar", nil), shim(SplitURL("foo/bar")))
@@ -24,5 +24,5 @@ func TestSplitURL(t *testing.T) {
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "", nil), shim(SplitURL("gs://my-bucket")))
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "foo", nil), shim(SplitURL("gs://my-bucket/foo")))
 
-	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Unknown storage backend: foo")), shim(SplitURL("foo://my-bucket")))
+	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Unknown repository backend: foo")), shim(SplitURL("foo://my-bucket")))
 }

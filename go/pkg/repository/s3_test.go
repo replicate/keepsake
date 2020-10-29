@@ -1,6 +1,6 @@
 // +build external
 
-package storage
+package repository
 
 import (
 	"fmt"
@@ -23,20 +23,20 @@ import (
 // TODO: perhaps use Google's httpreplay library so this doesn't hit network
 // https://godoc.org/cloud.google.com/go/httpreplay
 
-func TestS3StorageGet(t *testing.T) {
+func TestS3RepositoryGet(t *testing.T) {
 	bucketName, _ := createS3Bucket(t)
 	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
 
-	storage, err := NewS3Storage(bucketName, "root")
+	repository, err := NewS3Repository(bucketName, "root")
 	require.NoError(t, err)
 
-	require.NoError(t, storage.Put("some-file", []byte("hello")))
+	require.NoError(t, repository.Put("some-file", []byte("hello")))
 
-	data, err := storage.Get("some-file")
+	data, err := repository.Get("some-file")
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), data)
 
-	_, err = storage.Get("does-not-exist")
+	_, err = repository.Get("does-not-exist")
 	fmt.Println(err)
 	require.IsType(t, &DoesNotExistError{}, err)
 }
@@ -45,16 +45,16 @@ func TestS3GetPathTar(t *testing.T) {
 	bucketName, _ := createS3Bucket(t)
 	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
 
-	storage, err := NewS3Storage(bucketName, "root")
+	repository, err := NewS3Repository(bucketName, "root")
 	require.NoError(t, err)
 
 	tmpDir, err := files.TempDir("test")
 	require.NoError(t, err)
-	err = storage.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	err = repository.GetPathTar("does-not-exist.tar.gz", tmpDir)
 	require.IsType(t, &DoesNotExistError{}, err)
 }
 
-func TestS3StoragePutPath(t *testing.T) {
+func TestS3RepositoryPutPath(t *testing.T) {
 	bucketName, svc := createS3Bucket(t)
 	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
 
@@ -66,16 +66,16 @@ func TestS3StoragePutPath(t *testing.T) {
 	err = ioutil.WriteFile(filepath.Join(tmpDir, "somedir/foo.txt"), []byte("hello"), 0644)
 	require.NoError(t, err)
 
-	storage, err := NewS3Storage(bucketName, "")
+	repository, err := NewS3Repository(bucketName, "")
 	require.NoError(t, err)
 
 	// Whole directory
-	err = storage.PutPath(filepath.Join(tmpDir, "somedir"), "anotherdir")
+	err = repository.PutPath(filepath.Join(tmpDir, "somedir"), "anotherdir")
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), readS3Object(t, svc, bucketName, "anotherdir/foo.txt"))
 
 	// Single file
-	err = storage.PutPath(filepath.Join(tmpDir, "somedir/foo.txt"), "singlefile/foo.txt")
+	err = repository.PutPath(filepath.Join(tmpDir, "somedir/foo.txt"), "singlefile/foo.txt")
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), readS3Object(t, svc, bucketName, "singlefile/foo.txt"))
 }
@@ -84,19 +84,19 @@ func TestS3ListRecursive(t *testing.T) {
 	bucketName, _ := createS3Bucket(t)
 	t.Cleanup(func() { deleteS3Bucket(t, bucketName) })
 
-	storage, err := NewS3Storage(bucketName, "")
+	repository, err := NewS3Repository(bucketName, "")
 	require.NoError(t, err)
 
-	// Works with empty storage
+	// Works with empty repository
 	results := make(chan ListResult)
-	go storage.ListRecursive(results, "checkpoints")
+	go repository.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
 
 	// Lists stuff!
-	require.NoError(t, storage.Put("checkpoints/abc123.json", []byte("yep")))
-	require.NoError(t, storage.Put("experiments/def456.json", []byte("nope")))
+	require.NoError(t, repository.Put("checkpoints/abc123.json", []byte("yep")))
+	require.NoError(t, repository.Put("experiments/def456.json", []byte("nope")))
 	results = make(chan ListResult)
-	go storage.ListRecursive(results, "checkpoints")
+	go repository.ListRecursive(results, "checkpoints")
 	require.Equal(t, ListResult{
 		Path: "checkpoints/abc123.json",
 		MD5:  []byte{0x93, 0x48, 0xae, 0x78, 0x51, 0xcf, 0x3b, 0xa7, 0x98, 0xd9, 0x56, 0x4e, 0xf3, 0x8, 0xec, 0x25},
@@ -104,10 +104,10 @@ func TestS3ListRecursive(t *testing.T) {
 	require.Empty(t, <-results)
 
 	// Works with non-existent bucket
-	storage, err = NewS3Storage("replicate-test-"+hash.Random()[0:10], "")
+	repository, err = NewS3Repository("replicate-test-"+hash.Random()[0:10], "")
 	require.NoError(t, err)
 	results = make(chan ListResult)
-	go storage.ListRecursive(results, "checkpoints")
+	go repository.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
 }
 

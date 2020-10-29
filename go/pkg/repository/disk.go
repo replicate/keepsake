@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"crypto/md5"
@@ -15,22 +15,22 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
-type DiskStorage struct {
+type DiskRepository struct {
 	rootDir string
 }
 
-func NewDiskStorage(rootDir string) (*DiskStorage, error) {
-	return &DiskStorage{
+func NewDiskRepository(rootDir string) (*DiskRepository, error) {
+	return &DiskRepository{
 		rootDir: rootDir,
 	}, nil
 }
 
-func (s *DiskStorage) RootURL() string {
+func (s *DiskRepository) RootURL() string {
 	return "file://" + s.rootDir
 }
 
 // Get data at path
-func (s *DiskStorage) Get(p string) ([]byte, error) {
+func (s *DiskRepository) Get(p string) ([]byte, error) {
 	data, err := ioutil.ReadFile(path.Join(s.rootDir, p))
 	if err != nil && os.IsNotExist(err) {
 		return nil, &DoesNotExistError{msg: "Get: path does not exist: " + p}
@@ -38,18 +38,18 @@ func (s *DiskStorage) Get(p string) ([]byte, error) {
 	return data, err
 }
 
-// GetPath recursively copies storageDir to localDir
-func (s *DiskStorage) GetPath(storageDir string, localDir string) error {
-	if err := copy.Copy(path.Join(s.rootDir, storageDir), localDir); err != nil {
-		return fmt.Errorf("Failed to copy directory from %s to %s: %w", storageDir, localDir, err)
+// GetPath recursively copies repoDir to localDir
+func (s *DiskRepository) GetPath(repoDir string, localDir string) error {
+	if err := copy.Copy(path.Join(s.rootDir, repoDir), localDir); err != nil {
+		return fmt.Errorf("Failed to copy directory from %s to %s: %w", repoDir, localDir, err)
 	}
 	return nil
 }
 
 // GetPathTar extracts tarball `tarPath` to `localPath`
 //
-// See storage.go for full documentation.
-func (s *DiskStorage) GetPathTar(tarPath, localPath string) error {
+// See repository.go for full documentation.
+func (s *DiskRepository) GetPathTar(tarPath, localPath string) error {
 	fullTarPath := path.Join(s.rootDir, tarPath)
 	exists, err := files.FileExists(fullTarPath)
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *DiskStorage) GetPathTar(tarPath, localPath string) error {
 }
 
 // Put data at path
-func (s *DiskStorage) Put(p string, data []byte) error {
+func (s *DiskRepository) Put(p string, data []byte) error {
 	fullPath := path.Join(s.rootDir, p)
 	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
 	if err != nil {
@@ -71,9 +71,9 @@ func (s *DiskStorage) Put(p string, data []byte) error {
 	return ioutil.WriteFile(fullPath, data, 0644)
 }
 
-// PutPath recursively puts the local `localPath` directory into path `storagePath` on storage
-func (s *DiskStorage) PutPath(localPath string, storagePath string) error {
-	files, err := getListOfFilesToPut(localPath, storagePath)
+// PutPath recursively puts the local `localPath` directory into path `repoPath` in the repository
+func (s *DiskRepository) PutPath(localPath string, repoPath string) error {
+	files, err := getListOfFilesToPut(localPath, repoPath)
 	if err != nil {
 		return err
 	}
@@ -90,11 +90,11 @@ func (s *DiskStorage) PutPath(localPath string, storagePath string) error {
 	return nil
 }
 
-// PutPathTar recursively puts the local `localPath` directory into a tar.gz file `tarPath` on storage.
+// PutPathTar recursively puts the local `localPath` directory into a tar.gz file `tarPath` in the repository
 // If `includePath` is set, only that will be included.
 //
-// See storage.go for full documentation.
-func (s *DiskStorage) PutPathTar(localPath, tarPath, includePath string) error {
+// See repository.go for full documentation.
+func (s *DiskRepository) PutPathTar(localPath, tarPath, includePath string) error {
 	if !strings.HasSuffix(tarPath, ".tar.gz") {
 		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
 	}
@@ -121,7 +121,7 @@ func (s *DiskStorage) PutPathTar(localPath, tarPath, includePath string) error {
 
 // Delete deletes path. If path is a directory, it recursively deletes
 // all everything under path
-func (s *DiskStorage) Delete(pathToDelete string) error {
+func (s *DiskRepository) Delete(pathToDelete string) error {
 	if err := os.RemoveAll(path.Join(s.rootDir, pathToDelete)); err != nil {
 		return fmt.Errorf("Failed to delete %s/%s: %w", s.rootDir, pathToDelete, err)
 	}
@@ -133,7 +133,7 @@ func (s *DiskStorage) Delete(pathToDelete string) error {
 // Returns a list of paths, prefixed with the given path, that can be passed straight to Get().
 // Directories are not listed.
 // If path does not exist, an empty list will be returned.
-func (s *DiskStorage) List(p string) ([]string, error) {
+func (s *DiskRepository) List(p string) ([]string, error) {
 	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -150,7 +150,7 @@ func (s *DiskStorage) List(p string) ([]string, error) {
 	return result, nil
 }
 
-func (s *DiskStorage) ListRecursive(results chan<- ListResult, folder string) {
+func (s *DiskRepository) ListRecursive(results chan<- ListResult, folder string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -181,7 +181,7 @@ func (s *DiskStorage) ListRecursive(results chan<- ListResult, folder string) {
 	close(results)
 }
 
-func (s *DiskStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
+func (s *DiskRepository) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err

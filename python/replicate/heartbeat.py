@@ -4,7 +4,7 @@ import json
 import time
 from multiprocessing import Process
 
-from .storage import storage_for_url, Storage
+from .repository import repository_for_url, Repository
 from .metadata import rfc3339_datetime
 
 
@@ -15,12 +15,12 @@ class Heartbeat:
     def __init__(
         self,
         experiment_id: str,
-        storage_url: str,
+        repository_url: str,
         path: str,
         refresh_interval: datetime.timedelta = DEFAULT_REFRESH_INTERVAL,
     ):
         self.experiment_id = experiment_id
-        self.storage_url = storage_url
+        self.repository_url = repository_url
         self.path = path
         self.refresh_interval = refresh_interval
         self.process = self.make_process()
@@ -45,15 +45,15 @@ class Heartbeat:
         return process
 
     def heartbeat_loop(self):
-        # need to instantitate storage here since the gcs
+        # need to instantitate repository here since the gcs
         # client doesn't like multiprocessing:
         # https://github.com/googleapis/google-cloud-python/issues/3501
-        storage = storage_for_url(self.storage_url)
+        repository = repository_for_url(self.repository_url)
         while True:
-            self.refresh(storage)
+            self.refresh(repository)
             time.sleep(self.refresh_interval.total_seconds())
 
-    def refresh(self, storage: Storage):
+    def refresh(self, repository: Repository):
         obj = json.dumps(
             {
                 "experiment_id": self.experiment_id,
@@ -61,6 +61,6 @@ class Heartbeat:
             }
         )
         try:
-            storage.put(self.path, obj)
+            repository.put(self.path, obj)
         except Exception as e:  # pylint: disable=broad-except
             sys.stderr.write("Failed to save heartbeat: {}".format(e))

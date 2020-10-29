@@ -21,11 +21,11 @@ func TestFindConfig(t *testing.T) {
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},
-		Storage:            path.Join(dir, ".replicate/storage/"),
+		Repository:         path.Join(dir, ".replicate/storage/"),
 	}, conf)
 
 	// Loads a basic config
-	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("storage: 'foo'"), 0644)
+	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("repository: 'foo'"), 0644)
 	require.NoError(t, err)
 	conf, _, err = FindConfig(dir)
 	require.NoError(t, err)
@@ -33,7 +33,7 @@ func TestFindConfig(t *testing.T) {
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},
-		Storage:            "foo",
+		Repository:         "foo",
 	}, conf)
 }
 
@@ -43,7 +43,7 @@ func TestFindConfigInWorkingDir(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	// Uses override directory if that is passed
-	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("storage: 'foo'"), 0644)
+	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("repository: 'foo'"), 0644)
 	require.NoError(t, err)
 	conf, _, err := FindConfigInWorkingDir(dir)
 	require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestFindConfigInWorkingDir(t *testing.T) {
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},
-		Storage:            "foo",
+		Repository:         "foo",
 	}, conf)
 
 	// Loads default config if override directory doesn't have replicate.yaml
@@ -64,7 +64,7 @@ func TestFindConfigInWorkingDir(t *testing.T) {
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},
-		Storage:            path.Join(emptyDir, ".replicate/storage/"),
+		Repository:         path.Join(emptyDir, ".replicate/storage/"),
 	}, conf)
 }
 
@@ -80,6 +80,6 @@ func TestParse(t *testing.T) {
 		Python:             "3.7",
 		PythonRequirements: "requirements.txt",
 		Install:            []string{},
-		Storage:            "/foo/.replicate/storage",
+		Repository:         "/foo/.replicate/storage",
 	}, conf)
 }

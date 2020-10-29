@@ -15,12 +15,12 @@ import (
 	"github.com/replicate/replicate/go/pkg/hash"
 	"github.com/replicate/replicate/go/pkg/param"
 	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 	"github.com/replicate/replicate/go/pkg/testutil"
 )
 
-func createTestData(t *testing.T, workingDir string, conf *config.Config) storage.Storage {
-	store, err := storage.NewDiskStorage(path.Join(workingDir, ".replicate/storage"))
+func createTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate/storage"))
 	require.NoError(t, err)
 
 	require.NoError(t, err)
@@ -116,13 +116,13 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) storag
 		Config: conf,
 	}}
 	for _, exp := range experiments {
-		require.NoError(t, exp.Save(store))
+		require.NoError(t, exp.Save(repo))
 	}
 
-	require.NoError(t, project.CreateHeartbeat(store, experiments[0].ID, time.Now().UTC()))
-	require.NoError(t, project.CreateHeartbeat(store, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
+	require.NoError(t, project.CreateHeartbeat(repo, experiments[0].ID, time.Now().UTC()))
+	require.NoError(t, project.CreateHeartbeat(repo, experiments[1].ID, time.Now().UTC().Add(-1*time.Minute)))
 
-	return store
+	return repo
 }
 
 func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
@@ -132,10 +132,10 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 
 	conf := &config.Config{}
 
-	store := createTestData(t, workingDir, conf)
+	repo := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, new(param.Filters), &param.Sorter{Key: "started"})
+		err = Experiments(repo, FormatTable, false, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 	expected := `
@@ -155,10 +155,10 @@ func TestListOutputTableWithPrimaryMetricAll(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createTestData(t, workingDir, conf)
+	repo := createTestData(t, workingDir, conf)
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, true, new(param.Filters), &param.Sorter{Key: "started"})
+		err = Experiments(repo, FormatTable, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 	expected := `
@@ -178,13 +178,13 @@ func TestListOutputTableFilter(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createTestData(t, workingDir, conf)
+	repo := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"step >= 5"})
 	require.NoError(t, err)
 	sorter := param.NewSorter("started")
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, filters, sorter)
+		err = Experiments(repo, FormatTable, false, filters, sorter)
 	})
 	require.NoError(t, err)
 	expected := `
@@ -203,13 +203,13 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createTestData(t, workingDir, conf)
+	repo := createTestData(t, workingDir, conf)
 	filters, err := param.MakeFilters([]string{"status = running"})
 	require.NoError(t, err)
 	sorter := param.NewSorter("started")
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, filters, sorter)
+		err = Experiments(repo, FormatTable, false, filters, sorter)
 	})
 	require.NoError(t, err)
 	expected := `
@@ -227,11 +227,11 @@ func TestListOutputTableSort(t *testing.T) {
 	defer os.RemoveAll(workingDir)
 
 	conf := &config.Config{}
-	store := createTestData(t, workingDir, conf)
+	repo := createTestData(t, workingDir, conf)
 	sorter := param.NewSorter("started-desc")
 
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(store, FormatTable, false, new(param.Filters), sorter)
+		err = Experiments(repo, FormatTable, false, new(param.Filters), sorter)
 	})
 	require.NoError(t, err)
 	expected := `
@@ -248,11 +248,11 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHEC
 func TestListJSON(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
-	storageDir := path.Join(workingDir, ".replicate/storage")
+	repoDir := path.Join(workingDir, ".replicate/storage")
 
-	storage, err := storage.NewDiskStorage(storageDir)
+	repository, err := repository.NewDiskRepository(repoDir)
 	require.NoError(t, err)
-	defer os.RemoveAll(storageDir)
+	defer os.RemoveAll(repoDir)
 
 	// Experiment no longer running
 	exp := &project.Experiment{
@@ -268,9 +268,9 @@ func TestListJSON(t *testing.T) {
 			}),
 		},
 	}
-	require.NoError(t, exp.Save(storage))
+	require.NoError(t, exp.Save(repository))
 	require.NoError(t, err)
-	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
+	require.NoError(t, project.CreateHeartbeat(repository, exp.ID, time.Now().UTC().Add(-24*time.Hour)))
 
 	// Experiment still running
 	exp = &project.Experiment{
@@ -286,13 +286,13 @@ func TestListJSON(t *testing.T) {
 			}),
 		},
 	}
-	require.NoError(t, exp.Save(storage))
+	require.NoError(t, exp.Save(repository))
 	require.NoError(t, err)
-	require.NoError(t, project.CreateHeartbeat(storage, exp.ID, time.Now().UTC()))
+	require.NoError(t, project.CreateHeartbeat(repository, exp.ID, time.Now().UTC()))
 
 	// replicate ls
 	actual := capturer.CaptureStdout(func() {
-		err = Experiments(storage, FormatJSON, true, new(param.Filters), &param.Sorter{Key: "started"})
+		err = Experiments(repository, FormatJSON, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})
 	require.NoError(t, err)
 

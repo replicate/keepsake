@@ -5,7 +5,7 @@ import boto3
 
 import replicate
 from replicate.hash import random_hash
-from replicate.storage.s3_storage import S3Storage
+from replicate.repository.s3_repository import S3Repository
 from replicate.exceptions import DoesNotExistError
 
 # Disable this test with -m "not external"
@@ -25,7 +25,7 @@ def temp_bucket():
 
 
 def test_s3_experiment(temp_bucket, tmpdir):
-    replicate_yaml_contents = "storage: s3://{bucket}".format(bucket=temp_bucket)
+    replicate_yaml_contents = "repository: s3://{bucket}".format(bucket=temp_bucket)
 
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(replicate_yaml_contents)
@@ -54,7 +54,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "id": experiment.id,
             "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
-            "config": {"python": "3.7", "storage": "s3://" + temp_bucket},
+            "config": {"python": "3.7", "repository": "s3://" + temp_bucket},
             "path": ".",
             "checkpoints": [
                 {
@@ -74,11 +74,11 @@ def test_s3_experiment(temp_bucket, tmpdir):
 
 
 def test_list(temp_bucket):
-    storage = S3Storage(bucket=temp_bucket, root="")
-    storage.put("foo", "nice")
-    storage.put("some/bar", "nice")
-    assert storage.list("") == ["foo"]
-    assert storage.list("some") == ["some/bar"]
+    repository = S3Repository(bucket=temp_bucket, root="")
+    repository.put("foo", "nice")
+    repository.put("some/bar", "nice")
+    assert repository.list("") == ["foo"]
+    assert repository.list("some") == ["some/bar"]
 
 
 def s3_read(bucket, path):
@@ -91,22 +91,22 @@ def s3_read_json(bucket, path):
 
 
 def test_delete(temp_bucket, tmpdir):
-    storage = S3Storage(bucket=temp_bucket, root="")
+    repository = S3Repository(bucket=temp_bucket, root="")
 
-    storage.put("some/file", "nice")
-    assert storage.get("some/file") == b"nice"
+    repository.put("some/file", "nice")
+    assert repository.get("some/file") == b"nice"
 
-    storage.delete("some/file")
+    repository.delete("some/file")
     with pytest.raises(DoesNotExistError):
-        storage.get("some/file")
+        repository.get("some/file")
 
 
 def test_delete_with_root(temp_bucket, tmpdir):
-    storage = S3Storage(bucket=temp_bucket, root="my-root")
+    repository = S3Repository(bucket=temp_bucket, root="my-root")
 
-    storage.put("some/file", "nice")
-    assert storage.get("some/file") == b"nice"
+    repository.put("some/file", "nice")
+    assert repository.get("some/file") == b"nice"
 
-    storage.delete("some/file")
+    repository.delete("some/file")
     with pytest.raises(DoesNotExistError):
-        storage.get("some/file")
+        repository.get("some/file")

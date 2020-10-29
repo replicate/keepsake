@@ -11,7 +11,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/config"
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/global"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 func getAurora() aurora.Aurora {
@@ -19,23 +19,23 @@ func getAurora() aurora.Aurora {
 	return aurora.NewAurora(os.Getenv("NO_COLOR") == "")
 }
 
-func addStorageURLFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("storage-url", "S", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
+func addRepositoryURLFlag(cmd *cobra.Command) {
+	cmd.Flags().StringP("repository", "R", "", "Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)")
 }
 
-func addStorageURLFlagVar(cmd *cobra.Command, opt *string) {
-	cmd.Flags().StringVarP(opt, "storage-url", "S", "", "Storage URL (e.g. 's3://my-replicate-bucket' (if omitted, uses storage URL from replicate.yaml)")
+func addRepositoryURLFlagVar(cmd *cobra.Command, opt *string) {
+	cmd.Flags().StringVarP(opt, "repository", "R", "", "Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)")
 }
 
-// getStorageURLFromStringOrConfig attempts to get it from passed string from --storage-url,
+// getRepositoryURLFromStringOrConfig attempts to get it from passed string from --repository,
 // otherwise finds replicate.yaml recursively
-func getStorageURLFromStringOrConfig(storageURL string) (string, string, error) {
-	if storageURL == "" {
+func getRepositoryURLFromStringOrConfig(repositoryURL string) (string, string, error) {
+	if repositoryURL == "" {
 		conf, projectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
 		if err != nil {
 			return "", "", err
 		}
-		return conf.Storage, projectDir, nil
+		return conf.Repository, projectDir, nil
 	}
 
 	// if global.ProjectDirectory == "", abs of that is cwd
@@ -46,17 +46,17 @@ func getStorageURLFromStringOrConfig(storageURL string) (string, string, error) 
 		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s': %w", global.ProjectDirectory, err)
 	}
 
-	return storageURL, projectDir, nil
+	return repositoryURL, projectDir, nil
 }
 
-// getStorageURLFromConfigOrFlag uses --storage-url if it exists,
+// getRepositoryURLFromConfigOrFlag uses --repository if it exists,
 // otherwise finds replicate.yaml recursively
-func getStorageURLFromFlagOrConfig(cmd *cobra.Command) (storageURL string, projectDir string, err error) {
-	storageURL, err = cmd.Flags().GetString("storage-url")
+func getRepositoryURLFromFlagOrConfig(cmd *cobra.Command) (repositoryURL string, projectDir string, err error) {
+	repositoryURL, err = cmd.Flags().GetString("repository")
 	if err != nil {
 		return "", "", err
 	}
-	return getStorageURLFromStringOrConfig(storageURL)
+	return getRepositoryURLFromStringOrConfig(repositoryURL)
 }
 
 // getProjectDir returns the project's source directory
@@ -68,26 +68,26 @@ func getProjectDir() (string, error) {
 	return projectDir, nil
 }
 
-// getStorage returns the project's storage, with caching if needed
-// This is not in storage package so we can do user interface stuff around syncing
-func getStorage(storageURL, projectDir string) (storage.Storage, error) {
-	store, err := storage.ForURL(storageURL)
+// getRepository returns the project's repository, with caching if needed
+// This is not in repository package so we can do user interface stuff around syncing
+func getRepository(repositoryURL, projectDir string) (repository.Repository, error) {
+	repo, err := repository.ForURL(repositoryURL)
 	if err != nil {
 		return nil, err
 	}
-	// projectDir might be "" if you use --storage-url option
-	if storage.NeedsCaching(store) && projectDir != "" {
-		console.Info("Fetching new data from %q...", store.RootURL())
-		store, err = storage.NewCachedMetadataStorage(store, projectDir)
+	// projectDir might be "" if you use --repository option
+	if repository.NeedsCaching(repo) && projectDir != "" {
+		console.Info("Fetching new data from %q...", repo.RootURL())
+		repo, err = repository.NewCachedMetadataRepository(repo, projectDir)
 		if err != nil {
 			return nil, err
 		}
-		cachedStore := store.(*storage.CachedStorage)
-		if err := cachedStore.SyncCache(); err != nil {
+		cachedRepo := repo.(*repository.CachedRepository)
+		if err := cachedRepo.SyncCache(); err != nil {
 			return nil, err
 		}
 	}
-	return store, nil
+	return repo, nil
 }
 
 // handlErrors wraps a cobra function, and will print and exit on error

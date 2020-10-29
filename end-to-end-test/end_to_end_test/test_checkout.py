@@ -8,7 +8,7 @@ import pytest  # type: ignore
 
 
 @pytest.mark.parametrize(
-    "storage_backend,use_root",
+    "repository_backend,use_root",
     [
         ("file", False),
         pytest.param("gcs", False, marks=pytest.mark.external),
@@ -17,18 +17,18 @@ import pytest  # type: ignore
         pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
-def test_checkout(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
+def test_checkout(repository_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
-    if storage_backend == "s3":
-        storage = "s3://" + temp_bucket
-    if storage_backend == "gcs":
-        storage = "gs://" + temp_bucket
-    elif storage_backend == "file":
-        storage = "file://" + str(tmpdir_factory.mktemp("storage"))
+    if repository_backend == "s3":
+        repository = "s3://" + temp_bucket
+    if repository_backend == "gcs":
+        repository = "gs://" + temp_bucket
+    elif repository_backend == "file":
+        repository = "file://" + str(tmpdir_factory.mktemp("repository"))
 
     # different root directory in buckets
     if use_root:
-        storage += "/root"
+        repository += "/root"
 
     rand = str(random.randint(0, 100000))
     os.mkdir(os.path.join(tmpdir, rand))
@@ -42,9 +42,9 @@ def test_checkout(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(
             """
-storage: {storage}
+repository: {repository}
 """.format(
-                storage=storage
+                repository=repository
             )
         )
     with open(os.path.join(tmpdir, "train.py"), "w") as f:

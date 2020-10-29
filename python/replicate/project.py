@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional
 
 from .config import load_config
 from .experiment import ExperimentCollection, Experiment
-from .storage import storage_for_url, Storage
+from .repository import repository_for_url, Repository
 
 
 MAX_SEARCH_DEPTH = 100
@@ -18,8 +18,8 @@ class Project:
         # Project is initialized on import, so don't do anything slow or anything that will raise an exception
         self._directory = directory
         self._config: Optional[Dict[str, Any]] = None
-        self._storage: Optional[Storage] = None
-        self._storage_url: Optional[str] = None
+        self._repository: Optional[Repository] = None
+        self._repository_url: Optional[str] = None
 
     @property
     def directory(self) -> str:
@@ -30,22 +30,22 @@ class Project:
     def _get_config(self) -> Dict[str, Any]:
         return load_config(self.directory)
 
-    def _get_storage(self) -> Storage:
-        reload_storage = self._storage is None
-        if self._storage_url is not None:
+    def _get_repository(self) -> Repository:
+        reload_repository = self._repository is None
+        if self._repository_url is not None:
             config = self._get_config()
-            if config["storage"] != self._storage_url:
-                reload_storage = True
-                self._storage_url = config["storage"]
+            if config["repository"] != self._repository_url:
+                reload_repository = True
+                self._repository_url = config["repository"]
 
-        if reload_storage:
-            if self._storage_url is None:
+        if reload_repository:
+            if self._repository_url is None:
                 config = self._get_config()
-                self._storage_url = config["storage"]
+                self._repository_url = config["repository"]
 
-            self._storage = storage_for_url(self._storage_url)
+            self._repository = repository_for_url(self._repository_url)
 
-        return self._storage  # type: ignore
+        return self._repository  # type: ignore
 
     @property
     def experiments(self) -> ExperimentCollection:

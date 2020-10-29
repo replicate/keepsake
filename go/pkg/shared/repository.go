@@ -3,7 +3,7 @@ package shared
 import (
 	"fmt"
 
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 type GetArgs struct {
@@ -42,32 +42,32 @@ type GetPathTarArgs struct {
 	Bucket, Root, TarPath, LocalPath string
 }
 
-type GCSStorage struct{}
+type GCSRepository struct{}
 
-func (GCSStorage) Get(args GetArgs, ret *GetReturn) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) Get(args GetArgs, ret *GetReturn) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	ret.Data, err = st.Get(args.Path)
 	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
 	// predictable error name
-	if _, ok := err.(*storage.DoesNotExistError); ok {
+	if _, ok := err.(*repository.DoesNotExistError); ok {
 		return fmt.Errorf("DoesNotExistError:: %w", err)
 	}
 	return err
 }
 
-func (GCSStorage) Put(args PutArgs, _ *int) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) Put(args PutArgs, _ *int) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.Put(args.Path, args.Data)
 }
 
-func (GCSStorage) List(args ListArgs, ret *ListReturn) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) List(args ListArgs, ret *ListReturn) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
@@ -75,70 +75,70 @@ func (GCSStorage) List(args ListArgs, ret *ListReturn) error {
 	return err
 }
 
-func (GCSStorage) PutPath(args PutPathArgs, _ *int) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) PutPath(args PutPathArgs, _ *int) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPath(args.Src, args.Dest)
 }
 
-func (GCSStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
 }
 
-func (GCSStorage) Delete(args DeleteArgs, _ *int) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) Delete(args DeleteArgs, _ *int) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.Delete(args.Path)
 }
 
-func (GCSStorage) GetPathTar(args GetPathTarArgs, _ *int) error {
-	st, err := storage.NewGCSStorage(args.Bucket, args.Root)
+func (GCSRepository) GetPathTar(args GetPathTarArgs, _ *int) error {
+	st, err := repository.NewGCSRepository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	err = st.GetPathTar(args.TarPath, args.LocalPath)
 	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
 	// predictable error name
-	if _, ok := err.(*storage.DoesNotExistError); ok {
+	if _, ok := err.(*repository.DoesNotExistError); ok {
 		return fmt.Errorf("DoesNotExistError:: %w", err)
 	}
 	return err
 }
 
-type S3Storage struct{}
+type S3Repository struct{}
 
-func (S3Storage) Get(args GetArgs, ret *GetReturn) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) Get(args GetArgs, ret *GetReturn) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	ret.Data, err = st.Get(args.Path)
 	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
 	// predictable error name
-	if _, ok := err.(*storage.DoesNotExistError); ok {
+	if _, ok := err.(*repository.DoesNotExistError); ok {
 		return fmt.Errorf("DoesNotExistError:: %w", err)
 	}
 	return err
 }
 
-func (S3Storage) Put(args PutArgs, _ *int) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) Put(args PutArgs, _ *int) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.Put(args.Path, args.Data)
 }
 
-func (S3Storage) List(args ListArgs, ret *ListReturn) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) List(args ListArgs, ret *ListReturn) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
@@ -146,79 +146,79 @@ func (S3Storage) List(args ListArgs, ret *ListReturn) error {
 	return err
 }
 
-func (S3Storage) PutPath(args PutPathArgs, _ *int) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) PutPath(args PutPathArgs, _ *int) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPath(args.Src, args.Dest)
 }
 
-func (S3Storage) PutPathTar(args PutPathTarArgs, _ *int) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
 }
 
-func (S3Storage) Delete(args DeleteArgs, _ *int) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) Delete(args DeleteArgs, _ *int) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	return st.Delete(args.Path)
 }
 
-func (S3Storage) GetPathTar(args GetPathTarArgs, _ *int) error {
-	st, err := storage.NewS3Storage(args.Bucket, args.Root)
+func (S3Repository) GetPathTar(args GetPathTarArgs, _ *int) error {
+	st, err := repository.NewS3Repository(args.Bucket, args.Root)
 	if err != nil {
 		return err
 	}
 	err = st.GetPathTar(args.TarPath, args.LocalPath)
 	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
 	// predictable error name
-	if _, ok := err.(*storage.DoesNotExistError); ok {
+	if _, ok := err.(*repository.DoesNotExistError); ok {
 		return fmt.Errorf("DoesNotExistError:: %w", err)
 	}
 	return err
 }
 
-type DiskStorage struct{}
+type DiskRepository struct{}
 
-func (DiskStorage) PutPath(args PutPathArgs, _ *int) error {
-	st, err := storage.NewDiskStorage(args.Root)
+func (DiskRepository) PutPath(args PutPathArgs, _ *int) error {
+	st, err := repository.NewDiskRepository(args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPath(args.Src, args.Dest)
 }
 
-func (DiskStorage) PutPathTar(args PutPathTarArgs, _ *int) error {
-	st, err := storage.NewDiskStorage(args.Root)
+func (DiskRepository) PutPathTar(args PutPathTarArgs, _ *int) error {
+	st, err := repository.NewDiskRepository(args.Root)
 	if err != nil {
 		return err
 	}
 	return st.PutPathTar(args.LocalPath, args.TarPath, args.IncludePath)
 }
 
-func (DiskStorage) Delete(args DeleteArgs, _ *int) error {
-	st, err := storage.NewDiskStorage(args.Root)
+func (DiskRepository) Delete(args DeleteArgs, _ *int) error {
+	st, err := repository.NewDiskRepository(args.Root)
 	if err != nil {
 		return err
 	}
 	return st.Delete(args.Path)
 }
 
-func (DiskStorage) GetPathTar(args GetPathTarArgs, _ *int) error {
-	st, err := storage.NewDiskStorage(args.Root)
+func (DiskRepository) GetPathTar(args GetPathTarArgs, _ *int) error {
+	st, err := repository.NewDiskRepository(args.Root)
 	if err != nil {
 		return err
 	}
 	err = st.GetPathTar(args.TarPath, args.LocalPath)
 	// HACK: net/rpc/jsonrpc doesn't let us include error codes, so prefix with
 	// predictable error name
-	if _, ok := err.(*storage.DoesNotExistError); ok {
+	if _, ok := err.(*repository.DoesNotExistError); ok {
 		return fmt.Errorf("DoesNotExistError:: %w", err)
 	}
 	return err

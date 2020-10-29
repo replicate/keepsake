@@ -23,13 +23,13 @@ func (rw rwCloser) Close() error {
 
 func Serve() {
 	s := rpc.NewServer()
-	if err := s.Register(S3Storage{}); err != nil {
+	if err := s.Register(S3Repository{}); err != nil {
 		panic(err)
 	}
-	if err := s.Register(GCSStorage{}); err != nil {
+	if err := s.Register(GCSRepository{}); err != nil {
 		panic(err)
 	}
-	if err := s.Register(DiskStorage{}); err != nil {
+	if err := s.Register(DiskRepository{}); err != nil {
 		panic(err)
 	}
 	s.ServeCodec(jsonrpc.NewServerCodec(rwCloser{os.Stdin, os.Stdout}))

@@ -2,8 +2,8 @@ class DoesNotExistError(Exception):
     pass
 
 
-class UnknownStorageBackend(Exception):
+class UnknownRepositoryBackend(Exception):
     def __init__(self, scheme):
-        super(UnknownStorageBackend, self).__init__(
-            "Unknown storage backend: {}".format(scheme)
+        super(UnknownRepositoryBackend, self).__init__(
+            "Unknown repository backend: {}".format(scheme)
         )

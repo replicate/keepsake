@@ -6,7 +6,7 @@ from google.cloud import storage
 from google.api_core.exceptions import NotFound
 
 from replicate.exceptions import DoesNotExistError
-from replicate.storage.gcs_storage import GCSStorage
+from replicate.repository.gcs_repository import GCSRepository
 
 
 # Disable this test with -m "not external"
@@ -21,7 +21,7 @@ def temp_bucket_create():
         random.choice(string.ascii_lowercase) for _ in range(20)
     )
 
-    client = storage.Client()
+    client = repository.Client()
     bucket = client.create_bucket(bucket_name)
     try:
         bucket.reload()
@@ -42,35 +42,35 @@ def temp_bucket(temp_bucket_create):
 
 
 def test_put_get(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
-    storage.put("foo/bar.txt", "nice")
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
+    repository.put("foo/bar.txt", "nice")
     assert temp_bucket.blob("foo/bar.txt").download_as_bytes() == b"nice"
-    assert storage.get("foo/bar.txt") == b"nice"
+    assert repository.get("foo/bar.txt") == b"nice"
 
 
 def test_put_get_with_root(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
-    storage.put("foo/bar.txt", "nice")
+    repository = GCSRepository(bucket=temp_bucket.name, root="someroot")
+    repository.put("foo/bar.txt", "nice")
     assert temp_bucket.blob("someroot/foo/bar.txt").download_as_bytes() == b"nice"
-    assert storage.get("foo/bar.txt") == b"nice"
+    assert repository.get("foo/bar.txt") == b"nice"
 
 
 def test_get_not_exists(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
     with pytest.raises(DoesNotExistError):
-        assert storage.get("foo/bar.txt")
+        assert repository.get("foo/bar.txt")
 
 
 def test_list(temp_bucket):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
-    storage.put("foo", "nice")
-    storage.put("some/bar", "nice")
-    assert storage.list("") == ["foo"]
-    assert storage.list("some") == ["some/bar"]
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
+    repository.put("foo", "nice")
+    repository.put("some/bar", "nice")
+    assert repository.list("") == ["foo"]
+    assert repository.list("some") == ["some/bar"]
 
 
 def test_put_path(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
         abs_path = os.path.join(tmpdir, path)
@@ -78,7 +78,7 @@ def test_put_path(temp_bucket, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_path(tmpdir, "folder")
+    repository.put_path(tmpdir, "folder")
     assert temp_bucket.blob("folder/foo.txt").download_as_bytes() == b"hello foo.txt"
     assert temp_bucket.blob("folder/qux.txt").download_as_bytes() == b"hello qux.txt"
     assert (
@@ -87,14 +87,14 @@ def test_put_path(temp_bucket, tmpdir):
     )
 
     # single files
-    storage.put_path(os.path.join(tmpdir, "foo.txt"), "singlefile/foo.txt")
+    repository.put_path(os.path.join(tmpdir, "foo.txt"), "singlefile/foo.txt")
     assert (
         temp_bucket.blob("singlefile/foo.txt").download_as_bytes() == b"hello foo.txt"
     )
 
 
 def test_put_path_with_root(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket.name, root="someroot")
+    repository = GCSRepository(bucket=temp_bucket.name, root="someroot")
 
     for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
         abs_path = os.path.join(tmpdir, path)
@@ -102,7 +102,7 @@ def test_put_path_with_root(temp_bucket, tmpdir):
         with open(abs_path, "w") as f:
             f.write("hello " + path)
 
-    storage.put_path(tmpdir, "folder")
+    repository.put_path(tmpdir, "folder")
     assert (
         temp_bucket.blob("someroot/folder/foo.txt").download_as_bytes()
         == b"hello foo.txt"
@@ -117,7 +117,7 @@ def test_put_path_with_root(temp_bucket, tmpdir):
     )
 
     # single files
-    storage.put_path(os.path.join(tmpdir, "foo.txt"), "singlefile/foo.txt")
+    repository.put_path(os.path.join(tmpdir, "foo.txt"), "singlefile/foo.txt")
     assert (
         temp_bucket.blob("someroot/singlefile/foo.txt").download_as_bytes()
         == b"hello foo.txt"
@@ -125,7 +125,7 @@ def test_put_path_with_root(temp_bucket, tmpdir):
 
 
 def test_replicateignore(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
 
     for path in [
         "foo.txt",
@@ -148,7 +148,7 @@ baz.txt
 """
         )
 
-    storage.put_path(tmpdir, "folder")
+    repository.put_path(tmpdir, "folder")
     assert temp_bucket.blob("folder/foo.txt").download_as_bytes() == b"hello foo.txt"
     assert (
         temp_bucket.blob("folder/bar/new-qux.txt").download_as_bytes()
@@ -163,22 +163,22 @@ baz.txt
 
 
 def test_delete(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket.name, root="")
+    repository = GCSRepository(bucket=temp_bucket.name, root="")
 
-    storage.put("some/file", "nice")
-    assert storage.get("some/file") == b"nice"
+    repository.put("some/file", "nice")
+    assert repository.get("some/file") == b"nice"
 
-    storage.delete("some/file")
+    repository.delete("some/file")
     with pytest.raises(DoesNotExistError):
-        storage.get("some/file")
+        repository.get("some/file")
 
 
 def test_delete_with_root(temp_bucket, tmpdir):
-    storage = GCSStorage(bucket=temp_bucket.name, root="my-root")
+    repository = GCSRepository(bucket=temp_bucket.name, root="my-root")
 
-    storage.put("some/file", "nice")
-    assert storage.get("some/file") == b"nice"
+    repository.put("some/file", "nice")
+    assert repository.get("some/file") == b"nice"
 
-    storage.delete("some/file")
+    repository.delete("some/file")
     with pytest.raises(DoesNotExistError):
-        storage.get("some/file")
+        repository.get("some/file")

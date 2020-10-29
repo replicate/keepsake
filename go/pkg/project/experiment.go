@@ -10,7 +10,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/hash"
 	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 // Experiment represents a training run
@@ -42,13 +42,13 @@ func NewExperiment(params param.ValueMap) *Experiment {
 	}
 }
 
-// Save experiment to storage
-func (e *Experiment) Save(storage storage.Storage) error {
+// Save experiment to repository
+func (e *Experiment) Save(repo repository.Repository) error {
 	data, err := json.MarshalIndent(e, "", " ")
 	if err != nil {
 		return err
 	}
-	return storage.Put(path.Join("metadata", "experiments", e.ID+".json"), data)
+	return repo.Put(path.Join("metadata", "experiments", e.ID+".json"), data)
 }
 
 func (c *Experiment) SortedParams() []*NamedParam {
@@ -139,15 +139,15 @@ func (e *Experiment) BestCheckpoint() *Checkpoint {
 	return best
 }
 
-func listExperiments(store storage.Storage) ([]*Experiment, error) {
-	paths, err := store.List("metadata/experiments/")
+func listExperiments(repo repository.Repository) ([]*Experiment, error) {
+	paths, err := repo.List("metadata/experiments/")
 	if err != nil {
 		return nil, err
 	}
 	experiments := []*Experiment{}
 	for _, p := range paths {
 		exp := new(Experiment)
-		if err := loadFromPath(store, p, exp); err == nil {
+		if err := loadFromPath(repo, p, exp); err == nil {
 			experiments = append(experiments, exp)
 		} else {
 			// TODO: should this just be ignored? can this be recovered from?

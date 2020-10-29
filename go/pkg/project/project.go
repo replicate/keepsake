@@ -6,22 +6,22 @@ import (
 	"strings"
 
 	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 // Project is essentially a data access object for retrieving
 // metadata objects
 type Project struct {
-	store             storage.Storage
+	repository        repository.Repository
 	experimentsByID   map[string]*Experiment
 	heartbeatsByExpID map[string]*Heartbeat
 	hasLoaded         bool
 }
 
-func NewProject(store storage.Storage) *Project {
+func NewProject(repo repository.Repository) *Project {
 	return &Project{
-		store:     store,
-		hasLoaded: false,
+		repository: repo,
+		hasLoaded:  false,
 	}
 }
 
@@ -100,23 +100,23 @@ func (p *Project) CheckpointOrExperimentFromPrefix(prefix string) (*CheckpointOr
 }
 
 func (p *Project) DeleteCheckpoint(com *Checkpoint) error {
-	if err := p.store.Delete(com.StorageTarPath()); err != nil {
-		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
+	if err := p.repository.Delete(com.StorageTarPath()); err != nil {
+		// TODO(andreas): return err if com.StorageTarPath() exists but some other error occurs
 		console.Warn("Failed to delete checkpoint storage directory %s: %s", com.StorageTarPath(), err)
 	}
 	return nil
 }
 
 func (p *Project) DeleteExperiment(exp *Experiment) error {
-	if err := p.store.Delete(exp.HeartbeatPath()); err != nil {
+	if err := p.repository.Delete(exp.HeartbeatPath()); err != nil {
 		// TODO(andreas): return err if exp.HeartbeatPath() exists but some other error occurs
 		console.Warn("Failed to delete heartbeat file %s: %s", exp.HeartbeatPath(), err)
 	}
-	if err := p.store.Delete(exp.StorageTarPath()); err != nil {
-		// TODO(andreas): return err if com.StorageDir() exists but some other error occurs
+	if err := p.repository.Delete(exp.StorageTarPath()); err != nil {
+		// TODO(andreas): return err if com.StorageTarPath() exists but some other error occurs
 		console.Warn("Failed to delete checkpoint storage directory %s: %s", exp.StorageTarPath(), err)
 	}
-	if err := p.store.Delete(exp.MetadataPath()); err != nil {
+	if err := p.repository.Delete(exp.MetadataPath()); err != nil {
 		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
 		console.Warn("Failed to delete experiment metadata file %s: %s", exp.MetadataPath(), err)
 	}
@@ -131,11 +131,11 @@ func (p *Project) ensureLoaded() error {
 	if p.hasLoaded {
 		return nil
 	}
-	experiments, err := listExperiments(p.store)
+	experiments, err := listExperiments(p.repository)
 	if err != nil {
 		return err
 	}
-	heartbeats, err := listHeartbeats(p.store)
+	heartbeats, err := listHeartbeats(p.repository)
 	if err != nil {
 		heartbeats = []*Heartbeat{}
 		console.Warn("Failed to load heartbeats: %s", err)
@@ -156,8 +156,8 @@ func (p *Project) setObjects(experiments []*Experiment, heartbeats []*Heartbeat)
 	}
 }
 
-func loadFromPath(store storage.Storage, path string, obj interface{}) error {
-	contents, err := store.Get(path)
+func loadFromPath(repo repository.Repository, path string, obj interface{}) error {
+	contents, err := repo.Get(path)
 	if err != nil {
 		return err
 	}

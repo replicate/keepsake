@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"bytes"
@@ -24,20 +24,20 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
-type S3Storage struct {
+type S3Repository struct {
 	bucketName string
 	root       string
 	sess       *session.Session
 	svc        *s3.S3
 }
 
-func NewS3Storage(bucket, root string) (*S3Storage, error) {
+func NewS3Repository(bucket, root string) (*S3Repository, error) {
 	region, err := getBucketRegionOrCreateBucket(bucket)
 	if err != nil {
 		return nil, err
 	}
 
-	s := &S3Storage{
+	s := &S3Repository{
 		bucketName: bucket,
 		root:       root,
 	}
@@ -53,7 +53,7 @@ func NewS3Storage(bucket, root string) (*S3Storage, error) {
 	return s, nil
 }
 
-func (s *S3Storage) RootURL() string {
+func (s *S3Repository) RootURL() string {
 	ret := "s3://" + s.bucketName
 	if s.root != "" {
 		ret += "/" + s.root
@@ -62,7 +62,7 @@ func (s *S3Storage) RootURL() string {
 }
 
 // Get data at path
-func (s *S3Storage) Get(path string) ([]byte, error) {
+func (s *S3Repository) Get(path string) ([]byte, error) {
 	key := filepath.Join(s.root, path)
 	obj, err := s.svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(s.bucketName),
@@ -83,7 +83,7 @@ func (s *S3Storage) Get(path string) ([]byte, error) {
 	return body, nil
 }
 
-func (s *S3Storage) Delete(path string) error {
+func (s *S3Repository) Delete(path string) error {
 	console.Debug("Deleting %s/%s...", s.RootURL(), path)
 	key := filepath.Join(s.root, path)
 	iter := s3manager.NewDeleteListIterator(s.svc, &s3.ListObjectsInput{
@@ -97,7 +97,7 @@ func (s *S3Storage) Delete(path string) error {
 }
 
 // Put data at path
-func (s *S3Storage) Put(path string, data []byte) error {
+func (s *S3Repository) Put(path string, data []byte) error {
 	key := filepath.Join(s.root, path)
 	uploader := s3manager.NewUploader(s.sess)
 	_, err := uploader.Upload(&s3manager.UploadInput{
@@ -111,7 +111,7 @@ func (s *S3Storage) Put(path string, data []byte) error {
 	return nil
 }
 
-func (s *S3Storage) PutPath(localPath string, destPath string) error {
+func (s *S3Repository) PutPath(localPath string, destPath string) error {
 	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, destPath))
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func (s *S3Storage) PutPath(localPath string, destPath string) error {
 	return queue.Wait()
 }
 
-func (s *S3Storage) PutPathTar(localPath, tarPath, includePath string) error {
+func (s *S3Repository) PutPathTar(localPath, tarPath, includePath string) error {
 	if !strings.HasSuffix(tarPath, ".tar.gz") {
 		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
 	}
@@ -172,8 +172,8 @@ func (s *S3Storage) PutPathTar(localPath, tarPath, includePath string) error {
 	return errs.Wait()
 }
 
-// GetPath recursively copies storageDir to localDir
-func (s *S3Storage) GetPath(remoteDir string, localDir string) error {
+// GetPath recursively copies repoDir to localDir
+func (s *S3Repository) GetPath(remoteDir string, localDir string) error {
 	prefix := filepath.Join(s.root, remoteDir)
 	iter := new(s3manager.DownloadObjectsIterator)
 	files := []*os.File{}
@@ -234,7 +234,7 @@ func (s *S3Storage) GetPath(remoteDir string, localDir string) error {
 	return nil
 }
 
-func (s *S3Storage) GetPathTar(tarPath, localPath string) error {
+func (s *S3Repository) GetPathTar(tarPath, localPath string) error {
 	// archiver doesn't let us use readers, so download to temporary file
 	// TODO: make a better tar implementation
 	tmpdir, err := files.TempDir("tar")
@@ -256,18 +256,18 @@ func (s *S3Storage) GetPathTar(tarPath, localPath string) error {
 	return extractTar(tmptarball, localPath)
 }
 
-func (s *S3Storage) ListRecursive(results chan<- ListResult, dir string) {
+func (s *S3Repository) ListRecursive(results chan<- ListResult, dir string) {
 	s.listRecursive(results, dir, func(_ string) bool { return true })
 }
 
-func (s *S3Storage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
+func (s *S3Repository) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
 	})
 }
 
 // List files in a path non-recursively
-func (s *S3Storage) List(dir string) ([]string, error) {
+func (s *S3Repository) List(dir string) ([]string, error) {
 	results := []string{}
 	prefix := filepath.Join(s.root, dir)
 
@@ -344,7 +344,7 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 	return nil
 }
 
-func (s *S3Storage) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
+func (s *S3Repository) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
 	prefix := filepath.Join(s.root, dir)
 	// prefixes must end with / and must not end with /
 	if !strings.HasSuffix(prefix, "/") {
