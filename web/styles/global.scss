@@ -1037,7 +1037,7 @@ footer {
       @include font-feature;
       padding-bottom: $whitespace-vertical;
     }
-    > div {
+    > .us {
       grid-column: 2 / 4;
       grid-row: 2 / 3;
       display: flex;
@@ -1048,7 +1048,7 @@ footer {
         grid-column: 2 / 5;
       }
     }
-    > p {
+    > .more {
       grid-column: 4 / 5;
       grid-row: 2 / 3;
       border-left: $keyline;
@@ -1058,6 +1058,9 @@ footer {
         grid-row: 3 / 4;
         border-left: none;
         padding: $whitespace-vertical 0;
+      }
+      p:first-child {
+        padding-bottom: $whitespace-vertical / 4;
       }
     }
     figure {

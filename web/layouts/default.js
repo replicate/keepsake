@@ -41,7 +41,7 @@ function Layout({ title, children }) {
           </h2>
           <div id="contributors">
             <h3>Made by</h3>
-            <div>
+            <div class="us">
               <figure>
                 <div
                   style={{ backgroundImage: "url(" + "/images/ben.jpg" + ")" }}
@@ -79,12 +79,17 @@ function Layout({ title, children }) {
                 </figcaption>
               </figure>
             </div>
-            <p>
-              We want to make machine learning tools that are less terrible. We
-              also built{" "}
-              <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
-              lets you read arXiv papers as responsive web pages.
-            </p>
+            <div class="more">
+              <p>
+                Doing machine learning shouldn’t be so hard. We're trying to
+                make the tools much better.
+              </p>
+              <p>
+                We also built{" "}
+                <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
+                lets you read arXiv papers as responsive web pages.
+              </p>
+            </div>
           </div>
           {/* 
           <div id="get-involved">
