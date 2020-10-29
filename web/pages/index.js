@@ -99,7 +99,7 @@ def train():
             <span>{num()}</span> You're in control of&nbsp;your&nbsp;data
           </h2>
           <p>
-            All the data is stored on your own Amazon S3 or Google Cloud bucket
+            All the data is stored on your own Amazon S3 or Google Cloud Storage
             as plain old files. There's no server to run.
           </p>
         </div>
