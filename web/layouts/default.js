@@ -67,7 +67,7 @@ function Layout({ title, children }) {
                 ></div>
                 <figcaption>
                   <h4>Andreas Jansson</h4>
-                  <p>ML infrastructure lead and researcher at Spotify.</p>
+                  <p>ML infrastructure and research at Spotify.</p>
                   <p>
                     <a
                       href="https://github.com/andreasjansson"
@@ -80,7 +80,8 @@ function Layout({ title, children }) {
               </figure>
             </div>
             <p>
-              Together, we also made{" "}
+              We want to make machine learning tools that are less terrible. We
+              also built{" "}
               <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
               lets you read arXiv papers as responsive web pages.
             </p>
