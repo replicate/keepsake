@@ -14,8 +14,11 @@ from waiting import wait
 
 import replicate
 from replicate.exceptions import DoesNotExistError
-from replicate.experiment import Experiment, BrokenExperiment
+from replicate.experiment import Experiment, BrokenExperiment, ExperimentList
 from replicate.project import Project
+
+
+from tests.factories import experiment_factory, checkpoint_factory
 
 
 def test_init_and_checkpoint(temp_workdir):
@@ -326,3 +329,52 @@ class TestExperimentCollection:
         assert len(experiments[0].checkpoints) == 1
         assert experiments[0].checkpoints[0].metrics == {"accuracy": "wicked"}
         assert experiments[1].id == exp2.id
+
+
+class TestExperimentList:
+    def test_repr_html(self, temp_workdir):
+
+        experiment_list = ExperimentList(
+            [
+                experiment_factory(
+                    id="e1",
+                    checkpoints=[
+                        checkpoint_factory(
+                            id="c1",
+                            metrics={"loss": 0.1},
+                            primary_metric={"name": "loss", "goal": "minimize"},
+                        ),
+                        checkpoint_factory(
+                            id="c2",
+                            metrics={"loss": 0.2},
+                            primary_metric={"name": "loss", "goal": "minimize"},
+                        ),
+                    ],
+                ),
+                experiment_factory(
+                    id="e2",
+                    checkpoints=[
+                        checkpoint_factory(
+                            id="c3",
+                            metrics={"loss": 0.2},
+                            primary_metric={"name": "loss", "goal": "minimize"},
+                        ),
+                        checkpoint_factory(
+                            id="c4",
+                            metrics={"loss": 0.1},
+                            primary_metric={"name": "loss", "goal": "minimize"},
+                        ),
+                    ],
+                ),
+            ]
+        )
+
+        assert (
+            experiment_list._repr_html_()
+            == """
+<table><tr><th>id</th><th>created</th><th>params</th><th>latest_checkpoint</th><th>best_checkpoint</th></tr>
+<tr><th>e1</th><th>2020-01-01 01:01:01</th><th>None</th><th>c2 (loss: 0.2)</th><th>c1 (loss: 0.1)</th></tr>
+<tr><th>e2</th><th>2020-01-01 01:01:01</th><th>None</th><th>c4 (loss: 0.1)</th><th>c4 (loss: 0.1)</th></tr></table>""".strip().replace(
+                "\n", ""
+            )
+        )

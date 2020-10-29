@@ -52,7 +52,7 @@ class Experiment:
     host: str
     command: str
     config: dict
-    path: Optional[str]
+    path: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
     python_packages: Optional[Dict[str, str]] = None
     checkpoints: List[Checkpoint] = field(default_factory=list)
@@ -724,9 +724,9 @@ class ExperimentList(list, MutableSequence[Experiment]):
             out.append("<tr>")
             for h in headings:
                 if h == "latest_checkpoint":
-                    d = format_checkpoint(exp.latest())
+                    d = format_checkpoint(experiment.latest())
                 elif h == "best_checkpoint":
-                    d = format_checkpoint(exp.best())
+                    d = format_checkpoint(experiment.best())
                 else:
                     d = getattr(experiment, h)
                     d = str(d)
