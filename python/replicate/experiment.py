@@ -670,42 +670,43 @@ class ExperimentList(list, MutableSequence[Experiment]):
     def _repr_html_(self):
         show_user = False
         user = None
-        for exp in self:
-            if user is not None and user != exp.user:
+        for experiment in self:
+            if user is not None and user != experiment.user:
                 show_user = True
                 break
-            user = exp.user
+            user = experiment.user
 
         show_host = False
         host = None
-        for exp in self:
-            if host is not None and host != exp.host:
+        for experiment in self:
+            if host is not None and host != experiment.host:
                 show_host = True
                 break
-            host = exp.host
+            host = experiment.host
         if host == "":
             show_host = False
 
-        def format_checkpoint(chk: Optional[Checkpoint]) -> str:
-            if not chk:
+        def format_checkpoint(checkpoint: Optional[Checkpoint]) -> str:
+            if not checkpoint:
                 return ""
             parens = []
-            if chk.step is not None:
-                parens.append("step {}".format(chk.step))
+            if checkpoint.step is not None:
+                parens.append("step {}".format(checkpoint.step))
             if (
-                chk.primary_metric
-                and chk.metrics
-                and chk.metrics.get(chk.primary_metric["name"]) is not None
+                checkpoint.primary_metric
+                and checkpoint.metrics
+                and checkpoint.metrics.get(checkpoint.primary_metric["name"])
+                is not None
             ):
                 parens.append(
                     "{}: {}".format(
-                        chk.primary_metric["name"],
-                        chk.metrics[chk.primary_metric["name"]],
+                        checkpoint.primary_metric["name"],
+                        checkpoint.metrics[checkpoint.primary_metric["name"]],
                     )
                 )
             if parens:
-                return "{} ({})".format(chk.short_id(), "; ".join(parens))
-            return chk.short_id()
+                return "{} ({})".format(checkpoint.short_id(), "; ".join(parens))
+            return checkpoint.short_id()
 
         headings = ["id", "created"]
         if show_user:
