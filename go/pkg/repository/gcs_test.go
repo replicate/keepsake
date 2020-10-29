@@ -79,7 +79,7 @@ func readObject(t *testing.T, bucket *storage.BucketHandle, key string) []byte {
 
 // Run tests all in one go with one bucket because GCS rate limits bucket creation
 func TestGCSRepository(t *testing.T) {
-	client, err := repository.NewClient(context.TODO())
+	client, err := storage.NewClient(context.TODO())
 	require.NoError(t, err)
 	bucket, bucketName := createGCSBucket(t, client)
 	t.Cleanup(func() { deleteGCSBucket(t, bucket) })
