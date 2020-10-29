@@ -16,7 +16,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
-// Event used for storage on disk.
+// Event used for repository on disk.
 type Event struct {
 	Event      string                 `json:"event"`
 	Properties map[string]interface{} `json:"properties"`

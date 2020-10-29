@@ -42,7 +42,7 @@ These two lines will record:
 - Any files produced on each iteration – weights, Tensorboard logs, etc.
 - Metrics on each iteration
 
-All of this versioned data is put in **storage**, which by default is the `.replicate/storage/` directory in the same directory as your code. You can also store this data on cloud storage, such as Amazon S3 or Google Cloud Storage. [The format of this data is explained further below.](#data-storage)
+All of this versioned data is put in the **repository**, which by default is the `.replicate/storage/` directory in the same directory as your code. You can also store this data on cloud storage, such as Amazon S3 or Google Cloud Storage. [The format of this data is explained further below.](#data-storage)
 
 The versioned data is accessed with the **command-line interface**. It consists of various commands for inspecting the data and getting it out:
 
@@ -94,10 +94,10 @@ They can be stored on:
 - Amazon S3
 - Google Cloud Storage
 
-The location is defined by setting the [`storage` option in `replicate.yaml`](/docs/reference/yaml#storage). For example:
+The location is defined by setting the [`repository` option in `replicate.yaml`](/docs/reference/yaml#repository). For example:
 
 ```yaml
-storage: "s3://hooli-hotdog-detector"
+repository: "s3://hooli-hotdog-detector"
 ```
 
 This is the directory structure of a project:

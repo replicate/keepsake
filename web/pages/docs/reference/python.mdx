@@ -12,7 +12,7 @@ To install the library, [see the installation instructions](/docs).
 
 ## Experiment tracking
 
-These functions implement the core functionality of Replicate, i.e. saving parameters, metrics, and code to storage. You use these functions during model training.
+These functions implement the core functionality of Replicate, i.e. saving parameters, metrics, and code to the repository. You use these functions during model training.
 
 ### `replicate.init()`
 
@@ -20,14 +20,14 @@ Create and return an experiment.
 
 It takes these arguments:
 
-- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save your training code, or anything you want. If `path` is not set, no data will be saved.
+- `path`: A path to a file or directory that will be uploaded to the repository, relative to the project directory. This can be used to save your training code, or anything you want. If `path` is not set, no data will be saved.
 - `params`: A dictionary of hyperparameters to record along with the experiment.
 
 The path saved is relative to the project directory. The project directory is determined by the directory that contains `replicate.yaml`. If no `replicate.yaml` is found in any parent directories, the current working directory will be used.
 
 If you want to exclude some files from being included, you can create a `.replicateignore` file alongside `replicate.yaml`. It is in the same format as `.gitignore`.
 
-The storage location for this data is determined by the `storage` option in `replicate.yaml`. [Learn more in the reference documentation.](/docs/reference/yaml#storage)
+The repository location for this data is determined by the `repository` option in `replicate.yaml`. [Learn more in the reference documentation.](/docs/reference/yaml#repository)
 
 For example:
 
@@ -45,7 +45,7 @@ Create a checkpoint within an experiment.
 
 It takes these arguments:
 
-- `path`: A path to a file or directory that will be uploaded to storage, relative to the project directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is not set, no data will be saved.
+- `path`: A path to a file or directory that will be uploaded to the repository, relative to the project directory. This can be used to save weights, Tensorboard logs, and other artifacts produced during the training process. If `path` is not set, no data will be saved.
 - `metrics`: A dictionary of metrics to record along with the checkpoint.
 - `primary_metric` _(optional)_: A tuple `(name, goal)` to define one of the metrics as a primary metric to optimize. Goal can either be `minimize` or `maximize`.
 - `step` _(optional)_: the iteration number of this checkpoint, such as epoch number. This is displayed in `replicate ls` and various other places.
@@ -169,7 +169,7 @@ For example:
 - `duration`: The time between the creation of the experiment and the latest checkpoint
 - `user`: The username of the person who started the experiment
 - `command`: The command that the experiment was started with
-- `path`: The path which was saved to storage by `replicate.init()`, relative to `replicate.yaml`
+- `path`: The path which was saved to the repository by `replicate.init()`, relative to `replicate.yaml`
 - `params`: The dictionary of parameters that were defined in `replicate.init()`
 - `python_packages`: The Python packages and their versions which where imported when the experiment started
 - `checkpoints`: A list of (Checkpoint)[#the-checkpoint-class] objects
@@ -192,7 +192,7 @@ Delete this experiment and its checkpoints.
 
 - `id`: The checkpoint ID
 - `created`: The `datetime.datetime` of when the checkpoint was created
-- `path`: The path which was saved to storage by `experiment.checkpoint()`, relative to `replicate.yaml`
+- `path`: The path which was saved to the repository by `experiment.checkpoint()`, relative to `replicate.yaml`
 - `step`: The step as defined in `experiment.checkpoint()`
 - `metrics`: The dictionary of metrics that were defined in `experiment.checkpoint()`
 - `primary_metric`: The primary metric as defined in `experiment.checkpoint()`

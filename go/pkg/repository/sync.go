@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ import (
 	"github.com/replicate/replicate/go/pkg/concurrency"
 )
 
-// Sync destStorage/destPath to match sourceStorage/sourcePath
+// Sync destRepository/destPath to match sourceRepository/sourcePath
 //
 // - If file exists in source, but not in dest, it will copy from source to dest
 // - If file exists in both but different content, it will copy from source to dest
 // - If file exists in dest but not in source, it will delete in dest
-func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPath string) error {
+func Sync(sourceRepository Repository, sourcePath string, destRepository Repository, destPath string) error {
 	// A queue to use for the various storage operations we have to run
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
@@ -24,7 +24,7 @@ func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPat
 	// path -> MD5 hash map used to efficiently check if files should be synced
 	destFiles := make(map[string][]byte)
 
-	go destStorage.ListRecursive(results, destPath)
+	go destRepository.ListRecursive(results, destPath)
 	for result := range results {
 		if result.Error != nil {
 			return result.Error
@@ -36,7 +36,7 @@ func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPat
 	sourceFiles := make(chan ListResult)
 	// path map used for step (3)
 	sourceFileMap := make(map[string]struct{})
-	go sourceStorage.ListRecursive(sourceFiles, sourcePath)
+	go sourceRepository.ListRecursive(sourceFiles, sourcePath)
 	for sourceFile := range sourceFiles {
 		if sourceFile.Error != nil {
 			return sourceFile.Error
@@ -59,11 +59,11 @@ func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPat
 			destPath := destPath
 			relativePath := relativePath
 			err := queue.Go(func() error {
-				data, err := sourceStorage.Get(path.Join(sourcePath, relativePath))
+				data, err := sourceRepository.Get(path.Join(sourcePath, relativePath))
 				if err != nil {
 					return err
 				}
-				return destStorage.Put(path.Join(destPath, relativePath), data)
+				return destRepository.Put(path.Join(destPath, relativePath), data)
 			})
 			if err != nil {
 				return err
@@ -78,7 +78,7 @@ func Sync(sourceStorage Storage, sourcePath string, destStorage Storage, destPat
 			destPath := destPath
 			relativePath := relativePath
 			err := queue.Go(func() error {
-				return destStorage.Delete(path.Join(destPath, relativePath))
+				return destRepository.Delete(path.Join(destPath, relativePath))
 			})
 			if err != nil {
 				return err

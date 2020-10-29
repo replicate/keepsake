@@ -8,7 +8,7 @@ from .utils import path_exists
 
 
 @pytest.mark.parametrize(
-    "storage_backend,use_root",
+    "repository_backend,use_root",
     [
         ("file", False),
         pytest.param("gcs", False, marks=pytest.mark.external),
@@ -17,25 +17,25 @@ from .utils import path_exists
         pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
-def test_delete(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
+def test_delete(repository_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
-    if storage_backend == "s3":
-        storage = "s3://" + temp_bucket
-    if storage_backend == "gcs":
-        storage = "gs://" + temp_bucket
-    elif storage_backend == "file":
-        storage = "file://" + str(tmpdir_factory.mktemp("storage"))
+    if repository_backend == "s3":
+        repository = "s3://" + temp_bucket
+    if repository_backend == "gcs":
+        repository = "gs://" + temp_bucket
+    elif repository_backend == "file":
+        repository = "file://" + str(tmpdir_factory.mktemp("repository"))
 
     # different root directory in buckets
     if use_root:
-        storage += "/root"
+        repository += "/root"
 
     with open(Path(tmpdir) / "replicate.yaml", "w") as f:
         f.write(
             """
-storage: {storage}
+repository: {repository}
 """.format(
-                storage=storage
+                repository=repository
             )
         )
     with open(Path(tmpdir) / "train.py", "w") as f:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     checkpoint_id = experiments[0]["latest_checkpoint"]["id"]
     checkpoint_storage_path = Path("checkpoints") / (checkpoint_id + ".tar.gz")
-    assert path_exists(storage, checkpoint_storage_path)
+    assert path_exists(repository, checkpoint_storage_path)
 
     subprocess.run(
         ["replicate", "delete", "--force", checkpoint_id], cwd=tmpdir, env=env, check=True
@@ -92,12 +92,12 @@ if __name__ == "__main__":
     assert len(experiments) == 1
     # TODO(bfirsh): checkpoint metadata is no longer deleted, so check that checkout fails
     assert experiments[0]["num_checkpoints"] == 3
-    assert not path_exists(storage, checkpoint_storage_path)
+    assert not path_exists(repository, checkpoint_storage_path)
 
     experiment_id = experiments[0]["id"]
     experiment_storage_path = Path("experiments") / (experiment_id + ".tar.gz")
 
-    assert path_exists(storage, experiment_storage_path)
+    assert path_exists(repository, experiment_storage_path)
 
     subprocess.run(
         ["replicate", "delete", "--force", experiment_id], cwd=tmpdir, env=env, check=True
@@ -113,4 +113,4 @@ if __name__ == "__main__":
         ).stdout
     )
     assert len(experiments) == 0
-    assert not path_exists(storage, experiment_storage_path)
+    assert not path_exists(repository, experiment_storage_path)

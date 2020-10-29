@@ -21,8 +21,8 @@ import (
 var timezone = time.Local
 
 type showOpts struct {
-	json       bool
-	storageURL string
+	json          bool
+	repositoryURL string
 }
 
 func newShowCommand() *cobra.Command {
@@ -38,22 +38,22 @@ func newShowCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&opts.json, "json", false, "Print output in JSON format")
-	addStorageURLFlagVar(cmd, &opts.storageURL)
+	addRepositoryURLFlagVar(cmd, &opts.repositoryURL)
 
 	return cmd
 }
 
 func show(opts showOpts, args []string, out io.Writer) error {
 	prefix := args[0]
-	storageURL, projectDir, err := getStorageURLFromStringOrConfig(opts.storageURL)
+	repositoryURL, projectDir, err := getRepositoryURLFromStringOrConfig(opts.repositoryURL)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(store)
+	proj := project.NewProject(repo)
 	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err

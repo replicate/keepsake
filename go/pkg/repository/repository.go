@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"fmt"
@@ -31,20 +31,20 @@ type ListResult struct {
 	Error error
 }
 
-// Storage represents a blob store
+// Repository represents a blob store
 //
 // TODO: this interface needs trimming. A lot of things exist on this interface for the shared library with
 // Python, but perhaps we could detatch that API from this. For example, this API could provide a GetPath with
 // reader, then the shared API could add extracting from tarball on top of that.
-type Storage interface {
-	// A human-readable representation of this storage location. For example: s3://my-bucket/root
+type Repository interface {
+	// A human-readable representation of this repository location. For example: s3://my-bucket/root
 	RootURL() string
 
 	// Get data at path
 	Get(path string) ([]byte, error)
 
-	// GetPath recursively copies storageDir to localDir
-	GetPath(storagePath, localPath string) error
+	// GetPath recursively copies repoDir to localDir
+	GetPath(repoPath, localPath string) error
 
 	// GetPathTar extracts tarball `tarPath` to `localPath`
 	//
@@ -54,10 +54,10 @@ type Storage interface {
 	// Put data at path
 	Put(path string, data []byte) error
 
-	// PutPath recursively puts the local `localPath` directory into path `storagePath` on storage
-	PutPath(localPath, storagePath string) error
+	// PutPath recursively puts the local `localPath` directory into path `repoPath` in the repository
+	PutPath(localPath, repoPath string) error
 
-	// PutPathTar recursively puts the local `localPath` directory into a tar.gz file `tarPath` on storage.
+	// PutPathTar recursively puts the local `localPath` directory into a tar.gz file `tarPath` in the repository.
 	// If `includePath` is set, only that will be included
 	//
 	// For example, PutPathTar("/code", "/tmp/abc123.tar.gz", "data") on these files:
@@ -84,9 +84,9 @@ type Storage interface {
 	MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string)
 }
 
-// SplitURL splits a storage URL into <scheme>://<path>
-func SplitURL(storageURL string) (scheme Scheme, bucket string, root string, err error) {
-	u, err := url.Parse(storageURL)
+// SplitURL splits a repository URL into <scheme>://<path>
+func SplitURL(repositoryURL string) (scheme Scheme, bucket string, root string, err error) {
+	u, err := url.Parse(repositoryURL)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -100,24 +100,24 @@ func SplitURL(storageURL string) (scheme Scheme, bucket string, root string, err
 	case "gs":
 		return SchemeGCS, u.Host, strings.TrimPrefix(u.Path, "/"), nil
 	}
-	return "", "", "", fmt.Errorf("Unknown storage backend: %s", u.Scheme)
+	return "", "", "", fmt.Errorf("Unknown repository backend: %s", u.Scheme)
 }
 
-func ForURL(storageURL string) (Storage, error) {
-	scheme, bucket, root, err := SplitURL(storageURL)
+func ForURL(repositoryURL string) (Repository, error) {
+	scheme, bucket, root, err := SplitURL(repositoryURL)
 	if err != nil {
 		return nil, err
 	}
 	switch scheme {
 	case SchemeDisk:
-		return NewDiskStorage(root)
+		return NewDiskRepository(root)
 	case SchemeS3:
-		return NewS3Storage(bucket, root)
+		return NewS3Repository(bucket, root)
 	case SchemeGCS:
-		return NewGCSStorage(bucket, root)
+		return NewGCSRepository(bucket, root)
 	}
 
-	return nil, fmt.Errorf("Unknown storage backend: %s", scheme)
+	return nil, fmt.Errorf("Unknown repository backend: %s", scheme)
 }
 
 // FIXME: should we keep on doing this?
@@ -129,7 +129,7 @@ type fileToPut struct {
 	Info   os.FileInfo
 }
 
-func getListOfFilesToPut(localPath string, storagePath string) ([]fileToPut, error) {
+func getListOfFilesToPut(localPath string, repoPath string) ([]fileToPut, error) {
 	// Perhaps this should be configurable, or done at a higher-level? It seems odd this is done at such a low level.
 	var ignore *gitignore.GitIgnore
 	var err error
@@ -169,7 +169,7 @@ func getListOfFilesToPut(localPath string, storagePath string) ([]fileToPut, err
 
 		result = append(result, fileToPut{
 			Source: currentPath,
-			Dest:   path.Join(storagePath, relativePath),
+			Dest:   path.Join(repoPath, relativePath),
 			Info:   info,
 		})
 		return nil
@@ -226,8 +226,8 @@ func extractTar(tarPath, localPath string) error {
 	return tar.Unarchive(tarPath, localPath)
 }
 
-// NeedsCaching returns true if the storage is slow and needs caching
-func NeedsCaching(storage Storage) bool {
-	_, isDiskStorage := storage.(*DiskStorage)
-	return !isDiskStorage
+// NeedsCaching returns true if the repository is slow and needs caching
+func NeedsCaching(repo Repository) bool {
+	_, isDiskRepository := repo.(*DiskRepository)
+	return !isDiskRepository
 }

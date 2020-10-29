@@ -125,15 +125,17 @@ class Checkpoint(object):
         os.makedirs(output_directory, exist_ok=True)
 
         assert self._experiment is not None
-        storage = self._experiment._project._get_storage()
+        repository = self._experiment._project._get_repository()
         no_experiment_files = False
         no_checkpoint_files = False
         try:
-            storage.get_path_tar(self._storage_tar_path(), output_directory)
+            repository.get_path_tar(self._repository_tar_path(), output_directory)
         except DoesNotExistError:
             no_experiment_files = True
         try:
-            storage.get_path_tar(self._experiment._storage_tar_path(), output_directory)
+            repository.get_path_tar(
+                self._experiment._repository_tar_path(), output_directory
+            )
         except DoesNotExistError:
             no_checkpoint_files = True
         if no_experiment_files and no_checkpoint_files:
@@ -159,7 +161,7 @@ class Checkpoint(object):
                 out_f = io.BytesIO(f.read())
             return out_f
 
-    def _storage_tar_path(self) -> str:
+    def _repository_tar_path(self) -> str:
         return "checkpoints/{}.tar.gz".format(self.id)
 
     def _repr_html_(self) -> str:

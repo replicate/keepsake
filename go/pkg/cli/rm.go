@@ -32,22 +32,22 @@ replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
 `,
 	}
 
-	addStorageURLFlag(cmd)
+	addRepositoryURLFlag(cmd)
 	cmd.Flags().BoolP("force", "f", false, "Force delete without interactive prompt")
 
 	return cmd
 }
 
 func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(store)
+	proj := project.NewProject(repo)
 	if err != nil {
 		return err
 	}

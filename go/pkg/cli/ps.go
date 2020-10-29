@@ -16,7 +16,7 @@ func newPsCommand() *cobra.Command {
 		Args:    cobra.NoArgs,
 	}
 
-	addStorageURLFlag(cmd)
+	addRepositoryURLFlag(cmd)
 	addListFormatFlags(cmd)
 	addListFilterFlag(cmd)
 	addListSortFlag(cmd)
@@ -25,7 +25,7 @@ func newPsCommand() *cobra.Command {
 }
 
 func listRunningExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -42,9 +42,9 @@ func listRunningExperiments(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	filters.SetExclusive("status", param.OperatorEqual, param.String("running"))
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, allParams, filters, sortKey)
+	return list.Experiments(repo, format, allParams, filters, sortKey)
 }

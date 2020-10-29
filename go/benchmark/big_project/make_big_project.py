@@ -3,7 +3,7 @@ import os
 import tempfile
 
 from replicate.project import Project
-from replicate.storage import storage_for_url
+from replicate.repository import repository_for_url
 
 parser = argparse.ArgumentParser(
     description="Create two projects: one with lots of metadata, and another which is the same but with a few new projects and checkpoints to test incremental updates"
@@ -25,8 +25,8 @@ with tempfile.TemporaryDirectory() as project_dir:
             experiment.checkpoint(path=None, metrics={"loss": 0.00001}, quiet=True)
 
     print("Uploading to bucket...")
-    storage = storage_for_url(args.bucket)
-    storage.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
+    repository = repository_for_url(args.bucket)
+    repository.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
 
     print("Creating extra data...")
     for i in range(10):
@@ -39,5 +39,5 @@ with tempfile.TemporaryDirectory() as project_dir:
             experiment.checkpoint(path=None, metrics={"loss": 0.00001}, quiet=True)
 
     print("Uploading to bucket_prime...")
-    storage = storage_for_url(args.bucket_prime)
-    storage.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
+    repository = repository_for_url(args.bucket_prime)
+    repository.put_path(os.path.join(project_dir, ".replicate/storage/"), "")

@@ -7,7 +7,7 @@ from .utils import get_env
 
 
 @pytest.mark.parametrize(
-    "storage_backend,use_root",
+    "repository_backend,use_root",
     [
         ("undefined", False),
         ("file", False),
@@ -17,27 +17,27 @@ from .utils import get_env
         pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
-def test_list(storage_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
+def test_list(repository_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
     tmpdir = str(tmpdir)
-    if storage_backend == "s3":
-        storage = "s3://" + temp_bucket
-    if storage_backend == "gcs":
-        storage = "gs://" + temp_bucket
-    elif storage_backend == "file":
-        storage = "file://" + str(tmpdir_factory.mktemp("storage"))
-    elif storage_backend == "undefined":
-        storage = str(tmpdir_factory.mktemp("storage"))
+    if repository_backend == "s3":
+        repository = "s3://" + temp_bucket
+    if repository_backend == "gcs":
+        repository = "gs://" + temp_bucket
+    elif repository_backend == "file":
+        repository = "file://" + str(tmpdir_factory.mktemp("repository"))
+    elif repository_backend == "undefined":
+        repository = str(tmpdir_factory.mktemp("repository"))
 
     # different root directory in buckets
     if use_root:
-        storage += "/root"
+        repository += "/root"
 
     with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
         f.write(
             """
-storage: {storage}
+repository: {repository}
 """.format(
-                storage=storage
+                repository=repository
             )
         )
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
@@ -83,10 +83,10 @@ if __name__ == "__main__":
     # assert latest["created"] > exp["created"]
     assert latest["step"] == 2
 
-    # test that --storage-url works
+    # test that --repository works
     experiments2 = json.loads(
         subprocess.run(
-            ["replicate", "--verbose", "ls", "--json", "--storage-url=" + storage],
+            ["replicate", "--verbose", "ls", "--json", "--repository=" + repository],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
             stdout=subprocess.PIPE,

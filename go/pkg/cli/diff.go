@@ -29,7 +29,7 @@ If an experiment ID is passed, it will pick the best checkpoint from that experi
 	}
 
 	// TODO(andreas): support json output
-	addStorageURLFlag(cmd)
+	addRepositoryURLFlag(cmd)
 
 	return cmd
 }
@@ -42,15 +42,15 @@ func diffCheckpoints(cmd *cobra.Command, args []string) error {
 	prefix1 := args[0]
 	prefix2 := args[1]
 
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(store)
+	proj := project.NewProject(repo)
 	au := getAurora()
 	return printDiff(os.Stdout, au, proj, prefix1, prefix2)
 }

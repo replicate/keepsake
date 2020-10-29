@@ -14,20 +14,20 @@ def test_load_config_blank(tmp_path):
 
     assert load_config(tmp_path) == {
         "python": "3.7",
-        "storage": os.path.join(tmp_path, ".replicate/storage/"),
+        "repository": os.path.join(tmp_path, ".replicate/storage/"),
     }
 
 
 def test_validate():
-    validate_and_set_defaults({"storage": "s3://foobar"}, "/foo")
+    validate_and_set_defaults({"repository": "s3://foobar"}, "/foo")
     with pytest.raises(ConfigValidationError):
         validate_and_set_defaults({"invalid": "key"}, "/foo")
-        validate_and_set_defaults({"storage": 1234}, "/foo")
+        validate_and_set_defaults({"repository": 1234}, "/foo")
         validate_and_set_defaults(
-            {"storage": "s3://foobar", "something": "else"}, "/foo"
+            {"repository": "s3://foobar", "something": "else"}, "/foo"
         )
 
     assert validate_and_set_defaults({}, "/foo") == {
         "python": "3.7",
-        "storage": "/foo/.replicate/storage/",
+        "repository": "/foo/.replicate/storage/",
     }

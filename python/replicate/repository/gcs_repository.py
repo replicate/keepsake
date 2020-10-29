@@ -1,24 +1,20 @@
 from typing import AnyStr, List
 
-from .storage_base import Storage
+from .repository_base import Repository
 from .. import shared
 from ..exceptions import DoesNotExistError
 
 
-class S3Storage(Storage):
-    """
-    Stores data on Amazon S3
-    """
-
+class GCSRepository(Repository):
     def __init__(self, bucket: str, root: str):
         self.bucket_name = bucket
         self.root = root
 
     def root_url(self):
         """
-        Returns the URL this storage is pointing at
+        Returns the URL this repository is pointing at
         """
-        ret = "s3://" + self.bucket_name
+        ret = "gs://" + self.bucket_name
         if self.root:
             ret += "/" + self.root
         return ret
@@ -29,7 +25,7 @@ class S3Storage(Storage):
         """
         try:
             result = shared.call(
-                "S3Storage.Get",
+                "GCSRepository.Get",
                 Bucket=self.bucket_name,
                 Root=self.root,
                 Path=str(path),  # typecast for pathlib
@@ -42,10 +38,10 @@ class S3Storage(Storage):
 
     def put_path(self, source_path: str, dest_path: str):
         """
-        Save directory to path
+        Save file or directory to path
         """
         shared.call(
-            "S3Storage.PutPath",
+            "GCSRepository.PutPath",
             Bucket=self.bucket_name,
             Root=self.root,
             Src=str(source_path),
@@ -57,7 +53,7 @@ class S3Storage(Storage):
         Save file or directory to tarball
         """
         shared.call(
-            "S3Storage.PutPathTar",
+            "GCSRepository.PutPathTar",
             Bucket=self.bucket_name,
             Root=self.root,
             LocalPath=str(local_path),
@@ -74,7 +70,7 @@ class S3Storage(Storage):
         else:
             data_bytes = data
         shared.call(
-            "S3Storage.Put",
+            "GCSRepository.Put",
             Bucket=self.bucket_name,
             Root=self.root,
             Path=str(path),
@@ -86,22 +82,19 @@ class S3Storage(Storage):
         Returns a list of files at path, but not any subdirectories.
         """
         result = shared.call(
-            "S3Storage.List",
+            "GCSRepository.List",
             Bucket=self.bucket_name,
             Root=self.root,
             Path=str(path),  # typecast for pathlib
         )
         return result["Paths"]
 
-    def exists(self, path: str) -> bool:
-        pass
-
     def delete(self, path: str):
         """
         Recursively delete path
         """
         shared.call(
-            "S3Storage.Delete",
+            "GCSRepository.Delete",
             Bucket=self.bucket_name,
             Root=self.root,
             Path=str(path),  # typecast for pathlib
@@ -117,7 +110,7 @@ class S3Storage(Storage):
         # TODO(andreas): add tests
         try:
             shared.call(
-                "S3Storage.GetPathTar",
+                "GCSRepository.GetPathTar",
                 Bucket=self.bucket_name,
                 Root=self.root,
                 TarPath=str(tar_path),

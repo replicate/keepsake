@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/storage"
+	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 // corresponds to DEFAULT_REFRESH_INTERVAL in heartbeat.py
@@ -22,7 +22,7 @@ type Heartbeat struct {
 	LastHeartbeat time.Time `json:"last_heartbeat"`
 }
 
-func CreateHeartbeat(storage storage.Storage, experimentID string, t time.Time) error {
+func CreateHeartbeat(repo repository.Repository, experimentID string, t time.Time) error {
 	heartbeat := &Heartbeat{
 		ExperimentID:  experimentID,
 		LastHeartbeat: t,
@@ -31,17 +31,17 @@ func CreateHeartbeat(storage storage.Storage, experimentID string, t time.Time) 
 	if err != nil {
 		return err
 	}
-	return storage.Put(path.Join("metadata", "heartbeats", experimentID+".json"), data)
+	return repo.Put(path.Join("metadata", "heartbeats", experimentID+".json"), data)
 }
 
-func listHeartbeats(store storage.Storage) ([]*Heartbeat, error) {
-	paths, err := store.List("metadata/heartbeats/")
+func listHeartbeats(repo repository.Repository) ([]*Heartbeat, error) {
+	paths, err := repo.List("metadata/heartbeats/")
 	if err != nil {
 		return nil, err
 	}
 	heartbeats := []*Heartbeat{}
 	for _, p := range paths {
-		if hb, err := loadHeartbeatFromPath(store, p); err == nil {
+		if hb, err := loadHeartbeatFromPath(repo, p); err == nil {
 			heartbeats = append(heartbeats, hb)
 		} else {
 			// TODO: should this just be ignored? can this be recovered from?
@@ -57,8 +57,8 @@ func (h *Heartbeat) IsRunning() bool {
 	return h.LastHeartbeat.After(lastTolerableHeartbeat)
 }
 
-func loadHeartbeatFromPath(store storage.Storage, path string) (*Heartbeat, error) {
-	contents, err := store.Get(path)
+func loadHeartbeatFromPath(repo repository.Repository, path string) (*Heartbeat, error) {
+	contents, err := repo.Get(path)
 	if err != nil {
 		return nil, err
 	}

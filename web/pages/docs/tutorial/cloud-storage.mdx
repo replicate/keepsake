@@ -48,7 +48,7 @@ gcloud auth application-default login
 Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[your username]` with your name, or some other unique string:
 
 ```yaml
-storage: "gs://replicate-[your username]-iris-classifier"
+repository: "gs://replicate-[your username]-iris-classifier"
 ```
 
 </TabPanel>
@@ -71,7 +71,7 @@ If you're on another platform, [follow these instructions to install the Amazon 
 Then, create `replicate.yaml` with this content, replacing `[your username]` with your name, or some other unique string:
 
 ```yaml
-storage: "s3://replicate-[your username]-iris-classifier"
+repository: "s3://replicate-[your username]-iris-classifier"
 ```
 
 </TabPanel>
@@ -96,7 +96,7 @@ Now, when you run `replicate ls`, it will list experiments from the bucket.
 <Note>
 
 
-You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one storage location. Now you've switched from your local storage to a remote bucket, it will no longer list your local experiments.
+You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one repository. Now you've switched from your local storage to a remote bucket, it will no longer list your local experiments.
 
 It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
 

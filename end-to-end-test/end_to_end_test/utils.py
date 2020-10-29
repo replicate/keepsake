@@ -16,19 +16,19 @@ def get_env():
     return env
 
 
-def path_exists(storage, path):
+def path_exists(repository, path):
     """
-    Check that a path exists in a specific storage location.
-    storage has the format backend://root(/parent_folder),
+    Check that a path exists in a specific repository.
+    repository has the format backend://root(/parent_folder),
     where backend can be file, s3, or gs.
     """
-    backend, root = storage.split("://")
+    backend, root = repository.split("://")
     assert backend in ("file", "s3", "gs")
 
     if backend == "file":
         return (Path(root) / path).exists()
 
-    # append any parent_folder that's part of the storage string
+    # append any parent_folder that's part of the repository string
     # to the path, so that root is just the bucket
     root = Path(root)
     if len(root.parts) > 1:

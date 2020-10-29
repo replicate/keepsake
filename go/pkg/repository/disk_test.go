@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"io/ioutil"
@@ -11,21 +11,21 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
-func TestDiskStorageGet(t *testing.T) {
+func TestDiskRepositoryGet(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	storage, err := NewDiskStorage(dir)
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 
 	err = ioutil.WriteFile(path.Join(dir, "some-file"), []byte("hello"), 0644)
 	require.NoError(t, err)
 
-	_, err = storage.Get("does-not-exist")
+	_, err = repository.Get("does-not-exist")
 	require.IsType(t, &DoesNotExistError{}, err)
 
-	content, err := storage.Get("some-file")
+	content, err := repository.Get("some-file")
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), content)
 }
@@ -34,31 +34,31 @@ func TestDiskGetPathTar(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	storage, err := NewDiskStorage(dir)
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 
 	tmpDir, err := files.TempDir("test")
 	require.NoError(t, err)
-	err = storage.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	err = repository.GetPathTar("does-not-exist.tar.gz", tmpDir)
 	require.IsType(t, &DoesNotExistError{}, err)
 }
 
-func TestDiskStoragePut(t *testing.T) {
+func TestDiskRepositoryPut(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	storage, err := NewDiskStorage(dir)
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 
-	err = storage.Put("some-file", []byte("hello"))
+	err = repository.Put("some-file", []byte("hello"))
 	require.NoError(t, err)
 
 	content, err := ioutil.ReadFile(path.Join(dir, "some-file"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), content)
 
-	err = storage.Put("subdirectory/another-file", []byte("hello again"))
+	err = repository.Put("subdirectory/another-file", []byte("hello again"))
 	require.NoError(t, err)
 
 	content, err = ioutil.ReadFile(path.Join(dir, "subdirectory/another-file"))
@@ -66,38 +66,38 @@ func TestDiskStoragePut(t *testing.T) {
 	require.Equal(t, []byte("hello again"), content)
 }
 
-func TestDiskStorageList(t *testing.T) {
+func TestDiskRepositoryList(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	storage, err := NewDiskStorage(dir)
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 
-	err = storage.Put("some-file", []byte("hello"))
+	err = repository.Put("some-file", []byte("hello"))
 	require.NoError(t, err)
-	err = storage.Put("dir/another-file", []byte("hello"))
+	err = repository.Put("dir/another-file", []byte("hello"))
 	require.NoError(t, err)
 
-	paths, err := storage.List("")
+	paths, err := repository.List("")
 	require.NoError(t, err)
 	require.Equal(t, []string{"some-file"}, paths)
 
-	paths, err = storage.List("dir")
+	paths, err = repository.List("dir")
 	require.NoError(t, err)
 	require.Equal(t, []string{"dir/another-file"}, paths)
 
-	paths, err = storage.List("dir-that-does-not-exist")
+	paths, err = repository.List("dir-that-does-not-exist")
 	require.NoError(t, err)
 	require.Equal(t, []string{}, paths)
 }
 
 func TestPutPath(t *testing.T) {
-	storageDir, err := ioutil.TempDir("", "replicate-test")
+	repositoryDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
-	defer os.RemoveAll(storageDir)
+	defer os.RemoveAll(repositoryDir)
 
-	storage, err := NewDiskStorage(storageDir)
+	repository, err := NewDiskRepository(repositoryDir)
 	require.NoError(t, err)
 
 	workDir, err := ioutil.TempDir("", "replicate-test")
@@ -107,14 +107,14 @@ func TestPutPath(t *testing.T) {
 	require.NoError(t, os.Mkdir(path.Join(workDir, "subdirectory"), 0755))
 	require.NoError(t, ioutil.WriteFile(path.Join(workDir, "subdirectory/another-file"), []byte("hello again"), 0644))
 
-	err = storage.PutPath(workDir, "parent")
+	err = repository.PutPath(workDir, "parent")
 	require.NoError(t, err)
 
-	content, err := ioutil.ReadFile(path.Join(storageDir, "parent/some-file"))
+	content, err := ioutil.ReadFile(path.Join(repositoryDir, "parent/some-file"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), content)
 
-	content, err = ioutil.ReadFile(path.Join(storageDir, "parent/subdirectory/another-file"))
+	content, err = ioutil.ReadFile(path.Join(repositoryDir, "parent/subdirectory/another-file"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello again"), content)
 }
@@ -124,18 +124,18 @@ func TestDiskListRecursive(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	// Works with emty storage
-	storage, err := NewDiskStorage(dir)
+	// Works with emty repository
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 	results := make(chan ListResult)
-	go storage.ListRecursive(results, "checkpoints")
+	go repository.ListRecursive(results, "checkpoints")
 	require.Empty(t, <-results)
 
 	// Lists stuff!
-	require.NoError(t, storage.Put("checkpoints/abc123.json", []byte("yep")))
-	require.NoError(t, storage.Put("experiments/def456.json", []byte("nope")))
+	require.NoError(t, repository.Put("checkpoints/abc123.json", []byte("yep")))
+	require.NoError(t, repository.Put("experiments/def456.json", []byte("nope")))
 	results = make(chan ListResult)
-	go storage.ListRecursive(results, "checkpoints")
+	go repository.ListRecursive(results, "checkpoints")
 	require.Equal(t, ListResult{
 		Path: "checkpoints/abc123.json",
 		MD5:  []byte{0x93, 0x48, 0xae, 0x78, 0x51, 0xcf, 0x3b, 0xa7, 0x98, 0xd9, 0x56, 0x4e, 0xf3, 0x8, 0xec, 0x25},
@@ -148,11 +148,11 @@ func TestDiskMatchFilenamesRecursive(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	// Works with emty storage
-	storage, err := NewDiskStorage(dir)
+	// Works with emty repository
+	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 	results := make(chan ListResult)
-	go storage.MatchFilenamesRecursive(results, "checkpoints", "replicate-metadata.json")
+	go repository.MatchFilenamesRecursive(results, "checkpoints", "replicate-metadata.json")
 	v := <-results
 	require.Empty(t, v)
 }

@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"context"
@@ -18,27 +18,27 @@ import (
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
-type GCSStorage struct {
+type GCSRepository struct {
 	projectID  string
 	bucketName string
 	root       string
 	client     *storage.Client
 }
 
-func NewGCSStorage(bucket, root string) (*GCSStorage, error) {
+func NewGCSRepository(bucket, root string) (*GCSRepository, error) {
 	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
 	}
 
-	return &GCSStorage{
+	return &GCSRepository{
 		bucketName: bucket,
 		root:       root,
 		client:     client,
 	}, nil
 }
 
-func (s *GCSStorage) RootURL() string {
+func (s *GCSRepository) RootURL() string {
 	ret := "gs://" + s.bucketName
 	if s.root != "" {
 		ret += "/" + s.root
@@ -46,7 +46,7 @@ func (s *GCSStorage) RootURL() string {
 	return ret
 }
 
-func (s *GCSStorage) Get(path string) ([]byte, error) {
+func (s *GCSRepository) Get(path string) ([]byte, error) {
 	key := filepath.Join(s.root, path)
 	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, key)
 	bucket := s.client.Bucket(s.bucketName)
@@ -70,7 +70,7 @@ func (s *GCSStorage) Get(path string) ([]byte, error) {
 
 // Delete deletes path. If path is a directory, it recursively deletes
 // all everything under path
-func (s *GCSStorage) Delete(path string) error {
+func (s *GCSRepository) Delete(path string) error {
 	console.Debug("Deleting %s/%s...", s.RootURL(), path)
 	prefix := filepath.Join(s.root, path)
 	err := s.applyRecursive(prefix, func(obj *storage.ObjectHandle) error {
@@ -83,7 +83,7 @@ func (s *GCSStorage) Delete(path string) error {
 }
 
 // Put data at path
-func (s *GCSStorage) Put(path string, data []byte) error {
+func (s *GCSRepository) Put(path string, data []byte) error {
 	key := filepath.Join(s.root, path)
 	pathString := fmt.Sprintf("gs://%s/%s", s.bucketName, key)
 	bucket := s.client.Bucket(s.bucketName)
@@ -113,8 +113,8 @@ func (s *GCSStorage) Put(path string, data []byte) error {
 	return nil
 }
 
-func (s *GCSStorage) PutPath(localPath string, storagePath string) error {
-	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, storagePath))
+func (s *GCSRepository) PutPath(localPath string, repoPath string) error {
+	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, repoPath))
 	bucket := s.client.Bucket(s.bucketName)
 	if err != nil {
 		return err
@@ -148,7 +148,7 @@ func (s *GCSStorage) PutPath(localPath string, storagePath string) error {
 	return queue.Wait()
 }
 
-func (s *GCSStorage) PutPathTar(localPath, tarPath, includePath string) error {
+func (s *GCSRepository) PutPathTar(localPath, tarPath, includePath string) error {
 	if !strings.HasSuffix(tarPath, ".tar.gz") {
 		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
 	}
@@ -168,7 +168,7 @@ func (s *GCSStorage) PutPathTar(localPath, tarPath, includePath string) error {
 }
 
 // List files in a path non-recursively
-func (s *GCSStorage) List(dir string) ([]string, error) {
+func (s *GCSRepository) List(dir string) ([]string, error) {
 	results := []string{}
 	prefix := filepath.Join(s.root, dir)
 
@@ -203,17 +203,17 @@ func (s *GCSStorage) List(dir string) ([]string, error) {
 }
 
 // List files in a path recursively
-func (s *GCSStorage) ListRecursive(results chan<- ListResult, dir string) {
+func (s *GCSRepository) ListRecursive(results chan<- ListResult, dir string) {
 	s.listRecursive(results, dir, func(_ string) bool { return true })
 }
 
-func (s *GCSStorage) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
+func (s *GCSRepository) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
 	s.listRecursive(results, folder, func(key string) bool {
 		return filepath.Base(key) == filename
 	})
 }
 
-func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
+func (s *GCSRepository) listRecursive(results chan<- ListResult, dir string, filter func(string) bool) {
 	prefix := filepath.Join(s.root, dir)
 	// prefixes must end with / and must not end with /
 	if !strings.HasSuffix(prefix, "/") {
@@ -251,9 +251,9 @@ func (s *GCSStorage) listRecursive(results chan<- ListResult, dir string, filter
 	close(results)
 }
 
-// GetPath recursively copies storageDir to localDir
-func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
-	prefix := filepath.Join(s.root, storageDir)
+// GetPath recursively copies repoDir to localDir
+func (s *GCSRepository) GetPath(repoDir string, localDir string) error {
+	prefix := filepath.Join(s.root, repoDir)
 	err := s.applyRecursive(prefix, func(obj *storage.ObjectHandle) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
 		reader, err := obj.NewReader(context.TODO())
@@ -264,7 +264,7 @@ func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
 
 		relPath, err := filepath.Rel(prefix, obj.ObjectName())
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", obj.ObjectName(), storageDir, err)
+			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", obj.ObjectName(), repoDir, err)
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
@@ -286,12 +286,12 @@ func (s *GCSStorage) GetPath(storageDir string, localDir string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %w", s.bucketName, storageDir, localDir, err)
+		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %w", s.bucketName, repoDir, localDir, err)
 	}
 	return nil
 }
 
-func (s *GCSStorage) GetPathTar(tarPath, localPath string) error {
+func (s *GCSRepository) GetPathTar(tarPath, localPath string) error {
 	// archiver doesn't let us use readers, so download to temporary file
 	// TODO: make a better tar implementation
 	tmpdir, err := files.TempDir("tar")
@@ -313,7 +313,7 @@ func (s *GCSStorage) GetPathTar(tarPath, localPath string) error {
 	return extractTar(tmptarball, localPath)
 }
 
-func (s *GCSStorage) bucketExists() (bool, error) {
+func (s *GCSRepository) bucketExists() (bool, error) {
 	bucket := s.client.Bucket(s.bucketName)
 	_, err := bucket.Attrs(context.TODO())
 	if err == nil {
@@ -325,7 +325,7 @@ func (s *GCSStorage) bucketExists() (bool, error) {
 	return false, fmt.Errorf("Failed to determine if bucket gs://%s exists: %w", s.bucketName, err)
 }
 
-func (s *GCSStorage) ensureBucketExists() error {
+func (s *GCSRepository) ensureBucketExists() error {
 	exists, err := s.bucketExists()
 	if err != nil {
 		return err
@@ -336,7 +336,7 @@ func (s *GCSStorage) ensureBucketExists() error {
 	return nil
 }
 
-func (s *GCSStorage) CreateBucket() error {
+func (s *GCSRepository) CreateBucket() error {
 	projectID, err := s.getProjectID()
 	if err != nil {
 		return err
@@ -349,7 +349,7 @@ func (s *GCSStorage) CreateBucket() error {
 }
 
 // Note: prefix does not include s.root
-func (s *GCSStorage) applyRecursive(prefix string, fn func(obj *storage.ObjectHandle) error) error {
+func (s *GCSRepository) applyRecursive(prefix string, fn func(obj *storage.ObjectHandle) error) error {
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
 	bucket := s.client.Bucket(s.bucketName)
@@ -379,7 +379,7 @@ func (s *GCSStorage) applyRecursive(prefix string, fn func(obj *storage.ObjectHa
 // getProjectID shells out to gcloud config config-helper to get
 // the project ID. This is the recommended way
 // https://github.com/googleapis/google-cloud-go/issues/707
-func (s *GCSStorage) getProjectID() (string, error) {
+func (s *GCSRepository) getProjectID() (string, error) {
 	if s.projectID == "" {
 		projectID, err := discoverProjectID()
 		if err != nil {

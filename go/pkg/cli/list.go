@@ -31,7 +31,7 @@ $ replicate ls --sort "val_loss" --filter "status = stopped"
 `,
 	}
 
-	addStorageURLFlag(cmd)
+	addRepositoryURLFlag(cmd)
 	addListFormatFlags(cmd)
 	addListFilterFlag(cmd)
 	addListSortFlag(cmd)
@@ -40,7 +40,7 @@ $ replicate ls --sort "val_loss" --filter "status = stopped"
 }
 
 func listExperiments(cmd *cobra.Command, args []string) error {
-	storageURL, projectDir, err := getStorageURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
 	if err != nil {
 		return err
 	}
@@ -56,11 +56,11 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	store, err := getStorage(storageURL, projectDir)
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
-	return list.Experiments(store, format, all, filters, sortKey)
+	return list.Experiments(repo, format, all, filters, sortKey)
 }
 
 func addListFormatFlags(cmd *cobra.Command) {

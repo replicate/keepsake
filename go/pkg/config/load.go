@@ -11,6 +11,7 @@ import (
 
 	"github.com/ghodss/yaml"
 
+	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/global"
 )
@@ -105,6 +106,14 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 	err = decoder.Decode(&conf)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse replicate.yaml: %s", err)
+	}
+
+	if conf.Storage != "" {
+		if conf.Repository != "" {
+			return nil, fmt.Errorf("Both 'storage' (deprecated) and 'repository' are defined in replicate.yaml, please only use 'repository'")
+		}
+		console.Warn("'storage' is deprecated in replicate.yaml, please use 'repository'")
+		conf.Repository = conf.Storage
 	}
 
 	return conf, nil

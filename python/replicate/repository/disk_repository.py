@@ -1,16 +1,16 @@
 import os
 from typing import AnyStr, List
 
-from .storage_base import Storage
+from .repository_base import Repository
 from .. import shared
 from ..exceptions import DoesNotExistError
 
 
-class DiskStorage(Storage):
+class DiskRepository(Repository):
     """
     Stores data on local filesystem
 
-    Unlike the remote storages, some of these methods are implemented natively
+    Unlike the remote repositorys, some of these methods are implemented natively
     because they're trivial. The complex and slow ones (e.g. put_path) we call Go.
     """
 
@@ -19,7 +19,7 @@ class DiskStorage(Storage):
 
     def root_url(self):
         """
-        Returns the path this storage is pointing at
+        Returns the path this repository is pointing at
         """
         return self.root
 
@@ -52,7 +52,7 @@ class DiskStorage(Storage):
         Save file or directory to path
         """
         shared.call(
-            "DiskStorage.PutPath",
+            "DiskRepository.PutPath",
             Root=self.root,
             Src=str(source_path),
             Dest=str(dest_path),
@@ -63,7 +63,7 @@ class DiskStorage(Storage):
         Save file or directory to tarball
         """
         shared.call(
-            "DiskStorage.PutPathTar",
+            "DiskRepository.PutPathTar",
             Root=self.root,
             LocalPath=str(local_path),
             TarPath=str(tar_path),
@@ -92,7 +92,7 @@ class DiskStorage(Storage):
         # Even though it's a simple operation we use the shared
         # library to ensure consistent semantics.
         shared.call(
-            "DiskStorage.Delete",
+            "DiskRepository.Delete",
             Root=self.root,
             Path=str(path),  # typecast for pathlib
         )
@@ -107,7 +107,7 @@ class DiskStorage(Storage):
         # TODO(andreas): add tests
         try:
             shared.call(
-                "DiskStorage.GetPathTar",
+                "DiskRepository.GetPathTar",
                 Root=self.root,
                 TarPath=str(tar_path),
                 LocalPath=str(local_path),

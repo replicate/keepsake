@@ -131,7 +131,7 @@ class Experiment:
                     "Creating checkpoint {}: copying '{}' to '{}'...".format(
                         checkpoint.short_id(),
                         checkpoint.path,
-                        self._project._get_storage().root_url(),
+                        self._project._get_repository().root_url(),
                     )
                 )
 
@@ -145,9 +145,9 @@ class Experiment:
 
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if checkpoint.path is not None:
-            tar_path = checkpoint._storage_tar_path()
-            storage = self._project._get_storage()
-            storage.put_path_tar(self._project.directory, tar_path, checkpoint.path)
+            tar_path = checkpoint._repository_tar_path()
+            repository = self._project._get_repository()
+            repository.put_path_tar(self._project.directory, tar_path, checkpoint.path)
 
         self.checkpoints.append(checkpoint)
         self.save()
@@ -159,10 +159,10 @@ class Experiment:
 
     def save(self):
         """
-        Save this experiment's metadata to storage.
+        Save this experiment's metadata to repository.
         """
-        storage = self._project._get_storage()
-        storage.put(
+        repository = self._project._get_repository()
+        repository.put(
             self._metadata_path(),
             json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
         )
@@ -196,7 +196,7 @@ class Experiment:
     def start_heartbeat(self):
         self._heartbeat = Heartbeat(
             experiment_id=self.id,
-            storage_url=self._project._get_config()["storage"],
+            repository_url=self._project._get_config()["repository"],
             path=self._heartbeat_path(),
         )
         self._heartbeat.start()
@@ -211,7 +211,7 @@ class Experiment:
         if self._heartbeat is not None:
             self._heartbeat.kill()
             self._heartbeat = None
-        self._project._get_storage().delete(self._heartbeat_path())
+        self._project._get_repository().delete(self._heartbeat_path())
 
     def delete(self):
         """
@@ -219,18 +219,18 @@ class Experiment:
         """
         # TODO(andreas): this logic should probably live in go,
         # which could then also be parallelized easily
-        storage = self._project._get_storage()
+        repository = self._project._get_repository()
         console.info(
             "Deleting {} checkpoints in experiment {}".format(
                 len(self.checkpoints), self.short_id()
             )
         )
         for checkpoint in self.checkpoints:
-            storage.delete(checkpoint._storage_tar_path())
+            repository.delete(checkpoint._repository_tar_path())
         console.info("Deleting experiment: {}".format(self.short_id()))
-        storage.delete(self._heartbeat_path())
-        storage.delete(self._storage_tar_path())
-        storage.delete(self._metadata_path())
+        repository.delete(self._heartbeat_path())
+        repository.delete(self._repository_tar_path())
+        repository.delete(self._metadata_path())
 
     def latest(self) -> Optional[Checkpoint]:
         """
@@ -283,7 +283,7 @@ class Experiment:
     def _heartbeat_path(self) -> str:
         return "metadata/heartbeats/{}.json".format(self.id)
 
-    def _storage_tar_path(self) -> str:
+    def _repository_tar_path(self) -> str:
         return "experiments/{}.tar.gz".format(self.id)
 
     def _metadata_path(self) -> str:
@@ -486,7 +486,7 @@ class ExperimentCollection:
                     "Creating experiment {}: copying '{}' to '{}'...".format(
                         experiment.short_id(),
                         experiment.path,
-                        self.project._get_storage().root_url(),
+                        self.project._get_repository().root_url(),
                     )
                 )
 
@@ -498,9 +498,9 @@ class ExperimentCollection:
 
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if experiment.path is not None:
-            storage = self.project._get_storage()
-            tar_path = experiment._storage_tar_path()
-            storage.put_path_tar(self.project.directory, tar_path, experiment.path)
+            repository = self.project._get_repository()
+            tar_path = experiment._repository_tar_path()
+            repository.put_path_tar(self.project.directory, tar_path, experiment.path)
 
         experiment.save()
 
@@ -513,9 +513,9 @@ class ExperimentCollection:
         """
         Returns the experiment with the given ID.
         """
-        storage = self.project._get_storage()
+        repository = self.project._get_repository()
         ids = []
-        for path in storage.list("metadata/experiments/"):
+        for path in repository.list("metadata/experiments/"):
             ids.append(os.path.basename(path).split(".")[0])
 
         matching_ids = list(filter(lambda i: i.startswith(experiment_id), ids))
@@ -531,7 +531,7 @@ class ExperimentCollection:
             )
 
         data = json.loads(
-            storage.get("metadata/experiments/{}.json".format(matching_ids[0]))
+            repository.get("metadata/experiments/{}.json".format(matching_ids[0]))
         )
         return Experiment.from_json(self.project, data)
 
@@ -539,10 +539,10 @@ class ExperimentCollection:
         """
         Return all experiments for a project, sorted by creation date.
         """
-        storage = self.project._get_storage()
+        repository = self.project._get_repository()
         result: ExperimentList = ExperimentList()
-        for path in storage.list("metadata/experiments/"):
-            data = json.loads(storage.get(path))
+        for path in repository.list("metadata/experiments/"):
+            data = json.loads(repository.get(path))
             exp = Experiment.from_json(self.project, data)
             if filter is not None:
                 include = False

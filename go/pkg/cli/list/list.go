@@ -14,8 +14,8 @@ import (
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/param"
 	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/replicate/go/pkg/repository"
 	"github.com/replicate/replicate/go/pkg/slices"
-	"github.com/replicate/replicate/go/pkg/storage"
 )
 
 type Format int
@@ -89,8 +89,8 @@ func (exp *ListExperiment) GetValue(name string) param.Value {
 	return param.None()
 }
 
-func Experiments(store storage.Storage, format Format, all bool, filters *param.Filters, sorter *param.Sorter) error {
-	proj := project.NewProject(store)
+func Experiments(repo repository.Repository, format Format, all bool, filters *param.Filters, sorter *param.Sorter) error {
+	proj := project.NewProject(repo)
 	listExperiments, err := createListExperiments(proj, filters)
 	if err != nil {
 		return err
