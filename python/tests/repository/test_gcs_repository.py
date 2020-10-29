@@ -21,7 +21,7 @@ def temp_bucket_create():
         random.choice(string.ascii_lowercase) for _ in range(20)
     )
 
-    client = repository.Client()
+    client = storage.Client()
     bucket = client.create_bucket(bucket_name)
     try:
         bucket.reload()
