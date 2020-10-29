@@ -31,3 +31,14 @@ def test_validate():
         "python": "3.7",
         "repository": "/foo/.replicate/storage/",
     }
+
+
+def test_storage_backwards_compatible():
+    assert validate_and_set_defaults({"storage": "s3://foobar"}, "/foo") == {
+        "python": "3.7",
+        "repository": "s3://foobar",
+    }
+    with pytest.raises(ConfigValidationError):
+        validate_and_set_defaults(
+            {"storage": "s3://foobar", "repository": "s3://foobar"}, "/foo"
+        )

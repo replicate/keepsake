@@ -83,3 +83,14 @@ func TestParse(t *testing.T) {
 		Repository:         "/foo/.replicate/storage",
 	}, conf)
 }
+
+func TestStorageBackwardsCompatible(t *testing.T) {
+	conf, err := Parse([]byte("storage: 's3://foobar'"), "")
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Python:             "3.7",
+		PythonRequirements: "requirements.txt",
+		Install:            []string{},
+		Repository:         "s3://foobar",
+	}, conf)
+}

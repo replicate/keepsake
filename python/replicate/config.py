@@ -56,6 +56,18 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
                 )
             )
 
+    if data.get("storage"):
+        if data.get("repository"):
+            raise ConfigValidationError(
+                "Both 'storage' (deprecated) and 'repository' are defined in replicate.yaml, please only use 'repository'"
+            )
+
+        console.warn(
+            "'storage' is deprecated in replicate.yaml, please use 'repository'"
+        )
+        data["repository"] = data["storage"]
+        del data["storage"]
+
     defaults = {
         "repository": os.path.join(project_dir, ".replicate/storage/"),
         "python": "3.7",
@@ -78,10 +90,5 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
                 raise ConfigValidationError(
                     "The option 'repository' in replicate.yaml needs to be a string."
                 )
-
-        if key == "storage":
-            console.warn(
-                "'storage' is deprecated in replicate.yaml, please use 'repository'"
-            )
 
     return data
