@@ -51,10 +51,5 @@ func (conf *Config) ReadPythonRequirements(projectDir string) (lines []string, e
 
 func getDefaultConfig(workingDir string) *Config {
 	// should match defaults in config.py
-	return &Config{
-		Repository:         path.Join(workingDir, ".replicate/storage/"),
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-	}
+	return &Config{}
 }

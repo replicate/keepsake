@@ -4,36 +4,24 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestFindConfig(t *testing.T) {
-	// Loads default config if no config exists
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	conf, _, err := FindConfig(dir)
-	require.NoError(t, err)
-	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         path.Join(dir, ".replicate/storage/"),
-	}, conf)
-
 	// Loads a basic config
 	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("repository: 'foo'"), 0644)
 	require.NoError(t, err)
-	conf, _, err = FindConfig(dir)
+	conf, _, err := FindConfig(dir)
 	require.NoError(t, err)
 	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         "foo",
+		Repository: "foo",
 	}, conf)
 }
 
@@ -48,24 +36,15 @@ func TestFindConfigInWorkingDir(t *testing.T) {
 	conf, _, err := FindConfigInWorkingDir(dir)
 	require.NoError(t, err)
 	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         "foo",
+		Repository: "foo",
 	}, conf)
 
-	// Loads default config if override directory doesn't have replicate.yaml
+	// Throw error if override directory doesn't have replicate.yaml
 	emptyDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(emptyDir)
-	conf, _, err = FindConfigInWorkingDir(emptyDir)
-	require.NoError(t, err)
-	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         path.Join(emptyDir, ".replicate/storage/"),
-	}, conf)
+	_, _, err = FindConfigInWorkingDir(emptyDir)
+	require.Error(t, err)
 }
 
 func TestParse(t *testing.T) {
@@ -73,24 +52,40 @@ func TestParse(t *testing.T) {
 	_, err := Parse([]byte("unknown: 'field'"), "")
 	require.Error(t, err)
 
-	// Sets defaults in empty config
+	// Load empty config
 	conf, err := Parse([]byte(""), "/foo")
 	require.NoError(t, err)
+	require.Equal(t, &Config{}, conf)
+
+	// Sets defaults in empty config
+	conf, err = Parse([]byte("repository: s3://foobar"), "/foo")
+	require.NoError(t, err)
 	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         "/foo/.replicate/storage",
+		Repository: "s3://foobar",
 	}, conf)
+
 }
 
 func TestStorageBackwardsCompatible(t *testing.T) {
 	conf, err := Parse([]byte("storage: 's3://foobar'"), "")
 	require.NoError(t, err)
 	require.Equal(t, &Config{
-		Python:             "3.7",
-		PythonRequirements: "requirements.txt",
-		Install:            []string{},
-		Repository:         "s3://foobar",
+		Repository: "s3://foobar",
 	}, conf)
+}
+
+func TestDeprecatedRepositoryBackwardsCompatible(t *testing.T) {
+	tmpDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	err = os.MkdirAll(filepath.Join(tmpDir, ".replicate/storage"), 0755)
+	require.NoError(t, err)
+
+	conf, projectDir, err := FindConfig(tmpDir)
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Repository: "file://.replicate/storage",
+	}, conf)
+	require.Equal(t, tmpDir, projectDir)
 }

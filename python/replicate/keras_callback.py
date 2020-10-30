@@ -7,6 +7,7 @@ except ImportError:
 
 from . import init
 from .experiment import Experiment
+from .project import Project
 
 
 class ReplicateCallback(ModelCheckpoint):

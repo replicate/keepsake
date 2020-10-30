@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket...")
     repository = repository_for_url(args.bucket)
-    repository.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
+    repository.put_path(os.path.join(project_dir, ".replicate/"), "")
 
     print("Creating extra data...")
     for i in range(10):
@@ -40,4 +40,4 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket_prime...")
     repository = repository_for_url(args.bucket_prime)
-    repository.put_path(os.path.join(project_dir, ".replicate/storage/"), "")
+    repository.put_path(os.path.join(project_dir, ".replicate/"), "")

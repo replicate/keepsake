@@ -33,6 +33,9 @@ def _model(dense_size, learning_rate):
 
 
 def test_keras_callback(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
     dense_size = 784
     learning_rate = 0.1
 
@@ -53,7 +56,7 @@ def test_keras_callback(temp_workdir):
         ],
     )
 
-    exp_meta_paths = glob(".replicate/storage/metadata/experiments/*.json")
+    exp_meta_paths = glob(".replicate/metadata/experiments/*.json")
     assert len(exp_meta_paths) == 1
     with open(exp_meta_paths[0]) as f:
         exp_meta = json.load(f)
@@ -70,12 +73,13 @@ def test_keras_callback(temp_workdir):
     assert set(chkp_meta["metrics"].keys()) == set(
         ["mean_absolute_error", "loss", "val_mean_absolute_error", "val_loss"]
     )
-    assert os.path.exists(
-        ".replicate/storage/checkpoints/" + chkp_meta["id"] + ".tar.gz"
-    )
+    assert os.path.exists(".replicate/checkpoints/" + chkp_meta["id"] + ".tar.gz")
 
 
 def test_keras_callback_with_no_filepath(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
     dense_size = 784
     learning_rate = 0.1
 
@@ -97,7 +101,7 @@ def test_keras_callback_with_no_filepath(temp_workdir):
         ],
     )
 
-    exp_meta_paths = glob(".replicate/storage/metadata/experiments/*.json")
+    exp_meta_paths = glob(".replicate/metadata/experiments/*.json")
     assert len(exp_meta_paths) == 1
     with open(exp_meta_paths[0]) as f:
         exp_meta = json.load(f)
@@ -105,6 +109,4 @@ def test_keras_callback_with_no_filepath(temp_workdir):
     assert len(exp_meta["checkpoints"]) == 5
     chkp_meta = exp_meta["checkpoints"][0]
     assert chkp_meta["path"] is None
-    assert not os.path.exists(
-        ".replicate/storage/checkpoints/" + chkp_meta["id"] + ".tar.gz"
-    )
+    assert not os.path.exists(".replicate/checkpoints/" + chkp_meta["id"] + ".tar.gz")

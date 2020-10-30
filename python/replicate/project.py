@@ -4,9 +4,11 @@ from typing import Dict, Any, Optional
 from .config import load_config
 from .experiment import ExperimentCollection, Experiment
 from .repository import repository_for_url, Repository
+from .exceptions import ConfigNotFoundError
 
 
 MAX_SEARCH_DEPTH = 100
+DEPRECATED_REPOSITORY_DIR = ".replicate/storage"
 
 
 class Project:
@@ -14,20 +16,40 @@ class Project:
     Represents a codebase and set of experiments, analogous to a Git repository.
     """
 
-    def __init__(self, directory: Optional[str] = None):
+    def __init__(
+        self, repository: Optional[str] = None, directory: Optional[str] = None
+    ):
         # Project is initialized on import, so don't do anything slow or anything that will raise an exception
         self._directory = directory
-        self._config: Optional[Dict[str, Any]] = None
         self._repository: Optional[Repository] = None
-        self._repository_url: Optional[str] = None
+        self._repository_url = repository
+        self._explicit_repository = repository is not None
 
     @property
     def directory(self) -> str:
         if self._directory is None:
+            if self._explicit_repository:
+                # we raise an error here rather than in the
+                # constructor, because Projects can be used both
+                # for writing during training and for analysis.
+                # during analysis you don't need a root directory
+
+                # TODO(andreas): raise something other than ValueError?
+                raise ValueError(
+                    "If you pass the 'repository' argument to Project(), you also need to pass 'directory'"
+                )
+
             self._directory = get_project_dir()
         return self._directory
 
     def _get_config(self) -> Dict[str, Any]:
+        if self._explicit_repository:
+            return {"repository": self._repository_url}
+
+        # backwards-compatibility
+        if os.path.exists(os.path.join(self.directory, DEPRECATED_REPOSITORY_DIR)):
+            return {"repository": "file://" + DEPRECATED_REPOSITORY_DIR}
+
         return load_config(self.directory)
 
     def _get_repository(self) -> Repository:
@@ -72,11 +94,21 @@ def get_project_dir() -> str:
 
     Similar to config.FindConfigPath() in CLI.
     """
-    directory = os.getcwd()
+    cwd = os.getcwd()
+    directory = cwd
     for _ in range(MAX_SEARCH_DEPTH):
         if os.path.exists(os.path.join(directory, "replicate.yaml")):
             return directory
+
+        # backwards-compatibility
+        if os.path.exists(os.path.join(directory, DEPRECATED_REPOSITORY_DIR)):
+            return directory
+
         if directory == "/":
-            break
+            raise ConfigNotFoundError(
+                "replicate.yaml was not found in {} or any of its subdirectories".format(
+                    cwd
+                )
+            )
         directory = os.path.dirname(directory)
     return os.getcwd()

@@ -13,7 +13,7 @@ from unittest.mock import patch
 from waiting import wait
 
 import replicate
-from replicate.exceptions import DoesNotExistError
+from replicate.exceptions import DoesNotExistError, ConfigNotFoundError
 from replicate.experiment import Experiment, BrokenExperiment, ExperimentList
 from replicate.project import Project
 
@@ -22,6 +22,9 @@ from tests.factories import experiment_factory, checkpoint_factory
 
 
 def test_init_and_checkpoint(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
 
@@ -34,16 +37,14 @@ def test_init_and_checkpoint(temp_workdir):
     )
 
     assert len(experiment.id) == 64
-    with open(
-        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
-    ) as fh:
+    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(
-            ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
+            ".replicate/experiments/{}.tar.gz".format(experiment.id)
         ) as tar:
             tar.extractall(tmpdir)
 
@@ -62,9 +63,7 @@ def test_init_and_checkpoint(temp_workdir):
     )
 
     assert len(checkpoint.id) == 64
-    with open(
-        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
-    ) as fh:
+    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert len(metadata["checkpoints"]) == 1
     checkpoint_metadata = metadata["checkpoints"][0]
@@ -74,7 +73,7 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(
-            ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
+            ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
         ) as tar:
             tar.extractall(tmpdir)
 
@@ -92,7 +91,7 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(
-            ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
+            ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
         ) as tar:
             tar.extractall(tmpdir)
 
@@ -105,14 +104,10 @@ def test_init_and_checkpoint(temp_workdir):
     checkpoint = experiment.checkpoint(
         path=None, step=1, metrics={"validation_loss": 0.123}
     )
-    with open(
-        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
-    ) as fh:
+    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["checkpoints"][-1]["id"] == checkpoint.id
-    assert not os.path.exists(
-        ".replicate/storage/checkpoints/{}.tar.gz".format(checkpoint.id)
-    )
+    assert not os.path.exists(".replicate/checkpoints/{}.tar.gz".format(checkpoint.id))
 
     # experiment with file
     experiment = replicate.init(
@@ -120,7 +115,7 @@ def test_init_and_checkpoint(temp_workdir):
     )
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(
-            ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
+            ".replicate/experiments/{}.tar.gz".format(experiment.id)
         ) as tar:
             tar.extractall(tmpdir)
 
@@ -134,20 +129,31 @@ def test_init_and_checkpoint(temp_workdir):
     experiment = replicate.init(
         path=None, params={"learning_rate": 0.002}, disable_heartbeat=True
     )
-    with open(
-        ".replicate/storage/metadata/experiments/{}.json".format(experiment.id)
-    ) as fh:
+    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
-    assert not os.path.exists(
-        ".replicate/storage/experiments/{}.tar.gz".format(experiment.id)
-    )
+    assert not os.path.exists(".replicate/experiments/{}.tar.gz".format(experiment.id))
+
+
+def test_init_with_config_file(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+    experiment = replicate.init()
+    assert isinstance(experiment, Experiment)
+
+
+def test_init_without_config_file(temp_workdir):
+    experiment = replicate.init()
+    assert isinstance(experiment, BrokenExperiment)
 
 
 def test_heartbeat(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
     experiment = replicate.init()
-    heartbeat_path = f".replicate/storage/metadata/heartbeats/{experiment.id}.json"
+    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
     wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
     assert json.load(open(heartbeat_path))["experiment_id"] == experiment.id
     experiment.stop()
@@ -160,12 +166,22 @@ def test_heartbeat(temp_workdir):
 
 @patch.object(Experiment, "save")
 def test_broken_experiment(mock_save):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
     mock_save.side_effect = Exception()
     # Shouldn't raise an exception
     experiment = replicate.init()
     assert isinstance(experiment, BrokenExperiment)
     experiment.checkpoint()
     experiment.stop()
+
+
+def test_deprecated_repository_backwards_compatible(temp_workdir):
+    os.makedirs(".replicate/storage")
+    experiment = replicate.init()
+    assert isinstance(experiment, Experiment)
+    assert experiment._project._repository_url == "file://.replicate/storage"
 
 
 class Blah:
@@ -214,7 +230,7 @@ class TestExperiment:
             "user": "ben",
             "host": "",
             "command": "train.py",
-            "config": {"python": "3.8", "repository": ".replicate/storage/"},
+            "config": {"python": "3.8", "repository": ".replicate/"},
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
@@ -227,7 +243,7 @@ class TestExperiment:
             "user": "ben",
             "host": "",
             "command": "train.py",
-            "config": {"python": "3.8", "repository": ".replicate/storage/"},
+            "config": {"python": "3.8", "repository": ".replicate/"},
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
@@ -235,6 +251,10 @@ class TestExperiment:
 
     def test_checkpoints(self, temp_workdir):
         project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
         experiment = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
         )
@@ -246,6 +266,9 @@ class TestExperiment:
 
     def test_delete(self, temp_workdir):
         project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
 
         with open("foo.txt", "w") as f:
             f.write("hello")
@@ -265,14 +288,13 @@ class TestExperiment:
         paths = get_paths()
         expected = set(
             [
-                "storage",
-                "storage/metadata/experiments/{}.json".format(experiment.id),
-                "storage/experiments",
-                "storage/checkpoints/{}.tar.gz".format(chk.id),
-                "storage/metadata",
-                "storage/metadata/experiments",
-                "storage/experiments/{}.tar.gz".format(experiment.id),
-                "storage/checkpoints",
+                "metadata/experiments/{}.json".format(experiment.id),
+                "experiments",
+                "checkpoints/{}.tar.gz".format(chk.id),
+                "metadata",
+                "metadata/experiments",
+                "experiments/{}.tar.gz".format(experiment.id),
+                "checkpoints",
             ]
         )
         assert paths == expected
@@ -281,13 +303,7 @@ class TestExperiment:
 
         paths = get_paths()
         expected = set(
-            [
-                "storage",
-                "storage/experiments",
-                "storage/metadata",
-                "storage/metadata/experiments",
-                "storage/checkpoints",
-            ]
+            ["experiments", "metadata", "metadata/experiments", "checkpoints",]
         )
         assert paths == expected
 
@@ -295,6 +311,10 @@ class TestExperiment:
 class TestExperimentCollection:
     def test_get(self, temp_workdir):
         project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
         exp1 = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
         )
@@ -315,6 +335,10 @@ class TestExperimentCollection:
 
     def test_list(self, temp_workdir):
         project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
         exp1 = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
         )
@@ -329,6 +353,98 @@ class TestExperimentCollection:
         assert len(experiments[0].checkpoints) == 1
         assert experiments[0].checkpoints[0].metrics == {"accuracy": "wicked"}
         assert experiments[1].id == exp2.id
+
+    @pytest.mark.parametrize(
+        "has_repository,has_directory,has_config,should_error",
+        # fmt: off
+        [
+            # nothing -> bad
+            (False, False, False, True),
+
+            # has config -> good
+            (False, False, True, False),
+
+            # has directory but no repo -> bad
+            (False, True, False, True),
+
+            # has directory but no repo, and config exists -> good
+            (False, True, True, False),
+
+            # has repo but no directory -> bad
+            (True, False, False, True),
+            (True, False, True, True),  # even with config
+
+            # has repo and directory -> good
+            (True, True, False, False),
+            (True, True, True, False),  # even with config
+        ],
+        # fmt: on
+    )
+    def test_create_project_options(
+        self, has_repository, has_directory, has_config, should_error, temp_workdir
+    ):
+        repo = "file://.replicate/" if has_repository else None
+        directory = "." if has_directory else None
+        expected_type = BrokenExperiment if should_error else Experiment
+
+        if has_config:
+            with open("replicate.yaml", "w") as f:
+                f.write("repository: file://.replicate/")
+
+        project = Project(repository=repo, directory=directory)
+        exp = project.experiments.create(path=".")
+
+        assert isinstance(exp, expected_type)
+
+        # to avoid writing heartbeats that sometimes cause
+        # TemporaryDirectory cleanup to fail
+        if not should_error:
+            exp.stop()
+
+    @pytest.mark.parametrize(
+        "has_repository,has_directory,has_config,should_error",
+        # fmt: off
+        [
+            # nothing -> bad
+            (False, False, False, True),
+
+            # has config -> good
+            (False, False, True, False),
+
+            # has directory but no repo -> bad
+            (False, True, False, True),
+
+            # has directory but no repo, and config exists -> good
+            (False, True, True, False),
+
+            # has repo but no directory -> GOOD (differs from create)
+            (True, False, False, False),
+            (True, False, True, False),  # even with config
+
+            # has repo and directory -> good
+            (True, True, False, False),
+            (True, True, True, False),  # even with config
+        ],
+        # fmt: on
+    )
+    def test_list_project_options(
+        self, has_repository, has_directory, has_config, should_error, temp_workdir
+    ):
+        repo = "file://.replicate/" if has_repository else None
+        directory = "." if has_directory else None
+
+        if has_config:
+            with open("replicate.yaml", "w") as f:
+                f.write("repository: file://.replicate/")
+
+        project = Project(repository=repo, directory=directory)
+        if should_error:
+            with pytest.raises((ValueError, ConfigNotFoundError)):
+                project.experiments.list()
+        else:
+            exps = project.experiments.list()
+            assert isinstance(exps, ExperimentList)
+            assert len(exps) == 0
 
 
 class TestExperimentList:

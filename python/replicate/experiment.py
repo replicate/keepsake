@@ -465,13 +465,14 @@ class ExperimentCollection:
         self, path=None, params=None, quiet=False, disable_heartbeat=False
     ) -> Experiment:
         command = " ".join(map(shlex.quote, sys.argv))
+        config = self.project._get_config()
         experiment = Experiment(
             project=self.project,
             id=random_hash(),
             created=datetime.datetime.utcnow(),
             path=path,
             params=params,
-            config=self.project._get_config(),
+            config=config,
             user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
             host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),

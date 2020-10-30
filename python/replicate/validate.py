@@ -1,5 +1,6 @@
 import os
 
+# TODO(andreas): global DOC_URL constant
 CHECK_PATH_HELP_TEXT = """
 
 It is relative to the project directory, which is the directory that contains replicate.yaml. You probably just want to set it to path=\".\" to save everything, or path=\"somedir/\" to just save a particular directory.

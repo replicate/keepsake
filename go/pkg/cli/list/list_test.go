@@ -20,7 +20,7 @@ import (
 )
 
 func createTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
-	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate/storage"))
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate"))
 	require.NoError(t, err)
 
 	require.NoError(t, err)
@@ -248,7 +248,7 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHEC
 func TestListJSON(t *testing.T) {
 	workingDir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
-	repoDir := path.Join(workingDir, ".replicate/storage")
+	repoDir := path.Join(workingDir, ".replicate")
 
 	repository, err := repository.NewDiskRepository(repoDir)
 	require.NoError(t, err)

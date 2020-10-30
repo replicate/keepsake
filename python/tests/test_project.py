@@ -4,6 +4,7 @@ import tempfile
 import pytest
 
 from replicate.project import get_project_dir
+from replicate.exceptions import ConfigNotFoundError
 
 
 @pytest.fixture
@@ -23,9 +24,6 @@ def test_get_project_dir(temp_workdir_in_subdir):
     # use getcwd instead of tempdir from fixture, because on OS X getcwd doesn't return same thing passed to chdir
     root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
 
-    # default case: working directory
-    assert get_project_dir() == os.path.join(root, "foo/bar")
-
     # replicate.yaml in current directory
     open(os.path.join(root, "foo/bar/replicate.yaml"), "w").write("")
     assert get_project_dir() == os.path.join(root, "foo/bar")
@@ -40,3 +38,7 @@ def test_get_project_dir(temp_workdir_in_subdir):
     open(os.path.join(root, "replicate.yaml"), "w").write("")
     assert get_project_dir() == root
     os.unlink(os.path.join(root, "replicate.yaml"))
+
+    # missing replicate.yaml
+    with pytest.raises(ConfigNotFoundError):
+        get_project_dir()

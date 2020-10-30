@@ -79,6 +79,9 @@ class DiskRepository(Repository):
         If path does not exist, an empty list will be returned.
         """
         full_path = os.path.join(self.root, path)
+        if not os.path.exists(full_path):
+            return []
+
         result: List[str] = []
         for filename in os.listdir(full_path):
             if os.path.isfile(os.path.join(full_path, filename)):
