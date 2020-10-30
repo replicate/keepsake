@@ -6,6 +6,8 @@ let config = {
   env: {
     TUTORIAL_COLAB_URL:
       "https://colab.research.google.com/drive/1vjZReg--45P-NZ4j8TXAJFWuepamXc7K",
+    ANALYSIS_COLAB_URL:
+      "https://colab.research.google.com/drive/1o-LQI3LvIzO2SWPugHby1YvRW7-9ZOtH",
   },
 };
 
