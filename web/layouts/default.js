@@ -15,14 +15,6 @@ function Layout({ title, children }) {
         <title>{title || "Replicate"}</title>
       </Head>
 
-      <div className="global-banner">
-        <p>
-          Welcome to the Replicate private beta! If you have any feedback, or
-          know somebody who might like it, email us:{" "}
-          <a href="mailto:team@replicate.ai">team@replicate.ai</a>
-        </p>
-      </div>
-
       <div className="layout">
         {children}
         <footer>
