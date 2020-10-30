@@ -30,21 +30,22 @@ function DocsLayout({ title, children, ...props }) {
         <nav>
           <ol>
             <li>
-              <h2>
-                <Link href="/docs/tutorial">
-                  <a>Tutorial</a>
-                </Link>
-              </h2>
               <ol>
+                <h2>Tutorials</h2>
                 <li>
-                  <Link href="/docs/tutorial">
-                    <a>First steps</a>
+                  <Link href="/docs">
+                    <a>First steps &amp; install</a>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/docs/tutorial/cloud-storage">
-                    <a>Store data in the cloud</a>
+                  <Link href="/docs/tutorial">
+                    <a>CLI tutorial</a>
                   </Link>
+                </li>
+                <li>
+                  <a href={process.env.TUTORIAL_COLAB_URL} target="_blank">
+                    Notebook tutorial
+                  </a>
                 </li>
               </ol>
             </li>
@@ -52,8 +53,8 @@ function DocsLayout({ title, children, ...props }) {
               <h2>Guides</h2>
               <ol>
                 <li>
-                  <Link href="/docs/guides/notebooks">
-                    <a>Working in notebooks</a>
+                  <Link href="/docs/guides/cloud-storage">
+                    <a>Store data in the cloud</a>
                   </Link>
                 </li>
                 <li>

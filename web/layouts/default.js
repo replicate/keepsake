@@ -41,7 +41,7 @@ function Layout({ title, children }) {
           </h2>
           <div id="contributors">
             <h3>Made by</h3>
-            <div class="us">
+            <div className="us">
               <figure>
                 <div
                   style={{ backgroundImage: "url(" + "/images/ben.jpg" + ")" }}
@@ -79,7 +79,7 @@ function Layout({ title, children }) {
                 </figcaption>
               </figure>
             </div>
-            <div class="more">
+            <div className="more">
               <p>
                 Doing machine learning shouldn’t be so hard. We're trying to
                 make the tools much better.
