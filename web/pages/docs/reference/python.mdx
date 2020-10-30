@@ -231,4 +231,23 @@ For example:
 >>> model = torch.load(model_file)
 ```
 
+### The `Project` class
+
+If you want to use Replicate without creating a `replicate.yaml` configuration file, you can configure the repository location using the `Project` class.
+
+For example, at the training stage:
+
+```python
+>>> project = replicate.Project(repository="s3://my-bucket", directory="/Users/andreas/my-project")
+>>> experiment = project.experiments.create(path=".", params={"foo": "bar"})  # equivalent to replicate.init()
+>>> experiment.checkpoint([...])
+```
+
+Or during analysis:
+
+```python
+>>> project = replicate.Project(repository="s3://my-bucket")
+>>> experiments = project.experiments.list()  # equivalent to replicate.experiments.list()
+```
+
 </DocsLayout>
