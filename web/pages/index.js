@@ -212,7 +212,7 @@ $ git commit -am "Use hinge loss"`}
           </p>
           <CodeBlock language="python">
             {`import replicate
-model = torch.load(replicate.checkpoints.get("e45a203").open("model.pth"))`}
+model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth"))`}
           </CodeBlock>
 
           <h3 id="anchor-6">A platform to build upon</h3>
