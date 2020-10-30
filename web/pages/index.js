@@ -81,7 +81,7 @@ def train():
 
         torch.save(model, "model.pth")
         #highlight-start
-        # Save a model weights and the metrics
+        # Save model weights and metrics
         experiment.checkpoint(path="model.pth", metrics={...})
         #highlight-end`}</CodeBlock>
         </div>
