@@ -22,12 +22,15 @@ It supports several different storage mechanisms:
 
 - **Local disk**: If you use the form `file://path`, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
 
-  ````yaml
+  ```yaml
   repository: "file://.replicate"
+  ```
+
+  Or:
 
   ```yaml
   repository: "file:///mnt/storage/"
-  ````
+  ```
 
 - **Amazon S3**: If you use the form `s3://bucket-name`, it will store the data on S3. For example:
 
