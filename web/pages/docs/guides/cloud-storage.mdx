@@ -1,6 +1,5 @@
 import CodeBlock from "../../../components/code-block";
 import DocsLayout from "../../../layouts/docs";
-import Note from "../../../components/note";
 import {
   StatefulTabs,
   TabState,
@@ -18,7 +17,7 @@ You can store your experiment data in the cloud on Google Cloud Storage or Amazo
 
 This means you store results from multiple training machines in one place and collaborate with other people.
 
-When you run `replicate ls` on your local machine, it will list all of the experiments that have run anywhere by anyone, so you can easily compare between them and download the results.
+When you list experiments on your local machine, it will list all of the experiments that have run anywhere by anyone, so you can easily compare between them and download the results.
 
 <StatefulTabs>
 <TabList>
@@ -45,10 +44,10 @@ gcloud auth application-default login
 
 ### Point Replicate at Google Cloud
 
-Create a file called `replicate.yaml` in the same directory as your project with this content, replacing `[your username]` with your name, or some other unique string:
+Then, create `replicate.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
 
 ```yaml
-repository: "gs://replicate-[your username]-iris-classifier"
+repository: "gs://replicate-repository-[your model name]"
 ```
 
 </TabPanel>
@@ -62,16 +61,16 @@ First, you need to install and configure the Amazon Web Services CLI if you have
 1. If you haven't already, install [Homebrew](https://brew.sh/).
 1. Run `brew install aws`
 1. If you haven't already got an Amazon Web Services account, [sign up for Amazon Web Services](https://aws.amazon.com/free/).
-1. Run `aws configure` and [follow these instructions to configure it](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). You will need to get an access key ID and secret access key and set the region to `us-east-1. You don't need to set an output format, or profile.
+1. Run `aws configure` and [follow these instructions to configure it](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). You will need to get an access key ID and secret access key and set the region to `us-east-1`. You don't need to set an output format, or profile.
 
 If you're on another platform, [follow these instructions to install the Amazon Web Services CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 
 ### Point Replicate at Amazon S3
 
-Then, create `replicate.yaml` with this content, replacing `[your username]` with your name, or some other unique string:
+Then, create `replicate.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
 
 ```yaml
-repository: "s3://replicate-[your username]-iris-classifier"
+repository: "s3://replicate-repository-[your model name]"
 ```
 
 </TabPanel>
@@ -81,27 +80,15 @@ repository: "s3://replicate-[your username]-iris-classifier"
 
 Now, when you run your training script, calling `experiment.checkpoint()` will upload all your working directory and checkpoint metadata to this bucket.
 
-<Note>
-
-
-Replicate will automatically create the bucket for you if it doesn't exist.
-
-</Note>
-
-
 If you're following along from [the tutorial](/docs/tutorial), run `python train.py` again. This time it will save your experiments to cloud storage. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
 
 Now, when you run `replicate ls`, it will list experiments from the bucket.
 
-<Note>
+## Migrate data
 
+If you switch from local file storage to remote cloud storage, you will not see your local experiments any longer. Unlike Git which stores data both locally and remotely, Replicate only stores data in one location.
 
-You will not see the experiments you ran locally in the first part of the tutorial. Replicate only lists experiments from one repository. Now you've switched from your local storage to a remote bucket, it will no longer list your local experiments.
-
-It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. In this instance, you would copy the contents of `.replicate/storage/` to `gs://replicate-[username]-iris-classifier`.
-
-</Note>
-
+It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. To migrate from local file storage to the cloud, just copy the `.replicate` directory, or wherever you store your data, to your Amazon S3 or Google Cloud Storage bucket.
 
 ## What's next
 
@@ -110,9 +97,6 @@ You might want to take a look at:
 - [How Replicate works under the hood](/docs/learn/how-it-works)
 - [The `replicate.yaml` reference](/docs/reference/yaml)
 
-If something doesn't make sense, doesn't work, or you just have some questions, please email us: [team@replicate.ai](mailto:team@replicate.ai). We love hearing from you!
-
 </DocsLayout>
 </TabState>
 ````
-

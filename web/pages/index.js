@@ -20,7 +20,7 @@ export default function Home() {
       <Header className="homepage">
         <p>
           <Link href="/docs">
-            <a class="button">Get Started</a>
+            <a className="button">Get Started</a>
           </Link>{" "}
           Lightweight and open source.{" "}
         </p>
