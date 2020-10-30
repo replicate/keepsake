@@ -37,7 +37,7 @@ replicate analytics <on|off> [flags]
   -h, --help   help for analytics
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate checkout`
@@ -59,7 +59,7 @@ replicate checkout <experiment or checkpoint ID> [flags]
   -R, --repository string         Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate diff`
@@ -81,7 +81,7 @@ replicate diff <ID> <ID> [flags]
   -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate feedback`
@@ -100,7 +100,7 @@ replicate feedback [flags]
   -h, --help   help for feedback
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate ls`
@@ -143,7 +143,7 @@ $ replicate ls --sort "val_loss" --filter "status = stopped"
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate ps`
@@ -168,7 +168,7 @@ replicate ps [flags]
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate rm`
@@ -205,7 +205,7 @@ replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
   -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 ## `replicate show`
@@ -226,7 +226,7 @@ replicate show <experiment or checkpoint ID> [flags]
   -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: working directory, or nearest parent with replicate.yaml
+  -D, --project-directory string   Project directory. Default: Working directory or nearest parent with replicate.yaml
   -v, --verbose                    Verbose output
 ```
 </DocsLayout>

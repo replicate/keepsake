@@ -17,13 +17,19 @@ import (
 )
 
 const maxSearchDepth = 100
+const deprecatedRepositoryDir = ".replicate/storage"
 
 type configNotFoundError struct {
 	message string
 }
 
 func (e *configNotFoundError) Error() string {
-	return e.message
+	return e.message + `
+You must either create a replicate.yaml configuration file,
+or explicitly pass the arguments 'repository' and 'directory' to
+replicate.Project().
+For more information, see https://beta.replicate.ai/docs"""
+`
 }
 
 // FindConfigInWorkingDir searches working directory and any parent directories
@@ -54,12 +60,20 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string
 // FindConfig searches the given directory and any parent
 // directories for replicate.yaml, then loads it
 func FindConfig(dir string) (conf *Config, projectDir string, err error) {
-	configPath, err := FindConfigPath(dir)
+	configPath, deprecatedRepositoryProjectRoot, err := FindConfigPath(dir)
 	if err != nil {
-		if _, ok := err.(*configNotFoundError); ok {
-			return getDefaultConfig(dir), dir, nil
-		}
 		return nil, "", err
+	}
+	if deprecatedRepositoryProjectRoot != "" {
+		// go up two directories from .replicate/storage
+		console.Warn(`replicate.yaml is required now. put this file in the project directory %s to remove this warning:
+
+repository: file://.replicate/storage`, deprecatedRepositoryProjectRoot)
+
+		conf = &Config{
+			Repository: "file://" + deprecatedRepositoryDir,
+		}
+		return conf, deprecatedRepositoryProjectRoot, nil
 	}
 	conf, err = LoadConfig(configPath)
 	if err != nil {
@@ -73,7 +87,7 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 	text, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return getDefaultConfig(path.Dir(configPath)), nil
+			return nil, &configNotFoundError{fmt.Sprintf("The config path does not exist: %s", configPath)}
 		}
 		return nil, fmt.Errorf("Failed to read config file '%s': %w", configPath, err)
 	}
@@ -115,27 +129,41 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 		conf.Storage = ""
 	}
 
+	// TODO(andreas): generalize this once we have more required fields
+	if conf.Repository == "" {
+		return nil, fmt.Errorf("Missing required field in replicate.yaml: repository")
+	}
+
 	return conf, nil
 }
 
-func FindConfigPath(startFolder string) (configPath string, err error) {
+func FindConfigPath(startFolder string) (configPath string, deprecatedRepositoryProjectRoot string, err error) {
 	folder := startFolder
 	for i := 0; i < maxSearchDepth; i++ {
 		configPath = filepath.Join(folder, global.ConfigFilename)
 		exists, err := files.FileExists(configPath)
 		if err != nil {
-			return "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
+			return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
 		}
 		if exists {
-			return configPath, nil
+			return configPath, "", nil
+		}
+
+		deprecatedRepo := filepath.Join(folder, deprecatedRepositoryDir)
+		deprecatedRepositoryExists, err := files.FileExists(deprecatedRepo)
+		if err != nil {
+			return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
+		}
+		if deprecatedRepositoryExists {
+			return "", folder, nil
 		}
 
 		if folder == "/" {
 			// These error messages aren't used anywhere, but I've left them in in case this function is used elsewhere in the future
-			return "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilename, startFolder)}
+			return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilename, startFolder)}
 		}
 
 		folder = filepath.Dir(folder)
 	}
-	return "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilename)}
+	return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilename)}
 }

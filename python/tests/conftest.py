@@ -9,6 +9,6 @@ def temp_workdir():
     try:
         with tempfile.TemporaryDirectory() as tmpdir:
             os.chdir(tmpdir)
-            yield
+            yield tmpdir
     finally:
         os.chdir(orig_cwd)

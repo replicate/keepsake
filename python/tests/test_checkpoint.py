@@ -96,6 +96,9 @@ class TestCheckpoint:
         with open("foo.txt", "w") as f:
             f.write("foo")
 
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
         exp = project.experiments.create(
             path=".", params={"foo": "bar"}, disable_heartbeat=True
         )
@@ -152,6 +155,9 @@ class TestCheckpoint:
         project = Project()
         with open("foo.txt", "w") as f:
             f.write("foo")
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
 
         exp = project.experiments.create(
             path=".", params={"foo": "bar"}, disable_heartbeat=True

@@ -24,7 +24,7 @@ func init() {
 }
 
 func createShowTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
-	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate/storage"))
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate"))
 	require.NoError(t, err)
 
 	fixedTime, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
@@ -169,7 +169,7 @@ metric-2:        2
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"3ccc"}, out)
+	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate"), json: true}, []string{"3ccc"}, out)
 	require.NoError(t, err)
 	var chkpt project.Checkpoint
 	require.NoError(t, json.Unmarshal(out.Bytes(), &chkpt))
@@ -226,7 +226,7 @@ To see more details about a checkpoint, run:
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate/storage"), json: true}, []string{"1eee"}, out)
+	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate"), json: true}, []string{"1eee"}, out)
 	require.NoError(t, err)
 	var exp project.Experiment
 	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))

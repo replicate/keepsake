@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from ._vendor import yaml
 
 from . import console
+from .exceptions import ConfigNotFoundError
 
 # TODO (bfirsh): send users to replicate.yaml reference if this is raised!
 class ConfigValidationError(Exception):
@@ -19,7 +20,9 @@ def load_config(project_dir: str) -> Dict[str, Any]:
         with open(os.path.join(project_dir, "replicate.yaml")) as fh:
             data = yaml.safe_load(fh)
     except FileNotFoundError:
-        data = {}
+        raise ConfigNotFoundError(
+            "replicate.yaml was not found in {}".format(project_dir)
+        )
     # Empty file
     if data is None:
         data = {}
@@ -43,19 +46,11 @@ VALID_KEYS = [
     "metrics",
     "storage",
 ]
-REQUIRED_KEYS: List[str] = []
+REQUIRED_KEYS: List[str] = ["repository"]
 
 
 def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[str, Any]:
     # TODO (bfirsh): just really simple for now. JSON schema is probably right way (aanand says that is only decent solution)
-    for key in REQUIRED_KEYS:
-        if key not in data:
-            raise ConfigValidationError(
-                "The option '{}' is required in replicate.yaml, but you have no set it.".format(
-                    key
-                )
-            )
-
     if data.get("storage"):
         if data.get("repository"):
             raise ConfigValidationError(
@@ -68,10 +63,7 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
         data["repository"] = data["storage"]
         del data["storage"]
 
-    defaults = {
-        "repository": os.path.join(project_dir, ".replicate/storage/"),
-        "python": "3.7",
-    }
+    defaults = get_default_config()
 
     for key, value in defaults.items():
         if key not in data:
@@ -91,4 +83,18 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
                     "The option 'repository' in replicate.yaml needs to be a string."
                 )
 
+    # check for required keys last since repository is set from
+    # storage for backwards compatibility
+    for key in REQUIRED_KEYS:
+        if key not in data:
+            raise ConfigValidationError(
+                "The option '{}' is required in replicate.yaml, but you have no set it.".format(
+                    key
+                )
+            )
+
     return data
+
+
+def get_default_config() -> Dict[str, Any]:
+    return {}
