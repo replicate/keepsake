@@ -44,7 +44,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 
 Don't like the CLI? No problem. You can retrieve, analyze, and plot your results from within a notebook. Think of it like a programmable Tensorboard.
 
-<img src="web/public/images/notebook.png" width="600" />
+<img src="web/public/images/notebook.png" width="700" />
 
 ### Compare experiments
 
