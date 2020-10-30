@@ -18,15 +18,16 @@ repository: "s3://hooli-hotdog-model"
 
 The location where Replicate will store your project data (experiments, checkpoints, etc).
 
-By default, data is stored in `.replicate/` on disk relative to the location of `replicate.yaml`.
-
 It supports several different storage mechanisms:
 
-- **Local disk**: If you pass a path, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
+- **Local disk**: If you use the form `file://path`, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
+
+  ````yaml
+  repository: "file://.replicate"
 
   ```yaml
-  repository: "/mnt/storage/"
-  ```
+  repository: "file:///mnt/storage/"
+  ````
 
 - **Amazon S3**: If you use the form `s3://bucket-name`, it will store the data on S3. For example:
 
@@ -47,4 +48,3 @@ It supports several different storage mechanisms:
 For Amazon S3 and Google Cloud Storage, you can also define a root directory inside the bucket so you can store multiple models per bucket. For example, `s3://hooli-models/hotdog-detector`. We recommend against this unless you have a good reason to – having a bucket per project allows for fine-grained access control.
 
 </DocsLayout>
-
