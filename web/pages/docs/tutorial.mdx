@@ -62,7 +62,7 @@ The second is `experiment.checkpoint()`. This creates a **checkpoint** within th
 We need to tell Replicate where to store your experiments. Create `replicate.yaml` with this content:
 
 ```yaml
-repository: file://.replicate
+repository: "file://.replicate"
 ```
 
 This will store your experiments in the `.replicate` directory relative to this file. You can also store them on Amazon S3 or Google Cloud Storage if you want to store data in the cloud. [Learn more about this in our guide to usage cloud storage.](/docs/guides/cloud-storage)

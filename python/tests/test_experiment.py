@@ -165,7 +165,7 @@ def test_heartbeat(temp_workdir):
 
 
 @patch.object(Experiment, "save")
-def test_broken_experiment(mock_save):
+def test_broken_experiment(mock_save, temp_workdir):
     with open("replicate.yaml", "w") as f:
         f.write("repository: file://.replicate/")
 

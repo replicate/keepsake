@@ -54,7 +54,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
             "id": experiment.id,
             "created": experiment.created.isoformat() + "Z",
             "params": {"foo": "bar"},
-            "config": {"python": "3.7", "repository": "s3://" + temp_bucket},
+            "config": {"repository": "s3://" + temp_bucket},
             "path": ".",
             "checkpoints": [
                 {
