@@ -183,6 +183,12 @@ def test_deprecated_repository_backwards_compatible(temp_workdir):
     assert isinstance(experiment, Experiment)
     assert experiment._project._repository_url == "file://.replicate/storage"
 
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://foobar")
+    experiment = replicate.init()
+    assert isinstance(experiment, Experiment)
+    assert experiment._project._repository_url == "file://foobar"
+
 
 class Blah:
     pass

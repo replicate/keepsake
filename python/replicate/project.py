@@ -1,6 +1,7 @@
 import os
 from typing import Dict, Any, Optional
 
+from . import console
 from .config import load_config
 from .experiment import ExperimentCollection, Experiment
 from .repository import repository_for_url, Repository
@@ -46,11 +47,20 @@ class Project:
         if self._explicit_repository:
             return {"repository": self._repository_url}
 
-        # backwards-compatibility
-        if os.path.exists(os.path.join(self.directory, DEPRECATED_REPOSITORY_DIR)):
-            return {"repository": "file://" + DEPRECATED_REPOSITORY_DIR}
+        try:
+            return load_config(self.directory)
+        except ConfigNotFoundError:
+            # backwards-compatibility
+            # TODO(bfirsh): remove this at some point
+            if os.path.exists(os.path.join(self.directory, DEPRECATED_REPOSITORY_DIR)):
+                console.warn(
+                    f"""replicate.yaml is now required. Create replicate.yaml with this content:
 
-        return load_config(self.directory)
+  repository: "file://{DEPRECATED_REPOSITORY_DIR}"
+"""
+                )
+                return {"repository": "file://" + DEPRECATED_REPOSITORY_DIR}
+            raise
 
     def _get_repository(self) -> Repository:
         reload_repository = self._repository is None
