@@ -58,6 +58,11 @@ function DocsLayout({ title, children, ...props }) {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/docs/guides/training-data">
+                    <a>Version training data</a>
+                  </Link>
+                </li>
+                <li>
                   <a href={process.env.ANALYSIS_COLAB_URL} target="_blank">
                     Analysis &amp; vizualization in notebooks
                   </a>
