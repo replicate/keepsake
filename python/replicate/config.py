@@ -88,7 +88,7 @@ def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[st
     for key in REQUIRED_KEYS:
         if key not in data:
             raise ConfigValidationError(
-                "The option '{}' is required in replicate.yaml, but you have no set it.".format(
+                "The option '{}' is required in replicate.yaml, but you have not set it.".format(
                     key
                 )
             )
