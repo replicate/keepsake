@@ -97,11 +97,11 @@ pip install -U replicate
 
 ## Get started
 
-If you prefer **training scripts and the CLI**, [follow the our tutorial to learn how Replicate works](https://beta.replicate.ai/docs/tutorial).
+If you prefer **training scripts and the CLI**, [follow the our tutorial to learn how Replicate works](https://replicate.ai/docs/tutorial).
 
 If you prefer **working in notebooks**, <a href="https://colab.research.google.com/drive/1vjZReg--45P-NZ4j8TXAJFWuepamXc7K" target="_blank">follow our notebook tutorial on Colab</a>.
 
-If you like to **learn concepts first**, [read our guide about how Replicate works](https://beta.replicate.ai/docs/learn/how-it-works).
+If you like to **learn concepts first**, [read our guide about how Replicate works](https://replicate.ai/docs/learn/how-it-works).
 
 ## Contributing & development environment
 

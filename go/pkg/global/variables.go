@@ -5,7 +5,7 @@ var Environment = "development" // set in Makefile
 
 var ConfigFilename = "replicate.yaml"
 var Verbose = false
-var WebURL = "https://beta.replicate.ai"
+var WebURL = "https://replicate.ai"
 var Color = true
 var ProjectDirectory = ""
 var BugsEmail = "bugs@replicate.ai"

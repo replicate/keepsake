@@ -5,7 +5,7 @@ CHECK_PATH_HELP_TEXT = """
 
 It is relative to the project directory, which is the directory that contains replicate.yaml. You probably just want to set it to path=\".\" to save everything, or path=\"somedir/\" to just save a particular directory.
 
-To learn more, see the documentation: https://beta.replicate.ai/docs/python"""
+To learn more, see the documentation: https://replicate.ai/docs/reference/python"""
 
 
 def check_path(thing: str, path: str):

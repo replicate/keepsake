@@ -25,10 +25,10 @@ type configNotFoundError struct {
 
 func (e *configNotFoundError) Error() string {
 	return e.message + `
-You must either create a replicate.yaml configuration file,
-or explicitly pass the arguments 'repository' and 'directory' to
-replicate.Project().
-For more information, see https://beta.replicate.ai/docs"""
+
+You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
+
+For more information, see https://replicate.ai/docs/reference/python"""
 `
 }
 
@@ -96,7 +96,7 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 		// FIXME (bfirsh): implement standard way of displaying config errors so this can be used in other places
 		msg := fmt.Sprintf("%v\n\n", err)
 		msg += "To fix this, take a look at the replicate.yaml reference:\n"
-		msg += fmt.Sprintf("%s/docs/replicate-yaml", global.WebURL)
+		msg += fmt.Sprintf("%s/docs/reference/yaml", global.WebURL)
 		return nil, fmt.Errorf(msg)
 	}
 	return conf, nil
