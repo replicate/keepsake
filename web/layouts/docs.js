@@ -64,7 +64,7 @@ function DocsLayout({ title, children, ...props }) {
                 </li>
                 <li>
                   <a href={process.env.ANALYSIS_COLAB_URL} target="_blank">
-                    Analysis &amp; vizualization in notebooks
+                    Analyze &amp; visualize a notebook
                   </a>
                 </li>
                 <li>
