@@ -14,6 +14,7 @@ def experiment_factory(
     host: str = "",
     command: str = "",
     config: dict = {},
+    replicate_version: str = "0.0.1",
     **kwargs,
 ):
     return Experiment(
@@ -24,6 +25,7 @@ def experiment_factory(
         host=host,
         command=command,
         config=config,
+        replicate_version=replicate_version,
         **kwargs,
     )
 

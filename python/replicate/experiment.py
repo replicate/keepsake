@@ -33,6 +33,7 @@ from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
 from .validate import check_path
+from .version import version
 
 if TYPE_CHECKING:
     from .project import Project
@@ -55,6 +56,7 @@ class Experiment:
     path: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
     python_packages: Optional[Dict[str, str]] = None
+    replicate_version: Optional[str] = None
     checkpoints: List[Checkpoint] = field(default_factory=list)
 
     def __post_init__(self, project: "Project"):
@@ -191,6 +193,7 @@ class Experiment:
             "path": self.path,
             "python_packages": self.python_packages,
             "checkpoints": [c.to_json() for c in self.checkpoints],
+            "replicate_version": version,
         }
 
     def start_heartbeat(self):

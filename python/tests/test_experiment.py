@@ -242,6 +242,7 @@ class TestExperiment:
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
+            "replicate_version": "0.0.1",
         }
         exp = Experiment.from_json(None, data)
         assert dataclasses.asdict(exp) == {
@@ -255,6 +256,7 @@ class TestExperiment:
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
+            "replicate_version": "0.0.1",
         }
 
     def test_checkpoints(self, temp_workdir):
