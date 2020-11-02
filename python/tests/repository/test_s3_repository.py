@@ -1,7 +1,7 @@
 import json
 import os
 import pytest  # type: ignore
-import boto3
+import boto3  # type: ignore
 
 import replicate
 from replicate.hash import random_hash
