@@ -29,12 +29,6 @@ const (
 const valueMaxLength = 20
 const valueTruncate = 5
 
-type Metric struct {
-	Primary bool
-	Name    string
-	Value   float64
-}
-
 type ListExperiment struct {
 	ID               string              `json:"id"`
 	Created          time.Time           `json:"created"`

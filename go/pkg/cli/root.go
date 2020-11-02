@@ -50,11 +50,6 @@ To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 	return &rootCmd, nil
 }
 
-func ExecuteWithArgs(cmd *cobra.Command, args ...string) error {
-	cmd.SetArgs(args)
-	return cmd.Execute()
-}
-
 func setPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVar(&global.Color, "color", true, "Display color in output")
 	// FIXME (bfirsh): this noun needs standardizing. we use the term "working directory" in some places.
