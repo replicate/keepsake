@@ -39,12 +39,7 @@ def load_config(project_dir: str) -> Dict[str, Any]:
 # TODO(andreas): more rigorous validation
 VALID_KEYS = [
     "repository",
-    "python",
-    "cuda",
-    "python_requirements",
-    "install",
-    "metrics",
-    "storage",
+    "storage",  # deprecated
 ]
 REQUIRED_KEYS: List[str] = ["repository"]
 
