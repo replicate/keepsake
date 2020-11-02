@@ -25,19 +25,6 @@ func NewProject(repo repository.Repository) *Project {
 	}
 }
 
-// ExperimentByID returns a particular experiment by ID
-func (p *Project) ExperimentByID(experimentID string) (*Experiment, error) {
-	// TODO(andreas): right now we naively load all experiments in the project. this could be improved with local indexing
-	if err := p.ensureLoaded(); err != nil {
-		return nil, err
-	}
-	exp, ok := p.experimentsByID[experimentID]
-	if !ok {
-		return nil, fmt.Errorf("No experiment found with ID %s", experimentID)
-	}
-	return exp, nil
-}
-
 // Experiments returns all experiments in this project
 func (p *Project) Experiments() ([]*Experiment, error) {
 	if err := p.ensureLoaded(); err != nil {

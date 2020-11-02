@@ -3,8 +3,6 @@ package testutil
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
-	"path"
 	"strings"
 	"testing"
 
@@ -29,16 +27,6 @@ func BP(b bool) *bool {
 
 func RequireErrContains(t *testing.T, err error, s string) {
 	require.Contains(t, fmt.Sprintf("%s", err), s)
-}
-
-func Write(dir string, filename string, contents string, args ...interface{}) {
-	contents = fmt.Sprintf(contents, args...)
-	err := ioutil.WriteFile(path.Join(dir, filename), []byte(contents), 0644)
-	if err != nil {
-		// HACK (bfirsh): do this more gracefully
-		fmt.Fprintf(os.Stderr, "%s", err)
-		os.Exit(1)
-	}
 }
 
 func RequireFilesEqual(t *testing.T, path1 string, path2 string) {

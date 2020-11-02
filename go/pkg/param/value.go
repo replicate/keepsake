@@ -22,8 +22,6 @@ const (
 	TypeNone   Type = "none"
 )
 
-var Types = []Type{TypeInt, TypeFloat, TypeString, TypeBool}
-
 // TODO(bfirsh): could complexity be reduced here if it were implemented as interface{}?
 
 type Value struct {
