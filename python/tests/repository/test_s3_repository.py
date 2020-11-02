@@ -66,6 +66,7 @@ def test_s3_experiment(temp_bucket, tmpdir):
                     "primary_metric": None,
                 }
             ],
+            "replicate_version": replicate.__version__,
         }
         assert actual_experiment_meta == expected_experiment_meta
 

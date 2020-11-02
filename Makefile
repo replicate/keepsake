@@ -39,7 +39,7 @@ release: check-version-var verify-clean-main bump-version
 # quick and dirty
 bump-version:
 	sed -E -i '' "s/VERSION := .+/VERSION := $(VERSION)/" go/Makefile
-	sed -E -i '' 's/version=".+"/version="$(VERSION)"/' python/setup.py
+	sed -E -i '' 's/version = ".+"/version = "$(VERSION)"/' python/replicate/version.py
 	sed -E -i '' 's/NEXT_PUBLIC_VERSION=.+/NEXT_PUBLIC_VERSION=$(VERSION)/' web/.env
 
 .PHONY: verify-clean-main
@@ -51,7 +51,7 @@ verify-clean-main:
 .PHONY: release-manual
 release-manual: check-version-var verify-clean-main
 	cd go && $(MAKE) build-all ENVIRONMENT=production
-	cd go && gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)" 
+	cd go && gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)"
 	cd go && gsutil cp -r release/ "gs://replicate-public/cli/latest"
 	cd python && $(MAKE) build
 	cd python && twine check dist/*

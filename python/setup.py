@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import ast
 
 with open("../README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -35,7 +36,7 @@ PLAT_NAME_TO_BINARY_PATH = {
 def plat_name_to_binary_path(plat_name):
     """
     Given a platform name, returns the path to the Go binaries to use.
-    
+
     The platform name is the thing passed to `python setup.py bdist_wheel --plat-name ...`.
     """
     # These separators can be different things depending on where it comes from, so standardize
@@ -107,10 +108,13 @@ class develop(_develop):
         pass
 
 
+# read version from auto-generated version.py file
+version = ast.parse(open("replicate/version.py").read()).body[0].value.s
+
 # fmt: off
 setuptools.setup(
     name="replicate",
-    version="0.1.41",
+    version=version,
     author="",
     author_email="",
     description="",
