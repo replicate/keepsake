@@ -35,12 +35,11 @@ require (
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	go.opencensus.io v0.22.4 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200602225109-6fdc65e7d980 // indirect
 	golang.org/x/tools v0.0.0-20200812195022-5ae4c3c160a0 // indirect
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20200527145253-8367513e4ece // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	gotest.tools/gotestsum v0.5.2
+	gotest.tools/gotestsum v0.6.0
 	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 )
