@@ -13,8 +13,6 @@ func shim(v ...interface{}) []interface{} {
 
 // parallel of python/tests/unit/repository/test_repository.py
 func TestSplitURL(t *testing.T) {
-	require.Equal(t, shim(SchemeDisk, "", "/foo/bar", nil), shim(SplitURL("/foo/bar")))
-	require.Equal(t, shim(SchemeDisk, "", "foo/bar", nil), shim(SplitURL("foo/bar")))
 	require.Equal(t, shim(SchemeDisk, "", "/foo/bar", nil), shim(SplitURL("file:///foo/bar")))
 	require.Equal(t, shim(SchemeDisk, "", "foo/bar", nil), shim(SplitURL("file://foo/bar")))
 
@@ -24,5 +22,6 @@ func TestSplitURL(t *testing.T) {
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "", nil), shim(SplitURL("gs://my-bucket")))
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "foo", nil), shim(SplitURL("gs://my-bucket/foo")))
 
-	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Unknown repository backend: foo")), shim(SplitURL("foo://my-bucket")))
+	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Unknown repository scheme: foo, valid schemes are: 'file://', 's3://', and 'gs://'")), shim(SplitURL("foo://my-bucket")))
+	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Missing repository scheme, valid schemes are: 'file://', 's3://', and 'gs://'")), shim(SplitURL("/foo/bar")))
 }

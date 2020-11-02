@@ -92,7 +92,7 @@ func SplitURL(repositoryURL string) (scheme Scheme, bucket string, root string, 
 	}
 	switch u.Scheme {
 	case "":
-		return SchemeDisk, "", u.Path, nil
+		return "", "", "", unknownRepositoryScheme("")
 	case "file":
 		return SchemeDisk, "", u.Host + u.Path, nil
 	case "s3":
@@ -100,7 +100,7 @@ func SplitURL(repositoryURL string) (scheme Scheme, bucket string, root string, 
 	case "gs":
 		return SchemeGCS, u.Host, strings.TrimPrefix(u.Path, "/"), nil
 	}
-	return "", "", "", fmt.Errorf("Unknown repository backend: %s", u.Scheme)
+	return "", "", "", unknownRepositoryScheme(u.Scheme)
 }
 
 func ForURL(repositoryURL string) (Repository, error) {
@@ -117,7 +117,7 @@ func ForURL(repositoryURL string) (Repository, error) {
 		return NewGCSRepository(bucket, root)
 	}
 
-	return nil, fmt.Errorf("Unknown repository backend: %s", scheme)
+	return nil, unknownRepositoryScheme(string(scheme))
 }
 
 // FIXME: should we keep on doing this?
@@ -230,4 +230,14 @@ func extractTar(tarPath, localPath string) error {
 func NeedsCaching(repo Repository) bool {
 	_, isDiskRepository := repo.(*DiskRepository)
 	return !isDiskRepository
+}
+
+func unknownRepositoryScheme(scheme string) error {
+	var message string
+	if scheme == "" {
+		message = "Missing repository scheme"
+	} else {
+		message = "Unknown repository scheme: " + scheme
+	}
+	return fmt.Errorf(message + ", valid schemes are: 'file://', 's3://', and 'gs://'")
 }
