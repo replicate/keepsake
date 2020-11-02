@@ -9,7 +9,6 @@ from .utils import get_env
 @pytest.mark.parametrize(
     "repository_backend,use_root",
     [
-        ("undefined", False),
         ("file", False),
         pytest.param("gcs", False, marks=pytest.mark.external),
         pytest.param("gcs", True, marks=pytest.mark.external),
@@ -25,8 +24,6 @@ def test_list(repository_backend, use_root, tmpdir, temp_bucket, tmpdir_factory)
         repository = "gs://" + temp_bucket
     elif repository_backend == "file":
         repository = "file://" + str(tmpdir_factory.mktemp("repository"))
-    elif repository_backend == "undefined":
-        repository = str(tmpdir_factory.mktemp("repository"))
 
     # different root directory in buckets
     if use_root:

@@ -169,7 +169,7 @@ metric-2:        2
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate"), json: true}, []string{"3ccc"}, out)
+	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".replicate"), json: true}, []string{"3ccc"}, out)
 	require.NoError(t, err)
 	var chkpt project.Checkpoint
 	require.NoError(t, json.Unmarshal(out.Bytes(), &chkpt))
@@ -226,7 +226,7 @@ To see more details about a checkpoint, run:
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: path.Join(workingDir, ".replicate"), json: true}, []string{"1eee"}, out)
+	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".replicate"), json: true}, []string{"1eee"}, out)
 	require.NoError(t, err)
 	var exp project.Experiment
 	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))

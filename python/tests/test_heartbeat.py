@@ -14,7 +14,7 @@ def test_heartbeat_running(tmpdir):
     path = "foo/heartbeat.json"
     heartbeat = Heartbeat(
         "experiment-id-foo",
-        tmpdir,
+        "file://" + tmpdir,
         path,
         refresh_interval=datetime.timedelta(seconds=1),
     )
@@ -39,7 +39,7 @@ def test_heartbeat_write(tmpdir):
     path = "foo/heartbeat.json"
     heartbeat = Heartbeat(
         "experiment-id-foo",
-        tmpdir,
+        "file://" + tmpdir,
         path,
         refresh_interval=datetime.timedelta(seconds=0.1),
     )

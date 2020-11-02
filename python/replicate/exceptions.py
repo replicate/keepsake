@@ -2,10 +2,14 @@ class DoesNotExistError(Exception):
     pass
 
 
-class UnknownRepositoryBackend(Exception):
+class UnknownRepositoryScheme(Exception):
     def __init__(self, scheme):
-        super(UnknownRepositoryBackend, self).__init__(
-            "Unknown repository backend: {}".format(scheme)
+        if scheme == "":
+            message = "Missing repository scheme"
+        else:
+            message = "Unknown repository scheme: {}".format(scheme)
+        super().__init__(
+            message + ", valid schemes are: 'file://', 's3://', and 'gs://'"
         )
 
 
