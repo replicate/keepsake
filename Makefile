@@ -51,8 +51,6 @@ verify-clean-main:
 .PHONY: release-manual
 release-manual: check-version-var verify-clean-main
 	cd go && $(MAKE) build-all ENVIRONMENT=production
-	cd go && gsutil cp -r release/ "gs://replicate-public/cli/$(VERSION)"
-	cd go && gsutil cp -r release/ "gs://replicate-public/cli/latest"
 	cd python && $(MAKE) build
 	cd python && twine check dist/*
 	cd python && twine upload dist/*
