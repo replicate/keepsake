@@ -29,7 +29,7 @@ test-external: install-test-dependencies develop
 
 .PHONY: release
 release: check-version-var verify-clean-main bump-version
-	git add go/Makefile python/setup.py web/.env
+	git add go/Makefile python/replicate/version.py web/.env
 	git commit -m "Bump to version $(VERSION)"
 	git tag "v$(VERSION)"
 	git push git@github.com:replicate/replicate.git main
