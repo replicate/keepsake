@@ -58,7 +58,7 @@ def test_put_path():
             assert open(root_path / "singlefile/foo.txt").read() == "hello foo.txt"
 
 
-def test_put_path_tar():
+def test_get_put_path_tar():
     with tempfile.TemporaryDirectory() as src:
         src_path = pathlib.Path(src)
         for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
@@ -77,3 +77,8 @@ def test_put_path_tar():
                 with tarfile.open(root_path / "dest.tar.gz") as tar:
                     tar.extractall(out)
                 assert open(out / "dest/foo.txt").read() == "hello foo.txt"
+
+            with tempfile.TemporaryDirectory() as out:
+                repository.get_path_tar("dest.tar.gz", out)
+                out = pathlib.Path(out)
+                assert open(out / "foo.txt").read() == "hello foo.txt"

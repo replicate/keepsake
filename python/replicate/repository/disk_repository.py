@@ -107,7 +107,6 @@ class DiskRepository(Repository):
         extracting a tarball with `abc123/weights` in it to
         `/code` would create `/code/weights`.
         """
-        # TODO(andreas): add tests
         try:
             shared.call(
                 "DiskRepository.GetPathTar",

@@ -1,6 +1,8 @@
 import os
 import random
 import string
+import tempfile
+from pathlib import Path
 import pytest  # type: ignore
 from google.cloud import storage
 from google.api_core.exceptions import NotFound
@@ -182,3 +184,21 @@ def test_delete_with_root(temp_bucket, tmpdir):
     repository.delete("some/file")
     with pytest.raises(DoesNotExistError):
         repository.get("some/file")
+
+
+def test_get_put_path_tar(temp_bucket):
+    with tempfile.TemporaryDirectory() as src:
+        src_path = Path(src)
+        for path in ["foo.txt", "bar/baz.txt", "qux.txt"]:
+            abs_path = src_path / path
+            abs_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(abs_path, "w") as f:
+                f.write("hello " + path)
+
+        repository = GCSRepository(bucket=temp_bucket.name, root="")
+        repository.put_path_tar(src, "dest.tar.gz", "")
+
+    with tempfile.TemporaryDirectory() as out:
+        repository.get_path_tar("dest.tar.gz", out)
+        out = Path(out)
+        assert open(out / "foo.txt").read() == "hello foo.txt"
