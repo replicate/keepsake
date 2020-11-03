@@ -20,7 +20,7 @@ require (
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mholt/archiver/v3 v3.3.3-0.20201013044347-a9434fffa1d1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/go-wordwrap v1.0.0
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/moby/term v0.0.0-20200611042045-63b9a826fb74
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/otiai10/copy v1.2.0
