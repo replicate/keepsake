@@ -22,6 +22,12 @@ func TestSplitURL(t *testing.T) {
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "", nil), shim(SplitURL("gs://my-bucket")))
 	require.Equal(t, shim(SchemeGCS, "my-bucket", "foo", nil), shim(SplitURL("gs://my-bucket/foo")))
 
-	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Unknown repository scheme: foo, valid schemes are: 'file://', 's3://', and 'gs://'")), shim(SplitURL("foo://my-bucket")))
-	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf("Missing repository scheme, valid schemes are: 'file://', 's3://', and 'gs://'")), shim(SplitURL("/foo/bar")))
+	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf(`Unknown repository scheme: foo.
+
+Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
+See the docuemntation for more details: https://replicate.ai/docs/reference/yaml`)), shim(SplitURL("foo://my-bucket")))
+	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf(`Missing repository scheme.
+
+Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
+See the docuemntation for more details: https://replicate.ai/docs/reference/yaml`)), shim(SplitURL("/foo/bar")))
 }

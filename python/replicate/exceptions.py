@@ -9,7 +9,11 @@ class UnknownRepositoryScheme(Exception):
         else:
             message = "Unknown repository scheme: {}".format(scheme)
         super().__init__(
-            message + ", valid schemes are: 'file://', 's3://', and 'gs://'"
+            message
+            + """.
+
+Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
+See the docuemntation for more details: https://replicate.ai/docs/reference/yaml"""
         )
 
 
