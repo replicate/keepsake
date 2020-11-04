@@ -26,6 +26,7 @@ from .exceptions import DoesNotExistError
 from .checkpoint import (
     Checkpoint,
     PrimaryMetric,
+    CheckpointList,
 )
 from .hash import random_hash
 from .heartbeat import Heartbeat
@@ -57,7 +58,7 @@ class Experiment:
     params: Optional[Dict[str, Any]] = None
     python_packages: Optional[Dict[str, str]] = None
     replicate_version: Optional[str] = None
-    checkpoints: List[Checkpoint] = field(default_factory=list)
+    checkpoints: CheckpointList = field(default_factory=CheckpointList)
 
     def __post_init__(self, project: "Project"):
         self._project = project
@@ -173,9 +174,9 @@ class Experiment:
     def from_json(cls, project: "Project", data: Dict[str, Any]) -> "Experiment":
         data = data.copy()
         data["created"] = parse_rfc3339(data["created"])
-        data["checkpoints"] = [
-            Checkpoint.from_json(d) for d in data.get("checkpoints", [])
-        ]
+        data["checkpoints"] = CheckpointList(
+            [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
+        )
         experiment = Experiment(project=project, **data)
         for chk in experiment.checkpoints:
             chk._experiment = experiment
@@ -298,68 +299,14 @@ class Experiment:
         this experiment. If no shared primary metric exists, raises
         ValueError.
         """
-        primary_metric = None
-        for chk in self.checkpoints:
-            if chk.primary_metric is None:
-                continue
-
-            pm = chk.primary_metric["name"]
-            if pm is None:
-                continue
-            if primary_metric is not None and primary_metric != pm:
-                # TODO(andreas): should this be another standard error type?
-                raise ValueError(
-                    "The primary metric differs between the checkpoints in this experiments"
-                )
-            primary_metric = pm
-
-        if primary_metric is None:
-            raise ValueError(
-                "No primary metric is defined for the checkpoints in theis experiment"
-            )
-
-        return primary_metric
+        return self.checkpoints.primary_metric()
 
     def plot(self, metric: Optional[str] = None, logy=False, plot_only=False):
         """
         Plot a metric for all the checkpoints in this experiment. If
         no metric is specified, defaults to the shared primary metric.
         """
-
-        # TODO(andreas): smoothing
-        import matplotlib.pyplot as plt  # type: ignore
-
-        if metric is None:
-            metric = self.primary_metric()
-
-        data = []
-        for chk in self.checkpoints:
-            if chk.metrics and metric in chk.metrics:
-                # TODO(andreas): handle non-numeric metric
-                # TODO(andreas): warn if metric doesn't exist in any experiment
-                data.append(chk.metrics[metric])
-            else:
-                data.append(None)
-
-        every_checkpoint_has_step = True
-        steps = []
-        for chk in self.checkpoints:
-            if chk.step is None:
-                every_checkpoint_has_step = False
-                break
-            steps.append(chk.step)
-        if not every_checkpoint_has_step:
-            steps = list(range(len(data)))
-
-        plt.plot(steps, data, label=self.short_id())
-
-        if not plot_only:
-            plt.legend(bbox_to_anchor=(1, 1))
-            plt.xlabel("step")
-            plt.ylabel(metric)
-
-            if logy:
-                plt.yscale("log")
+        self.checkpoints.plot(metric, logy, plot_only)
 
     @property
     def duration(self) -> Optional[datetime.timedelta]:
@@ -743,3 +690,9 @@ class ExperimentList(list, MutableSequence[Experiment]):
             out.append("</tr>")
         out.append("</table>")
         return "".join(out)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            indices = range(*key.indices(len(self)))
+            return ExperimentList([self[i] for i in indices])
+        return super().__getitem__(key)

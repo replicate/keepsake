@@ -10,7 +10,7 @@ import tempfile
 import json
 import sys
 import html
-from typing import Optional, Dict, Any, List, BinaryIO, TYPE_CHECKING
+from typing import Optional, Dict, Any, List, BinaryIO, TYPE_CHECKING, MutableSequence
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -185,3 +185,102 @@ class Checkpoint(object):
         out += "</table>"
 
         return out
+
+
+class CheckpointList(list, MutableSequence[Checkpoint]):
+    def primary_metric(self) -> str:
+        """
+        Get the shared primary metric for this list of checkpoints.
+        If no shared primary metric exists, raises ValueError.
+        """
+        primary_metric = None
+        for chk in self:
+            if chk.primary_metric is None:
+                continue
+
+            pm = chk.primary_metric["name"]
+            if pm is None:
+                continue
+            if primary_metric is not None and primary_metric != pm:
+                # TODO(andreas): should this be another standard error type?
+                raise ValueError(
+                    "The primary metric differs between the checkpoints in this experiments"
+                )
+            primary_metric = pm
+
+        if primary_metric is None:
+            raise ValueError(
+                "No primary metric is defined for the checkpoints in theis experiment"
+            )
+
+        return primary_metric
+
+    def plot(self, metric: Optional[str] = None, logy=False, plot_only=False):
+        """
+        Plot a metric for this list of checkpoints. If no metric is specified,
+        defaults to the shared primary metric.
+        """
+        # TODO(andreas): smoothing
+        import matplotlib.pyplot as plt  # type: ignore
+
+        if metric is None:
+            metric = self.primary_metric()
+
+        data = []
+        for chk in self:
+            if chk.metrics and metric in chk.metrics:
+                # TODO(andreas): handle non-numeric metric
+                # TODO(andreas): warn if metric doesn't exist in any experiment
+                data.append(chk.metrics[metric])
+            else:
+                data.append(None)
+
+        every_checkpoint_has_step = True
+        steps = []
+        for chk in self:
+            if chk.step is None:
+                every_checkpoint_has_step = False
+                break
+            steps.append(chk.step)
+        if not every_checkpoint_has_step:
+            steps = list(range(len(data)))
+
+        plt.plot(steps, data)
+
+        if not plot_only:
+            plt.xlabel("step")
+            plt.ylabel(metric)
+
+            if logy:
+                plt.yscale("log")
+
+    @property
+    def metrics(self):
+        # TODO(andreas): maybe it would be better to just return all the metrics for
+        # all the checkpoints in the format {"name": [value1, value2, ...], ...},
+        # for discoverability
+        return CheckpointListMetrics(self)
+
+    @property
+    def step(self):
+        return [chk.step for chk in self]
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            indices = range(*key.indices(len(self)))
+            return CheckpointList([self[i] for i in indices])
+        return super().__getitem__(key)
+
+
+class CheckpointListMetrics:
+    def __init__(self, checkpoint_list: CheckpointList):
+        self.checkpoint_list = checkpoint_list
+
+    def __getitem__(self, name: str) -> List[Any]:
+        values = [
+            chk.metrics.get(name) if chk.metrics else None
+            for chk in self.checkpoint_list
+        ]
+        if all([v is None for v in values]):
+            raise KeyError("Metric {} does not exist in experiment".format(name))
+        return values
