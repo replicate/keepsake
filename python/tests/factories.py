@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Any, Dict, Optional
 
-from replicate.checkpoint import Checkpoint
+from replicate.checkpoint import Checkpoint, CheckpointList
 from replicate.experiment import Experiment
 from replicate.project import Project
 
@@ -15,8 +15,12 @@ def experiment_factory(
     command: str = "",
     config: dict = {},
     replicate_version: str = "0.0.1",
+    checkpoints: Optional[List[Checkpoint]] = None,
     **kwargs,
 ):
+    if checkpoints is not None:
+        checkpoints = CheckpointList(checkpoints)
+
     return Experiment(
         project=project,
         id=id,
@@ -26,6 +30,7 @@ def experiment_factory(
         command=command,
         config=config,
         replicate_version=replicate_version,
+        checkpoints=checkpoints,
         **kwargs,
     )
 

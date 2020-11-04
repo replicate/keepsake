@@ -6,10 +6,12 @@ import datetime
 import os
 import pytest
 
-from replicate.checkpoint import Checkpoint
+from replicate.checkpoint import Checkpoint, CheckpointList
 from replicate.exceptions import DoesNotExistError
 from replicate.experiment import Experiment
 from replicate.project import Project
+
+from tests.factories import experiment_factory, checkpoint_factory
 
 
 class Blah:
@@ -175,3 +177,39 @@ class TestCheckpoint:
         chk = exp.checkpoints[0]
         assert chk.open("foo.txt").read().decode() == "foo"
         assert chk.open("bar.txt").read().decode() == "bar"
+
+
+class TestCheckpointList:
+    def test_metrics(self):
+        experiment = experiment_factory(
+            id="e1",
+            checkpoints=[
+                checkpoint_factory(id="c1", metrics={"loss": 0.1}),
+                checkpoint_factory(id="c2"),
+                checkpoint_factory(id="c3", metrics={"foo": "bar"}),
+                checkpoint_factory(id="c3", metrics={"loss": 0.2}),
+            ],
+        )
+        assert experiment.checkpoints.metrics["loss"] == [0.1, None, None, 0.2]
+
+    def test_step(self):
+        experiment = experiment_factory(
+            id="e1",
+            checkpoints=[
+                checkpoint_factory(id="c1", step=10),
+                checkpoint_factory(id="c2"),
+                checkpoint_factory(id="c3", step=20),
+            ],
+        )
+        assert experiment.checkpoints.step == [10, None, 20]
+
+    def test_slice(self):
+        experiment = experiment_factory(
+            id="e1",
+            checkpoints=[
+                checkpoint_factory(id="c1"),
+                checkpoint_factory(id="c2"),
+                checkpoint_factory(id="c3"),
+            ],
+        )
+        assert isinstance(experiment.checkpoints[:2], CheckpointList)

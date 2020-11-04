@@ -186,6 +186,22 @@ Returns the best checkpoint for this experiment, according to the primary metric
 
 Delete this experiment and its checkpoints.
 
+### `experiment.plot()`
+
+Plot a single metric in this experiment.
+
+It takes two arguments:
+
+- `metric` _(optional)_: The name of the metric to plot. If omitted, defaults to the primary metric, or raises an error if no primary metric is defined.
+- `logy` _(optional)_: Whether to use a logarithmic Y-axis. Defaults to false.
+
+For example:
+
+```python
+>>> experiment = replicate.experiments.get("ab1234")
+>>> experiment.plot(metric="loss")
+```
+
 ### The `Checkpoint` class
 
 `Checkpoint` objects have the following fields:
@@ -229,6 +245,40 @@ For example:
 >>> chk = exp.best()
 >>> model_file = chk.open("model.pkl")
 >>> model = torch.load(model_file)
+```
+
+### `experiment.checkpoints.metrics`
+
+The `checkpoints` list on [`Experiment`](#the-experiment-class) objects has a `metrics` attribute that returns a list of metric values for each of the checkpoints in this list. This is a shorthand for the following list comprehension:
+
+```python
+>>> [chk.metrics["loss"] for chk in experiment.checkpoints]
+[0.99, 0.87, 0.64]
+>>> experiment.checkpoints.metrics["loss"]
+[0.99, 0.87, 0.64]
+```
+
+### `experiment.checkpoints.step`
+
+Similar to `experiment.checkpoints.metrics`, this attribute can be used as a shorthand to get the step of each checkpoint in the checkpoint list.
+
+```python
+>>> [chk.step for chk in experiment.checkpoints]
+[0, 10, 20]
+>>> experiment.checkpoints.step
+[0, 10, 20]
+```
+
+### `experiment.checkpoints.plot()`
+
+Plot a single metric across all checkpoints in an experiment. This is similar to [`experiment.plot()`](#experiment.plot), except it allows you to select a range of checkpoints to plot.
+
+For example:
+
+```python
+>>> experiment.checkpoints.plot("loss")  # equivalent to experiment.plot("loss")
+>>> experiment.checkpoints[-20:].plot("loss")  # plot the last 20 checkpoints
+>>> experiment.checkpoints[::5].plot("loss")  # plot every 5 checkpoints
 ```
 
 ### The `Project` class
