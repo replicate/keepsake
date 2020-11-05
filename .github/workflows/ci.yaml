@@ -8,6 +8,9 @@ on:
       - "v*"
   pull_request:
 
+env:
+  SECRETS_ARE_AVAILABLE: ${{ secrets.SECRETS_ARE_AVAILABLE }}
+
 jobs:
   test-go:
     name: "Test (Go)"
@@ -28,14 +31,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -47,10 +50,10 @@ jobs:
       - name: "Validate"
         run: make validate
       - name: Test
-        if: github.event_name == 'pull_request'
+        if: ${{ !env.SECRETS_ARE_AVAILABLE }}
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         run: make test-external
 
   test-python:
@@ -83,14 +86,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -103,10 +106,10 @@ jobs:
           (cd ../ && make build)
           pip install $(echo dist/replicate-*-py3-none-manylinux1_x86_64.whl)
       - name: Test
-        if: github.event_name == 'pull_request'
+        if: ${{ !env.SECRETS_ARE_AVAILABLE }}
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         run: make test-external
 
   test-end-to-end:
@@ -138,14 +141,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Configure AWS Credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Setup GCP credentials
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "290.0.1"
@@ -153,6 +156,7 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
       - name: Write private key
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key.pem
           chmod 400 /tmp/private_key.pem
@@ -162,10 +166,10 @@ jobs:
           (cd ../ && make build)
           pip install $(echo ../python/dist/replicate-*-py3-none-manylinux1_x86_64.whl)
       - name: Test
-        if: github.event_name == 'pull_request'
+        if: ${{ !env.SECRETS_ARE_AVAILABLE }}
         run: make test
       - name: Test (external)
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SECRETS_ARE_AVAILABLE }}
         run: make test-external
 
   release:
