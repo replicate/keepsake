@@ -2,8 +2,8 @@ SHELL := /bin/bash
 
 VERSION := 0.1.44
 ENVIRONMENT := development
-PLATFORMS := darwin linux windows
-ARCHITECTURES := 386 amd64
+PLATFORMS := darwin linux
+ARCHITECTURES := amd64
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 MAIN := cmd/replicate/main.go
