@@ -24,11 +24,9 @@ with open("../README.md", "r", encoding="utf-8") as fh:
 # https://packaging.python.org/specifications/platform-compatibility-tags/
 # https://www.python.org/dev/peps/pep-0425/
 PLAT_NAME_TO_BINARY_PATH = {
-    "linux_i686": "linux/386",
     "linux_x86_64": "linux/amd64",
     # "linux" is the default if no --plat-name is passed, but it is not specific
     # enough for pypi, so we use manylinux for the released version
-    "manylinux1_i686": "linux/386",
     "manylinux1_x86_64": "linux/amd64",
 }
 
