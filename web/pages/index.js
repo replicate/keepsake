@@ -18,12 +18,18 @@ export default function Home() {
   return (
     <Layout title="Replicate – Version control for machine learning">
       <Header className="homepage">
-        <p>
+        <section className="cta">
           <Link href="/docs">
             <a className="button">Get Started</a>
           </Link>{" "}
-          Lightweight and open source.{" "}
-        </p>
+          <hr />
+          <div>
+            <p>Lightweight and open source.</p>
+            <a href="https://github.com/replicate/replicate">
+              Contribute on GitHub
+            </a>
+          </div>
+        </section>
         <section className="info">
           <div>
             <h2>

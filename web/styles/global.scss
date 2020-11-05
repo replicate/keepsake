@@ -555,7 +555,7 @@ header {
       margin-bottom: $whitespace-vertical * 2;
     }
   }
-  & > p {
+  .cta {
     position: relative;
     padding: 15vh 0;
     top: 1em;
@@ -569,10 +569,33 @@ header {
       @include font-feature;
       display: inline-block;
       top: 0.1em;
-      margin-right: 0.3em;
-      @media (max-width: 700px) {
-        display: block;
-        margin-bottom: 0.3em;
+      margin: 0 -0.15em;
+      display: block;
+    }
+    div a {
+      margin-right: $whitespace-horizontal * 3;
+    }
+    hr {
+      border: none;
+      border-bottom: $keyline;
+      margin: $whitespace-vertical 0 $whitespace-vertical * 0.5;
+      @media (max-height: 900px) {
+        margin: $whitespace-vertical * 1.5 0 $whitespace-vertical * 0.75;
+      }
+      @media (max-height: 600px) {
+        margin: $whitespace-vertical * 2 0 $whitespace-vertical;
+      }
+    }
+    span {
+      position: relative;
+      top: 0.1em;
+    }
+    @media (min-width: 701px) {
+      p {
+        display: inline;
+      }
+      div a {
+        margin: 0 $whitespace-horizontal;
       }
     }
   }
