@@ -549,7 +549,6 @@ header {
   & > :last-child {
     /*     margin-top: auto; */
   }
-
   @media (max-width: 700px) {
     .tagline {
       margin-bottom: $whitespace-vertical * 2;
@@ -559,43 +558,42 @@ header {
     position: relative;
     padding: 15vh 0;
     top: 1em;
-    text-align: center;
-    align-self: center;
-    @media (max-width: 700px) {
-      width: 100%;
-    }
-    .button {
-      position: relative;
+    h2 {
       @include font-feature;
-      display: inline-block;
-      top: 0.1em;
-      margin: 0 -0.15em;
-      display: block;
-    }
-    div a {
-      margin-right: $whitespace-horizontal * 3;
-    }
-    hr {
-      border: none;
-      border-bottom: $keyline;
-      margin: $whitespace-vertical 0 $whitespace-vertical * 0.5;
-      @media (max-height: 900px) {
-        margin: $whitespace-vertical * 1.5 0 $whitespace-vertical * 0.75;
-      }
-      @media (max-height: 600px) {
-        margin: $whitespace-vertical * 2 0 $whitespace-vertical;
-      }
-    }
-    span {
-      position: relative;
-      top: 0.1em;
-    }
-    @media (min-width: 701px) {
-      p {
+      span {
         display: inline;
       }
-      div a {
-        margin: 0 $whitespace-horizontal;
+      @media (min-width: 701px) {
+        color: $text-shade;
+        abbr {
+          &:after {
+            content: attr(title);
+          }
+          span {
+            display: none;
+          }
+        }
+      }
+    }
+    p {
+      margin-top: $whitespace-vertical;
+      a {
+        margin-right: $whitespace-horizontal * 2;
+        white-space: nowrap;
+      }
+      span {
+        position: relative;
+        top: 0.1em;
+      }
+      @media (min-width: 701px) {
+        margin-top: 0;
+        @include font-feature;
+        a {
+          margin-right: $whitespace-horizontal;
+        }
+        span {
+          top: 0;
+        }
       }
     }
   }
