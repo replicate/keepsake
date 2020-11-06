@@ -245,11 +245,15 @@ class CheckpointList(list, MutableSequence[Checkpoint]):
         if not every_checkpoint_has_step:
             steps = list(range(len(data)))
 
-        plt.plot(steps, data)
+        label = None
+        if len(self) > 0:
+            label = self[0]._experiment.short_id()
+        plt.plot(steps, data, label=label)
 
         if not plot_only:
             plt.xlabel("step")
             plt.ylabel(metric)
+            plt.legend(bbox_to_anchor=(1, 1))
 
             if logy:
                 plt.yscale("log")
