@@ -61,8 +61,15 @@ export default function Home() {
             <span>{num()}</span> How it works
           </h2>
           <p>
-            Just add two lines of code and Replicate will start keeping track of
-            everything. You don't need to change how you work.
+            Just add two lines of code. You don't need to change how you work.
+          </p>
+          <p>
+            Replicate is a Python library that uploads files and a dictionary of
+            metadata to Amazon S3 or Google Cloud Storage.
+          </p>
+          <p>
+            You can get the data back out using the command-line interface or
+            with Python in a notebook.
           </p>
         </div>
         <div className="windowChrome">
