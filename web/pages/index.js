@@ -66,7 +66,7 @@ export default function Home() {
           </p>
         </div>
         <div className="windowChrome">
-          <CodeBlock language="python">{`import torch
+          <CodeBlock language="python" copyButton={false}>{`import torch
 import replicate
 
 def train():
@@ -210,7 +210,7 @@ $ git commit -am "Use hinge loss"`}
             Connect them back to how they were trained, who trained them, and
             what their metrics were.
           </p>
-          <CodeBlock language="python">
+          <CodeBlock language="python" copyButton={false}>
             {`import replicate
 model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth"))`}
           </CodeBlock>

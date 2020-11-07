@@ -192,11 +192,30 @@ h2 span {
   @include font-core;
   background: $text;
   color: $page;
-  font-family: "basier_square_mono", monospace;
   overflow: auto;
   padding: $padding;
+  position: relative;
+
+  .copy-button {
+    position: absolute;
+    background: $text;
+    border: 1px solid $page;
+    padding: 0 $whitespace-horizontal;
+    top: $whitespace-vertical;
+    right: $whitespace-horizontal;
+
+    &:active {
+      color: $text;
+      background: $page;
+    }
+    &:focus {
+      outline: none;
+    }
+  }
 
   pre {
+    font-family: "basier_square_mono", monospace;
+
     // this makes the sizing right for scrolling, for some reason
     float: left;
     min-width: 100%;
@@ -457,7 +476,7 @@ h2 span {
       padding-top: 0;
     }
   }
-  button {
+  [role="tablist"] button {
     overflow: visible;
     border: none;
     background: none;

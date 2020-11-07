@@ -1,5 +1,7 @@
+import React, { useState } from "react";
 import Highlight, { defaultProps } from "prism-react-renderer";
 import Prism from "prism-react-renderer/prism";
+import copy from "copy-text-to-clipboard";
 
 (typeof global !== "undefined" ? global : window).Prism = Prism;
 
@@ -44,21 +46,23 @@ const highlightLine = (lineArray, lineProps) => {
   return shouldExclude;
 };
 
-function CodeBlock({ children, className, ...props }) {
+function CodeBlock({ children, className, copyButton = true, ...props }) {
+  const [showCopied, setShowCopied] = useState(false);
+  const code = children.trim();
   if (className) {
     const language = className.replace(/language-/, "");
     if (!props.language && language) {
       props.language = language;
     }
   }
+
+  if (props.language == "shell-session") {
+    copyButton = false;
+  }
+
   return (
     <div className="codeblock">
-      <Highlight
-        {...defaultProps}
-        code={children.trim()}
-        theme={null}
-        {...props}
-      >
+      <Highlight {...defaultProps} code={code} theme={null} {...props}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <pre className={className} style={style}>
             {tokens.map((line, i) => {
@@ -75,6 +79,22 @@ function CodeBlock({ children, className, ...props }) {
           </pre>
         )}
       </Highlight>
+      {copyButton ? (
+        <button
+          type="button"
+          className="copy-button"
+          aria-label="Copy code to clipboard"
+          onClick={() => {
+            copy(code);
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+          }}
+        >
+          {showCopied ? "Copied" : "Copy"}
+        </button>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
