@@ -31,6 +31,14 @@ export default function Home() {
             <a href="https://github.com/replicate/replicate">
               Contribute on GitHub
             </a>{" "}
+            <iframe
+              src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=replicate&amp;type=star&amp;count=false&amp;size=large"
+              frameBorder="0"
+              scrolling="0"
+              width="170"
+              height="30"
+              title="GitHub"
+            ></iframe>
           </p>
         </section>
         <section className="info">
