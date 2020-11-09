@@ -923,86 +923,7 @@ header {
       }
     }
   }
-  .body {
-    grid-column: 2 / 4;
-    @media (max-width: 700px) {
-      grid-column: 1 / 4;
-    }
-    hr {
-      border: none;
-      height: 3.5rem;
-    }
-    h1,
-    h2,
-    h3 {
-      @include font-feature;
-      max-width: 15em;
-      padding-top: calc(3.3rem + #{$whitespace-vertical});
-      margin-bottom: $whitespace-vertical;
-      code {
-        position: relative;
-        font-size: 0.85em;
-        background: $panel;
-        top: -0.025em;
-        padding: 0.3em 0.4em 0.35em;
-      }
-    }
-    h4,
-    h5,
-    h6 {
-      max-width: 15em;
-      margin-top: 6em;
-      margin-bottom: $whitespace-vertical * 1.5;
-      &:first-child {
-        margin-top: 0;
-      }
-    }
-    p {
-      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
-      max-width: 50em;
-    }
-    & > p:first-child {
-      margin-top: calc(3.3rem + #{$whitespace-vertical});
-    }
 
-    ul,
-    ol {
-      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
-      max-width: 50em;
-      padding-inline-start: $whitespace-horizontal * 2;
-    }
-
-    code {
-      font-family: "basier_square_mono", monospace;
-      font-size: 0.9em;
-      display: inline-block;
-      padding: 0.15em 0.4em 0.1em;
-      border-radius: 0.25em;
-      background: $panel;
-    }
-    .codeblock {
-      margin: $whitespace-vertical 0;
-      font-size: 0.9em;
-    }
-
-    .note {
-      background-color: $panel;
-      padding: $whitespace-vertical * 0.5 $whitespace-horizontal
-        $whitespace-vertical;
-      margin: $whitespace-vertical 0;
-
-      h4 {
-        font-weight: bold;
-        margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
-      }
-    }
-
-    img {
-      margin: $whitespace-vertical 0;
-      border: 1px solid $panel;
-      max-width: 100%;
-    }
-  }
   &.documentation {
     nav {
       padding-top: 3.3rem;
@@ -1010,6 +931,87 @@ header {
         top: $whitespace-vertical * 0.5;
       }
     }
+  }
+}
+
+.body {
+  grid-column: 2 / 4;
+  @media (max-width: 700px) {
+    grid-column: 1 / 4;
+  }
+  hr {
+    border: none;
+    height: 3.5rem;
+  }
+  h1,
+  h2,
+  h3 {
+    @include font-feature;
+    max-width: 15em;
+    padding-top: calc(3.3rem + #{$whitespace-vertical});
+    margin-bottom: $whitespace-vertical;
+    code {
+      position: relative;
+      font-size: 0.85em;
+      background: $panel;
+      top: -0.025em;
+      padding: 0.3em 0.4em 0.35em;
+    }
+  }
+  h4,
+  h5,
+  h6 {
+    max-width: 15em;
+    margin-top: 6em;
+    margin-bottom: $whitespace-vertical * 1.5;
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+  p {
+    margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+    max-width: 50em;
+  }
+  & > p:first-child {
+    margin-top: calc(3.3rem + #{$whitespace-vertical});
+  }
+
+  ul,
+  ol {
+    margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+    max-width: 50em;
+    padding-inline-start: $whitespace-horizontal * 2;
+  }
+
+  code {
+    font-family: "basier_square_mono", monospace;
+    font-size: 0.9em;
+    display: inline-block;
+    padding: 0.15em 0.4em 0.1em;
+    border-radius: 0.25em;
+    background: $panel;
+  }
+  .codeblock {
+    margin: $whitespace-vertical 0;
+    font-size: 0.9em;
+  }
+
+  .note {
+    background-color: $panel;
+    padding: $whitespace-vertical * 0.5 $whitespace-horizontal
+      $whitespace-vertical;
+    margin: $whitespace-vertical 0;
+
+    h4 {
+      font-weight: bold;
+      margin: $whitespace-vertical * 0.5 $whitespace-horizontal * 2 0 0;
+    }
+  }
+
+  img {
+    margin: $whitespace-vertical 0;
+    border: 1px solid $panel;
+    max-width: 100%;
   }
 }
 
@@ -1023,7 +1025,7 @@ footer {
   @media (max-width: 700px) {
     padding-bottom: $whitespace-vertical;
   }
-  h2 {
+  & > h2 {
     @include font-feature;
     grid-column: 2 / 5;
     @include grid-module;
@@ -1068,8 +1070,14 @@ footer {
       }
     }
   }
+  #manifesto {
+    grid-column: 2 / 4;
+    padding-bottom: $whitespace-vertical;
+  }
+
   #contributors {
     grid-column: 1 / 6;
+    grid-row: 3 / 4;
     @include grid-layout;
     $image-size: 7em;
     h3 {
@@ -1156,7 +1164,7 @@ footer {
   nav {
     @include layout-block;
     grid-column: 4 / 5;
-    grid-row: 3 / 4;
+    grid-row: 4 / 5;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
@@ -1176,7 +1184,7 @@ footer {
   }
   p.tagline {
     grid-column: 2 / 5;
-    grid-row: 3 / 4;
+    grid-row: 4 / 5;
     padding-top: $whitespace-vertical;
     border-top: $keyline;
     @media (max-width: 1000px) {

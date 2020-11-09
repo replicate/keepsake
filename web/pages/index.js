@@ -32,9 +32,7 @@ export default function Home() {
           </h2>
           <p>
             <Link href="/docs">Get Started</Link>{" "}
-            <a href="https://github.com/replicate/replicate">
-              Contribute on GitHub
-            </a>{" "}
+            <a href="#manifesto">Get Involved</a>{" "}
             <iframe
               src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=replicate&amp;type=star&amp;count=false&amp;size=large"
               frameBorder="0"
@@ -265,8 +263,58 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
             </Link>
           </div>
         </h2>
+        <div id="manifesto" className="body">
+          <h2>Let's build this together</h2>
+          <p>
+            Everyone uses version control for software, but it is much less
+            common in machine learning.
+          </p>
+          <p>
+            Why is this? We spent a year talking to people in the ML community
+            and this is what we found out:
+          </p>
+          <ul>
+            <li>
+              <strong>Git doesn’t work well with machine learning.</strong> It
+              can’t handle large files, it can’t handle key/value metadata like
+              metrics, and it can’t commit automatically in your training
+              script. There are some solutions for this, but they feel like
+              band-aids.
+            </li>
+            <li>
+              <strong>It should be open source.</strong> There are a number of
+              proprietary solutions, but something so foundational needs to be
+              built by and for the ML community.
+            </li>
+            <li>
+              <strong>
+                It needs to be small, easy to use, and extensible.
+              </strong>{" "}
+              We found people struggling to integrate with “AI Platforms”. We
+              want to make a tool that does one thing well and can be combined
+              with other tools to produce the system you need.
+            </li>
+          </ul>
+          <p>
+            We think the ML community needs a good version control system. But,
+            version control systems are complex, and to make this a reality we
+            need your help.
+          </p>
+          <p>
+            Have you strung together some shell scripts to build this for
+            yourself? Are you interested in the problem of making machine
+            learning reproducible?
+          </p>
+          <p>
+            <strong>
+              <a href="https://github.com/replicate/replicate">
+                Get involved on GitHub
+              </a>
+            </strong>
+          </p>
+        </div>
         <div id="contributors">
-          <h3>Made by</h3>
+          <h3>Core team</h3>
           <div className="us">
             <figure>
               <div
@@ -304,13 +352,11 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
           </div>
           <div className="more">
             <p>
-              Doing machine learning shouldn’t be so hard. We're trying to make
-              the tools much better.
-            </p>
-            <p>
               We also built{" "}
-              <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
-              lets you read arXiv papers as responsive web pages.
+              <a href="https://www.arxiv-vanity.com/" target="_blank">
+                arXiv Vanity
+              </a>
+              , which lets you read arXiv papers as responsive web pages.
             </p>
           </div>
         </div>
