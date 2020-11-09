@@ -1,3 +1,4 @@
+import Footer from "../components/footer";
 import Header from "../components/header";
 import Layout from "./default";
 import Link from "next/link";
@@ -113,6 +114,7 @@ function DocsLayout({ title, children, ...props }) {
         </nav>
         <div className="body">{children}</div>
       </section>
+      <Footer />
     </Layout>
   );
 }

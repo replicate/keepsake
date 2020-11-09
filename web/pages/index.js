@@ -1,7 +1,11 @@
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub, faTwitter } from "@fortawesome/free-brands-svg-icons";
+
 import CodeBlock from "../components/code-block";
+import Footer from "../components/footer";
 import Header from "../components/header";
 import Layout from "../layouts/default";
-import Link from "next/link";
 
 export default function Home() {
   let _num = 1;
@@ -247,6 +251,70 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
           </p>
         </div>
       </section>
+      <Footer>
+        <h2>
+          <div>
+            <Link href="/docs">
+              <a className="button">Get started</a>
+            </Link>
+          </div>
+          <div> or, </div>
+          <div>
+            <Link href="/docs/learn/how-it-works">
+              <a>learn more about how Replicate works</a>
+            </Link>
+          </div>
+        </h2>
+        <div id="contributors">
+          <h3>Made by</h3>
+          <div className="us">
+            <figure>
+              <div
+                style={{ backgroundImage: "url(" + "/images/ben.jpg" + ")" }}
+              ></div>
+              <figcaption>
+                <h4>Ben Firshman</h4>
+                <p>Product at Docker, creator of Docker&nbsp;Compose.</p>
+                <p>
+                  <a href="https://github.com/bfirsh" className="link">
+                    <FontAwesomeIcon icon={faGithub} />
+                  </a>
+                  <a href="https://twitter.com/bfirsh" className="link">
+                    <FontAwesomeIcon icon={faTwitter} />
+                  </a>
+                </p>
+              </figcaption>
+            </figure>
+            <figure>
+              <div
+                style={{
+                  backgroundImage: "url(" + "/images/andreas.jpg" + ")",
+                }}
+              ></div>
+              <figcaption>
+                <h4>Andreas Jansson</h4>
+                <p>ML infrastructure and research at Spotify.</p>
+                <p>
+                  <a href="https://github.com/andreasjansson" className="link">
+                    <FontAwesomeIcon icon={faGithub} />
+                  </a>
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+          <div className="more">
+            <p>
+              Doing machine learning shouldn’t be so hard. We're trying to make
+              the tools much better.
+            </p>
+            <p>
+              We also built{" "}
+              <a href="https://www.arxiv-vanity.com/">arXiv Vanity</a>, which
+              lets you read arXiv papers as responsive web pages.
+            </p>
+          </div>
+        </div>
+      </Footer>
     </Layout>
   );
 }
