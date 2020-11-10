@@ -297,8 +297,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
           </Link>
         </div>
       </section>
-      <Footer>
-      </Footer>
+      <Footer></Footer>
     </Layout>
   );
 }
