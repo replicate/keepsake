@@ -1,15 +1,37 @@
+try:
+    # backport is incompatible with 3.7+, so we must use built-in
+    from dataclasses import dataclass
+except ImportError:
+    from ._vendor.dataclasses import dataclass
 import os
 from typing import Dict, Any, Optional
+import json
 
 from . import console
 from .config import load_config
 from .experiment import ExperimentCollection, Experiment
 from .repository import repository_for_url, Repository
-from .exceptions import ConfigNotFoundError
+from .exceptions import ConfigNotFoundError, DoesNotExistError, CorruptedProjectSpec
 
 
 MAX_SEARCH_DEPTH = 100
 DEPRECATED_REPOSITORY_DIR = ".replicate/storage"
+
+
+@dataclass
+class ProjectSpec:
+    """
+    Project-level storage configuration.
+    """
+
+    version: int
+
+    @classmethod
+    def from_json(cls, data: Dict[str, Any]) -> "ProjectSpec":
+        return ProjectSpec(**data)
+
+    def to_json(self):
+        return json.dumps({"version": self.version}, indent=2)
 
 
 class Project:
@@ -82,6 +104,27 @@ class Project:
     @property
     def experiments(self) -> ExperimentCollection:
         return ExperimentCollection(self)
+
+    def _load_project_spec(self) -> Optional[ProjectSpec]:
+        repo = self._get_repository()
+        try:
+            raw = repo.get(self._project_spec_path())
+        except DoesNotExistError as e:
+            return None
+        try:
+            data = json.loads(raw)
+            return ProjectSpec.from_json(data)
+        except (json.JSONDecodeError, TypeError):
+            raise CorruptedProjectSpec(
+                repo.root_url() + "/" + self._project_spec_path()
+            )
+
+    def _write_project_spec(self, version: int):
+        spec = ProjectSpec(version=version)
+        self._get_repository().put(self._project_spec_path(), spec.to_json())
+
+    def _project_spec_path(self) -> str:
+        return "repository.json"
 
 
 def init(

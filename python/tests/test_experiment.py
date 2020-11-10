@@ -192,6 +192,32 @@ def test_deprecated_repository_backwards_compatible(temp_workdir):
     experiment.stop()
 
 
+def test_project_repository_version(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate")
+    experiment = replicate.init()
+
+    expected = """{
+  "version": 1
+}"""
+    with open(".replicate/repository.json") as f:
+        assert f.read() == expected
+
+    # no error on second init
+    experiment = replicate.init()
+    with open(".replicate/repository.json") as f:
+        # repository.json shouldn't have changed
+        assert f.read() == expected
+
+    with open(".replicate/repository.json", "w") as f:
+        f.write(
+            """{
+  "version": 2
+}"""
+        )
+    assert isinstance(replicate.init(), BrokenExperiment)
+
+
 class Blah:
     pass
 
@@ -298,6 +324,7 @@ class TestExperiment:
         paths = get_paths()
         expected = set(
             [
+                "repository.json",
                 "metadata/experiments/{}.json".format(experiment.id),
                 "experiments",
                 "checkpoints/{}.tar.gz".format(chk.id),
@@ -313,7 +340,13 @@ class TestExperiment:
 
         paths = get_paths()
         expected = set(
-            ["experiments", "metadata", "metadata/experiments", "checkpoints",]
+            [
+                "repository.json",  # we're not deleting the project spec
+                "experiments",
+                "metadata",
+                "metadata/experiments",
+                "checkpoints",
+            ]
         )
         assert paths == expected
 
