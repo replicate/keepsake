@@ -252,6 +252,36 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
           </p>
         </div>
       </section>
+      {/*
+      <section className="fullWidth">
+        <h2>
+          <span>{num()}</span> Video
+        </h2>
+        <div class="video-container">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/ZtfkymtavUE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </section>
+      <section className="comparison">
+        <h2><span>{num()}</span> Analyse results however you want</h2>
+        <div>
+          <h3>Trash your spreadsheet</h3>
+          <CodeBlock language="shell-session">
+            {`$ replicate ls --filter "val_loss<0.2"
+EXPERIMENT   HOST         STATUS    BEST CHECKPOINT
+e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
+9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)`}
+          </CodeBlock>
+          <p>Your experiments are all in one place, with filter and sort. Because the data's stored on S3, you can even see experiments that were run on other machines.</p>
+          <p>Your experiments are all in one place, with filter and sort. Because the data's stored on S3, you can even see experiments that were run on other machines.</p>
+        </div>
+        <div>
+          <h3>Or use a notebook</h3>
+          <img src="images/notebook.png" width="900" />
+           <p>Don't like the CLI? No problem. You can retrieve, analyze, and plot your results from within a notebook. Think of it like a programmable Tensorboard.</p>
+          <p>Don't like the CLI? No problem. You can retrieve, analyze, and plot your results from within a notebook. Think of it like a programmable Tensorboard.</p>
+       </div>
+      </section>
+      */}
       <section className="homepage-cta">
         <div>
           <h2>
