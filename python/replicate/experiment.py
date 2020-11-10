@@ -22,7 +22,7 @@ from typing import (
 )
 
 from . import console
-from .exceptions import DoesNotExistError
+from .exceptions import DoesNotExistError, NewerRepositoryVersion
 from .checkpoint import (
     Checkpoint,
     PrimaryMetric,
@@ -35,6 +35,7 @@ from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
 from .validate import check_path
 from .version import version
+from .constants import REPOSITORY_VERSION
 
 if TYPE_CHECKING:
     from .project import Project
@@ -414,6 +415,17 @@ class ExperimentCollection:
     def create(
         self, path=None, params=None, quiet=False, disable_heartbeat=False
     ) -> Experiment:
+        root_url = self.project._get_repository().root_url()
+
+        # check that the project's repository version isn't
+        # higher than what this version of replicate can write.
+        # projects have to use a single consistent repository version.
+        project_spec = self.project._load_project_spec()
+        if project_spec is None:
+            self.project._write_project_spec(version=REPOSITORY_VERSION)
+        elif project_spec.version > REPOSITORY_VERSION:
+            raise NewerRepositoryVersion(root_url)
+
         command = " ".join(map(shlex.quote, sys.argv))
         config = self.project._get_config()
         experiment = Experiment(
@@ -435,9 +447,7 @@ class ExperimentCollection:
             else:
                 console.info(
                     "Creating experiment {}: copying '{}' to '{}'...".format(
-                        experiment.short_id(),
-                        experiment.path,
-                        self.project._get_repository().root_url(),
+                        experiment.short_id(), experiment.path, root_url,
                     )
                 )
 
