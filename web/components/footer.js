@@ -7,7 +7,7 @@ function Footer({ children }) {
     <footer>
       {children}
       <div id="manifesto" className="body">
-        <h2>Let's build together</h2>
+        <h2>Let's build this together</h2>
         <p>
           Everyone uses version control for software, but it's much less common
           in machine learning. Why is this?
