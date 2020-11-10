@@ -696,9 +696,9 @@ header {
   @include grid-module;
   @include font-feature;
   border-top: $keyline;
-  padding: $whitespace-vertical*2.5 0;
+  padding: $whitespace-vertical * 2.5 0;
   @media (max-height: 800px) {
-    padding: $whitespace-vertical*4 0;
+    padding: $whitespace-vertical * 4 0;
   }
   div:nth-child(1) {
     grid-column: 1 / 2;
@@ -721,7 +721,7 @@ header {
     @media (max-width: 700px) {
       grid-column: 1 / 4;
       grid-row: 2 / 3;
-      padding: $whitespace-vertical*0.5 0;
+      padding: $whitespace-vertical * 0.5 0;
     }
   }
   div:nth-child(3) {
@@ -861,7 +861,7 @@ header {
   border-top: $keyline;
   h2 {
     @include font-feature;
-    margin-bottom: $whitespace-vertical*1.5;
+    margin-bottom: $whitespace-vertical * 1.5;
   }
   .video-container {
     position: relative;
@@ -869,15 +869,15 @@ header {
     width: 100%;
     padding-bottom: 56.25%;
     max-width: 1440px;
-    margin-bottom: $whitespace-vertical*2;
+    margin-bottom: $whitespace-vertical * 2;
     iframe {
       position: absolute;
-      width: 100%!important;
-      height: 100%!important;
-      top: 0!important;
-      left: 0!important;
-      right: 0!important;
-      bottom: 0!important;
+      width: 100% !important;
+      height: 100% !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
     }
   }
 }
@@ -894,25 +894,26 @@ header {
     grid-template-columns: 50% 50%;
   }
   div {
-    padding-right: $whitespace-horizontal*2;
+    padding-right: $whitespace-horizontal * 2;
     padding-bottom: $whitespace-vertical;
   }
   h2 {
     @include font-feature;
-    margin-bottom: $whitespace-vertical*1.5;
+    margin-bottom: $whitespace-vertical * 1.5;
     grid-column: 1 / 3;
   }
   h3 {
     @include font-feature;
-    margin-bottom: $whitespace-vertical*0.5;
-}
-  img, .codeblock {
+    margin-bottom: $whitespace-vertical * 0.5;
+  }
+  img,
+  .codeblock {
     width: 100%;
     height: auto;
     margin: $whitespace-vertical 0;
   }
   p {
-    margin: $whitespace-vertical*0.5 0;
+    margin: $whitespace-vertical * 0.5 0;
   }
 }
 
@@ -1127,7 +1128,7 @@ footer {
     @include layout-block;
     grid-column: 2 / 5;
     padding-bottom: $whitespace-vertical;
-    padding-top: $whitespace-vertical*2;
+    padding-top: $whitespace-vertical * 2;
     @media (min-width: 1000px) {
       @include grid-module;
     }
@@ -1136,13 +1137,14 @@ footer {
       grid-row: 1 / 5;
       padding-top: 0.075em;
     }
-    p, ul {
+    p,
+    ul {
       grid-column: 2 / 4;
       max-width: 100%;
     }
     p {
       &:last-child {
-        padding-top: $whitespace-vertical*0.5;
+        padding-top: $whitespace-vertical * 0.5;
       }
     }
   }
@@ -1150,7 +1152,7 @@ footer {
     grid-column: 1 / 6;
     @include grid-layout;
     $image-size: 7em;
-    padding-top: $grid-row*0.5;
+    padding-top: $grid-row * 0.5;
     h3 {
       grid-column: 2 / 5;
       @include font-feature;

@@ -9,20 +9,19 @@ function Footer({ children }) {
       <div id="manifesto" className="body">
         <h2>Let's build together</h2>
         <p>
-          Everyone uses version control for software, but it's much less
-          common in machine learning. Why is this?
+          Everyone uses version control for software, but it's much less common
+          in machine learning. Why is this?
         </p>
         <p>
-          We spent a year talking to people in the ML community
-          and this is what we found out:
+          We spent a year talking to people in the ML community and this is what
+          we found out:
         </p>
         <ul>
           <li>
             <strong>Git doesn’t work well with machine learning.</strong> It
             can’t handle large files, it can’t handle key/value metadata like
-            metrics, and it can’t commit automatically in your training
-            script. There are some solutions for this, but they feel like
-            band-aids.
+            metrics, and it can’t commit automatically in your training script.
+            There are some solutions for this, but they feel like band-aids.
           </li>
           <li>
             <strong>It should be open source.</strong> There are a number of
@@ -30,12 +29,10 @@ function Footer({ children }) {
             built by and for the ML community.
           </li>
           <li>
-            <strong>
-              It needs to be small, easy to use, and extensible.
-            </strong>{" "}
-            We found people struggling to integrate with “AI Platforms”. We
-            want to make a tool that does one thing well and can be combined
-            with other tools to produce the system you need.
+            <strong>It needs to be small, easy to use, and extensible.</strong>{" "}
+            We found people struggling to integrate with “AI Platforms”. We want
+            to make a tool that does one thing well and can be combined with
+            other tools to produce the system you need.
           </li>
         </ul>
         <p>
@@ -45,15 +42,18 @@ function Footer({ children }) {
         </p>
         <p>
           Have you strung together some shell scripts to build this for
-          yourself? Are you interested in the problem of making machine
-          learning reproducible?
+          yourself? Are you interested in the problem of making machine learning
+          reproducible?
         </p>
         <p>
           <a class="button" href="https://discord.gg/QmzJApGjyE">
             <strong>Join our Discord</strong>
           </a>
           &nbsp;&nbsp;or&nbsp;&nbsp;
-          <a class="button" href="https://github.com/replicate/replicate#get-involved">
+          <a
+            class="button"
+            href="https://github.com/replicate/replicate#get-involved"
+          >
             <strong>Get involved on GitHub</strong>
           </a>
         </p>
