@@ -7,7 +7,7 @@ require (
 	github.com/GitbookIO/diskache v0.0.0-20161028144708-bfb81bf58cb1
 	github.com/GitbookIO/syncgroup v0.0.0-20181003125046-3e73b2e6a972 // indirect
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
-	github.com/aws/aws-sdk-go v1.33.2
+	github.com/aws/aws-sdk-go v1.35.24
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
