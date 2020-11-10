@@ -2,6 +2,14 @@
 
 Version control for machine learning.
 
+Replicate is a Python library that uploads files and metadata (like hyperparameters) to Amazon S3 or Google Cloud Storage. You can get the data back out using the command-line interface or a notebook.
+
+- **Track experiments:** Automatically track code, hyperparameters, training data, weights, metrics, Python dependencies — _everything_.
+- **Go back in time:** Get back the code and weights from any checkpoint if you need to replicate your results or commit to Git after the fact.
+- **Version your models:** Model weights are stored on your own Amazon S3 or Google Cloud bucket, so it's really easy to feed them into production systems.
+
+## How it works
+
 Just add two lines to your training code:
 
 ```python
@@ -23,7 +31,7 @@ def train():
 
 Then Replicate will start tracking everything: code, hyperparameters, training data, weights, metrics, Python dependencies, and so on.
 
-- **It's open source:** It won't stop working if a startup goes out of business.
+- **Open source & community-built:** We’re trying to pull together the ML community so we can build this foundational piece of technology together.
 - **You're in control of your data:** All the data is stored on your own Amazon S3 or Google Cloud Storage as plain old files. There's no server to run.
 - **It works with everything:** Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It's just saving files and dictionaries – export however you want.
 
@@ -70,7 +78,10 @@ val_accuracy:     0.9607      0.9411
 
 ### Commit to Git, after the fact
 
-There's no need to carefully commit everything to Git. Replicate lets you get back to any point you called `experiment.checkpoint()`, so you can commit to Git once you've found something that works.
+If you eventually want to store your code on Git, there's no need to
+commit everything as you go. Replicate lets you get back to any
+point you called `experiment.checkpoint()` so, you can
+commit to Git once you've found something that works.
 
 ```shell-session
 $ replicate checkout f81069d

@@ -116,9 +116,12 @@ def train():
       <section className="control">
         <div>
           <h2>
-            <span>{num()}</span> Open source
+            <span>{num()}</span> Open source &amp; community-built
           </h2>
-          <p>It won't stop working if a startup goes out of business.</p>
+          <p>
+            We’re trying to pull together the ML community so we can build this
+            foundational piece of technology together.
+          </p>
         </div>
         <div>
           <h2>
@@ -217,8 +220,9 @@ val_accuracy:     0.9607      0.9411`}
 
           <h3 id="anchor-4">Commit to Git, after the fact</h3>
           <p>
-            Replicate lets you get back to any point you called{" "}
-            <code>experiment.checkpoint()</code> so, if you need to, you can
+            If you eventually want to store your code on Git, there's no need to
+            commit everything as you go. Replicate lets you get back to any
+            point you called <code>experiment.checkpoint()</code> so, you can
             commit to Git once you've found something that works.
           </p>
           <CodeBlock language="shell-session">
