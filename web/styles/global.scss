@@ -1148,12 +1148,11 @@ footer {
   }
   #contributors {
     grid-column: 1 / 6;
-    grid-row: 3 / 4;
     @include grid-layout;
     $image-size: 7em;
     padding-top: $grid-row*0.5;
     h3 {
-      grid-column: 2 / 3;
+      grid-column: 2 / 5;
       @include font-feature;
       padding-bottom: $whitespace-vertical;
     }
