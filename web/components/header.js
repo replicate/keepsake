@@ -10,7 +10,11 @@ function Header({ className, children }) {
         <a href="https://github.com/replicate/replicate">GitHub</a>
       </nav>
       <h1 className="tagline">
-        <strong>Replicate</strong> Version control for machine&nbsp;learning
+        <Link href="/">
+          <a>
+            <strong>Replicate</strong> Version control for machine&nbsp;learning
+          </a>
+        </Link>
       </h1>
       {children}
     </header>

@@ -46,12 +46,12 @@ function Footer({ children }) {
           reproducible?
         </p>
         <p>
-          <a class="button" href="https://discord.gg/QmzJApGjyE">
+          <a className="button" href="https://discord.gg/QmzJApGjyE">
             <strong>Join our Discord</strong>
           </a>
           &nbsp;&nbsp;or&nbsp;&nbsp;
           <a
-            class="button"
+            className="button"
             href="https://github.com/replicate/replicate#get-involved"
           >
             <strong>Get involved on GitHub</strong>
@@ -113,7 +113,11 @@ function Footer({ children }) {
         <a href="mailto:team@replicate.ai">team@replicate.ai</a>
       </nav>
       <p className="tagline">
-        <strong>Replicate</strong> Version control for machine&nbsp;learning
+        <Link href="/">
+          <a>
+            <strong>Replicate</strong> Version control for machine&nbsp;learning
+          </a>
+        </Link>
       </p>
     </footer>
   );

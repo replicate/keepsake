@@ -165,6 +165,15 @@ a {
       display: block;
     }
   }
+
+  a {
+    text-decoration: none;
+    &:focus {
+      background: inherit;
+      color: inherit;
+      outline: inherit;
+    }
+  }
 }
 
 h2 span {
