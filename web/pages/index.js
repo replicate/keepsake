@@ -134,7 +134,7 @@ def train():
         </div>
         <div>
           <h2>
-            <span>{num()}</span> Works with everything
+            <span>{num()}</span> Replicate works with&nbsp;everything
           </h2>
           <p>
             Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It's just
