@@ -696,7 +696,10 @@ header {
   @include grid-module;
   @include font-feature;
   border-top: $keyline;
-  padding: $whitespace-vertical*2 0;
+  padding: $whitespace-vertical*2.5 0;
+  @media (max-height: 800px) {
+    padding: $whitespace-vertical*4 0;
+  }
   div:nth-child(1) {
     grid-column: 1 / 2;
     grid-row: 1 / 2;
@@ -1061,66 +1064,39 @@ footer {
   grid-column: 1 / 6;
   @include grid-layout;
   background: $brand;
-  padding-top: $whitespace-vertical * 3;
   padding-bottom: $whitespace-vertical * 1.5;
   @media (max-width: 700px) {
     padding-bottom: $whitespace-vertical;
   }
-  & > h2 {
-    @include font-feature;
-    grid-column: 2 / 5;
-    @include grid-module;
-    min-height: calc(#{$grid-row * 0.75} - #{$whitespace-vertical * 2});
-    div:nth-child(1) {
-      grid-row: 1 / 2;
-      grid-column: 1 / 2;
-    }
-    div:nth-child(2) {
-      grid-row: 1 / 2;
-      grid-column: 1 / 2;
-      text-align: center;
-      padding-left: 7.75em;
-    }
-    div:nth-child(3) {
-      grid-row: 1 / 2;
-      grid-column: 2 / 4;
-    }
-    @media (max-width: 700px) {
-      min-height: auto;
-      padding-bottom: $whitespace-vertical * 6;
-      div:nth-child(1) {
-        grid-column: 1 / 4;
-        grid-row: 1 / 2;
-        a {
-          position: relative;
-          display: block;
-          text-align: center;
-          top: -0.5em;
-        }
-      }
-      div:nth-child(2) {
-        grid-column: 1 / 2;
-        padding-top: 2em;
-        padding-left: 0;
-        width: 2em;
-      }
-      div:nth-child(3) {
-        grid-column: 1 / 4;
-        padding-top: 2em;
-        padding-left: 2em;
-      }
-    }
-  }
   #manifesto {
-    grid-column: 2 / 4;
+    @include layout-block;
+    grid-column: 2 / 5;
     padding-bottom: $whitespace-vertical;
+    padding-top: $whitespace-vertical*2;
+    @media (min-width: 1000px) {
+      @include grid-module;
+    }
+    h2 {
+      grid-column: 1 / 2;
+      grid-row: 1 / 5;
+      padding-top: 0.075em;
+    }
+    p, ul {
+      grid-column: 2 / 4;
+      max-width: 100%;
+    }
+    p {
+      &:last-child {
+        padding-top: $whitespace-vertical*0.5;
+      }
+    }
   }
-
   #contributors {
     grid-column: 1 / 6;
     grid-row: 3 / 4;
     @include grid-layout;
     $image-size: 7em;
+    padding-top: $grid-row*0.5;
     h3 {
       grid-column: 2 / 3;
       @include font-feature;
