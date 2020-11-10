@@ -103,6 +103,26 @@ If you prefer **working in notebooks**, <a href="https://colab.research.google.c
 
 If you like to **learn concepts first**, [read our guide about how Replicate works](https://replicate.ai/docs/learn/how-it-works).
 
+## Get involved
+
+Everyone uses version control for software, but it is much less common in machine learning.
+
+Why is this? We spent a year talking to people in the ML community and this is what we found out:
+
+- **Git doesn’t work well with machine learning.** It can’t handle large files, it can’t handle key/value metadata like metrics, and it can’t commit automatically in your training script. There are some solutions for this, but they feel like band-aids.
+- **It should be open source.** There are a number of proprietary solutions, but something so foundational needs to be built by and for the ML community.
+- **It needs to be small, easy to use, and extensible.** We found people struggling to integrate with “AI Platforms”. We want to make a tool that does one thing well and can be combined with other tools to produce the system you need.
+
+We think the ML community needs a good version control system. But, version control systems are complex, and to make this a reality we need your help.
+
+Have you strung together some shell scripts to build this for yourself? Are you interested in the problem of making machine learning reproducible?
+
+Here are some ways you can help out:
+
+- [Join our Discord to chat to us and other contributors.](https://discord.gg/QmzJApGjyE)
+- [Have your say about what you want from a version control system on our public roadmap.](https://github.com/replicate/replicate/projects/1)
+- [Try your hand at one of our issues labelled "help wanted".](https://github.com/replicate/replicate/labels/help%20wanted)
+
 ## Contributing & development environment
 
 [Take a look at our contributing instructions.](CONTRIBUTING.md)

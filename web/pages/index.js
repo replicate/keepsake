@@ -306,7 +306,11 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
           </p>
           <p>
             <strong>
-              <a href="https://github.com/replicate/replicate">
+              <a href="https://discord.gg/QmzJApGjyE">Join our Discord</a>
+            </strong>{" "}
+            or{" "}
+            <strong>
+              <a href="https://github.com/replicate/replicate#get-involved">
                 Get involved on GitHub
               </a>
             </strong>
