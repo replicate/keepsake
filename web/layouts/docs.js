@@ -5,7 +5,7 @@ import Link from "next/link";
 
 function DocsLayout({ title, children, ...props }) {
   return (
-    <Layout {...props}>
+    <Layout title={title || "Documentation"} {...props}>
       <Header className="documentation">
         <div className="breadcrumb">
           <Link href="/">

@@ -20,7 +20,7 @@ export default function Home() {
   }
 
   return (
-    <Layout title="Replicate – Version control for machine learning">
+    <Layout wholeTitle="Replicate – Version control for machine learning">
       <Header className="homepage">
         <section className="cta">
           <h2>
