@@ -83,12 +83,12 @@ export default function Home() {
             Just add two lines of code. You don't need to change how you work.
           </p>
           <p>
-            Replicate is a Python library that uploads files and a dictionary of
-            metadata to Amazon S3 or Google Cloud Storage.
+            Replicate is a Python library that uploads files and metadata (like
+            hyperparameters) to Amazon S3 or Google Cloud Storage.
           </p>
           <p>
-            You can get the data back out using the command-line interface or
-            with Python in a notebook.
+            You can get the data back out using the command-line interface or a
+            notebook.
           </p>
         </div>
         <div className="windowChrome">
@@ -217,10 +217,9 @@ val_accuracy:     0.9607      0.9411`}
 
           <h3 id="anchor-4">Commit to Git, after the fact</h3>
           <p>
-            There's no need to carefully commit everything to Git. Replicate
-            lets you get back to any point you called{" "}
-            <code>experiment.checkpoint()</code>, so you can commit to Git once
-            you've found something that works.
+            Replicate lets you get back to any point you called{" "}
+            <code>experiment.checkpoint()</code> so, if you need to, you can
+            commit to Git once you've found something that works.
           </p>
           <CodeBlock language="shell-session">
             {`$ replicate checkout f81069d
