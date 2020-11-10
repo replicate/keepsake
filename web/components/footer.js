@@ -7,13 +7,13 @@ function Footer({ children }) {
     <footer>
       {children}
       <div id="manifesto" className="body">
-        <h2>Let's build this together</h2>
+        <h2>Let's build together</h2>
         <p>
-          Everyone uses version control for software, but it is much less
-          common in machine learning.
+          Everyone uses version control for software, but it's much less
+          common in machine learning. Why is this?
         </p>
         <p>
-          Why is this? We spent a year talking to people in the ML community
+          We spent a year talking to people in the ML community
           and this is what we found out:
         </p>
         <ul>
@@ -49,15 +49,13 @@ function Footer({ children }) {
           learning reproducible?
         </p>
         <p>
-          <strong>
-            <a href="https://discord.gg/QmzJApGjyE">Join our Discord</a>
-          </strong>{" "}
-          or{" "}
-          <strong>
-            <a href="https://github.com/replicate/replicate#get-involved">
-              Get involved on GitHub
-            </a>
-          </strong>
+          <a class="button" href="https://discord.gg/QmzJApGjyE">
+            <strong>Join our Discord</strong>
+          </a>
+          &nbsp;&nbsp;or&nbsp;&nbsp;
+          <a class="button" href="https://github.com/replicate/replicate#get-involved">
+            <strong>Get involved on GitHub</strong>
+          </a>
         </p>
       </div>
       <div id="contributors">
