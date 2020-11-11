@@ -31,8 +31,8 @@ export default function Home() {
             open source
           </h2>
           <p>
-            <Link href="/docs">Get Started</Link>{" "}
-            <a href="#manifesto">Get Involved</a>{" "}
+            <Link href="/docs">Get started</Link>{" "}
+            <a href="#manifesto">Get involved</a>{" "}
             <iframe
               src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=replicate&amp;type=star&amp;count=false&amp;size=large"
               frameBorder="0"
