@@ -5,9 +5,9 @@ let config = {
   pageExtensions: ["js", "jsx", "mdx"],
   env: {
     TUTORIAL_COLAB_URL:
-      "https://colab.research.google.com/drive/1vjZReg--45P-NZ4j8TXAJFWuepamXc7K",
+      "https://colab.research.google.com/drive/1iypzEOysdACpIIXrM0RoGz9kg6z93XMP",
     ANALYSIS_COLAB_URL:
-      "https://colab.research.google.com/drive/1o-LQI3LvIzO2SWPugHby1YvRW7-9ZOtH",
+      "https://colab.research.google.com/drive/18sVRE4Zi484G2rBeOYjobE3zek2gDBvy",
   },
 };
 
