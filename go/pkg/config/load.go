@@ -132,7 +132,6 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 		conf.Storage = ""
 	}
 
-	// TODO(andreas): generalize this once we have more required fields
 	if conf.Repository == "" {
 		return nil, fmt.Errorf("Missing required field in replicate.yaml: repository")
 	}

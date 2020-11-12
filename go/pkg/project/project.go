@@ -107,9 +107,7 @@ func (p *Project) DeleteExperiment(exp *Experiment) error {
 }
 
 // ensureLoaded eagerly loads all the metadata for this project.
-// TODO(andreas): this is a naive approach, we should instead use
-// some sort of indexing for efficiency.
-// TODO(bfirsh): loading all metadata into memory on each run is not... great
+// This is highly inefficient, see https://github.com/replicate/replicate/issues/305
 func (p *Project) ensureLoaded() error {
 	if p.hasLoaded {
 		return nil

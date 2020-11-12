@@ -126,8 +126,7 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 			console.Warn("The directory %q is not empty.", displayPath)
 			console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
 			fmt.Println()
-			// TODO(andreas): tell the user which files may get
-			// overwritten, etc.
+			// This is scary! See https://github.com/replicate/replicate/issues/300
 			doOverwrite, err := interact.InteractiveBool{
 				Prompt:  "Do you want to continue?",
 				Default: false,

@@ -45,7 +45,7 @@ type ListExperiment struct {
 	Config *config.Config `json:"-"`
 }
 
-// TODO(andreas): make this safer and validate user inputs against these strings
+// We should add some validation and better error messages, see https://github.com/replicate/replicate/issues/340
 func (exp *ListExperiment) GetValue(name string) param.Value {
 	if name == "started" {
 		// floating point timestamp used in sorting

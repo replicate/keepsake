@@ -148,7 +148,8 @@ where <operator> can be
 		return nil, parseErr
 	}
 
-	// TODO(andreas): this is a hack since we don't have a "time" parameter type. we should perhaps add that
+	// This is a hack, see https://github.com/replicate/replicate/issues/341
+	// "started" should probably be renamed/aliased to "created", see https://github.com/replicate/replicate/issues/342
 	if f.name == "started" {
 		t, err := dateparse.ParseLocal(value)
 		if err != nil {

@@ -103,6 +103,7 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 		} else {
 			console.Info("Removing experiment %s and its checkpoints...", comOrExp.Experiment.ShortID())
 			experiment := comOrExp.Experiment
+			// This is slow, see https://github.com/replicate/replicate/issues/333
 			for _, checkpoint := range experiment.Checkpoints {
 				if err := proj.DeleteCheckpoint(checkpoint); err != nil {
 					return err

@@ -107,7 +107,7 @@ func addListFilterFlag(cmd *cobra.Command) {
 	cmd.Flags().StringArrayP("filter", "f", []string{}, "Filters (format: \"<name> <operator> <value>\")")
 }
 
-// TODO(andreas): validate filter name
+// The filter names ought to be validated, see https://github.com/replicate/replicate/issues/340
 func parseListFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 	filtersStr, err := cmd.Flags().GetStringArray("filter")
 	if err != nil {

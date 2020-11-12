@@ -44,7 +44,6 @@ def test_s3_experiment(temp_bucket, tmpdir):
             temp_bucket,
             os.path.join("metadata", "experiments", experiment.id + ".json"),
         )
-        # TODO(andreas): actually check values of host and user
         assert "host" in actual_experiment_meta
         assert "user" in actual_experiment_meta
         del actual_experiment_meta["host"]

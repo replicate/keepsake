@@ -157,7 +157,7 @@ class Checkpoint(object):
         with tempfile.TemporaryDirectory() as tempdir:
             self.checkout(tempdir, quiet=True)
             with open(os.path.join(tempdir, path), "rb") as f:
-                # TODO(andreas): don't load entire file into memory at once, in case it's huge
+                # We shouldn't load entire file into memory, see https://github.com/replicate/replicate/issues/331
                 out_f = io.BytesIO(f.read())
             return out_f
 
@@ -219,7 +219,6 @@ class CheckpointList(list, MutableSequence[Checkpoint]):
         Plot a metric for this list of checkpoints. If no metric is specified,
         defaults to the shared primary metric.
         """
-        # TODO(andreas): smoothing
         import matplotlib.pyplot as plt  # type: ignore
 
         if metric is None:
@@ -228,8 +227,6 @@ class CheckpointList(list, MutableSequence[Checkpoint]):
         data = []
         for chk in self:
             if chk.metrics and metric in chk.metrics:
-                # TODO(andreas): handle non-numeric metric
-                # TODO(andreas): warn if metric doesn't exist in any experiment
                 data.append(chk.metrics[metric])
             else:
                 data.append(None)
@@ -259,9 +256,7 @@ class CheckpointList(list, MutableSequence[Checkpoint]):
 
     @property
     def metrics(self):
-        # TODO(andreas): maybe it would be better to just return all the metrics for
-        # all the checkpoints in the format {"name": [value1, value2, ...], ...},
-        # for discoverability
+        # Make this eager instead of lazy? See https://github.com/replicate/replicate/issues/337
         return CheckpointListMetrics(self)
 
     @property

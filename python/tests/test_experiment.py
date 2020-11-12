@@ -141,6 +141,7 @@ def test_init_with_config_file(temp_workdir):
         f.write("repository: file://.replicate/")
     experiment = replicate.init()
     assert isinstance(experiment, Experiment)
+    experiment.stop()
 
 
 def test_init_without_config_file(temp_workdir):

@@ -88,7 +88,7 @@ func TestCheckout(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(outputDir2))
-	defer os.Chdir(cwd)
+	defer func() { require.NoError(t, os.Chdir(cwd)) }()
 
 	// checkout to working directory without replicate.yaml
 	err = checkoutCheckpoint(checkoutOpts{
