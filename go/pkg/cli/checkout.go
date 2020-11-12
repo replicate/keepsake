@@ -16,42 +16,44 @@ import (
 	"github.com/replicate/replicate/go/pkg/repository"
 )
 
+type checkoutOpts struct {
+	outputDirectory string
+	force           bool
+	repositoryURL   string
+}
+
 func newCheckoutCommand() *cobra.Command {
+	var opts checkoutOpts
+
 	cmd := &cobra.Command{
 		Use:   "checkout <experiment or checkpoint ID>",
 		Short: "Copy files from an experiment or checkpoint into the project directory",
-		Run:   handleErrors(checkoutCheckpoint),
-		Args:  cobra.ExactArgs(1),
+		Run: handleErrors(func(cmd *cobra.Command, args []string) error {
+			return checkoutCheckpoint(opts, args)
+		}),
+		Args: cobra.ExactArgs(1),
 	}
 
-	addRepositoryURLFlag(cmd)
-	cmd.Flags().StringP("output-directory", "o", "", "Output directory (defaults to working directory or directory with replicate.yaml in it)")
-	cmd.Flags().BoolP("force", "f", false, "Force checkout without prompt, even if the directory is not empty")
+	addRepositoryURLFlagVar(cmd, &opts.repositoryURL)
+	cmd.Flags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "Output directory (defaults to working directory or directory with replicate.yaml in it)")
+	cmd.Flags().BoolVarP(&opts.force, "force", "f", false, "Force checkout without prompt, even if the directory is not empty")
 
 	return cmd
 }
 
-func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
+func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 	prefix := args[0]
 
-	outputDir, err := cmd.Flags().GetString("output-directory")
-	if err != nil {
-		return err
-	}
-	// TODO(andreas): add test for case where --output-directory is omitted
+	outputDir := opts.outputDirectory
 	if outputDir == "" {
+		var err error
 		outputDir, err = getProjectDir()
 		if err != nil {
 			return err
 		}
 	}
 
-	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		return err
-	}
-
-	repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
+	repositoryURL, projectDir, err := getRepositoryURLFromStringOrConfig(opts.repositoryURL)
 	if err != nil {
 		return err
 	}
@@ -111,26 +113,32 @@ func checkoutCheckpoint(cmd *cobra.Command, args []string) error {
 		displayPath = filepath.Join(outputDir, checkpoint.Path)
 	}
 
-	isEmpty, err := files.DirIsEmpty(displayPath)
+	exists, err = files.FileExists(displayPath)
 	if err != nil {
 		return err
 	}
-	if !isEmpty && !force {
-		console.Warn("The directory %q is not empty.", displayPath)
-		console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
-		fmt.Println()
-		// TODO(andreas): tell the user which files may get
-		// overwritten, etc.
-		doOverwrite, err := interact.InteractiveBool{
-			Prompt:  "Do you want to continue?",
-			Default: false,
-		}.Read()
+	if exists {
+		isEmpty, err := files.DirIsEmpty(displayPath)
 		if err != nil {
 			return err
 		}
-		if !doOverwrite {
-			console.Info("Aborting.")
-			return nil
+		if !isEmpty && !opts.force {
+			console.Warn("The directory %q is not empty.", displayPath)
+			console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
+			fmt.Println()
+			// TODO(andreas): tell the user which files may get
+			// overwritten, etc.
+			doOverwrite, err := interact.InteractiveBool{
+				Prompt:  "Do you want to continue?",
+				Default: false,
+			}.Read()
+			if err != nil {
+				return err
+			}
+			if !doOverwrite {
+				console.Info("Aborting.")
+				return nil
+			}
 		}
 	}
 

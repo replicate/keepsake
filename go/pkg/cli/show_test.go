@@ -27,10 +27,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) re
 	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate"))
 	require.NoError(t, err)
 
-	fixedTime, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	fixedTime, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 
 	require.NoError(t, err)
-	var experiments = []*project.Experiment{{
+	experiments := []*project.Experiment{{
 		ID:      "1eeeeeeeee",
 		Created: fixedTime.Add(-10 * time.Minute),
 		Params: param.ValueMap{
