@@ -1,7 +1,5 @@
 package param
 
-// TODO(andreas): rename to something more computer sciency -- this is effectively a union type
-
 import (
 	"encoding/json"
 	"fmt"

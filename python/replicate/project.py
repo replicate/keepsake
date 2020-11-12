@@ -35,7 +35,6 @@ class Project:
                 # for writing during training and for analysis.
                 # during analysis you don't need a root directory
 
-                # TODO(andreas): raise something other than ValueError?
                 raise ValueError(
                     "If you pass the 'repository' argument to Project(), you also need to pass 'directory'"
                 )

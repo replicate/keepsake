@@ -527,7 +527,6 @@ class ExperimentList(list, MutableSequence[Experiment]):
                 if pm is None:
                     continue
                 if primary_metric is not None and primary_metric != pm:
-                    # TODO(andreas): should this be another standard error type?
                     raise ValueError(
                         "The primary metric differs between the checkpoints in these experiments"
                     )

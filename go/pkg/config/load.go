@@ -123,7 +123,10 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 	}
 
 	if conf.Storage != "" {
-		// TODO(andreas): check that 'repository' and 'storage' aren't both defined (needs refactoring of defaults)
+		if conf.Repository != "" {
+			return nil, fmt.Errorf("'repository' and 'storage' (deprecated) cannot both be defined, please only use 'repository'")
+		}
+
 		console.Warn("'storage' is deprecated in replicate.yaml, please use 'repository'")
 		conf.Repository = conf.Storage
 		conf.Storage = ""

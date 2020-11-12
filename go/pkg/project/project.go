@@ -88,7 +88,6 @@ func (p *Project) CheckpointOrExperimentFromPrefix(prefix string) (*CheckpointOr
 
 func (p *Project) DeleteCheckpoint(com *Checkpoint) error {
 	if err := p.repository.Delete(com.StorageTarPath()); err != nil {
-		// TODO(andreas): return err if com.StorageTarPath() exists but some other error occurs
 		console.Warn("Failed to delete checkpoint storage directory %s: %s", com.StorageTarPath(), err)
 	}
 	return nil
@@ -96,15 +95,12 @@ func (p *Project) DeleteCheckpoint(com *Checkpoint) error {
 
 func (p *Project) DeleteExperiment(exp *Experiment) error {
 	if err := p.repository.Delete(exp.HeartbeatPath()); err != nil {
-		// TODO(andreas): return err if exp.HeartbeatPath() exists but some other error occurs
 		console.Warn("Failed to delete heartbeat file %s: %s", exp.HeartbeatPath(), err)
 	}
 	if err := p.repository.Delete(exp.StorageTarPath()); err != nil {
-		// TODO(andreas): return err if com.StorageTarPath() exists but some other error occurs
 		console.Warn("Failed to delete checkpoint storage directory %s: %s", exp.StorageTarPath(), err)
 	}
 	if err := p.repository.Delete(exp.MetadataPath()); err != nil {
-		// TODO(andreas): return err if exp.MetadataPath() exists but some other error occurs
 		console.Warn("Failed to delete experiment metadata file %s: %s", exp.MetadataPath(), err)
 	}
 	return nil
