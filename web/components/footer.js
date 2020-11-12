@@ -47,7 +47,7 @@ function Footer({ children }) {
         </p>
         <p>
           <a className="button" href="https://discord.gg/QmzJApGjyE">
-            <strong>Join our Discord</strong>
+            <strong>Join our Discord chat</strong>
           </a>
           &nbsp;&nbsp;or&nbsp;&nbsp;
           <a
