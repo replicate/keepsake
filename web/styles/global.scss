@@ -569,11 +569,11 @@ header {
     top: 1em;
     h2 {
       @include font-feature;
+      color: $text-shade;
       span {
         display: inline;
       }
       @media (min-width: 701px) {
-        color: $text-shade;
         abbr {
           &:after {
             content: attr(title);
@@ -586,6 +586,7 @@ header {
     }
     p {
       margin-top: $whitespace-vertical;
+      @include font-feature;
       a {
         margin-right: $whitespace-horizontal * 2;
         white-space: nowrap;
@@ -594,14 +595,19 @@ header {
         position: relative;
         top: 0.1em;
       }
+      iframe {
+        margin-top: $whitespace-vertical;
+      }
       @media (min-width: 701px) {
         margin-top: 0;
-        @include font-feature;
         a {
           margin-right: $whitespace-horizontal;
         }
         span {
           top: 0;
+        }
+        iframe {
+          margin-top: 0;
         }
       }
     }
