@@ -5,29 +5,52 @@ import random
 import pytest
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
+from google.cloud import storage as google_storage
+
+
+class TempBucketFactory:
+    def __init__(self):
+        self.s3_bucket_names = []
+        self.gs_bucket_names = []
+
+    def make_name(self):
+        return "replicate-test-" + "".join(
+            random.choice(string.ascii_lowercase) for _ in range(20)
+        )
+
+    def s3(self):
+        name = self.make_name()
+        self.s3_bucket_names.append(name)
+        return name
+
+    def gs(self):
+        name = self.make_name()
+        self.gs_bucket_names.append(name)
+        return name
+
+    def cleanup(self):
+        if self.s3_bucket_names:
+            s3 = boto3.resource("s3")
+            for bucket_name in self.s3_bucket_names:
+                bucket = s3.Bucket(bucket_name)
+                bucket.objects.all().delete()
+                bucket.delete()
+        if self.gs_bucket_names:
+            storage_client = google_storage.Client()
+            for bucket_name in self.gs_bucket_names:
+                bucket = storage_client.bucket(bucket_name)
+                for blob in bucket.list_blobs():
+                    blob.delete()
+                bucket.delete()
 
 
 @pytest.fixture(scope="function")
-def temp_bucket():
+def temp_bucket_factory() -> TempBucketFactory:
     # We don't create bucket here so we can test Replicate's ability to create
     # buckets.
-
-    bucket_name = "replicate-test-" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(20)
-    )
-    yield bucket_name
-
-    # FIXME: this is used for both GCP and S3 tests, but only cleans up
-    # the S3 bucket.
-    # These fixtures should probably be arranged more intelligently so there
-    # are different ones for GCP and S3.
-    try:
-        s3 = boto3.resource("s3")
-        bucket = s3.Bucket(bucket_name)
-        bucket.objects.all().delete()
-        bucket.delete()
-    except (NoCredentialsError, ClientError):
-        pass
+    factory = TempBucketFactory()
+    yield factory
+    factory.cleanup()
 
 
 def wait_for_port(port, host="localhost", timeout=5.0):

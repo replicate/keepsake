@@ -17,12 +17,12 @@ from .utils import path_exists
         pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
-def test_delete(repository_backend, use_root, tmpdir, temp_bucket, tmpdir_factory):
+def test_delete(repository_backend, use_root, tmpdir, temp_bucket_factory, tmpdir_factory):
     tmpdir = str(tmpdir)
     if repository_backend == "s3":
-        repository = "s3://" + temp_bucket
+        repository = "s3://" + temp_bucket_factory.s3()
     if repository_backend == "gcs":
-        repository = "gs://" + temp_bucket
+        repository = "gs://" + temp_bucket_factory.gs()
     elif repository_backend == "file":
         repository = "file://" + str(tmpdir_factory.mktemp("repository"))
 
