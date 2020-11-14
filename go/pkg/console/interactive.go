@@ -1,6 +1,4 @@
-package interact
-
-// TODO: move to go/pkg/console/
+package console
 
 import (
 	"bufio"
@@ -8,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/slices"
 )
 
@@ -57,7 +54,7 @@ func (i Interactive) Read() (string, error) {
 		}
 
 		if i.Required && text == "" {
-			console.Warn("Please enter a value")
+			Warn("Please enter a value")
 			continue
 		}
 
@@ -67,7 +64,7 @@ func (i Interactive) Read() (string, error) {
 
 		if i.Options != nil {
 			if !slices.ContainsString(i.Options, text) {
-				console.Warn("%s is not a valid option", text)
+				Warn("%s is not a valid option", text)
 				continue
 			}
 		}
@@ -103,6 +100,6 @@ func (i InteractiveBool) Read() (bool, error) {
 		if text == "" {
 			return i.Default, nil
 		}
-		console.Warn("Please enter 'y' or 'n'")
+		Warn("Please enter 'y' or 'n'")
 	}
 }
