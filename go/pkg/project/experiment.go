@@ -150,7 +150,7 @@ func listExperiments(repo repository.Repository) ([]*Experiment, error) {
 		if err := loadFromPath(repo, p, exp); err == nil {
 			experiments = append(experiments, exp)
 		} else {
-			// TODO: should this just be ignored? can this be recovered from?
+			// Should we complain more loudly? https://github.com/replicate/replicate/issues/347
 			console.Warn("Failed to load metadata from %q: %s", p, err)
 		}
 	}
