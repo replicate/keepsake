@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import pytest  # type: ignore
+from dateutil.parser import parse as parse_date
 
 from .utils import get_env
 
@@ -78,8 +79,7 @@ if __name__ == "__main__":
     assert exp["command"] == "train.py --foo"
     latest = exp["latest_checkpoint"]
     assert len(latest["id"]) == 64
-    # FIXME: now rfc3339 strings
-    # assert latest["created"] > exp["created"]
+    assert parse_date(latest["created"]) > parse_date(exp["created"])
     assert latest["step"] == 2
 
     # test that --repository works
