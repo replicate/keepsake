@@ -68,7 +68,7 @@ export default function Home() {
             </h2>
             <p>
               Model weights are stored on your own Amazon S3 or Google Cloud
-              bucket, so it's really easy to feed them into production systems.
+              bucket, so it’s really easy to feed them into production systems.
             </p>
           </div>
         </section>
@@ -80,7 +80,7 @@ export default function Home() {
             <span>{num()}</span> How it works
           </h2>
           <p>
-            Just add two lines of code. You don't need to change how you work.
+            Just add two lines of code. You don’t need to change how you work.
           </p>
           <p>
             Replicate is a Python library that uploads files and metadata (like
@@ -125,11 +125,11 @@ def train():
         </div>
         <div>
           <h2>
-            <span>{num()}</span> You're in control of&nbsp;your&nbsp;data
+            <span>{num()}</span> You’re in control of&nbsp;your&nbsp;data
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud Storage
-            as plain old files. There's no server to run.
+            as plain old files. There’s no server to run.
           </p>
         </div>
         <div>
@@ -137,7 +137,7 @@ def train():
             <span>{num()}</span> Works with&nbsp;everything
           </h2>
           <p>
-            Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It's just
+            Tensorflow, PyTorch, scikit-learn, XGBoost, you name it. It’s just
             saving files and dictionaries – export however you want.
           </p>
         </div>
@@ -177,7 +177,7 @@ def train():
           <h3 id="anchor-1">Throw away your spreadsheet</h3>
           <p>
             Your experiments are all in one place, with filter and sort. Because
-            the data's stored on S3, you can even see experiments that were run
+            the data’s stored on S3, you can even see experiments that were run
             on other machines.
           </p>
           <CodeBlock language="shell-session">
@@ -189,7 +189,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 
           <h3 id="anchor-3">Analyze in a notebook</h3>
           <p>
-            Don't like the CLI? No problem. You can retrieve, analyze, and plot
+            Don’t like the CLI? No problem. You can retrieve, analyze, and plot
             your results from within a notebook. Think of it like a programmable
             Tensorboard.
           </p>
@@ -220,10 +220,10 @@ val_accuracy:     0.9607      0.9411`}
 
           <h3 id="anchor-4">Commit to Git, after the fact</h3>
           <p>
-            If you eventually want to store your code on Git, there's no need to
+            If you eventually want to store your code on Git, there’s no need to
             commit everything as you go. Replicate lets you get back to any
             point you called <code>experiment.checkpoint()</code> so, you can
-            commit to Git once you've found something that works.
+            commit to Git once you’ve found something that works.
           </p>
           <CodeBlock language="shell-session">
             {`$ replicate checkout f81069d
@@ -246,7 +246,7 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
 
           <h3 id="anchor-6">A platform to build upon</h3>
           <p>
-            Replicate is intentionally lightweight and doesn't try to do too
+            Replicate is intentionally lightweight and doesn’t try to do too
             much. Instead, we give you Python and command-line APIs so you can
             integrate it with your own tools and workflow.
           </p>
