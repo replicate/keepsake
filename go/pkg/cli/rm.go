@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/interact"
 	"github.com/replicate/replicate/go/pkg/project"
 )
 
@@ -78,7 +77,7 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 				fmt.Printf("* Checkpoint %s\n", comOrExp.Checkpoint.ShortID())
 			}
 		}
-		continueDelete, err := interact.InteractiveBool{
+		continueDelete, err := console.InteractiveBool{
 			Prompt:  "\nDo you want to continue?",
 			Default: false,
 		}.Read()

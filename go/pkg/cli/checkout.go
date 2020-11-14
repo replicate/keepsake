@@ -11,7 +11,6 @@ import (
 
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/interact"
 	"github.com/replicate/replicate/go/pkg/project"
 	"github.com/replicate/replicate/go/pkg/repository"
 )
@@ -127,7 +126,7 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 			console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
 			fmt.Println()
 			// This is scary! See https://github.com/replicate/replicate/issues/300
-			doOverwrite, err := interact.InteractiveBool{
+			doOverwrite, err := console.InteractiveBool{
 				Prompt:  "Do you want to continue?",
 				Default: false,
 			}.Read()
