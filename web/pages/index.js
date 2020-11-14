@@ -250,15 +250,6 @@ model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth")
             much. Instead, we give you Python and command-line APIs so you can
             integrate it with your own tools and workflow.
           </p>
-          {/*
-          <form>
-            <h3>Sign up to our newsletter</h3>
-            <fieldset>
-              <input type="email" placeholder="What is your email address"></input>
-              <button>Sign up</button>
-            </fieldset>
-          </form>
-          */}
         </div>
       </section>
       {/*
