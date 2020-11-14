@@ -222,8 +222,8 @@ class Experiment:
         """
         Delete this experiment and all associated checkpoints.
         """
-        # TODO(andreas): this logic should probably live in go,
-        # which could then also be parallelized easily
+        # We should consolidate delete logic, see https://github.com/replicate/replicate/issues/332
+        # It's also slow https://github.com/replicate/replicate/issues/333
         repository = self._project._get_repository()
         console.info(
             "Deleting {} checkpoints in experiment {}".format(
@@ -322,7 +322,7 @@ class Experiment:
             self.id
         )
         out += "<p>"
-        # TODO(andreas): add status
+        # We should add status here, see https://github.com/replicate/replicate/issues/334
         for field in ["created", "host", "user", "command", "duration"]:
             out += '<pre style="display: inline">{:10s}</pre> {}<br/>'.format(
                 html.escape(field) + ":", html.escape(str(getattr(self, field)))
@@ -537,7 +537,6 @@ class ExperimentList(list, MutableSequence[Experiment]):
                 if pm is None:
                     continue
                 if primary_metric is not None and primary_metric != pm:
-                    # TODO(andreas): should this be another standard error type?
                     raise ValueError(
                         "The primary metric differs between the checkpoints in these experiments"
                     )
@@ -555,7 +554,6 @@ class ExperimentList(list, MutableSequence[Experiment]):
         experiments. If no metric is specified, defaults to the
         shared primary metric.
         """
-        # TODO(andreas): smoothing
         import matplotlib.pyplot as plt  # type: ignore
 
         if metric is None:

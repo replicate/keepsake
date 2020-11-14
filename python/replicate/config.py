@@ -36,7 +36,7 @@ def load_config(project_dir: str) -> Dict[str, Any]:
     return validate_and_set_defaults(data, project_dir)
 
 
-# TODO(andreas): more rigorous validation
+# This should be rigorously validated, see https://github.com/replicate/replicate/issues/330
 VALID_KEYS = [
     "repository",
     "storage",  # deprecated
@@ -45,7 +45,6 @@ REQUIRED_KEYS: List[str] = ["repository"]
 
 
 def validate_and_set_defaults(data: Dict[str, Any], project_dir: str) -> Dict[str, Any]:
-    # TODO (bfirsh): just really simple for now. JSON schema is probably right way (aanand says that is only decent solution)
     if data.get("storage"):
         if data.get("repository"):
             raise ConfigValidationError(

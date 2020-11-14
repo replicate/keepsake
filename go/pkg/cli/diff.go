@@ -28,14 +28,14 @@ If an experiment ID is passed, it will pick the best checkpoint from that experi
 		Args: cobra.ExactArgs(2),
 	}
 
-	// TODO(andreas): support json output
+	// We should have a --json flag here, see https://github.com/replicate/replicate/issues/338
 	addRepositoryURLFlag(cmd)
 
 	return cmd
 }
 
 func diffCheckpoints(cmd *cobra.Command, args []string) error {
-	// TODO(andreas): generalize to >2 checkpoints/experiments
+	// We should allow >2 experiments/checkpoints, see https://github.com/replicate/replicate/issues/339
 	// TODO(bfirsh): it probably makes sense to refactor this to diff param.Values instead of strings at some point.
 	// that way we can do interesting stuff like diff JSON structures, using param.Value comparison methods, ShortString, etc.
 

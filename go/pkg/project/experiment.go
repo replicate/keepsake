@@ -34,7 +34,6 @@ type NamedParam struct {
 }
 
 // NewExperiment creates an experiment, setting ID and Created
-// TODO(andreas): can we get rid of this function?
 func NewExperiment(params param.ValueMap) *Experiment {
 	return &Experiment{
 		ID:      hash.Random(),

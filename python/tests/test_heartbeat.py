@@ -48,6 +48,8 @@ def test_heartbeat_write(tmpdir):
     heartbeat_path = os.path.join(tmpdir, "foo", "heartbeat.json")
 
     wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+    # sleep a little extra in case the file is created but not yet written
+    time.sleep(0.01)
 
     with open(heartbeat_path) as f:
         obj = json.loads(f.read())

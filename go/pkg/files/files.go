@@ -29,7 +29,6 @@ func IsDir(dirPath string) (bool, error) {
 }
 
 func TempDir(prefix string) (string, error) {
-	// TODO(andreas): make windows compatible
 	// FIXME(bfirsh): make this more unique (e.g. ai.replicate, like some OS X applications do)
 
 	err := os.MkdirAll(tempFolder, 0755)
