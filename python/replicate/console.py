@@ -26,12 +26,12 @@ def error(s: str):
 
 
 def log(s: str, level: Level):
-    # TODO: word wrapping
+    # Add word wrapping, see https://github.com/replicate/replicate/issues/348
 
     prompt = "═══╡ "
     continuation_prompt = "   │ "
 
-    # TODO: explicit disabling of colors, respect NO_COLOR, etc
+    # We should support NO_COLOR, see https://github.com/replicate/replicate/issues/349
     if sys.stderr.isatty():
         kwargs = {"style": "faint"}
         if level == Level.WARN:
