@@ -3,23 +3,23 @@ import DocsLayout from "../../../layouts/docs";
 <DocsLayout title="How it works">
 
 
-Replicate is similar to a version control system used for code: it records versions of machine learning models.
+Replicate versions machine learning experiments and models.
 
-Machine learning is a lot more than just code, though. It consists of a training script that has some inputs and outputs (code, trained weights, hyperparameters, training data, etc). The thing you want to version in machine learning is each execution of this script.
+In your training script, you use a Python library to upload files (like code and model weights) and metadata (like hyperparameters and metrics) to Amazon S3 or Google Cloud Storage.
 
-So, **Replicate versions the execution of a training script and its inputs and outputs**, not just some files.
+You can get the files and metadata back out using the command-line interface or from within a notebook using the Python library.
 
-## Architecture
+## Recording experiments
 
-The versioning is embedded directly in your training script with a **Python library**:
+Experiments are recorded directly in your training script or notebook using the Python library:
 
-```python title="train.py"
+```python
 import torch
 import replicate
 
-def train(**params):
+def train():
     #highlight-start
-    experiment = replicate.init(path=".", params=params)
+    experiment = replicate.init(path=".", params={...})
     #highlight-end
     model = Model()
 
@@ -28,23 +28,30 @@ def train(**params):
 
         torch.save(model, "model.torch")
         #highlight-start
-        experiment.checkpoint(path="model.torch", metrics=metrics)
+        experiment.checkpoint(path="model.pth", metrics={...})
         #highlight-end
 ```
-
-By being directly inside the training script, all the inputs/outputs of your training script are accessible and it'll always be versioned automatically. This is much harder to do with a separate command, like `git commit`.
 
 These two lines will record:
 
 - The code used to run the training script
 - The hyperparameters
-- Python version, Python package versions, PyTorch/Tensorflow version
-- Any files produced on each iteration – weights, Tensorboard logs, etc.
+- Training data version, depending on how your training data is stored
+- Python package versions
+- The model weights on each iteration
 - Metrics on each iteration
 
-All of this versioned data is put in the **repository**, which by default is the `.replicate/` directory in the same directory as your code. You can also store this data on cloud storage, such as Amazon S3 or Google Cloud Storage. [The format of this data is explained further below.](#data-storage)
+All this information is put in a **repository**, which is defined in the file `replicate.yaml`. For example:
 
-The versioned data is accessed with the **command-line interface**. It consists of various commands for inspecting the data and getting it out:
+```yaml
+repository: "s3://replicate-hooli-hotdog-detector"
+```
+
+A repository can be stored on Amazon S3, Google Cloud Storage, or the local disk. [The format of the repository is explained below](#repositories).
+
+## Getting information out
+
+The versioned information can be accessed with the **command-line interface**:
 
 ```shell-session
 $ replicate ls
@@ -56,7 +63,18 @@ $ replicate checkout d4fb0d3
 ═══╡ Copying the code and weights from d4fb0d3 into the current directory...
 ```
 
-Replicate has been intentionally designed command-line first so you can integrate it with scripts and continuous integration systems.
+You can also use the **Python library** to access this information:
+
+<img src="/images/notebook.png" width="900" />
+
+The Python library can also load saved models to run inferences:
+
+```python
+import replicate
+model = torch.load(replicate.experiments.get("b7c7f17").best().open("model.pth"))
+```
+
+<!-- TODO(bfirsh): replace with real inference
 
 <!-- ## Concepts -->
 
@@ -64,48 +82,50 @@ Replicate has been intentionally designed command-line first so you can integrat
 
 The core concept in Replicate is the **experiment**. It represents a run of your training script, and tracks the _inputs_ to the training process so you can figure out how a model was trained.
 
-You create an experiment by calling `replicate.init()` in the Python library. Any arguments you pass are recorded as hyperparameters, then it automatically records some other data:
+It records:
 
-- The files in the current directory, so you have a copy of the training code
-- The Python version
-- The version of any Python packages used (including PyTorch and Tensorflow)
-- The user who started the training script
-- The host where the training script is running
+- Your code, or any other files or directories.
+- Any key/value data, such as hyperparameters and pointers to your training data.
+- The version of any Python packages imported.
+- The user who started the training script.
+- The host where the training script is running.
 
 ### Checkpoints
 
 Within experiments are **checkpoints**. They each represent a version of the _outputs_ of the training process. Conceptually, you can think of them like commits in a version control system: each one is a particular version of your machine learning model.
 
-You create a checkpoint by calling `experiment.checkpoint()`. It takes the argument `path`, which is the path to any files or directories you want to be saved, such as your trained weights. Any other arguments are recorded as metrics.
+It records:
 
-### Projects
+- Your model weights, or any other files or directories.
+- Metrics, to record the performance of your model at that point.
 
-A **project** represents your model and all its experiments, allowing you to group your experiments based on what model you're working on.
+### Repositories
 
-It is tied to the directory that your model is in, similar to the idea of a repository in a version control system.
+A **repository** is where your experiments and checkpoints are stored. You typically have one repository per model, so you can group experiments based on the model you're working on.
 
-## Data storage
-
-Projects are just stored as plain files. There's nothing magical going on.
-
-They can be stored on:
-
-- The local filesystem, in `.replicate/` in your project's directory
-- Amazon S3
-- Google Cloud Storage
-
-The location is defined by setting the [`repository` option in `replicate.yaml`](/docs/reference/yaml#repository). For example:
+It is tied to the directory that your model is in, similar to the idea of a repository in a version control system. You define what repository a directory uses by defining it in `replicate.yaml`:
 
 ```yaml
-repository: "s3://hooli-hotdog-detector"
+repository: "s3://replicate-hooli-hotdog-detector"
 ```
 
-This is the directory structure of a project:
+Repositories can be stored on Amazon S3, Google Cloud Storage, or the local disk. [Learn more about `replicate.yaml` in the reference.](/docs/reference/yaml#repository)
 
-- `checkpoints/<checkpoint ID>.tar.gz` – A tarball of the files saved when you create a checkpoint, such as your trained weights.
-- `experiments/<experiment ID>.tar.gz` – A tarball of the files in your project's directory when an experiment was created, such as your source code.
+Repositories are just plain files – there is nothing magical going on. This is the directory structure:
+
+- `repository.json` – A file that marks this directory as a Replicate repository, and records the version of the data format within it.
+- `checkpoints/<checkpoint ID>.tar.gz` – A tarball of the files saved when you create a checkpoint.
+- `experiments/<experiment ID>.tar.gz` – A tarball of the files in your project's directory when an experiment was created.
 - `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment and its checkpoints.
 - `metadata/heartbeats/<experiment ID>.json` – A timestamp that is written periodically by a running experiment to mark it as running. When the experiment stops writing this file and the timestamp times out, the experiment is considered stopped.
 
-</DocsLayout>
+## Further reading
 
+Next, you might want to take a look at:
+
+- [The CLI tutorial](/docs/tutorial) or <a href={process.env.TUTORIAL_COLAB_URL} target="_blank">the notebook tutorial</a> to learn how to use Replicate by building a simple model.
+- [The Python library reference](/docs/reference/python).
+- [How to store data in the cloud](/docs/guides/cloud-storage)
+- [How to version training data](/docs/guides/training-data)
+
+</DocsLayout>
