@@ -20,7 +20,10 @@ export default function Home() {
   }
 
   return (
-    <Layout wholeTitle="Replicate – Version control for machine learning">
+    <Layout
+      wholeTitle="Replicate – Version control for machine learning"
+      description="Automatically track your experiments and models with two lines of code. Open source and community-built."
+    >
       <Header className="homepage">
         <section className="cta">
           <h2>
