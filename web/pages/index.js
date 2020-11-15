@@ -1,3 +1,4 @@
+import Head from "next/head";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub, faTwitter } from "@fortawesome/free-brands-svg-icons";
@@ -25,6 +26,14 @@ export default function Home() {
       description="Automatically track your experiments and models with two lines of code. Open source and community-built."
     >
       <Header className="homepage">
+        <Head>
+          {/* "machine learning" doesn't quite fit in twitter card */}
+          <meta
+            property="twitter:title"
+            key="twitter:title"
+            content="Replicate – Version control for ML"
+          />
+        </Head>
         <section className="cta">
           <h2>
             Lightweight

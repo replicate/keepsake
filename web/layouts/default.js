@@ -21,7 +21,11 @@ function Layout({ title, wholeTitle, description = "", children }) {
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary" />
-        <meta property="twitter:title" content={wholeTitle} />
+        <meta
+          property="twitter:title"
+          key="twitter:title"
+          content={wholeTitle}
+        />
         <meta property="twitter:description" content={description} />
         <meta property="twitter:image" content="" />
       </Head>
