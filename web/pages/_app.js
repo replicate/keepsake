@@ -28,7 +28,7 @@ const mdxComponents = {
   pre: (props) => <div {...props} />,
   code: (props) => (
     <CodeBlock
-      language={props.ClassName ? props.className.replace(/language-/, "") : ""}
+      language={props.className ? props.className.replace(/language-/, "") : ""}
     >
       {props.children}
     </CodeBlock>
