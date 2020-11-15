@@ -104,7 +104,12 @@ export default function Home() {
           </p>
         </div>
         <div className="windowChrome">
-          <CodeBlock language="python" copyButton={false}>{`import torch
+          {/* Desktop */}
+          <CodeBlock
+            language="python"
+            copyButton={false}
+            className="sm-hidden"
+          >{`import torch
 import replicate
 
 def train():
@@ -121,6 +126,35 @@ def train():
         #highlight-start
         # Save model weights and metrics
         experiment.checkpoint(path="model.pth", metrics={...})
+        #highlight-end`}</CodeBlock>
+          {/* Mobile */}
+          <CodeBlock
+            language="python"
+            copyButton={false}
+            className="hidden sm-block"
+          >{`import torch
+import replicate
+
+def train():
+    #highlight-start
+    # Save training code and params
+    experiment = replicate.init(
+        path=".",
+        params={...},
+    )
+    #highlight-end
+    model = Model()
+
+    for epoch in range(num_epochs):
+        # ...
+
+        torch.save(model, "model.pth")
+        #highlight-start
+        # Save model weights and metrics
+        experiment.checkpoint(
+            path="model.pth",
+            metrics={...},
+        )
         #highlight-end`}</CodeBlock>
         </div>
       </section>
@@ -253,7 +287,8 @@ $ git commit -am "Use hinge loss"`}
           </p>
           <CodeBlock language="python" copyButton={false}>
             {`import replicate
-model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth"))`}
+checkpoint = replicate.experiments.get("e45a203").best()
+model = torch.load(checkpoint.open("model.pth"))`}
           </CodeBlock>
 
           <h3 id="anchor-6">A platform to build upon</h3>

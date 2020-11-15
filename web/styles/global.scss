@@ -1344,6 +1344,7 @@ footer {
 }
 
 /* UTILITIES */
+/* TODO: use tailwind? */
 .margin-top-1 {
   margin-top: $whitespace-vertical;
 }
@@ -1355,4 +1356,20 @@ footer {
 .margin-y-1 {
   margin-top: $whitespace-vertical;
   margin-bottom: $whitespace-vertical;
+}
+
+.hidden {
+  display: none;
+}
+
+.sm-hidden {
+  @media (max-width: 700px) {
+    display: none;
+  }
+}
+
+.sm-block {
+  @media (max-width: 700px) {
+    display: block;
+  }
 }
