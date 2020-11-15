@@ -46,22 +46,16 @@ const highlightLine = (lineArray, lineProps) => {
   return shouldExclude;
 };
 
-function CodeBlock({ children, className, copyButton = true, ...props }) {
+function CodeBlock({ children, className = "", copyButton = true, ...props }) {
   const [showCopied, setShowCopied] = useState(false);
   const code = children.trim();
-  if (className) {
-    const language = className.replace(/language-/, "");
-    if (!props.language && language) {
-      props.language = language;
-    }
-  }
 
   if (props.language == "shell-session") {
     copyButton = false;
   }
 
   return (
-    <div className="codeblock">
+    <div className={`codeblock ${className}`}>
       <Highlight {...defaultProps} code={code} theme={null} {...props}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <pre className={className} style={style}>

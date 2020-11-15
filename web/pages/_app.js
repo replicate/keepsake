@@ -26,7 +26,13 @@ const CustomLink = (props) => {
 const mdxComponents = {
   a: CustomLink,
   pre: (props) => <div {...props} />,
-  code: (props) => <CodeBlock {...props} />,
+  code: (props) => (
+    <CodeBlock
+      language={props.ClassName ? props.className.replace(/language-/, "") : ""}
+    >
+      {props.children}
+    </CodeBlock>
+  ),
 };
 
 function MyApp({ Component, pageProps }) {

@@ -24,7 +24,7 @@ Replicate is a Python package, and we need a few other Python packages to make t
 
 Create `requirements.txt` to define the Python packages to install:
 
-<CodeBlock className="txt" metastring='title="requirements.txt"'>
+<CodeBlock language="txt" metastring='title="requirements.txt"'>
   {`replicate==` +
     process.env.NEXT_PUBLIC_VERSION +
     `
@@ -45,7 +45,7 @@ You might want to use a [Virtualenv](https://virtualenv.pypa.io/en/latest/) or [
 
 Copy and paste this code into `train.py`:
 
-<CodeBlock className="python" metastring='title="train.py"'>
+<CodeBlock language="python" metastring='title="train.py"'>
   {require("!!raw-loader!../../../example/train.py").default}
 </CodeBlock>
 
@@ -278,4 +278,3 @@ Next, you might want to:
 If something doesn't make sense, doesn't work, or you just have some questions, please email us: [team@replicate.ai](mailto:team@replicate.ai). We love hearing from you!
 
 </DocsLayout>
-
