@@ -166,7 +166,8 @@ def train():
           </h2>
           <p>
             We’re trying to pull together the ML community so we can build this
-            foundational piece of technology together.
+            foundational piece of technology together.{" "}
+            <a href="#manifesto">Learn more.</a>
           </p>
         </div>
         <div>
@@ -175,7 +176,8 @@ def train():
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud Storage
-            as plain old files. There’s no server to run.
+            as plain old files. There’s no server to run.{" "}
+            <a href="/docs/guides/cloud-storage">Learn more.</a>
           </p>
         </div>
         <div>
@@ -237,7 +239,10 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
           <p>
             Don’t like the CLI? No problem. You can retrieve, analyze, and plot
             your results from within a notebook. Think of it like a programmable
-            Tensorboard.
+            Tensorboard.{" "}
+            <a href={process.env.ANALYSIS_COLAB_URL} target="_blank">
+              Learn more.
+            </a>
           </p>
           <img src="images/notebook.png" width="900" />
 
