@@ -884,6 +884,7 @@ header {
   grid-gap: 0;
   margin: $whitespace-vertical * 2 0 0;
   padding: $whitespace-vertical * 2 0 0;
+
   h2,
   h3 {
     padding-top: 0;
@@ -897,6 +898,7 @@ header {
     margin-bottom: $whitespace-vertical;
     display: flex;
     width: 100%;
+    max-width: 30em;
   }
   input,
   button {
