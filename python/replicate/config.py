@@ -3,19 +3,24 @@ from typing import List, Dict, Any
 
 from ._vendor import yaml
 
-from . import console
+from . import console, constants
 from .exceptions import ConfigNotFoundError
 
-# TODO (bfirsh): send users to replicate.yaml reference if this is raised!
+
 class ConfigValidationError(Exception):
-    pass
+    def __str__(self):
+        return (
+            super().__str__()
+            + "\n\nSee the documentation for more details: "
+            + constants.YAML_REFERENCE_DOCS_URL
+        )
 
 
 def load_config(project_dir: str) -> Dict[str, Any]:
     """
     Loads config from directory
     """
-    #  TODO (bfirsh): support replicate.yml too
+    #  Support replicate.yml too: https://github.com/replicate/replicate/issues/351
     try:
         with open(os.path.join(project_dir, "replicate.yaml")) as fh:
             data = yaml.safe_load(fh)
