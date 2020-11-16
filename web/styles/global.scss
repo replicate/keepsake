@@ -102,6 +102,7 @@ html {
 
 body {
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
   font-family: "basier_square", sans-serif;
   font-style: normal;
   font-weight: 400;
@@ -1168,11 +1169,6 @@ header {
   .codeblock {
     margin: $whitespace-vertical 0;
     font-size: 0.9em;
-
-    /* This is doing weird things on iOS safari. Even fixing the font size, some code blocks are different sizes */
-    @media (max-width: 700px) {
-      font-size: 12px;
-    }
   }
 
   .note {
