@@ -35,7 +35,7 @@ from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
 from .validate import check_path
 from .version import version
-from .constants import REPOSITORY_VERSION
+from .constants import REPOSITORY_VERSION, PYTHON_REFERENCE_DOCS_URL
 
 if TYPE_CHECKING:
     from .project import Project
@@ -389,16 +389,6 @@ class Experiment:
         return out
 
 
-class BrokenExperiment:
-    def checkpoint(self, *args, **kwargs):
-        console.error(
-            "Error creating experiment, so not saving checkpoint. See above for the error."
-        )
-
-    def stop(self, *args, **kwargs):
-        pass
-
-
 @dataclass
 class ExperimentCollection:
     """
@@ -409,9 +399,6 @@ class ExperimentCollection:
 
     project: "Project"
 
-    @console.catch_and_print_exceptions(
-        msg="Error creating experiment", return_value=BrokenExperiment()
-    )
     def create(
         self, path=None, params=None, quiet=False, disable_heartbeat=False
     ) -> Experiment:
@@ -453,9 +440,15 @@ class ExperimentCollection:
 
         errors = experiment.validate()
         if errors:
-            for error in errors:
-                console.error("Not saving experiment: " + error)
-            return experiment
+            if len(errors) == 1:
+                s = [f"Could not create Replicate experiment: {errors[0]}"]
+            else:
+                s = ["Could not create Replicate experiment:"]
+                for error in errors:
+                    s.append(f"- {error}")
+            s.append("")
+            s.append(f"For help, see the docs: {PYTHON_REFERENCE_DOCS_URL}")
+            raise ValueError("\n".join(s))
 
         # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
         if experiment.path is not None:

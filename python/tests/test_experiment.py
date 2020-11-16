@@ -13,8 +13,12 @@ from unittest.mock import patch
 from waiting import wait
 
 import replicate
-from replicate.exceptions import DoesNotExistError, ConfigNotFoundError
-from replicate.experiment import Experiment, BrokenExperiment, ExperimentList
+from replicate.exceptions import (
+    DoesNotExistError,
+    ConfigNotFoundError,
+    NewerRepositoryVersion,
+)
+from replicate.experiment import Experiment, ExperimentList
 from replicate.project import Project
 
 
@@ -145,8 +149,8 @@ def test_init_with_config_file(temp_workdir):
 
 
 def test_init_without_config_file(temp_workdir):
-    experiment = replicate.init()
-    assert isinstance(experiment, BrokenExperiment)
+    with pytest.raises(ConfigNotFoundError):
+        replicate.init()
 
 
 def test_heartbeat(temp_workdir):
@@ -162,19 +166,6 @@ def test_heartbeat(temp_workdir):
 
     # check starting and stopping immediately doesn't do anything weird
     experiment = replicate.init()
-    experiment.stop()
-
-
-@patch.object(Experiment, "save")
-def test_broken_experiment(mock_save, temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
-
-    mock_save.side_effect = Exception()
-    # Shouldn't raise an exception
-    experiment = replicate.init()
-    assert isinstance(experiment, BrokenExperiment)
-    experiment.checkpoint()
     experiment.stop()
 
 
@@ -216,7 +207,8 @@ def test_project_repository_version(temp_workdir):
   "version": 2
 }"""
         )
-    assert isinstance(replicate.init(), BrokenExperiment)
+    with pytest.raises(NewerRepositoryVersion):
+        replicate.init()
 
 
 class Blah:
@@ -398,51 +390,53 @@ class TestExperimentCollection:
         assert experiments[0].checkpoints[0].metrics == {"accuracy": "wicked"}
         assert experiments[1].id == exp2.id
 
+    # FIXME(bfirsh): these parameterized tests are hard to parse as a reader -- might be better written out verbosely as code?
     @pytest.mark.parametrize(
-        "has_repository,has_directory,has_config,should_error",
+        "has_repository,has_directory,has_config,exception",
         # fmt: off
         [
             # nothing -> bad
-            (False, False, False, True),
+            (False, False, False, ConfigNotFoundError),
 
             # has config -> good
-            (False, False, True, False),
+            (False, False, True, None),
 
             # has directory but no repo -> bad
-            (False, True, False, True),
+            (False, True, False, ConfigNotFoundError),
 
             # has directory but no repo, and config exists -> good
-            (False, True, True, False),
+            (False, True, True, None),
 
             # has repo but no directory -> bad
-            (True, False, False, True),
-            (True, False, True, True),  # even with config
+            (True, False, False, ValueError),
+            (True, False, True, ValueError),  # even with config
 
             # has repo and directory -> good
-            (True, True, False, False),
-            (True, True, True, False),  # even with config
+            (True, True, False, None),
+            (True, True, True, None),  # even with config
         ],
         # fmt: on
     )
     def test_create_project_options(
-        self, has_repository, has_directory, has_config, should_error, temp_workdir
+        self, has_repository, has_directory, has_config, exception, temp_workdir
     ):
         repo = "file://.replicate/" if has_repository else None
         directory = "." if has_directory else None
-        expected_type = BrokenExperiment if should_error else Experiment
 
         if has_config:
             with open("replicate.yaml", "w") as f:
                 f.write("repository: file://.replicate/")
 
         project = Project(repository=repo, directory=directory)
-        exp = project.experiments.create(path=".")
 
-        assert isinstance(exp, expected_type)
+        if exception:
+            with pytest.raises(exception):
+                project.experiments.create(path=".")
 
-        # to avoid writing heartbeats that sometimes cause
-        # TemporaryDirectory cleanup to fail
-        if not should_error:
+        else:
+            exp = project.experiments.create(path=".")
+            # to avoid writing heartbeats that sometimes cause
+            # TemporaryDirectory cleanup to fail
             exp.stop()
 
     @pytest.mark.parametrize(
