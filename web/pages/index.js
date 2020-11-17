@@ -244,7 +244,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
               Learn more.
             </a>
           </p>
-          <img src="images/notebook.png" width="900" />
+          <img src="images/notebook.png" width="800" />
 
           <h3 id="anchor-2">Compare experiments</h3>
           <p>
@@ -290,7 +290,7 @@ $ git commit -am "Use hinge loss"`}
             Connect them back to how they were trained, who trained them, and
             what their metrics were.
           </p>
-          <img src="images/inference.png" width="800" />
+          <img src="images/inference.png" width="700" />
 
           <h3 id="anchor-6">A platform to build upon</h3>
           <p>
