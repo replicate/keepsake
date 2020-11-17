@@ -26,7 +26,7 @@ function Footer({ children }) {
             can’t handle large files, it can’t handle key/value metadata like
             metrics, and it can’t record information automatically from inside a
             training script. There are some solutions for these things, but they
-            feel like a band-aid.
+            feel like band-aids.
           </p>
           <p>
             We spent a year talking to people in the ML community about this,
