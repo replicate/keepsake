@@ -290,11 +290,7 @@ $ git commit -am "Use hinge loss"`}
             Connect them back to how they were trained, who trained them, and
             what their metrics were.
           </p>
-          <CodeBlock language="python" copyButton={false}>
-            {`import replicate
-checkpoint = replicate.experiments.get("e45a203").best()
-model = torch.load(checkpoint.open("model.pth"))`}
-          </CodeBlock>
+          <img src="images/inference.png" width="800" />
 
           <h3 id="anchor-6">A platform to build upon</h3>
           <p>
