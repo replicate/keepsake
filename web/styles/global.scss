@@ -258,6 +258,11 @@ h2 span {
     hyphens: none;
   }
 
+  .token {
+    // Make blank lines display
+    display: inline-block;
+  }
+
   .token-line {
     padding-left: $whitespace-horizontal;
     padding-right: $whitespace-horizontal;
