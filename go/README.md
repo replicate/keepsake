@@ -1,4 +1,6 @@
-# Replicate command-line interface
+# Replicate CLI & Go library
+
+This is the `replicate` command-line program and a shared library used by Python to store data on S3/GCS (see `pkg/shared/`).
 
 ## Build / install
 
