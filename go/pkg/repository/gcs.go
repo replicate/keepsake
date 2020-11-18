@@ -11,7 +11,9 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 
 	"github.com/replicate/replicate/go/pkg/concurrency"
 	"github.com/replicate/replicate/go/pkg/console"
@@ -26,7 +28,16 @@ type GCSRepository struct {
 }
 
 func NewGCSRepository(bucket, root string) (*GCSRepository, error) {
-	client, err := storage.NewClient(context.TODO())
+	applicationCredentialsJSON := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+	options := []option.ClientOption{}
+	if applicationCredentialsJSON != "" {
+		jwtConfig, err := google.JWTConfigFromJSON([]byte(applicationCredentialsJSON), storage.ScopeReadWrite)
+		if err != nil {
+			return nil, err
+		}
+		options = append(options, option.WithTokenSource(jwtConfig.TokenSource(context.TODO())))
+	}
+	client, err := storage.NewClient(context.TODO(), options...)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
 	}
@@ -380,6 +391,9 @@ func (s *GCSRepository) applyRecursive(prefix string, fn func(obj *storage.Objec
 // the project ID. This is the recommended way
 // https://github.com/googleapis/google-cloud-go/issues/707
 func (s *GCSRepository) getProjectID() (string, error) {
+	if os.Getenv("GOOGLE_CLOUD_PROJECT") != "" {
+		return os.Getenv("GOOGLE_CLOUD_PROJECT"), nil
+	}
 	if s.projectID == "" {
 		projectID, err := discoverProjectID()
 		if err != nil {
