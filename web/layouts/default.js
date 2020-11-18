@@ -11,7 +11,6 @@ function Layout({ title, wholeTitle, description = "", children }) {
         <title>{wholeTitle}</title>
         <meta name="title" content={wholeTitle} />
         <meta name="description" content={description} />
-
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -19,14 +18,15 @@ function Layout({ title, wholeTitle, description = "", children }) {
         />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="manifest" href="/site.webmanifest" />
-
         {/* https://metatags.io/ */}
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content={wholeTitle} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content="" />
-
+        <meta
+          property="og:image"
+          content={process.env.NEXT_PUBLIC_URL + "/apple-touch-icon.png"}
+        />
         {/* Twitter */}
         <meta property="twitter:card" content="summary" />
         <meta
@@ -35,7 +35,10 @@ function Layout({ title, wholeTitle, description = "", children }) {
           content={wholeTitle}
         />
         <meta property="twitter:description" content={description} />
-        <meta property="twitter:image" content="/apple-touch-icon.png" />
+        <meta
+          property="twitter:image"
+          content={process.env.NEXT_PUBLIC_URL + "/apple-touch-icon.png"}
+        />
       </Head>
 
       <div className="layout">{children}</div>
