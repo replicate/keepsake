@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VERSION := 0.1.45
+VERSION := 0.1.46
 ENVIRONMENT := development
 PLATFORMS := darwin linux
 ARCHITECTURES := amd64
