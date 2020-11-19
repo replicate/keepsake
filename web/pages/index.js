@@ -46,7 +46,7 @@ export default function Home() {
             <Link href="/docs">Get started</Link>{" "}
             <a href="#manifesto">Get involved</a>{" "}
             <iframe
-              src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=replicate&amp;type=star&amp;count=false&amp;size=large"
+              src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=replicate&amp;type=star&amp;count=true&amp;size=large"
               frameBorder="0"
               scrolling="0"
               width="170"
