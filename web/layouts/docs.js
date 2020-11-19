@@ -73,6 +73,11 @@ function DocsLayout({ title, children, ...props }) {
                     <a>Keras integration</a>
                   </Link>
                 </li>
+                <li>
+                  <Link href="/docs/guides/production">
+                    <a>Load models in production</a>
+                  </Link>
+                </li>
               </ol>
             </li>
             <li>

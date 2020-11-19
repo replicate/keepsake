@@ -288,7 +288,8 @@ $ git commit -am "Use hinge loss"`}
           <p>
             You can use Replicate to feed your models into production systems.
             Connect them back to how they were trained, who trained them, and
-            what their metrics were.
+            what their metrics were.{" "}
+            <a href="/docs/guides/production">Learn more.</a>
           </p>
           <img src="images/inference.png" width="700" />
 
