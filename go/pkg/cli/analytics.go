@@ -12,8 +12,25 @@ func newAnalyticsCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "analytics <on|off>",
 		Short: "Enable or disable analytics",
-		Run:   handleErrors(analyticsCommand),
-		Args:  cobra.ExactArgs(1),
+		Long: `The Replicate CLI sends anonymous analytics about commands you run.
+
+The following data is sent on each command line invokation:
+- A random token for the machine (e.g. "9f3027bb-0eb8-917d-e5bf-c6c1bdb1fd0a")
+- The subcommand you ran, without any options or arguments
+  (e.g. "replicate run", not "replicate run python secretproject.py")
+- The Replicate version (e.g. "1.0.0")
+- Your CPU architecture (e.g. "amd64")
+- Your operating system (e.g. "linux")
+
+To learn more, please refer to https://replicate.ai/docs/learn/analytics
+
+These analytics really help us, and we'd really appreciate it if you left it on.
+But, if you want to opt out, you can run this command:
+
+replicate analytics off
+`,
+		Run:  handleErrors(analyticsCommand),
+		Args: cobra.ExactArgs(1),
 	}
 }
 
