@@ -1,5 +1,19 @@
 # Contributing guide
 
+## Project structure
+
+There are two main parts to the codebase:
+
+- `go/`: This contains the `replicate` command-line interface. It also provides a shared library that the Python library uses in `go/pkg/shared/`. This is called with subprocess and jsonrpc via stdout/in (it's like CGI RPC!).
+- `python/`: This is the `replicate` Python library. The Python package also includes the `replicate` Go command-line interface and a Go shared library.
+
+The main mechanism that is shared between these two parts is the storage mechanism – reading/saving files on Amazon S3 or Google Cloud Storage. By implementing this in Go, we don't have to add a bazillion dependencies to the Python project. All other abstractions are mostly duplicated across the two languages (repositories, experiments, checkpoints, etc), but this line might move over time.
+
+The other parts are:
+
+- `end-to-end-test/`: A test suite that runs the Python library and Go CLI together against real S3/GCS buckets.
+- `web/`: https://replicate.ai
+
 ## Making a contribution
 
 ### Signing your work
@@ -77,10 +91,6 @@ This will release both the CLI and Python package:
     make release VERSION=<version>
 
 It pushes a new tag, which will trigger the "Release" Github action.
-
-## Project structure
-
-TODO
 
 ## VSCode development environment
 
