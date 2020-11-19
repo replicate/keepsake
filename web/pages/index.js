@@ -191,7 +191,7 @@ def train():
         </div>
       </section>
 
-      <section className="docs homepage">
+      <section className="docs homepage" id="features">
         <nav>
           <ol>
             <li>
