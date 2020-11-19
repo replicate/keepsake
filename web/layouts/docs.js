@@ -32,15 +32,14 @@ function DocsLayout({ title, children, ...props }) {
           <ol>
             <li>
               <ol>
-                <h2>Tutorials</h2>
                 <li>
-                  <Link href="/docs">
-                    <a>First steps &amp; install</a>
+                  <Link href="/docs/install">
+                    <a>Install</a>
                   </Link>
                 </li>
                 <li>
                   <Link href="/docs/tutorial">
-                    <a>CLI tutorial</a>
+                    <a>Tutorial</a>
                   </Link>
                 </li>
                 <li>
