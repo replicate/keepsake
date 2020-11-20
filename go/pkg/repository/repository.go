@@ -121,7 +121,7 @@ func ForURL(repositoryURL string) (Repository, error) {
 }
 
 // FIXME: should we keep on doing this?
-var putPathAlwaysIgnore = []string{".replicate", ".git", "venv", ".mypy_cache"}
+var putPathAlwaysIgnore = []string{".replicate", ".git", ".mypy_cache"}
 
 type fileToPut struct {
 	Source string
@@ -154,6 +154,15 @@ func getListOfFilesToPut(localPath string, repoPath string) ([]fileToPut, error)
 					return filepath.SkipDir
 				}
 			}
+			// TODO(andreas): should we always exclude virtualenvs?
+			isVenv, err := isVirtualenvDir(currentPath)
+			if err != nil {
+				return err
+			}
+			if isVenv {
+				return filepath.SkipDir
+			}
+
 			return nil
 		}
 
@@ -242,5 +251,10 @@ func unknownRepositoryScheme(scheme string) error {
 	return fmt.Errorf(message + `.
 
 Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
-See the docuemntation for more details: https://replicate.ai/docs/reference/yaml`)
+See the documentation for more details: https://replicate.ai/docs/reference/yaml`)
+}
+
+func isVirtualenvDir(path string) (bool, error) {
+	// TODO(andreas): this is maybe not super robust
+	return files.FileExists(filepath.Join(path, "pyvenv.cfg"))
 }
