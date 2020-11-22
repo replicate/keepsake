@@ -71,14 +71,10 @@ benchmark: build
 	go test -bench=$(BENCH) -benchtime 10x -timeout 20m ./benchmark $(ARGS)
 
 
-.PHONY:
-install-goimports:
-	@goimports -h 2>&1 | grep -q usage || (go get golang.org/x/tools/cmd/goimports && echo "installed goimports")
-
 .PHONY: check-fmt
-check-fmt: install-goimports
-	goimports --local replicate.ai -d .
-	@test -z $$(goimports --local replicate.ai -l .)
+check-fmt:
+	go run golang.org/x/tools/cmd/goimports --local replicate.ai -d .
+	@test -z $$(go run golang.org/x/tools/cmd/goimports --local replicate.ai -l .)
 
 .PHONY: vet
 vet:
@@ -90,8 +86,7 @@ race:
 
 .PHONY: lint
 lint:
-	@golangci-lint help &>/dev/null || (echo "installing golangci-lint..." && go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.27.0 &>/dev/null)
-	golangci-lint run ./...
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint run ./...
 
 .PHONY: fmt
 fmt: install-goimports
