@@ -1,12 +1,12 @@
 ENVIRONMENT := development
 
 .PHONY: build
-build:
+build: verify-dev-env
 	cd go && $(MAKE) build-all ENVIRONMENT=$(ENVIRONMENT)
 	cd python && $(MAKE) build
 
 .PHONY: develop
-develop:
+develop: verify-dev-env
 	cd go && $(MAKE) build
 	cd go && $(MAKE) install
 	cd python && python setup.py develop
@@ -58,3 +58,14 @@ release-manual: check-version-var verify-clean-main
 .PHONY: check-version-var
 check-version-var:
 	test $(VERSION)
+
+.PHONY: verify-dev-env
+verify-dev-env: verify-go-version verify-python-version
+
+.PHONY: verify-go-version
+verify-go-version:
+	@./makefile-scripts/verify-go-version.sh
+
+.PHONY: verify-python-version
+verify-python-version:
+	@./makefile-scripts/verify-python-version.sh
