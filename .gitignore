@@ -10,6 +10,7 @@ python/dist
 python/replicate/bin
 /local
 .env*.local
+.idea
 
 # scratch notebooks
 Untitled.ipynb
