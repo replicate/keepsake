@@ -7,12 +7,20 @@ from replicate.config import (
     ConfigValidationError,
 )
 
+from replicate.exceptions import ConfigNotFoundError
 
-def test_load_config_blank(tmp_path):
-    config_file = tmp_path / "replicate.yaml"
+
+@pytest.mark.parametrize("config_filename", ["replicate.yaml", "replicate.yml"])
+def test_load_config_blank(tmp_path, config_filename):
+    config_file = tmp_path / config_filename
     config_file.write_text("")
 
     with pytest.raises(ConfigValidationError):
+        load_config(tmp_path)
+
+
+def test_load_without_config_blank(tmp_path):
+    with pytest.raises(ConfigNotFoundError):
         load_config(tmp_path)
 
 

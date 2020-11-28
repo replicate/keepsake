@@ -20,11 +20,13 @@ def load_config(project_dir: str) -> Dict[str, Any]:
     """
     Loads config from directory
     """
-    #  Support replicate.yml too: https://github.com/replicate/replicate/issues/351
-    try:
+    if os.path.isfile(os.path.join(project_dir, "replicate.yaml")):
         with open(os.path.join(project_dir, "replicate.yaml")) as fh:
             data = yaml.safe_load(fh)
-    except FileNotFoundError:
+    elif os.path.isfile(os.path.join(project_dir, "replicate.yml")):
+        with open(os.path.join(project_dir, "replicate.yml")) as fh:
+            data = yaml.safe_load(fh)
+    else:
         raise ConfigNotFoundError(
             "replicate.yaml was not found in {}".format(project_dir)
         )
