@@ -151,6 +151,8 @@ def get_project_dir() -> str:
     for _ in range(MAX_SEARCH_DEPTH):
         if os.path.exists(os.path.join(directory, "replicate.yaml")):
             return directory
+        elif os.path.exists(os.path.join(directory, "replicate.yml")):
+            return directory
 
         # backwards-compatibility
         if os.path.exists(os.path.join(directory, DEPRECATED_REPOSITORY_DIR)):

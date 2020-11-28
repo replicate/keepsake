@@ -20,24 +20,25 @@ def temp_workdir_in_subdir():
         os.chdir(orig_cwd)
 
 
-def test_get_project_dir(temp_workdir_in_subdir):
+@pytest.mark.parametrize("config_filename", ["replicate.yaml", "replicate.yml"])
+def test_get_project_dir(temp_workdir_in_subdir, config_filename):
     # use getcwd instead of tempdir from fixture, because on OS X getcwd doesn't return same thing passed to chdir
     root = os.path.abspath(os.path.join(os.getcwd(), "../../"))
 
     # replicate.yaml in current directory
-    open(os.path.join(root, "foo/bar/replicate.yaml"), "w").write("")
+    open(os.path.join(root, "foo/bar/{}".format(config_filename)), "w").write("")
     assert get_project_dir() == os.path.join(root, "foo/bar")
-    os.unlink(os.path.join(root, "foo/bar/replicate.yaml"))
+    os.unlink(os.path.join(root, "foo/bar/{}".format(config_filename)))
 
     # up a directory
-    open(os.path.join(root, "foo/replicate.yaml"), "w").write("")
+    open(os.path.join(root, "foo/{}".format(config_filename)), "w").write("")
     assert get_project_dir() == os.path.join(root, "foo")
-    os.unlink(os.path.join(root, "foo/replicate.yaml"))
+    os.unlink(os.path.join(root, "foo/{}".format(config_filename)))
 
     # up two directories
-    open(os.path.join(root, "replicate.yaml"), "w").write("")
+    open(os.path.join(root, "{}".format(config_filename)), "w").write("")
     assert get_project_dir() == root
-    os.unlink(os.path.join(root, "replicate.yaml"))
+    os.unlink(os.path.join(root, "{}".format(config_filename)))
 
     # missing replicate.yaml
     with pytest.raises(ConfigNotFoundError):
