@@ -51,7 +51,7 @@ build-all:
 
 .PHONY: install
 install: build
-	cp $(BINARY) $(INSTALL_PATH)
+	sudo cp $(BINARY) $(INSTALL_PATH)
 
 .PHONY: clean
 clean:
