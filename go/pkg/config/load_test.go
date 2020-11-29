@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFindConfig(t *testing.T) {
+func TestFindConfigYaml(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
@@ -25,13 +25,50 @@ func TestFindConfig(t *testing.T) {
 	}, conf)
 }
 
-func TestFindConfigInWorkingDir(t *testing.T) {
+func TestFindConfigYml(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	// Loads a basic config
+	err = ioutil.WriteFile(path.Join(dir, "replicate.yml"), []byte("repository: 'foo'"), 0644)
+	require.NoError(t, err)
+	conf, _, err := FindConfig(dir)
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Repository: "foo",
+	}, conf)
+}
+
+func TestFindConfigYamlInWorkingDir(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
 	// Uses override directory if that is passed
 	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("repository: 'foo'"), 0644)
+	require.NoError(t, err)
+	conf, _, err := FindConfigInWorkingDir(dir)
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Repository: "foo",
+	}, conf)
+
+	// Throw error if override directory doesn't have replicate.yaml
+	emptyDir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(emptyDir)
+	_, _, err = FindConfigInWorkingDir(emptyDir)
+	require.Error(t, err)
+}
+
+func TestFindConfigYmlInWorkingDir(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	// Uses override directory if that is passed
+	err = ioutil.WriteFile(path.Join(dir, "replicate.yml"), []byte("repository: 'foo'"), 0644)
 	require.NoError(t, err)
 	conf, _, err := FindConfigInWorkingDir(dir)
 	require.NoError(t, err)

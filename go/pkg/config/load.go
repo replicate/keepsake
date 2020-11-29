@@ -33,7 +33,7 @@ For more information, see https://replicate.ai/docs/reference/python"""
 }
 
 // FindConfigInWorkingDir searches working directory and any parent directories
-// for replicate.yaml and loads it.
+// for replicate.yaml (or replicate.yml) and loads it.
 //
 // This function can also be used to discover the source dir -- it returns a
 // (config, projectDir) tuple.
@@ -41,10 +41,20 @@ For more information, see https://replicate.ai/docs/reference/python"""
 // If overrideDir is passed, it uses that directory instead.
 func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string, err error) {
 	if overrideDir != "" {
-		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilename))
+		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilename[0]))
 		if err != nil {
-			if os.IsNotExist(err) {
-				return getDefaultConfig(overrideDir), overrideDir, nil
+			if _, ok := err.(*configNotFoundError); ok {
+
+				// Try to locate replicate.yml
+				conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilename[1]))
+				if err != nil {
+					if os.IsNotExist(err) {
+						return getDefaultConfig(overrideDir), overrideDir, nil
+					}
+					return nil, "", err
+				}
+				return conf, overrideDir, nil
+
 			}
 			return nil, "", err
 		}
@@ -142,12 +152,23 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 func FindConfigPath(startFolder string) (configPath string, deprecatedRepositoryProjectRoot string, err error) {
 	folder := startFolder
 	for i := 0; i < maxSearchDepth; i++ {
-		configPath = filepath.Join(folder, global.ConfigFilename)
-		exists, err := files.FileExists(configPath)
+		// .yaml
+		configPath = filepath.Join(folder, global.ConfigFilename[0])
+		yamlExists, err := files.FileExists(configPath)
 		if err != nil {
 			return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
 		}
-		if exists {
+		if yamlExists {
+			return configPath, "", nil
+		}
+
+		// .yml
+		configPath = filepath.Join(folder, global.ConfigFilename[1])
+		ymlExists, err := files.FileExists(configPath)
+		if err != nil {
+			return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
+		}
+		if ymlExists {
 			return configPath, "", nil
 		}
 
@@ -162,10 +183,10 @@ func FindConfigPath(startFolder string) (configPath string, deprecatedRepository
 
 		if folder == "/" {
 			// These error messages aren't used anywhere, but I've left them in in case this function is used elsewhere in the future
-			return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilename, startFolder)}
+			return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilename[0], startFolder)}
 		}
 
 		folder = filepath.Dir(folder)
 	}
-	return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilename)}
+	return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilename[0])}
 }

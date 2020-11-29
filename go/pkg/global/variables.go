@@ -3,7 +3,7 @@ package global
 var Version = "development"     // set in Makefile
 var Environment = "development" // set in Makefile
 
-var ConfigFilename = "replicate.yaml"
+var ConfigFilename [2]string = [2]string{"replicate.yaml", "replicate.yml"}
 var Verbose = false
 var WebURL = "https://replicate.ai"
 var Color = true
