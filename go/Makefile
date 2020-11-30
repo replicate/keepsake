@@ -49,9 +49,15 @@ build-all:
 		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build $(LDFLAGS) -o $(SHARED_BINARY) $(SHARED_MAIN); \
 	))
 
+# install without sudo if the install path exists and is writeable,
+# or if it doesn't exist and its directory is writeable
 .PHONY: install
 install: build
-	sudo cp $(BINARY) $(INSTALL_PATH)
+	if [[ (-f "$(INSTALL_PATH)" && -w "$(INSTALL_PATH)") || (! -f "$(INSTALL_PATH)" && -w $$(dirname "$(INSTALL_PATH)")) ]]; then \
+	    cp $(BINARY) $(INSTALL_PATH); \
+	else \
+	    sudo cp $(BINARY) $(INSTALL_PATH); \
+	fi
 
 .PHONY: clean
 clean:
