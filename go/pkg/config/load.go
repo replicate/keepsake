@@ -152,8 +152,8 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 func FindConfigPath(startFolder string) (configPath string, deprecatedRepositoryProjectRoot string, err error) {
 	folder := startFolder
 	for i := 0; i < maxSearchDepth; i++ {
-		for j := 0; j < len(global.ConfigFilenames); j++ {
-			configPath = filepath.Join(folder, global.ConfigFilenames[j])
+		for _, configFilename := range global.ConfigFilenames {
+			configPath = filepath.Join(folder, configFilename)
 			exists, err := files.FileExists(configPath)
 			if err != nil {
 				return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
