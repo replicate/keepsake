@@ -20,8 +20,13 @@ from replicate.exceptions import (
 )
 from replicate.experiment import Experiment, ExperimentList
 from replicate.project import Project
-
-
+from replicate.heartbeat import DEFAULT_REFRESH_INTERVAL
+from replicate.constants import (
+    EXPERIMENT_STATUS_RUNNING,
+    EXPERIMENT_STATUS_STOPPED,
+    HEARTBEAT_MISS_TOLERANCE,
+)
+from replicate.metadata import rfc3339_datetime
 from tests.factories import experiment_factory, checkpoint_factory
 
 
@@ -211,6 +216,47 @@ def test_project_repository_version(temp_workdir):
         replicate.init()
 
 
+def test_is_running(temp_workdir):
+    with open("replicate.yaml", "w") as f:
+        f.write("repository: file://.replicate/")
+
+    experiment = replicate.init()
+    # Basic Check whether the experiment is running before heartbeats are saved
+    assert experiment.is_running() == False
+
+    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
+    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+
+    # is running after starting heartbeats
+    assert experiment.is_running() == True
+
+    # Heartbeats stopped
+    experiment._heartbeat.kill()
+    assert experiment.is_running() == True
+
+    # Modify heartbeat_metadata to record last heartbest before last Tolerable Heartbeat
+    heartbeat_metadata = json.load(open(heartbeat_path))
+    heartbeat_metadata["last_heartbeat"] = rfc3339_datetime(
+        datetime.datetime.utcnow() - HEARTBEAT_MISS_TOLERANCE * DEFAULT_REFRESH_INTERVAL
+    )
+
+    out_file = open(heartbeat_path, "w")
+    json.dump(heartbeat_metadata, out_file)
+    out_file.close()
+
+    assert experiment.is_running() == False
+
+    # New experiment to test is_running after stop()
+    experiment = replicate.init()
+    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
+    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+    assert experiment.is_running() == True
+
+    # is_running after stopping the experiment
+    experiment.stop()
+    assert experiment.is_running() == False
+
+
 class Blah:
     pass
 
@@ -224,6 +270,7 @@ class TestExperiment:
             "user": "ben",
             "host": "",
             "config": {},
+            "status": EXPERIMENT_STATUS_STOPPED,
             "command": "",
         }
 
@@ -258,6 +305,7 @@ class TestExperiment:
             "host": "",
             "command": "train.py",
             "config": {"repository": ".replicate/"},
+            "status": EXPERIMENT_STATUS_STOPPED,
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
@@ -272,6 +320,7 @@ class TestExperiment:
             "host": "",
             "command": "train.py",
             "config": {"repository": ".replicate/"},
+            "status": EXPERIMENT_STATUS_STOPPED,
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
