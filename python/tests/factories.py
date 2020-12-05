@@ -4,6 +4,7 @@ from typing import List, Any, Dict, Optional
 from replicate.checkpoint import Checkpoint, CheckpointList
 from replicate.experiment import Experiment
 from replicate.project import Project
+from replicate.constants import EXPERIMENT_STATUS_RUNNING
 
 
 def experiment_factory(
@@ -14,6 +15,7 @@ def experiment_factory(
     host: str = "",
     command: str = "",
     config: dict = {},
+    status: str = EXPERIMENT_STATUS_RUNNING,
     replicate_version: str = "0.0.1",
     checkpoints: Optional[List[Checkpoint]] = None,
     **kwargs,
@@ -29,6 +31,7 @@ def experiment_factory(
         host=host,
         command=command,
         config=config,
+        status=status,
         replicate_version=replicate_version,
         checkpoints=checkpoints,
         **kwargs,

@@ -29,13 +29,19 @@ from .checkpoint import (
     CheckpointList,
 )
 from .hash import random_hash
-from .heartbeat import Heartbeat
+from .heartbeat import Heartbeat, DEFAULT_REFRESH_INTERVAL
 from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
 from .validate import check_path
 from .version import version
-from .constants import REPOSITORY_VERSION, PYTHON_REFERENCE_DOCS_URL
+from .constants import (
+    REPOSITORY_VERSION,
+    PYTHON_REFERENCE_DOCS_URL,
+    HEARTBEAT_MISS_TOLERANCE,
+    EXPERIMENT_STATUS_RUNNING,
+    EXPERIMENT_STATUS_STOPPED,
+)
 
 if TYPE_CHECKING:
     from .project import Project
@@ -55,6 +61,7 @@ class Experiment:
     host: str
     command: str
     config: dict
+    status: str
     path: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
     python_packages: Optional[Dict[str, str]] = None
@@ -179,6 +186,11 @@ class Experiment:
             [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
         )
         experiment = Experiment(project=project, **data)
+        experiment.status = (
+            EXPERIMENT_STATUS_RUNNING
+            if experiment.is_running()
+            else EXPERIMENT_STATUS_STOPPED
+        )
         for chk in experiment.checkpoints:
             chk._experiment = experiment
         return experiment
@@ -192,6 +204,9 @@ class Experiment:
             "host": self.host,
             "command": self.command,
             "config": self.config,
+            "status": EXPERIMENT_STATUS_RUNNING
+            if self.is_running()
+            else EXPERIMENT_STATUS_STOPPED,
             "path": self.path,
             "python_packages": self.python_packages,
             "checkpoints": [c.to_json() for c in self.checkpoints],
@@ -284,6 +299,27 @@ class Experiment:
             key = lambda chk: chk.metrics[name]
 
         return sorted(primary_metric_checkpoints, key=key)[-1]
+
+    def is_running(self) -> bool:
+        """
+        Check whether the experiment is running or not.
+        If the last heartbeat recorded is greater than the last tolerable
+        heartbeat then return False else True
+        In case the heartbeat metadata file is not present which means the
+        experiment was stopped the function returns False.
+        """
+        try:
+            repository = self._project._get_repository()
+            heartbeat_metadata_bytes = repository.get(self._heartbeat_path())
+            heartbeat_metadata = json.loads(heartbeat_metadata_bytes)
+        except Exception as e:
+            return False
+        now = datetime.datetime.utcnow()
+        last_heartbeat = parse_rfc3339(heartbeat_metadata["last_heartbeat"])
+        last_tolerable_heartbeat = (
+            now - DEFAULT_REFRESH_INTERVAL * HEARTBEAT_MISS_TOLERANCE
+        )
+        return last_tolerable_heartbeat < last_heartbeat
 
     def _heartbeat_path(self) -> str:
         return "metadata/heartbeats/{}.json".format(self.id)
@@ -422,6 +458,7 @@ class ExperimentCollection:
             path=path,
             params=params,
             config=config,
+            status=EXPERIMENT_STATUS_RUNNING,
             user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
             host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
