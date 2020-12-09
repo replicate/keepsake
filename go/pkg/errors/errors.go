@@ -1,0 +1,88 @@
+package errors
+
+import (
+	"fmt"
+)
+
+const (
+	CodeDoesNotExist                  = "DOES_NOT_EXIST"
+	CodeReadError                     = "READ_ERROR"
+	CodeWriteError                    = "WRITE_ERROR"
+	CodeRepositoryConfigurationError  = "REPOSITORY_CONFIGURATION_ERROR"
+	CodeIncompatibleRepositoryVersion = "INCOMPATIBLE_REPOSITORY_VERSION"
+	CodeCorruptedRepositorySpec       = "CORRUPTED_REPOSITORY_SPEC"
+	CodeConfigNotFound                = "CONFIG_NOT_FOUND"
+)
+
+type CodedError interface {
+	Code() string
+}
+
+type codedError struct {
+	code string
+	msg  string
+}
+
+func (e *codedError) Error() string {
+	return e.msg
+}
+
+func (e *codedError) Code() string {
+	return e.code
+}
+
+func IsDoesNotExist(err error) bool {
+	return Code(err) == CodeDoesNotExist
+}
+
+func IsConfigNotFound(err error) bool {
+	return Code(err) == CodeConfigNotFound
+}
+
+func DoesNotExist(msg string) error { return &codedError{code: CodeDoesNotExist, msg: msg} }
+func ReadError(msg string) error    { return &codedError{code: CodeReadError, msg: msg} }
+func WriteError(msg string) error   { return &codedError{code: CodeWriteError, msg: msg} }
+func RepositoryConfigurationError(msg string) error {
+	return &codedError{code: CodeRepositoryConfigurationError, msg: msg}
+}
+
+func ConfigNotFound(msg string) error {
+	return &codedError{
+		code: CodeConfigNotFound,
+		msg: msg + `
+
+You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
+
+For more information, see https://replicate.ai/docs/reference/python"""
+`,
+	}
+}
+
+func IncompatibleRepositoryVersion(msg string) error {
+	return &codedError{
+		code: CodeIncompatibleRepositoryVersion,
+		msg: msg + `
+
+You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
+
+For more information, see https://replicate.ai/docs/reference/python"""
+`,
+	}
+}
+
+func CorruptedRepositorySpec(rootURL string, specPath string, err error) error {
+	return &codedError{
+		code: CodeCorruptedRepositorySpec,
+		msg: fmt.Sprintf(`The project spec file at %s/%s is corrupted (%v).
+
+You can manually edit it with the format {"version": VERSION},
+where VERSION is an integer.`, rootURL, specPath, err),
+	}
+}
+
+func Code(err error) string {
+	if cerr, ok := err.(CodedError); ok {
+		return cerr.Code()
+	}
+	return ""
+}

@@ -53,7 +53,7 @@ func (exp *ListExperiment) GetValue(name string) param.Value {
 	}
 	if name == "step" {
 		if exp.LatestCheckpoint != nil {
-			return param.Int(exp.LatestCheckpoint.Step)
+			return param.Int(int64(exp.LatestCheckpoint.Step))
 		}
 		return param.Int(0)
 	}
@@ -84,7 +84,7 @@ func (exp *ListExperiment) GetValue(name string) param.Value {
 }
 
 func Experiments(repo repository.Repository, format Format, all bool, filters *param.Filters, sorter *param.Sorter) error {
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, "")
 	listExperiments, err := createListExperiments(proj, filters)
 	if err != nil {
 		return err
@@ -209,7 +209,7 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 
 		latestCheckpoint := ""
 		if exp.LatestCheckpoint != nil {
-			latestCheckpoint = fmt.Sprintf("%s (step %s)", exp.LatestCheckpoint.ShortID(), strconv.Itoa(exp.LatestCheckpoint.Step))
+			latestCheckpoint = fmt.Sprintf("%s (step %s)", exp.LatestCheckpoint.ShortID(), strconv.FormatInt(exp.LatestCheckpoint.Step, 10))
 		}
 		fmt.Fprintf(tw, "%s\t", latestCheckpoint)
 
@@ -227,7 +227,7 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 		bestCheckpoint := ""
 
 		if exp.BestCheckpoint != nil {
-			bestCheckpoint = fmt.Sprintf("%s (step %s)", exp.BestCheckpoint.ShortID(), strconv.Itoa(exp.BestCheckpoint.Step))
+			bestCheckpoint = fmt.Sprintf("%s (step %s)", exp.BestCheckpoint.ShortID(), strconv.FormatInt(exp.BestCheckpoint.Step, 10))
 		}
 		fmt.Fprintf(tw, "%s\t", bestCheckpoint)
 

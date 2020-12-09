@@ -7,7 +7,7 @@ import os
 import pytest
 
 from replicate.checkpoint import Checkpoint, CheckpointList
-from replicate.exceptions import DoesNotExistError
+from replicate.exceptions import DoesNotExist
 from replicate.experiment import Experiment
 from replicate.project import Project
 
@@ -130,7 +130,7 @@ class TestCheckpoint:
         exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
         chk = exp.checkpoint(metrics={"accuracy": "awesome"})
         tmpdir = tmpdir_factory.mktemp("checkout")
-        with pytest.raises(DoesNotExistError):
+        with pytest.raises(DoesNotExist):
             chk.checkout(output_directory=str(tmpdir))
 
         # test experiment with no path

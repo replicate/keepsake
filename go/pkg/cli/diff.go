@@ -50,7 +50,7 @@ func diffCheckpoints(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, projectDir)
 	au := getAurora()
 	return printDiff(os.Stdout, au, proj, prefix1, prefix2)
 }
@@ -145,7 +145,7 @@ func printMapDiff(w *tabwriter.Writer, au aurora.Aurora, map1, map2 map[string]s
 // Returns a map of checkpoint things we want to show in diff
 func checkpointToMap(checkpoint *project.Checkpoint) map[string]string {
 	return map[string]string{
-		"Step":    strconv.Itoa(checkpoint.Step),
+		"Step":    strconv.FormatInt(checkpoint.Step, 10),
 		"Created": checkpoint.Created.In(timezone).Format(time.RFC1123),
 		"Path":    checkpoint.Path,
 	}

@@ -53,7 +53,7 @@ func show(opts showOpts, args []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, projectDir)
 	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	fmt.Fprintf(cw, "%s\n", strings.Join(headings, "\t"))
 
 	for _, checkpoint := range exp.Checkpoints {
-		columns := []string{checkpoint.ShortID(), strconv.Itoa(checkpoint.Step), console.FormatTime(checkpoint.Created)}
+		columns := []string{checkpoint.ShortID(), strconv.FormatInt(checkpoint.Step, 10), console.FormatTime(checkpoint.Created)}
 		for _, label := range labelNames {
 			val := checkpoint.Metrics[label]
 			s := val.ShortString(10, 5)

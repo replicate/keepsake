@@ -23,7 +23,7 @@ const (
 // TODO(bfirsh): could complexity be reduced here if it were implemented as interface{}?
 
 type Value struct {
-	intVal    *int
+	intVal    *int64
 	floatVal  *float64
 	stringVal *string
 	boolVal   *bool
@@ -55,7 +55,7 @@ func (v Value) MarshalJSON() ([]byte, error) {
 func (v *Value) UnmarshalJSON(data []byte) error {
 	// FIXME(bfirsh): this might be more robust if it unmarshalled to interface{}
 	// then we used reflect? the error returned from json.Unmarshal might be other things
-	if i := new(int); json.Unmarshal(data, i) == nil {
+	if i := new(int64); json.Unmarshal(data, i) == nil {
 		v.intVal = i
 		return nil
 	}
@@ -87,7 +87,7 @@ func ParseFromString(s string) Value {
 		v.isNone = true
 		return v
 	}
-	if i := new(int); json.Unmarshal(data, i) == nil {
+	if i := new(int64); json.Unmarshal(data, i) == nil {
 		v.intVal = i
 		return v
 	}
@@ -190,7 +190,7 @@ func (v Value) BoolVal() bool {
 	return *v.boolVal
 }
 
-func (v Value) IntVal() int {
+func (v Value) IntVal() int64 {
 	if v.Type() != TypeInt {
 		panic(fmt.Sprintf("Can't use %s as int", v))
 	}
@@ -369,7 +369,7 @@ func Bool(v bool) Value {
 	return Value{boolVal: &v}
 }
 
-func Int(v int) Value {
+func Int(v int64) Value {
 	return Value{intVal: &v}
 }
 

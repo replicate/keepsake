@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/hash"
 )
@@ -102,7 +103,7 @@ func TestGCSRepository(t *testing.T) {
 		tmpDir, err := files.TempDir("test")
 		require.NoError(t, err)
 		err = repository.GetPathTar("does-not-exist.tar.gz", tmpDir)
-		require.IsType(t, &DoesNotExistError{}, err)
+		require.True(t, errors.IsDoesNotExist(err))
 	})
 
 	clearGCSBucket(t, bucket)

@@ -13,6 +13,7 @@ import (
 	"github.com/mholt/archiver/v3"
 	gitignore "github.com/sabhiram/go-gitignore"
 
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
@@ -115,13 +116,16 @@ func SplitURL(repositoryURL string) (scheme Scheme, bucket string, root string, 
 	return "", "", "", unknownRepositoryScheme(u.Scheme)
 }
 
-func ForURL(repositoryURL string) (Repository, error) {
+func ForURL(repositoryURL string, projectDir string) (Repository, error) {
 	scheme, bucket, root, err := SplitURL(repositoryURL)
 	if err != nil {
 		return nil, err
 	}
 	switch scheme {
 	case SchemeDisk:
+		if !filepath.IsAbs(root) {
+			root = path.Join(projectDir, root)
+		}
 		return NewDiskRepository(root)
 	case SchemeS3:
 		return NewS3Repository(bucket, root)
@@ -205,7 +209,7 @@ func putPathTar(localPath string, out io.Writer, tarFileName string, includePath
 
 	z := archiver.NewTarGz()
 	if err := z.Create(out); err != nil {
-		return err
+		return errors.WriteError(err.Error())
 	}
 	defer z.Close()
 
@@ -233,11 +237,14 @@ func putPathTar(localPath string, out io.Writer, tarFileName string, includePath
 		})
 		fh.Close()
 		if err != nil {
-			return err
+			return errors.WriteError(err.Error())
 		}
 	}
 	// Explicitly call Close() on success to capture error.
-	return z.Close()
+	if err := z.Close(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 func extractTar(tarPath, localPath string) error {
@@ -283,7 +290,7 @@ func extractTarItem(tarPath, itemPath, localPath string) error {
 	}
 
 	if !itemPathExists {
-		return &DoesNotExistError{msg: "Path does not exist inside the tarfile: " + itemPath}
+		return errors.DoesNotExist("Path does not exist inside the tarfile: " + itemPath)
 	}
 
 	tmpDir, err := files.TempDir("temp-extract-dir")

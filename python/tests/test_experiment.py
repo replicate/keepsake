@@ -8,21 +8,23 @@ import os
 import pytest  # type: ignore
 import tarfile
 import tempfile
+import time
 from pathlib import Path
 from unittest.mock import patch
 from waiting import wait
 
 import replicate
 from replicate.exceptions import (
-    DoesNotExistError,
-    ConfigNotFoundError,
-    NewerRepositoryVersion,
+    DoesNotExist,
+    ConfigNotFound,
+    IncompatibleRepositoryVersion,
 )
 from replicate.experiment import Experiment, ExperimentList
 from replicate.project import Project
 from replicate.heartbeat import DEFAULT_REFRESH_INTERVAL
 from replicate.constants import HEARTBEAT_MISS_TOLERANCE
 from replicate.metadata import rfc3339_datetime
+
 from tests.factories import experiment_factory, checkpoint_factory
 
 
@@ -41,6 +43,14 @@ def test_init_and_checkpoint(temp_workdir):
         path=".", params={"learning_rate": 0.002}, disable_heartbeat=True
     )
 
+    experiment_tar_path = ".replicate/experiments/{}.tar.gz".format(experiment.id)
+    wait(
+        lambda: os.path.exists(experiment_tar_path),
+        timeout_seconds=5,
+        sleep_seconds=0.01,
+    )
+    time.sleep(0.1)  # wait for file to be written
+
     assert len(experiment.id) == 64
     with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
@@ -48,9 +58,7 @@ def test_init_and_checkpoint(temp_workdir):
     assert metadata["params"] == {"learning_rate": 0.002}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        with tarfile.open(
-            ".replicate/experiments/{}.tar.gz".format(experiment.id)
-        ) as tar:
+        with tarfile.open(experiment_tar_path) as tar:
             tar.extractall(tmpdir)
 
         assert (
@@ -67,6 +75,14 @@ def test_init_and_checkpoint(temp_workdir):
         path="weights", step=1, metrics={"validation_loss": 0.123}
     )
 
+    checkpoint_tar_path = ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
+    wait(
+        lambda: os.path.exists(checkpoint_tar_path),
+        timeout_seconds=5,
+        sleep_seconds=0.01,
+    )
+    time.sleep(0.1)  # wait for file to be written
+
     assert len(checkpoint.id) == 64
     with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
@@ -77,9 +93,7 @@ def test_init_and_checkpoint(temp_workdir):
     assert checkpoint_metadata["metrics"] == {"validation_loss": 0.123}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        with tarfile.open(
-            ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
-        ) as tar:
+        with tarfile.open(checkpoint_tar_path) as tar:
             tar.extractall(tmpdir)
 
         assert open(os.path.join(tmpdir, checkpoint.id, "weights")).read() == "1.2kg"
@@ -94,10 +108,16 @@ def test_init_and_checkpoint(temp_workdir):
         path="data", step=1, metrics={"validation_loss": 0.123}
     )
 
+    checkpoint_tar_path = ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
+    wait(
+        lambda: os.path.exists(checkpoint_tar_path),
+        timeout_seconds=5,
+        sleep_seconds=0.01,
+    )
+    time.sleep(0.1)  # wait for file to be written
+
     with tempfile.TemporaryDirectory() as tmpdir:
-        with tarfile.open(
-            ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
-        ) as tar:
+        with tarfile.open(checkpoint_tar_path) as tar:
             tar.extractall(tmpdir)
 
         assert (
@@ -109,6 +129,10 @@ def test_init_and_checkpoint(temp_workdir):
     checkpoint = experiment.checkpoint(
         path=None, step=1, metrics={"validation_loss": 0.123}
     )
+
+    # wait in case async process tries to create a path anyway
+    time.sleep(0.5)
+
     with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["checkpoints"][-1]["id"] == checkpoint.id
@@ -118,10 +142,17 @@ def test_init_and_checkpoint(temp_workdir):
     experiment = replicate.init(
         path="train.py", params={"learning_rate": 0.002}, disable_heartbeat=True
     )
+
+    experiment_tar_path = ".replicate/experiments/{}.tar.gz".format(experiment.id)
+    wait(
+        lambda: os.path.exists(experiment_tar_path),
+        timeout_seconds=5,
+        sleep_seconds=0.01,
+    )
+    time.sleep(0.1)  # wait for file to be written
+
     with tempfile.TemporaryDirectory() as tmpdir:
-        with tarfile.open(
-            ".replicate/experiments/{}.tar.gz".format(experiment.id)
-        ) as tar:
+        with tarfile.open(experiment_tar_path) as tar:
             tar.extractall(tmpdir)
 
         assert (
@@ -134,6 +165,10 @@ def test_init_and_checkpoint(temp_workdir):
     experiment = replicate.init(
         path=None, params={"learning_rate": 0.002}, disable_heartbeat=True
     )
+
+    # wait in case async process tries to create a path anyway
+    time.sleep(0.5)
+
     with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
@@ -150,39 +185,8 @@ def test_init_with_config_file(temp_workdir):
 
 
 def test_init_without_config_file(temp_workdir):
-    with pytest.raises(ConfigNotFoundError):
+    with pytest.raises(ConfigNotFound):
         replicate.init()
-
-
-def test_heartbeat(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
-
-    experiment = replicate.init()
-    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
-    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
-    assert json.load(open(heartbeat_path))["experiment_id"] == experiment.id
-    experiment.stop()
-    assert not os.path.exists(heartbeat_path)
-
-    # check starting and stopping immediately doesn't do anything weird
-    experiment = replicate.init()
-    experiment.stop()
-
-
-def test_deprecated_repository_backwards_compatible(temp_workdir):
-    os.makedirs(".replicate/storage")
-    experiment = replicate.init()
-    assert isinstance(experiment, Experiment)
-    assert experiment._project._repository_url == "file://.replicate/storage"
-    experiment.stop()
-
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://foobar")
-    experiment = replicate.init()
-    assert isinstance(experiment, Experiment)
-    assert experiment._project._repository_url == "file://foobar"
-    experiment.stop()
 
 
 def test_project_repository_version(temp_workdir):
@@ -190,9 +194,7 @@ def test_project_repository_version(temp_workdir):
         f.write("repository: file://.replicate")
     experiment = replicate.init()
 
-    expected = """{
-  "version": 1
-}"""
+    expected = """{"version":1}"""
     with open(".replicate/repository.json") as f:
         assert f.read() == expected
 
@@ -203,12 +205,8 @@ def test_project_repository_version(temp_workdir):
         assert f.read() == expected
 
     with open(".replicate/repository.json", "w") as f:
-        f.write(
-            """{
-  "version": 2
-}"""
-        )
-    with pytest.raises(NewerRepositoryVersion):
+        f.write("""{"version":2}""")
+    with pytest.raises(IncompatibleRepositoryVersion):
         replicate.init()
 
 
@@ -472,7 +470,7 @@ class TestExperimentCollection:
         # get by prefix
         assert project.experiments.get(exp2.id[:7]).created == exp2.created
 
-        with pytest.raises(DoesNotExistError):
+        with pytest.raises(DoesNotExist):
             project.experiments.get("doesnotexist")
 
     def test_list(self, temp_workdir):
@@ -502,20 +500,22 @@ class TestExperimentCollection:
         # fmt: off
         [
             # nothing -> bad
-            (False, False, False, ConfigNotFoundError),
+            (False, False, False, ConfigNotFound),
 
             # has config -> good
             (False, False, True, None),
 
             # has directory but no repo -> bad
-            (False, True, False, ConfigNotFoundError),
+            (False, True, False, ConfigNotFound),
 
             # has directory but no repo, and config exists -> good
             (False, True, True, None),
 
-            # has repo but no directory -> bad
-            (True, False, False, ValueError),
-            (True, False, True, ValueError),  # even with config
+            # has repo but no directory, uses current working directory by default -> good
+            (True, False, False, None),
+
+            # has repo, no directory, but infers directory from config -> good
+            (True, False, True, None),
 
             # has repo and directory -> good
             (True, True, False, None),
@@ -583,7 +583,7 @@ class TestExperimentCollection:
 
         project = Project(repository=repo, directory=directory)
         if should_error:
-            with pytest.raises((ValueError, ConfigNotFoundError)):
+            with pytest.raises((ValueError, ConfigNotFound)):
                 project.experiments.list()
         else:
             exps = project.experiments.list()

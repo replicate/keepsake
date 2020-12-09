@@ -46,7 +46,7 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 	if err != nil {
 		return err
 	}
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, projectDir)
 	if err != nil {
 		return err
 	}

@@ -25,7 +25,7 @@ type Checkpoint struct {
 	ID            string         `json:"id"`
 	Created       time.Time      `json:"created"`
 	Metrics       param.ValueMap `json:"metrics"`
-	Step          int            `json:"step"`
+	Step          int64          `json:"step"`
 	Path          string         `json:"path"`
 	PrimaryMetric *PrimaryMetric `json:"primary_metric"`
 }

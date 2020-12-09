@@ -18,9 +18,7 @@ else:
     from ._vendor.typing_extensions import TypedDict
 
 from . import console
-from .exceptions import DoesNotExistError
 from .json import CustomJSONEncoder
-from .hash import random_hash
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .validate import check_path
 
@@ -122,32 +120,11 @@ class Checkpoint(object):
         """
         Copy files from this checkpoint to the output directory.
         """
-        os.makedirs(output_directory, exist_ok=True)
+        assert self._experiment
 
-        assert self._experiment is not None
-        repository = self._experiment._project._get_repository()
-        no_experiment_files = False
-        no_checkpoint_files = False
-        try:
-            repository.get_path_tar(self._repository_tar_path(), output_directory)
-        except DoesNotExistError:
-            no_experiment_files = True
-        try:
-            repository.get_path_tar(
-                self._experiment._repository_tar_path(), output_directory
-            )
-        except DoesNotExistError:
-            no_checkpoint_files = True
-        if no_experiment_files and no_checkpoint_files:
-            raise DoesNotExistError(
-                f"Could not find any files in checkpoint {self.short_id()} or its experiment {self._experiment.short_id()}. Did you pass the 'path' argument to init() or checkpoint()?"
-            )
-        if not quiet:
-            console.info(
-                "Copied the files from checkpoint {} to {}".format(
-                    self.short_id(), output_directory
-                )
-            )
+        self._experiment._project._daemon().checkout_checkpoint(
+            self.id, output_directory, quiet=quiet
+        )
 
     def open(self, path: str) -> BinaryIO:
         """
@@ -160,9 +137,6 @@ class Checkpoint(object):
                 # We shouldn't load entire file into memory, see https://github.com/replicate/replicate/issues/331
                 out_f = io.BytesIO(f.read())
             return out_f
-
-    def _repository_tar_path(self) -> str:
-        return "checkpoints/{}.tar.gz".format(self.id)
 
     def _repr_html_(self) -> str:
         out = '<p><b><pre style="display: inline">Checkpoint(id="{}")</pre></b></p>'.format(

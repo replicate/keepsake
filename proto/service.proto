@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+// TODO: docstrings
+
+option go_package = "github.com/replicate/replicate/go/pkg/servicepb";
+
+package service;
+
+import "google/protobuf/timestamp.proto";
+
+service Daemon {
+    rpc CreateExperiment (CreateExperimentRequest) returns (CreateExperimentReply) {}
+    rpc CreateCheckpoint (CreateCheckpointRequest) returns (CreateCheckpointReply) {}
+    rpc SaveExperiment (SaveExperimentRequest) returns (SaveExperimentReply) {}
+    rpc StopExperiment (StopExperimentRequest) returns (StopExperimentReply) {}
+    rpc GetExperiment (GetExperimentRequest) returns (GetExperimentReply) {}
+    rpc ListExperiments (ListExperimentsRequest) returns (ListExperimentsReply) {}
+    rpc DeleteExperiment (DeleteExperimentRequest) returns (DeleteExperimentReply) {}
+    rpc CheckoutCheckpoint (CheckoutCheckpointRequest) returns (CheckoutCheckpointReply) {}
+}
+
+message CreateExperimentRequest {
+    Experiment experiment = 1;
+    bool disableHeartbeat = 2;
+}
+
+message CreateExperimentReply {
+    Experiment experiment = 1;
+    Exception exception = 2;
+}
+
+message CreateCheckpointRequest {
+    Checkpoint checkpoint = 1;
+}
+
+message CreateCheckpointReply {
+    Checkpoint checkpoint = 1;
+}
+
+message SaveExperimentRequest {
+    Experiment experiment = 1;
+}
+
+message SaveExperimentReply {
+    Experiment experiment = 1;
+}
+
+message StopExperimentRequest {
+    string experimentID = 1;
+}
+
+message StopExperimentReply {
+}
+
+message GetExperimentRequest {
+    string experimentIDPrefix = 1;
+}
+
+message GetExperimentReply {
+    Experiment experiment = 1;
+}
+
+message ListExperimentsRequest {
+}
+
+message ListExperimentsReply {
+    repeated Experiment experiments = 1;
+}
+
+message DeleteExperimentRequest {
+    string experimentID = 1;
+}
+
+message DeleteExperimentReply {
+}
+
+message CheckoutCheckpointRequest {
+    string checkpointIDPrefix = 1;
+    string outputDirectory = 2;
+}
+
+message CheckoutCheckpointReply {
+}
+
+message Experiment {
+    string id = 1;
+    google.protobuf.Timestamp created = 2;
+    map<string, ParamType> params = 3;
+    string host = 4;
+    string user = 5;
+    Config config = 6;
+    string command = 7;
+    string path = 8;
+    map<string, string> pythonPackages = 9;
+    repeated Checkpoint checkpoints = 10;
+    string replicateVersion = 11;
+}
+
+message Config {
+    string repository = 1;
+
+    // for backwards compatibility
+    string storage = 2;
+}
+
+message Checkpoint {
+    string id = 1;
+    google.protobuf.Timestamp created = 2;
+    map<string, ParamType> metrics = 3;
+    int64 step = 4;
+    string path = 5;
+    PrimaryMetric primaryMetric = 6;
+}
+
+message PrimaryMetric {
+    enum Goal {
+        MAXIMIZE = 0;
+        MINIMIZE = 1;
+    }
+    string name = 1;
+    Goal goal = 2;
+}
+
+message ParamType {
+    oneof value {
+        bool boolValue = 1;
+        int64 intValue = 2;
+        double floatValue = 3;
+        string stringValue = 4;
+        string objectValueJson = 5;
+    }
+}

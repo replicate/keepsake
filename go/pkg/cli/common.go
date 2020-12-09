@@ -28,20 +28,31 @@ func addRepositoryURLFlagVar(cmd *cobra.Command, opt *string) {
 }
 
 // getRepositoryURLFromStringOrConfig attempts to get it from passed string from --repository,
-// otherwise finds replicate.yaml recursively
+// otherwise finds replicate.yaml recursively.
+// The project directory is determined by the following logic:
+// * If an explicit directory is passed with -D, that is used
+// * Else, if repository URL isn't manually passed with -R, the directory of replicate.yaml is used
+// * Otherwise, the current working directory is used
+// Returns (repositoryURL, projectDir, error)
 func getRepositoryURLFromStringOrConfig(repositoryURL string) (string, string, error) {
+	projectDir := global.ProjectDirectory
 	if repositoryURL == "" {
-		conf, projectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
+		conf, confProjectDir, err := config.FindConfigInWorkingDir(global.ProjectDirectory)
 		if err != nil {
 			return "", "", err
 		}
-		return conf.Repository, projectDir, nil
+		if repositoryURL == "" {
+			repositoryURL = conf.Repository
+		}
+		if global.ProjectDirectory == "" {
+			projectDir = confProjectDir
+		} else {
+			projectDir = global.ProjectDirectory
+		}
 	}
 
-	// if global.ProjectDirectory == "", abs of that is cwd
-	// FIXME (bfirsh): this does not look up directories for replicate.yaml, so might be the wrong
-	// projectDir. It should probably use return value of FindConfigInWorkingDir.
-	projectDir, err := filepath.Abs(global.ProjectDirectory)
+	// abs of "" if cwd
+	projectDir, err := filepath.Abs(projectDir)
 	if err != nil {
 		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s': %w", global.ProjectDirectory, err)
 	}
@@ -71,14 +82,14 @@ func getProjectDir() (string, error) {
 // getRepository returns the project's repository, with caching if needed
 // This is not in repository package so we can do user interface stuff around syncing
 func getRepository(repositoryURL, projectDir string) (repository.Repository, error) {
-	repo, err := repository.ForURL(repositoryURL)
+	repo, err := repository.ForURL(repositoryURL, projectDir)
 	if err != nil {
 		return nil, err
 	}
 	// projectDir might be "" if you use --repository option
 	if repository.NeedsCaching(repo) && projectDir != "" {
 		console.Info("Fetching new data from %q...", repo.RootURL())
-		repo, err = repository.NewCachedMetadataRepository(repo, projectDir)
+		repo, err = repository.NewCachedMetadataRepository(projectDir, repo)
 		if err != nil {
 			return nil, err
 		}

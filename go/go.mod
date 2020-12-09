@@ -9,7 +9,9 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
-	github.com/golangci/golangci-lint v1.34.1
+	github.com/golang/protobuf v1.4.3
+	github.com/golangci/golangci-lint v1.32.2
+	github.com/google/martian v2.1.1-0.20190517191504-25dcb96d9e51+incompatible // indirect
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d
 	github.com/logrusorgru/aurora v2.0.3+incompatible
@@ -29,7 +31,11 @@ require (
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/tools v0.0.0-20201201161351-ac6f37ff4c2a
-	google.golang.org/api v0.36.0
-	gotest.tools/gotestsum v0.6.0
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/tools v0.0.0-20201121010211-780cb80bd7fb
+	google.golang.org/api v0.32.0
+	google.golang.org/genproto v0.0.0-20200921151605-7abf4a1a14d5
+	google.golang.org/grpc v1.33.2
+	google.golang.org/protobuf v1.25.0
+	gotest.tools/gotestsum v0.5.2
 )

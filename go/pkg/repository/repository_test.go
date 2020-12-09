@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/replicate/go/pkg/errors"
 )
 
 func shim(v ...interface{}) []interface{} {
@@ -148,5 +149,5 @@ func TestExtractTarItem(t *testing.T) {
 
 	// Extract a file that does not exist
 	err = extractTarItem(path.Join(dir, "temp.tar.gz"), "does-not-exist.txt", tmpDir)
-	require.IsType(t, &DoesNotExistError{}, err)
+	require.True(t, errors.IsDoesNotExist(err))
 }

@@ -125,7 +125,7 @@ func TestShowCheckpoint(t *testing.T) {
 
 	conf := &config.Config{}
 	repo := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, workingDir)
 	result, err := proj.CheckpointOrExperimentFromPrefix("3cc")
 	require.NoError(t, err)
 	require.NotNil(t, result.Checkpoint)
@@ -187,7 +187,7 @@ func TestShowExperiment(t *testing.T) {
 
 	conf := &config.Config{}
 	repo := createShowTestData(t, workingDir, conf)
-	proj := project.NewProject(repo)
+	proj := project.NewProject(repo, workingDir)
 	result, err := proj.CheckpointOrExperimentFromPrefix("1eee")
 	require.NoError(t, err)
 	require.NotNil(t, result.Experiment)
