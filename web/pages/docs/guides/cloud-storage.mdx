@@ -89,6 +89,38 @@ If you switch from local file storage to remote cloud storage, you will not see 
 
 It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. To migrate from local file storage to the cloud, just copy the `.replicate` directory, or wherever you store your data, to your Amazon S3 or Google Cloud Storage bucket.
 
+
+<StatefulTabs>
+<TabPanels>
+<TabPanel>
+
+
+### Store data in a Colab notebook
+
+You can store data in Google Cloud Storage directly from a [Colab](https://colab.research.google.com/) notebook.
+
+You first need to get your project ID, [which is explained in the Google Cloud documentation](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
+Then, run this in a cell in your Colab notebook, replacing the first two variables with your project ID and a name for your Replicate project:
+
+```python
+project_id = '[your Cloud Platform project ID]'
+bucket_name = 'replicate-[your repository name]'
+
+from google.colab import auth
+auth.authenticate_user()
+
+!gcloud config set project {project_id}
+!echo 'repository: "gs://{bucket_name}"' > replicate.yaml
+```
+
+For a real example, <a href={process.env.ANALYSIS_COLAB_URL}>expand the "Setup" section in this notebook</a>.
+
+
+</TabPanel>
+</TabPanels>
+</StatefulTabs>
+
+
 ## What's next
 
 You might want to take a look at:
