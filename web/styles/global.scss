@@ -472,7 +472,7 @@ h2 span {
 }
 
 .tabs {
-  & > div:first-child {
+  [role="tablist"] {
     margin-top: 2.2em;
     margin-bottom: $whitespace-vertical * 2;
     border-bottom: $keyline;
@@ -487,8 +487,29 @@ h2 span {
         overflow: hidden;
       }
     }
+    button {
+      overflow: visible;
+      border: none;
+      background: none;
+      padding: 0 $whitespace-horizontal $whitespace-vertical;
+      margin: $whitespace-vertical 0 0;
+      cursor: pointer;
+      &:first-child {
+        padding-left: 0;
+      }
+      &:hover {
+        color: $text;
+      }
+      &:focus {
+        outline: 0;
+      }
+    }
+    button[data-selected] {
+      font-weight: 800;
+      cursor: text;
+    }
   }
-  div {
+  [role="tablist"] + div {
     &:focus {
       outline: none;
     }
@@ -497,27 +518,6 @@ h2 span {
     h3:first-child {
       padding-top: 0;
     }
-  }
-  [role="tablist"] button {
-    overflow: visible;
-    border: none;
-    background: none;
-    padding: 0 $whitespace-horizontal $whitespace-vertical;
-    margin: $whitespace-vertical 0 0;
-    cursor: pointer;
-    &:first-child {
-      padding-left: 0;
-    }
-    &:hover {
-      color: $text;
-    }
-    &:focus {
-      outline: 0;
-    }
-  }
-  button[data-selected] {
-    font-weight: 800;
-    cursor: text;
   }
 }
 

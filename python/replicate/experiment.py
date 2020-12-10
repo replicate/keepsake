@@ -339,7 +339,7 @@ class Experiment:
         Plot a metric for all the checkpoints in this experiment. If
         no metric is specified, defaults to the shared primary metric.
         """
-        self.checkpoints.plot(metric, logy, plot_only)
+        return self.checkpoints.plot(metric, logy, plot_only)
 
     @property
     def duration(self) -> Optional[datetime.timedelta]:
