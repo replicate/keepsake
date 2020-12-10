@@ -385,6 +385,28 @@ class TestExperiment:
         )
         assert paths == expected
 
+    def test_refresh(self, temp_workdir):
+        project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
+        experiment = project.experiments.create(
+            params={"foo": "bar"}, disable_heartbeat=True
+        )
+
+        experiment.checkpoint(metrics={"accuracy": 0})
+
+        other_experiment = project.experiments.get(experiment.id)
+        assert len(other_experiment.checkpoints) == 1
+
+        experiment.checkpoint(metrics={"accuracy": 1})
+        assert len(other_experiment.checkpoints) == 1
+
+        other_experiment.refresh()
+        assert len(other_experiment.checkpoints) == 2
+        assert other_experiment.checkpoints[-1].metrics["accuracy"] == 1
+
 
 class TestExperimentCollection:
     def test_get(self, temp_workdir):

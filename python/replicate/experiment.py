@@ -47,6 +47,15 @@ if TYPE_CHECKING:
     from .project import Project
 
 
+def experiment_fields_from_json(data: Dict[str, Any]) -> Dict[str, Any]:
+    data = data.copy()
+    data["created"] = parse_rfc3339(data["created"])
+    data["checkpoints"] = CheckpointList(
+        [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
+    )
+    return data
+
+
 @dataclass
 class Experiment:
     """
@@ -177,14 +186,24 @@ class Experiment:
             json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
         )
 
+    def refresh(self):
+        """
+        Update this experiment with the latest data from the repository.
+        """
+        repository = self._project._get_repository()
+        data = json.loads(
+            repository.get("metadata/experiments/{}.json".format(self.id))
+        )
+        fields = experiment_fields_from_json(data)
+        for k, v in fields.items():
+            setattr(self, k, v)
+        for chk in self.checkpoints:
+            chk._experiment = self
+
     @classmethod
     def from_json(cls, project: "Project", data: Dict[str, Any]) -> "Experiment":
-        data = data.copy()
-        data["created"] = parse_rfc3339(data["created"])
-        data["checkpoints"] = CheckpointList(
-            [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
-        )
-        experiment = Experiment(project=project, **data)
+        kwargs = experiment_fields_from_json(data)
+        experiment = Experiment(project=project, **kwargs)
         for chk in experiment.checkpoints:
             chk._experiment = experiment
         return experiment
