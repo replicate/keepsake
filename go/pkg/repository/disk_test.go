@@ -29,6 +29,7 @@ func TestDiskRepositoryGet(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte("hello"), content)
 }
+
 func TestDiskGetPathTar(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
@@ -40,6 +41,65 @@ func TestDiskGetPathTar(t *testing.T) {
 	tmpDir, err := files.TempDir("test")
 	require.NoError(t, err)
 	err = repository.GetPathTar("does-not-exist.tar.gz", tmpDir)
+	require.IsType(t, &DoesNotExistError{}, err)
+}
+
+func TestDiskGetPathItemTar(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	// Create some temporary files
+	fileDir := path.Join(dir, "files")
+	err = os.MkdirAll(fileDir, os.ModePerm)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(fileDir, "a.txt"), []byte("file a"), 0644)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(fileDir, "b.txt"), []byte("file b"), 0644)
+	require.NoError(t, err)
+	err = os.Mkdir(path.Join(fileDir, "c"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(fileDir, "c/d.txt"), []byte("file d"), 0644)
+	require.NoError(t, err)
+
+	repository, err := NewDiskRepository(dir)
+	require.NoError(t, err)
+
+	// Archive the sub-directory as a tarball in the repository
+	// This should result in a tarball with the following directory tree:
+	//
+	// temp
+	// |--c
+	// |  |-- d.txt
+	// |
+	// |-- a.txt
+	// |-- b.txt
+	err = repository.PutPathTar(fileDir, "temp.tar.gz", "")
+	require.NoError(t, err)
+
+	// Create a temporary directory
+	tmpDir, err := files.TempDir("test")
+	require.NoError(t, err)
+
+	// Extract just one of the two files from the repo dir.
+	err = repository.GetPathItemTar("temp.tar.gz", "a.txt", tmpDir)
+	require.NoError(t, err)
+
+	content, err := ioutil.ReadFile(path.Join(tmpDir, "temp/a.txt"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("file a"), content)
+
+	// Extract an entire directory
+	err = repository.GetPathItemTar("temp.tar.gz", "c", tmpDir)
+	require.NoError(t, err)
+
+	content, err = ioutil.ReadFile(path.Join(tmpDir, "temp/c/d.txt"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("file d"), content)
+
+	// Extract a file that does not exist
+	err = repository.GetPathItemTar("temp.tar.gz", "does-not-exist.txt", tmpDir)
 	require.IsType(t, &DoesNotExistError{}, err)
 }
 
