@@ -61,6 +61,18 @@ func (s *DiskRepository) GetPathTar(tarPath, localPath string) error {
 	return extractTar(fullTarPath, localPath)
 }
 
+func (s *DiskRepository) GetPathItemTar(tarPath, itemPath, localPath string) error {
+	fullTarPath := path.Join(s.rootDir, tarPath)
+	exists, err := files.FileExists(fullTarPath)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return &DoesNotExistError{msg: "GetPathItemTar: does not exist: " + fullTarPath}
+	}
+	return extractTarItem(fullTarPath, itemPath, localPath)
+}
+
 // Put data at path
 func (s *DiskRepository) Put(p string, data []byte) error {
 	fullPath := path.Join(s.rootDir, p)

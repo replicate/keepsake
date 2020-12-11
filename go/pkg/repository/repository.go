@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"archive/tar"
 	"fmt"
 	"io"
 	"net/url"
@@ -50,6 +51,11 @@ type Repository interface {
 	//
 	// The first component of the tarball is stripped. E.g. Extracting a tarball with `abc123/weights` in it to `/code` would create `/code/weights`.
 	GetPathTar(tarPath, localPath string) error
+
+	// GetPathItemTar extracts `itemPath` from tarball `tarPath` to `localPath`
+	//
+	// itemPath can be a single file or a directory.
+	GetPathItemTar(tarPath, itemPath, localPath string) error
 
 	// Put data at path
 	Put(path string, data []byte) error
@@ -233,6 +239,51 @@ func extractTar(tarPath, localPath string) error {
 	tar.StripComponents = 1
 	tar.OverwriteExisting = true
 	return tar.Unarchive(tarPath, localPath)
+}
+
+func getListOfFilesInTar(tarPath string) ([]string, error) {
+	result := []string{}
+
+	t := archiver.NewTarGz()
+	err := t.Walk(tarPath, func(f archiver.File) error {
+		th, ok := f.Header.(*tar.Header)
+		if !ok {
+			return fmt.Errorf("expected header to be *tar.Header but was %T", f.Header)
+		}
+
+		result = append(result, th.Name)
+		return nil
+	})
+
+	return result, err
+}
+
+func extractTarItem(tarPath, itemPath, localPath string) error {
+	tarBaseName := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))
+	fullItemPath := path.Join(tarBaseName, itemPath)
+
+	filesInTar, err := getListOfFilesInTar(tarPath)
+	if err != nil {
+		return err
+	}
+
+	// Check if itemPath is inside the tar
+	itemPathExists := false
+	for _, fileInTar := range filesInTar {
+		if strings.HasPrefix(fileInTar, fullItemPath) {
+			itemPathExists = true
+			break
+		}
+	}
+
+	if !itemPathExists {
+		return &DoesNotExistError{msg: "Path does not exist inside the tarfile: " + itemPath}
+	}
+
+	tar := archiver.NewTarGz()
+	tar.StripComponents = 1
+	tar.OverwriteExisting = true
+	return tar.Extract(tarPath, fullItemPath, localPath)
 }
 
 // NeedsCaching returns true if the repository is slow and needs caching
