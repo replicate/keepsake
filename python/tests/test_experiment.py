@@ -21,11 +21,7 @@ from replicate.exceptions import (
 from replicate.experiment import Experiment, ExperimentList
 from replicate.project import Project
 from replicate.heartbeat import DEFAULT_REFRESH_INTERVAL
-from replicate.constants import (
-    EXPERIMENT_STATUS_RUNNING,
-    EXPERIMENT_STATUS_STOPPED,
-    HEARTBEAT_MISS_TOLERANCE,
-)
+from replicate.constants import HEARTBEAT_MISS_TOLERANCE
 from replicate.metadata import rfc3339_datetime
 from tests.factories import experiment_factory, checkpoint_factory
 
@@ -221,13 +217,13 @@ def test_is_running(temp_workdir):
         f.write("repository: file://.replicate/")
 
     experiment = replicate.init()
-    # Basic Check whether the experiment is running before heartbeats are saved
+    # Check whether the experiment is running before heartbeats are saved
     assert experiment.is_running() == False
 
     heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
     wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
 
-    # is running after starting heartbeats
+    # Check whether experiment is running after heartbeats are started
     assert experiment.is_running() == True
 
     # Heartbeats stopped
@@ -252,7 +248,7 @@ def test_is_running(temp_workdir):
     wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
     assert experiment.is_running() == True
 
-    # is_running after stopping the experiment
+    # Check is_running after stopping the experiment
     experiment.stop()
     assert experiment.is_running() == False
 
@@ -270,7 +266,6 @@ class TestExperiment:
             "user": "ben",
             "host": "",
             "config": {},
-            "status": EXPERIMENT_STATUS_STOPPED,
             "command": "",
         }
 
@@ -305,7 +300,6 @@ class TestExperiment:
             "host": "",
             "command": "train.py",
             "config": {"repository": ".replicate/"},
-            "status": EXPERIMENT_STATUS_STOPPED,
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
@@ -320,7 +314,6 @@ class TestExperiment:
             "host": "",
             "command": "train.py",
             "config": {"repository": ".replicate/"},
-            "status": EXPERIMENT_STATUS_STOPPED,
             "path": ".",
             "python_packages": {"foo": "1.0.0"},
             "checkpoints": [],
