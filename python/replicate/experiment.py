@@ -322,6 +322,8 @@ class Experiment:
             repository = self._project._get_repository()
             heartbeat_metadata_bytes = repository.get(self._heartbeat_path())
             heartbeat_metadata = json.loads(heartbeat_metadata_bytes)
+        except DoesNotExistError as e:
+            return False
         except Exception as e:
             console.warn(
                 "Failed to load heartbeat metadata from {}: {}".format(
