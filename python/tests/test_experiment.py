@@ -218,19 +218,21 @@ def test_is_running(temp_workdir):
 
     experiment = replicate.init()
     # Check whether the experiment is running before heartbeats are saved
-    assert experiment.is_running() == False
+    assert not experiment.is_running()
 
     heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
-    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
+    assert wait(
+        lambda: os.path.exists(heartbeat_path), timeout_seconds=2, sleep_seconds=0.01
+    )
 
     # Check whether experiment is running after heartbeats are started
-    assert experiment.is_running() == True
+    assert experiment.is_running()
 
     # Heartbeats stopped
     experiment._heartbeat.kill()
-    assert experiment.is_running() == True
+    assert experiment.is_running()
 
-    # Modify heartbeat_metadata to record last heartbest before last Tolerable Heartbeat
+    # Modify heartbeat_metadata to record last heartbeat before last tolerable heartbeat
     heartbeat_metadata = json.load(open(heartbeat_path))
     heartbeat_metadata["last_heartbeat"] = rfc3339_datetime(
         datetime.datetime.utcnow() - HEARTBEAT_MISS_TOLERANCE * DEFAULT_REFRESH_INTERVAL
@@ -240,17 +242,19 @@ def test_is_running(temp_workdir):
     json.dump(heartbeat_metadata, out_file)
     out_file.close()
 
-    assert experiment.is_running() == False
+    assert not experiment.is_running()
 
     # New experiment to test is_running after stop()
     experiment = replicate.init()
     heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
-    wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
-    assert experiment.is_running() == True
+    assert wait(
+        lambda: os.path.exists(heartbeat_path), timeout_seconds=2, sleep_seconds=0.01
+    )
+    assert experiment.is_running()
 
     # Check is_running after stopping the experiment
     experiment.stop()
-    assert experiment.is_running() == False
+    assert not experiment.is_running()
 
 
 class Blah:
