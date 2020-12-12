@@ -256,6 +256,28 @@ func (s *S3Repository) GetPathTar(tarPath, localPath string) error {
 	return extractTar(tmptarball, localPath)
 }
 
+func (s *S3Repository) GetPathItemTar(tarPath, itemPath, localPath string) error {
+	// archiver doesn't let us use readers, so download to temporary file
+	// TODO: make a better tar implementation
+	tmpdir, err := files.TempDir("tar")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
+	if err := s.GetPath(tarPath, tmptarball); err != nil {
+		return err
+	}
+	exists, err := files.FileExists(tmptarball)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+	}
+	return extractTarItem(tmptarball, itemPath, localPath)
+}
+
 func (s *S3Repository) ListRecursive(results chan<- ListResult, dir string) {
 	s.listRecursive(results, dir, func(_ string) bool { return true })
 }

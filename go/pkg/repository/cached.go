@@ -74,6 +74,13 @@ func (s *CachedRepository) GetPathTar(tarPath, localPath string) error {
 	return s.repository.GetPathTar(tarPath, localPath)
 }
 
+func (s *CachedRepository) GetPathItemTar(tarPath, itemPath, localPath string) error {
+	if strings.HasPrefix(tarPath, s.cachePrefix) {
+		return s.cacheRepository.GetPathTar(tarPath, localPath)
+	}
+	return s.repository.GetPathItemTar(tarPath, itemPath, localPath)
+}
+
 func (s *CachedRepository) PutPath(localPath string, repoPath string) error {
 	// FIXME: potential for cache and remote to get out of sync on error
 	if strings.HasPrefix(repoPath, s.cachePrefix) {
