@@ -25,7 +25,10 @@ class ReplicateCallback(Callback):
         self.experiment = replicate.init(path='.', params=self.params)
 
     def on_validation_end(self, trainer, pl_module):
-        if trainer.current_epoch % self.period == 0 and trainer.current_epoch:
+        if (
+            (trainer.current_epoch % self.period == 0) and
+            (not trainer.running_sanity_check)
+        ):
             self._save_model('model.pth', trainer, pl_module)
 
     def _save_model(self, filepath: str, trainer, pl_module):
@@ -35,8 +38,7 @@ class ReplicateCallback(Callback):
         metrics.update(trainer.logger_connector.callback_metrics)
         metrics.update(trainer.logger_connector.progress_bar_metrics)
         metrics.update({
-            "step": trainer.global_step,
-            "epoch": trainer.current_epoch
+            "global_step": trainer.global_step,
         })
 
         self.experiment.checkpoint(
