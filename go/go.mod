@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/storage v1.10.0
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
-	github.com/aws/aws-sdk-go v1.35.35
+	github.com/aws/aws-sdk-go v1.36.8
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
