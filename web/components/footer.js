@@ -16,9 +16,8 @@ function Footer({ children }) {
           <p>
             This causes all sorts of problems: people are manually keeping track
             of things in spreadsheets, model weights are scattered on S3, and
-            results can’t be reproduced. Somebody who wrote a model has left the
-            team? Bad luck – nothing’s written down and you’ve probably got to
-            start from scratch.
+            nothing is reproducible. It's hard enough getting your own model
+            from a month ago running, let alone somebody else's.
           </p>
           <p>
             So why isn’t everyone using Git?{" "}

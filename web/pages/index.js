@@ -79,12 +79,9 @@ export default function Home() {
               <span>{num()}</span> Toward reproducibility
             </h2>
             <p>
-              It is really hard to re-train and run ML models. We are trying to
-              fix that,{" "}
-              <a href="#manifesto">
-                but we need your help to make it a reality
-              </a>
-              .
+              It is really hard to run and re-train ML models. We are working to
+              fix that, but{" "}
+              <a href="#manifesto">we need your help to make it a reality</a>.
             </p>
           </div>
         </section>
