@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -150,6 +152,64 @@ func TestDiskRepositoryList(t *testing.T) {
 	paths, err = repository.List("dir-that-does-not-exist")
 	require.NoError(t, err)
 	require.Equal(t, []string{}, paths)
+}
+
+type Alphabetic []string
+
+func (list Alphabetic) Len() int { return len(list) }
+
+func (list Alphabetic) Swap(i, j int) { list[i], list[j] = list[j], list[i] }
+
+func (list Alphabetic) Less(i, j int) bool {
+	var si string = list[i]
+	var sj string = list[j]
+	var si_lower = strings.ToLower(si)
+	var sj_lower = strings.ToLower(sj)
+	if si_lower == sj_lower {
+		return si < sj
+	}
+	return si_lower < sj_lower
+}
+
+func TestDiskRepositoryListTarFile(t *testing.T) {
+	dir, err := ioutil.TempDir("", "replicate-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	// Create some temporary files to put inside a tarball.
+	fileDir := path.Join(dir, "files")
+	err = os.MkdirAll(fileDir, os.ModePerm)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(fileDir, "a.txt"), []byte("file a"), 0644)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(fileDir, "b.txt"), []byte("file b"), 0644)
+	require.NoError(t, err)
+	err = os.Mkdir(path.Join(fileDir, "c"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(fileDir, "c/d.txt"), []byte("file d"), 0644)
+	require.NoError(t, err)
+
+	repository, err := NewDiskRepository(dir)
+	require.NoError(t, err)
+
+	// Archive the sub-directory as a tarball in the repository
+	// This should result in a tarball with the following directory tree:
+	//
+	// temp
+	// |--c
+	// |  |-- d.txt
+	// |
+	// |-- a.txt
+	// |-- b.txt
+	err = repository.PutPathTar(fileDir, "temp.tar.gz", "")
+	require.NoError(t, err)
+
+	paths, err := repository.ListTarFile("temp.tar.gz")
+	sort.Sort(Alphabetic(paths))
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"a.txt", "b.txt", "c/d.txt"}, paths)
 }
 
 func TestPutPath(t *testing.T) {

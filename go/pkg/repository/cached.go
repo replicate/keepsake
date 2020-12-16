@@ -109,6 +109,13 @@ func (s *CachedRepository) List(p string) ([]string, error) {
 	return s.repository.List(p)
 }
 
+func (s *CachedRepository) ListTarFile(p string) ([]string, error) {
+	if strings.HasPrefix(p, s.cachePrefix) {
+		return s.cacheRepository.List(p)
+	}
+	return s.repository.ListTarFile(p)
+}
+
 func (s *CachedRepository) ListRecursive(results chan<- ListResult, path string) {
 	if strings.HasPrefix(path, s.cachePrefix) {
 		s.cacheRepository.ListRecursive(results, path)
