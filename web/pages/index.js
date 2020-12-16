@@ -58,11 +58,11 @@ export default function Home() {
         <section className="info">
           <div>
             <h2>
-              <span>{num()}</span> Track experiments
+              <span>{num()}</span> Never lose your work
             </h2>
             <p>
-              Automatically track code, hyperparameters, training data, weights,
-              metrics, Python dependencies — <em>everything</em>.
+              Train as usual, and Replicate will automatically save your code
+              and weights to Amazon S3 or Google Cloud Storage.
             </p>
           </div>
           <div>
@@ -71,16 +71,20 @@ export default function Home() {
             </h2>
             <p>
               Get back the code and weights from any checkpoint if you need to
-              replicate your results or commit to Git after the fact.
+              re-train or get the model weights out.
             </p>
           </div>
           <div>
             <h2>
-              <span>{num()}</span> Version your models
+              <span>{num()}</span> Toward reproducibility
             </h2>
             <p>
-              Model weights are stored on your own Amazon S3 or Google Cloud
-              bucket, so it’s really easy to feed them into production systems.
+              It is really hard to re-train and run ML models. We are trying to
+              fix that,{" "}
+              <a href="#manifesto">
+                but we need your help to make it a reality
+              </a>
+              .
             </p>
           </div>
         </section>
