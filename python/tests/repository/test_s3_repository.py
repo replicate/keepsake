@@ -16,7 +16,7 @@ pytestmark = pytest.mark.external
 
 @pytest.fixture(scope="function")
 def temp_bucket():
-    bucket_name = "replicate-test-" + random_hash()[:20]
+    bucket_name = "replicate-test-unit-" + random_hash()[:20]
 
     yield bucket_name
 

@@ -14,7 +14,7 @@ class TempBucketFactory:
         self.gs_bucket_names = []
 
     def make_name(self):
-        return "replicate-test-" + "".join(
+        return "replicate-test-endtoend-" + "".join(
             random.choice(string.ascii_lowercase) for _ in range(20)
         )
 
