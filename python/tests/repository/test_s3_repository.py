@@ -14,16 +14,29 @@ from replicate.exceptions import DoesNotExistError
 pytestmark = pytest.mark.external
 
 
-@pytest.fixture(scope="function")
-def temp_bucket():
+@pytest.fixture(scope="session")
+def temp_bucket_create():
+    # We intentionally don't create the bucket to test Replicate's ability to create buckets
     bucket_name = "replicate-test-unit-" + random_hash()[:20]
-
     yield bucket_name
 
+    # Delete bucket once at end of session
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
     bucket.objects.all().delete()
     bucket.delete()
+
+
+@pytest.fixture(scope="function")
+def temp_bucket(temp_bucket_create):
+    bucket_name = temp_bucket_create
+
+    yield bucket_name
+
+    # Clear all objects after each test
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+    bucket.objects.all().delete()
 
 
 def test_s3_experiment(temp_bucket, tmpdir):
