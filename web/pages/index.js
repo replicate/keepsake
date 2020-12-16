@@ -176,11 +176,11 @@ def train():
         </div>
         <div>
           <h2>
-            <span>{num()}</span> You’re in control of&nbsp;your&nbsp;data
+            <span>{num()}</span> It's just plain old files on S3
           </h2>
           <p>
             All the data is stored on your own Amazon S3 or Google Cloud Storage
-            as plain old files. There’s no server to run.{" "}
+            as tarballs and JSON files. There’s no server to run.{" "}
             <a href="/docs/guides/cloud-storage">Learn more.</a>
           </p>
         </div>
@@ -213,10 +213,10 @@ def train():
                   <a href="#anchor-2">Compare experiments</a>
                 </li>
                 <li>
-                  <a href="#anchor-4">Commit to Git, after the fact</a>
+                  <a href="#anchor-4">Get back your code and weights</a>
                 </li>
                 <li>
-                  <a href="#anchor-5">Load models in production</a>
+                  <a href="#anchor-5">Load models for inference</a>
                 </li>
                 <li>
                   <a href="#anchor-6">A platform to build upon</a>
@@ -241,9 +241,8 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 
           <h3 id="anchor-3">Analyze in a notebook</h3>
           <p>
-            Don’t like the CLI? No problem. You can retrieve, analyze, and plot
-            your results from within a notebook. Think of it like a programmable
-            Tensorboard.{" "}
+            Don’t like the CLI? No problem. You can get all your experiments out
+            and do meta-analysis on your results from within a notebook.{" "}
             <a href={process.env.ANALYSIS_COLAB_URL} target="_blank">
               Learn more.
             </a>
@@ -273,34 +272,41 @@ val_loss:         0.1484      0.1989
 val_accuracy:     0.9607      0.9411`}
           </CodeBlock>
 
-          <h3 id="anchor-4">Commit to Git, after the fact</h3>
+          <h3 id="anchor-4">Get back your code and weights</h3>
           <p>
-            If you eventually want to store your code on Git, there’s no need to
-            commit everything as you go. Replicate lets you get back to any
-            point you called <code>experiment.checkpoint()</code> so, you can
-            commit to Git once you’ve found something that works.
+            Replicate lets you get back to any point you called{" "}
+            <code>experiment.checkpoint()</code> so, you can re-train models and
+            get your model weights out.
           </p>
           <CodeBlock language="shell-session">
             {`$ replicate checkout f81069d
 Copying code and weights to working directory...
 
-# save the code to git
-$ git commit -am "Use hinge loss"`}
+If you want to run this experiment again, this is how it was run:
+  python train.py --learning_rate=0.2`}
           </CodeBlock>
 
-          <h3 id="anchor-5">Load models in production</h3>
+          <h3 id="anchor-5">Load models for inference</h3>
           <p>
-            You can use Replicate to feed your models into production systems.
-            Connect them back to how they were trained, who trained them, and
-            what their metrics were.{" "}
-            <a href="/docs/guides/production">Learn more.</a>
+            You can load a specific version of your model in Python to run
+            inferences – either{" "}
+            <a href={process.env.ANALYSIS_COLAB_URL} target="_blank">
+              from within a notebook
+            </a>{" "}
+            or{" "}
+            <a href="/docs/guides/production">
+              from another program running inferences
+            </a>
+            .{" "}
           </p>
           <img src="images/inference.png" width="700" />
 
           <h3 id="anchor-6">A platform to build upon</h3>
           <p>
             Replicate is intentionally lightweight and doesn’t try to do too
-            much. Instead, we give you Python and command-line APIs so you can
+            much. Instead, we give you{" "}
+            <a href="/docs/reference/python">Python</a> and{" "}
+            <a href="/docs/reference/cli">command-line</a> APIs so you can
             integrate it with your own tools and workflow.
           </p>
         </div>
