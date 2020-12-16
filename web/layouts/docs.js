@@ -73,8 +73,8 @@ function DocsLayout({ title, children, ...props }) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/docs/guides/production">
-                    <a>Load models in production</a>
+                  <Link href="/docs/guides/inference">
+                    <a>Load models for inference</a>
                   </Link>
                 </li>
               </ol>

@@ -294,7 +294,7 @@ If you want to run this experiment again, this is how it was run:
               from within a notebook
             </a>{" "}
             or{" "}
-            <a href="/docs/guides/production">
+            <a href="/docs/guides/inference">
               from another program running inferences
             </a>
             .{" "}

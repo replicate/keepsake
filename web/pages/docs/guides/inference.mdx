@@ -1,10 +1,10 @@
 import DocsLayout from "../../../layouts/docs";
 import Note from "../../../components/note";
 
-<DocsLayout title="Load models in production">
+<DocsLayout title="Load models for inference">
 
 
-Replicate versions all of the models you train and stores them on Amazon S3 or Google Cloud Storage, so you can pull down those models into production inference systems.
+Replicate versions all of the models you train and stores them on Amazon S3 or Google Cloud Storage, so you can pull down those models into inference systems.
 
 # Load models within Python
 
@@ -36,6 +36,10 @@ checkpoint = experiment.best()
 
 model = torch.load(checkpoint.open("model.pth"))
 ```
+
+<a href={process.env.INFERENCE_COLAB_URL} target="_blank">
+  This also works inside notebooks
+</a> if you want to do visualization of your model's output.
 
 # Load models from the CLI
 

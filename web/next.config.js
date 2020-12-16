@@ -11,6 +11,15 @@ let config = {
     INFERENCE_COLAB_URL:
       "https://colab.research.google.com/drive/18sVRE4Zi484G2rBeOYjobE3zek2gDBvy#scrollTo=J_Z02qBik8c9",
   },
+  async redirects() {
+    return [
+      {
+        source: "/docs/guides/production",
+        destination: "/docs/guides/inference",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 // Add MDX support
