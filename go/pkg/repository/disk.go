@@ -162,6 +162,29 @@ func (s *DiskRepository) List(p string) ([]string, error) {
 	return result, nil
 }
 
+func (s *DiskRepository) ListTarFile(tarPath string) ([]string, error) {
+	fullTarPath := path.Join(s.rootDir, tarPath)
+	exists, err := files.FileExists(fullTarPath)
+	if err != nil {
+		return []string{}, err
+	}
+	if !exists {
+		return []string{}, &DoesNotExistError{msg: "ListTarFile: does not exist: " + fullTarPath}
+	}
+
+	files, err := getListOfFilesInTar(fullTarPath)
+	if err != nil {
+		return []string{}, err
+	}
+
+	tarname := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))
+	for idx := range files {
+		files[idx] = strings.TrimPrefix(files[idx], tarname+"/")
+	}
+
+	return files, nil
+}
+
 func (s *DiskRepository) ListRecursive(results chan<- ListResult, folder string) {
 	err := filepath.Walk(path.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {

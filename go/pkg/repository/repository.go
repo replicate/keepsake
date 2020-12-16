@@ -84,6 +84,12 @@ type Repository interface {
 	// If path does not exist, an empty list will be returned.
 	List(path string) ([]string, error)
 
+	// List files in a tar-file
+	//
+	// Returns a list of paths, present inside the give tarfile, that can be passed straight to GetPathItemTar()
+	// Directories are not listed.
+	ListTarFile(path string) ([]string, error)
+
 	// List files in a path recursively
 	ListRecursive(results chan<- ListResult, folder string)
 

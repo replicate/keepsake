@@ -213,6 +213,39 @@ func (s *GCSRepository) List(dir string) ([]string, error) {
 	return results, nil
 }
 
+func (s *GCSRepository) ListTarFile(tarPath string) ([]string, error) {
+	// archiver doesn't let us use readers, so download to temporary file
+	// TODO: make a better tar implementation
+	tmpdir, err := files.TempDir("tar")
+	if err != nil {
+		return []string{}, err
+	}
+	defer os.RemoveAll(tmpdir)
+	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
+	if err := s.GetPath(tarPath, tmptarball); err != nil {
+		return []string{}, err
+	}
+	exists, err := files.FileExists(tmptarball)
+	if err != nil {
+		return []string{}, err
+	}
+	if !exists {
+		return []string{}, &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+	}
+
+	files, err := getListOfFilesInTar(tmptarball)
+	if err != nil {
+		return []string{}, err
+	}
+
+	tarname := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))
+	for idx := range files {
+		files[idx] = strings.TrimPrefix(files[idx], tarname+"/")
+	}
+
+	return files, nil
+}
+
 // List files in a path recursively
 func (s *GCSRepository) ListRecursive(results chan<- ListResult, dir string) {
 	s.listRecursive(results, dir, func(_ string) bool { return true })

@@ -317,6 +317,39 @@ func (s *S3Repository) List(dir string) ([]string, error) {
 	return results, err
 }
 
+func (s *S3Repository) ListTarFile(tarPath string) ([]string, error) {
+	// archiver doesn't let us use readers, so download to temporary file
+	// TODO: make a better tar implementation
+	tmpdir, err := files.TempDir("tar")
+	if err != nil {
+		return []string{}, err
+	}
+	defer os.RemoveAll(tmpdir)
+	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
+	if err := s.GetPath(tarPath, tmptarball); err != nil {
+		return []string{}, err
+	}
+	exists, err := files.FileExists(tmptarball)
+	if err != nil {
+		return []string{}, err
+	}
+	if !exists {
+		return []string{}, &DoesNotExistError{msg: "ListTarFile: does not exist: " + tmptarball}
+	}
+
+	files, err := getListOfFilesInTar(tmptarball)
+	if err != nil {
+		return []string{}, err
+	}
+
+	tarname := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))
+	for idx := range files {
+		files[idx] = strings.TrimPrefix(files[idx], tarname+"/")
+	}
+
+	return files, nil
+}
+
 func CreateS3Bucket(region, bucket string) (err error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(region),
