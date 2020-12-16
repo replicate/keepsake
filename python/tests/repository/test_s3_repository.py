@@ -35,7 +35,9 @@ def test_s3_experiment(temp_bucket, tmpdir):
     current_workdir = os.getcwd()
     try:
         os.chdir(tmpdir)
-        experiment = replicate.init(path=".", params={"foo": "bar"})
+        experiment = replicate.init(
+            path=".", params={"foo": "bar"}, disable_heartbeat=True
+        )
         checkpoint = experiment.checkpoint(
             path=".", step=10, metrics={"loss": 1.1, "baz": "qux"}
         )
