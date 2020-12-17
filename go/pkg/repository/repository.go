@@ -290,11 +290,7 @@ func extractTarItem(tarPath, itemPath, localPath string) error {
 	if err != nil {
 		return err
 	}
-
-	err = os.Chmod(tmpDir, 0777)
-	if err != nil {
-		return err
-	}
+	defer os.RemoveAll(tmpDir)
 
 	tar := archiver.NewTarGz()
 	tar.StripComponents = 1
@@ -342,7 +338,6 @@ func extractTarItem(tarPath, itemPath, localPath string) error {
 		return err
 	}
 
-	os.RemoveAll(tmpDir)
 	return nil
 }
 
