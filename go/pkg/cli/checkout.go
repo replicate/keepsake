@@ -91,8 +91,8 @@ func getExperimentAndCheckpoint(prefix string, repo repository.Repository) (*pro
 
 // Handle errors related to the outputDir
 func validateOutputDir(outputDir string) error {
-	// FIXME(vastolorde95): If outputPath does not exist, there is no way to distinguish if 
-	// it is supposed to be a file or a directory. Should we ask the user for a prompt if 
+	// FIXME(vastolorde95): If outputPath does not exist, there is no way to distinguish if
+	// it is supposed to be a file or a directory. Should we ask the user for a prompt if
 	// the checkoutPath is a file? This way we will be able to support:
 	//
 	// replicate checkout abc123 -o out/new_model.pth -file data/model.pth
@@ -115,7 +115,7 @@ func validateOutputDir(outputDir string) error {
 	if !isDir {
 		return fmt.Errorf("Checkout path %q is not a directory", outputDir)
 	}
-	
+
 	return nil
 }
 
