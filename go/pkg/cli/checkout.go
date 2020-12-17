@@ -115,6 +115,8 @@ func validateOutputDir(outputDir string) error {
 	if !isDir {
 		return fmt.Errorf("Checkout path %q is not a directory", outputDir)
 	}
+	
+	return nil
 }
 
 // Prompt user for confirmation if the displayPath already exists
