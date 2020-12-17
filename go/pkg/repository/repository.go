@@ -286,10 +286,64 @@ func extractTarItem(tarPath, itemPath, localPath string) error {
 		return &DoesNotExistError{msg: "Path does not exist inside the tarfile: " + itemPath}
 	}
 
+	tmpDir, err := files.TempDir("temp-extract-dir")
+	if err != nil {
+		return err
+	}
+
+	err = os.Chmod(tmpDir, 0777)
+	if err != nil {
+		return err
+	}
+
 	tar := archiver.NewTarGz()
 	tar.StripComponents = 1
 	tar.OverwriteExisting = true
-	return tar.Extract(tarPath, fullItemPath, localPath)
+	err = tar.Extract(tarPath, fullItemPath, tmpDir)
+	if err != nil {
+		return err
+	}
+
+	walkPath := path.Join(tmpDir, tarBaseName)
+	err = filepath.Walk(walkPath, func(currentPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		relativePath, err := filepath.Rel(walkPath, currentPath)
+		if err != nil {
+			return err
+		}
+		newPath := path.Join(localPath, relativePath)
+
+		dir := filepath.Dir(newPath)
+
+		exists, err := files.FileExists(dir)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return fmt.Errorf("Failed to create directory %q: %w", dir, err)
+			}
+		}
+		err = os.Rename(currentPath, newPath)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	os.RemoveAll(tmpDir)
+	return nil
 }
 
 // NeedsCaching returns true if the repository is slow and needs caching

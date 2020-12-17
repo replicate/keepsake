@@ -88,7 +88,7 @@ func TestDiskGetPathItemTar(t *testing.T) {
 	err = repository.GetPathItemTar("temp.tar.gz", "a.txt", tmpDir)
 	require.NoError(t, err)
 
-	content, err := ioutil.ReadFile(path.Join(tmpDir, "temp/a.txt"))
+	content, err := ioutil.ReadFile(path.Join(tmpDir, "a.txt"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("file a"), content)
 
@@ -96,7 +96,7 @@ func TestDiskGetPathItemTar(t *testing.T) {
 	err = repository.GetPathItemTar("temp.tar.gz", "c", tmpDir)
 	require.NoError(t, err)
 
-	content, err = ioutil.ReadFile(path.Join(tmpDir, "temp/c/d.txt"))
+	content, err = ioutil.ReadFile(path.Join(tmpDir, "c/d.txt"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("file d"), content)
 

@@ -134,7 +134,7 @@ func TestExtractTarItem(t *testing.T) {
 	err = extractTarItem(path.Join(dir, "temp.tar.gz"), "a.txt", tmpDir)
 	require.NoError(t, err)
 
-	content, err := ioutil.ReadFile(path.Join(tmpDir, "temp/a.txt"))
+	content, err := ioutil.ReadFile(path.Join(tmpDir, "a.txt"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("file a"), content)
 
@@ -142,7 +142,7 @@ func TestExtractTarItem(t *testing.T) {
 	err = extractTarItem(path.Join(dir, "temp.tar.gz"), "c", tmpDir)
 	require.NoError(t, err)
 
-	content, err = ioutil.ReadFile(path.Join(tmpDir, "temp/c/d.txt"))
+	content, err = ioutil.ReadFile(path.Join(tmpDir, "c/d.txt"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("file d"), content)
 
