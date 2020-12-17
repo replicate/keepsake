@@ -68,6 +68,7 @@ func TestCheckout(t *testing.T) {
 	// checkout to output directory
 	err = checkoutCheckpoint(checkoutOpts{
 		outputDirectory: outputDir,
+		checkoutPath:    "",
 		force:           true,
 		repositoryURL:   "file://" + repoDir,
 	}, []string{"1cc"})
@@ -83,7 +84,7 @@ func TestCheckout(t *testing.T) {
 
 	outputDir2, err := files.TempDir("test-checkout-output-2")
 	require.NoError(t, err)
-	defer os.RemoveAll(outputDir)
+	defer os.RemoveAll(outputDir2)
 
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
@@ -93,6 +94,7 @@ func TestCheckout(t *testing.T) {
 	// checkout to working directory without replicate.yaml
 	err = checkoutCheckpoint(checkoutOpts{
 		outputDirectory: "",
+		checkoutPath:    "",
 		force:           true,
 		repositoryURL:   "file://" + repoDir,
 	}, []string{"1cc"})
@@ -105,6 +107,7 @@ func TestCheckout(t *testing.T) {
 	// checkout to working directory with replicate.yaml
 	err = checkoutCheckpoint(checkoutOpts{
 		outputDirectory: "",
+		checkoutPath:    "",
 		force:           true,
 		repositoryURL:   "",
 	}, []string{"1cc"})
@@ -116,6 +119,27 @@ func TestCheckout(t *testing.T) {
 	require.Equal(t, rand1, string(contents))
 
 	contents, err = ioutil.ReadFile(path.Join(outputDir2, rand2))
+	require.NoError(t, err)
+	require.Equal(t, rand2, string(contents))
+
+	outputDir3, err := files.TempDir("test-checkout-output-3")
+	require.NoError(t, err)
+	defer os.RemoveAll(outputDir3)
+
+	// checkout a single file to output directory
+	err = checkoutCheckpoint(checkoutOpts{
+		outputDirectory: outputDir3,
+		checkoutPath:    rand2,
+		force:           true,
+		repositoryURL:   "file://" + repoDir,
+	}, []string{"1cc"})
+	require.NoError(t, err)
+
+	_, err = ioutil.ReadFile(path.Join(outputDir3, rand1))
+	// only checking out rand2, should error
+	require.Error(t, err)
+
+	contents, err = ioutil.ReadFile(path.Join(outputDir3, rand2))
 	require.NoError(t, err)
 	require.Equal(t, rand2, string(contents))
 }

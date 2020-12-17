@@ -89,7 +89,35 @@ func getExperimentAndCheckpoint(prefix string, repo repository.Repository) (*pro
 	return experiment, checkpoint, nil
 }
 
-// Prompt user for confirmation if the diplsayPath already exists
+// Handle errors related to the outputDir
+func validateOutputDir(outputDir string) error {
+	// FIXME(vastolorde95): If outputPath does not exist, there is no way to distinguish if 
+	// it is supposed to be a file or a directory. Should we ask the user for a prompt if 
+	// the checkoutPath is a file? This way we will be able to support:
+	//
+	// replicate checkout abc123 -o out/new_model.pth -file data/model.pth
+	exists, err := files.FileExists(outputDir)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return fmt.Errorf("Failed to create directory %q: %w", outputDir, err)
+		}
+	}
+
+	isDir, err := files.IsDir(outputDir)
+	if err != nil {
+		return err
+	}
+
+	if !isDir {
+		return fmt.Errorf("Checkout path %q is not a directory", outputDir)
+	}
+}
+
+// Prompt user for confirmation if the displayPath already exists
 func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 	exists, err := files.FileExists(displayPath)
 	if err != nil {
@@ -145,26 +173,9 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 		}
 	}
 
-	// TODO(adipal): There is no way to distinguish if the outputPath is a file or
-	// a directory. Ask the user for a prompt if the checkoutPath is a file?
-	exists, err := files.FileExists(outputDir)
+	err = validateOutputDir(outputDir)
 	if err != nil {
 		return err
-	}
-
-	if !exists {
-		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %q: %w", outputDir, err)
-		}
-	}
-
-	isDir, err := files.IsDir(outputDir)
-	if err != nil {
-		return err
-	}
-
-	if !isDir {
-		return fmt.Errorf("Checkout path %q is not a directory", outputDir)
 	}
 
 	displayPath := filepath.Join(outputDir, experiment.Path)
@@ -256,7 +267,7 @@ func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Re
 			return err
 		}
 	} else {
-		console.Info("Copied the files from experiment %s to %q", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+		console.Info("Copied the files %s from experiment %s to %q", checkoutPath, experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
 	}
 
 	// Overlay checkpoint on top of experiment
@@ -271,7 +282,7 @@ func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Re
 
 			}
 		} else {
-			console.Info("Copied the files from checkpoint %s to %q", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+			console.Info("Copied the files %s from checkpoint %s to %q", checkoutPath, checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
 		}
 
 	}
@@ -279,9 +290,9 @@ func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Re
 	if !experimentFilesExist && !checkpointFilesExist {
 		// Just an experiment, no checkpoints
 		if checkpoint == nil {
-			return fmt.Errorf("The experiment %s does not have any files associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID())
+			return fmt.Errorf("The experiment %s does not have the path %s associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID(), checkoutPath)
 		}
-		return fmt.Errorf("Neither the experiment %s nor the checkpoint %s has any files associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID())
+		return fmt.Errorf("Neither the experiment %s nor the checkpoint %s has the path %s associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID(), checkoutPath)
 	}
 
 	console.Info(`If you want to run this experiment again, this is how it was run:
