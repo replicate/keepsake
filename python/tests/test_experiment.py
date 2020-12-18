@@ -217,8 +217,6 @@ def test_is_running(temp_workdir):
         f.write("repository: file://.replicate/")
 
     experiment = replicate.init()
-    # Check whether the experiment is running before heartbeats are saved
-    assert not experiment.is_running()
 
     heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
     assert wait(

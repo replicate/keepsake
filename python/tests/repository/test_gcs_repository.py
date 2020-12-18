@@ -9,6 +9,7 @@ from google.api_core.exceptions import NotFound
 
 from replicate.exceptions import DoesNotExistError
 from replicate.repository.gcs_repository import GCSRepository
+from replicate.hash import random_hash
 
 
 # Disable this test with -m "not external"
@@ -19,9 +20,7 @@ pytestmark = pytest.mark.external
 # This means these tests can't be run in parallel
 @pytest.fixture(scope="session")
 def temp_bucket_create():
-    bucket_name = "replicate-test-" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(20)
-    )
+    bucket_name = "replicate-test-" + random_hash(20)
 
     client = storage.Client()
     bucket = client.create_bucket(bucket_name)
