@@ -5,6 +5,7 @@ except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
 import getpass
 import os
+import math
 import html
 import datetime
 import json
@@ -279,8 +280,12 @@ class Experiment:
         """
         if not self.checkpoints:
             return None
+        valid_metric = lambda m: m is not None and not math.isnan(m)
         primary_metric_checkpoints = [
-            chk for chk in self.checkpoints if chk.primary_metric
+            chk
+            for chk in self.checkpoints
+            if chk.primary_metric
+            and valid_metric(chk.metrics[chk.primary_metric["name"]])
         ]
         if not primary_metric_checkpoints:
             return None
