@@ -14,7 +14,12 @@ env:
 jobs:
   test-go:
     name: "Test (Go)"
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources
+        platform: [ubuntu-20.04, macos-10.15]
+    runs-on: ${{ matrix.platform }}
     defaults:
       run:
         shell: bash
@@ -58,7 +63,6 @@ jobs:
 
   test-python:
     name: "Test (Python)"
-    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
@@ -67,6 +71,9 @@ jobs:
       fail-fast: false
       matrix:
         python: [3.6, 3.7, 3.8]
+        # https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources
+        platform: [ubuntu-20.04, macos-10.15]
+    runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@master
       - name: Setup Python
@@ -103,8 +110,7 @@ jobs:
       - name: Install
         run: |
           (cd ../ && make install-test-dependencies)
-          (cd ../ && make build)
-          pip install $(echo dist/replicate-*-py3-none-manylinux1_x86_64.whl)
+          (cd ../ && make install)
       - name: Test
         if: ${{ !env.SECRETS_ARE_AVAILABLE }}
         run: make test
@@ -114,7 +120,12 @@ jobs:
 
   test-end-to-end:
     name: "Test (end to end)"
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources
+        platform: [ubuntu-20.04, macos-10.15]
+    runs-on: ${{ matrix.platform }}
     defaults:
       run:
         shell: bash
@@ -163,8 +174,7 @@ jobs:
       - name: Install
         run: |
           (cd ../ && make install-test-dependencies)
-          (cd ../ && make build)
-          pip install $(echo ../python/dist/replicate-*-py3-none-manylinux1_x86_64.whl)
+          (cd ../ && make install)
       - name: Test
         if: ${{ !env.SECRETS_ARE_AVAILABLE }}
         run: make test
