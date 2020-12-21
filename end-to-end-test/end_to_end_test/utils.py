@@ -12,7 +12,7 @@ def get_env():
     Returns environment for running Replicate commands in
     """
     env = os.environ
-    env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
+    env["PATH"] = os.environ["PATH"] + ":/usr/local/bin"
     return env
 
 
@@ -41,7 +41,7 @@ def path_exists(repository, path):
             s3.Object(root, str(path)).load()
             return True
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+            if e.response["Error"]["Code"] == "404":
                 return False
             else:
                 # Something else has gone wrong.

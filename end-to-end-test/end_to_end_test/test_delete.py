@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 import pytest  # type: ignore
 
-from .utils import path_exists
+from .utils import path_exists, get_env
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,9 @@ from .utils import path_exists
         pytest.param("s3", True, marks=pytest.mark.external),
     ],
 )
-def test_delete(repository_backend, use_root, tmpdir, temp_bucket_factory, tmpdir_factory):
+def test_delete(
+    repository_backend, use_root, tmpdir, temp_bucket_factory, tmpdir_factory
+):
     tmpdir = str(tmpdir)
     if repository_backend == "s3":
         repository = "s3://" + temp_bucket_factory.s3()
@@ -54,9 +56,7 @@ if __name__ == "__main__":
 """
         )
 
-    env = os.environ
-    env["PATH"] = "/usr/local/bin:" + os.environ["PATH"]
-
+    env = get_env()
     cmd = ["python", "train.py", "--foo"]
     subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
 
@@ -77,7 +77,10 @@ if __name__ == "__main__":
     assert path_exists(repository, checkpoint_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", "--force", checkpoint_id], cwd=tmpdir, env=env, check=True
+        ["replicate", "delete", "--force", checkpoint_id],
+        cwd=tmpdir,
+        env=env,
+        check=True,
     )
 
     experiments = json.loads(
@@ -100,7 +103,10 @@ if __name__ == "__main__":
     assert path_exists(repository, experiment_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", "--force", experiment_id], cwd=tmpdir, env=env, check=True
+        ["replicate", "delete", "--force", experiment_id],
+        cwd=tmpdir,
+        env=env,
+        check=True,
     )
 
     experiments = json.loads(
