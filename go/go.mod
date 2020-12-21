@@ -3,7 +3,7 @@ module github.com/replicate/replicate/go
 go 1.13
 
 require (
-	cloud.google.com/go/storage v1.10.0
+	cloud.google.com/go/storage v1.12.0
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
 	github.com/aws/aws-sdk-go v1.36.12
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
