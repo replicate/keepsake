@@ -22,6 +22,7 @@ else ifeq ($(OS),Darwin)
 else
 	@echo Unknown OS: $(OS)
 endif
+	cd go && $(MAKE) copy-binary
 
 .PHONY: develop
 develop: verify-dev-env venv
