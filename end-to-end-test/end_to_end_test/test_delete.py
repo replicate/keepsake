@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 import pytest  # type: ignore
 
-from .utils import path_exists, get_env
+from .utils import path_exists, get_env, PYTHON_PATH
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         )
 
     env = get_env()
-    cmd = ["python", "train.py", "--foo"]
+    cmd = [PYTHON_PATH, "train.py", "--foo"]
     subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
 
     experiments = json.loads(

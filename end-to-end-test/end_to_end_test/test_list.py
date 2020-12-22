@@ -4,7 +4,7 @@ import subprocess
 import pytest  # type: ignore
 from dateutil.parser import parse as parse_date
 
-from .utils import get_env
+from .utils import get_env, PYTHON_PATH
 
 
 @pytest.mark.parametrize(
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     env = get_env()
 
-    subprocess.run(["python", "train.py", "--foo"], cwd=tmpdir, env=env, check=True)
+    subprocess.run([PYTHON_PATH, "train.py", "--foo"], cwd=tmpdir, env=env, check=True)
 
     experiments = json.loads(
         subprocess.run(
@@ -106,7 +106,9 @@ experiment = Project().experiments.get(experiment_id)
 experiment.checkpoint(path=".", step=3)
 """
         )
-    subprocess.run(["python", "train2.py", exp["id"]], cwd=tmpdir, env=env, check=True)
+    subprocess.run(
+        [PYTHON_PATH, "train2.py", exp["id"]], cwd=tmpdir, env=env, check=True
+    )
     experiments = json.loads(
         subprocess.run(
             ["replicate", "--verbose", "list", "--json"],
