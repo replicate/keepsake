@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 VERSION := 0.2.4
 ENVIRONMENT := development
-PLATFORMS := darwin linux
+PLATFORMS := darwin linux windows
 ARCHITECTURES := amd64
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
