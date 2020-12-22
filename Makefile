@@ -1,9 +1,15 @@
 ENVIRONMENT := development
+ROOTDIR=./
+VENV=$(ROOTDIR)venv/bin/
+
+.PHONY: venv
+venv:
+	test -d venv || python -m venv $(ROOTDIR)venv
 
 OS := $(shell uname -s)
 
 .PHONY: build
-build: verify-dev-env
+build: verify-dev-env venv
 	cd go && $(MAKE) build-all ENVIRONMENT=$(ENVIRONMENT)
 	cd python && $(MAKE) build
 
@@ -18,14 +24,16 @@ else
 endif
 
 .PHONY: develop
-develop: verify-dev-env
+develop: verify-dev-env venv
 	cd go && $(MAKE) build
 	cd go && $(MAKE) install
-	cd python && python setup.py develop
+	cd python && $(MAKE) develop
+	@printf "\nPython venv created at $(ROOTDIR)venv. Run `tput bold`source $(ROOTDIR)venv/bin/activate`tput sgr0` to activate the venv in your shell.\n"
+	@printf "If you're using vscode, select this venv as the Python interpretor in the bottom left.\n"
 
 .PHONY: install-test-dependencies
-install-test-dependencies:
-	pip install -r requirements-test.txt
+install-test-dependencies: venv
+	$(VENV)pip install -r requirements-test.txt
 
 .PHONY: test
 test: install-test-dependencies develop
