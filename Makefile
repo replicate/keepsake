@@ -16,9 +16,9 @@ build: verify-dev-env venv
 .PHONY: install
 install: build
 ifeq ($(OS),Linux)
-	pip install python/dist/replicate-*-py3-none-manylinux1_x86_64.whl
+	$(VENV)pip install python/dist/replicate-*-py3-none-manylinux1_x86_64.whl
 else ifeq ($(OS),Darwin)
-	pip install python/dist/replicate-*-py3-none-macosx_*.whl
+	$(VENV)pip install python/dist/replicate-*-py3-none-macosx_*.whl
 else
 	@echo Unknown OS: $(OS)
 endif
