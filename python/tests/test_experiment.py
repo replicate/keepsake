@@ -409,6 +409,26 @@ class TestExperiment:
         assert len(other_experiment.checkpoints) == 2
         assert other_experiment.checkpoints[-1].metrics["accuracy"] == 1
 
+    def test_best_none(self, temp_workdir):
+        project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
+        experiment = project.experiments.create(disable_heartbeat=True)
+
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": None},
+            primary_metric=("accuracy", "maximize"),
+        )
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": float("nan")},
+            primary_metric=("accuracy", "maximize"),
+        )
+        assert experiment.best() is None
+
 
 class TestExperimentCollection:
     def test_get(self, temp_workdir):
