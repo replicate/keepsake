@@ -18,7 +18,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/moby/term v0.0.0-20201110203204-bea5bbe245bf
-	github.com/otiai10/copy v1.3.0
+	github.com/otiai10/copy v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94
 	github.com/segmentio/analytics-go v3.1.0+incompatible
