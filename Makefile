@@ -4,7 +4,7 @@ VENV=$(ROOTDIR)venv/bin/
 
 .PHONY: venv
 venv:
-	test -d venv || python -m venv $(ROOTDIR)venv
+	test -d venv || python -m venv $(ROOTDIR)venv && $(VENV)pip install --upgrade pip
 
 OS := $(shell uname -s)
 
