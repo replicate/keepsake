@@ -155,6 +155,7 @@ function Footer({ children }) {
           <a>Docs</a>
         </Link>
         <a href="https://github.com/replicate/replicate">GitHub</a>
+        <a href="https://twitter.com/replicateai">Twitter</a>
         <a href="mailto:team@replicate.ai">team@replicate.ai</a>
       </nav>
       <p className="tagline">
