@@ -34,6 +34,7 @@ from .heartbeat import Heartbeat, DEFAULT_REFRESH_INTERVAL
 from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
+from .system import get_python_version
 from .validate import check_path
 from .version import version
 from .constants import (
@@ -73,6 +74,7 @@ class Experiment:
     config: dict
     path: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
+    python_version: Optional[str] = None
     python_packages: Optional[Dict[str, str]] = None
     replicate_version: Optional[str] = None
     checkpoints: CheckpointList = field(default_factory=CheckpointList)
@@ -219,6 +221,7 @@ class Experiment:
             "command": self.command,
             "config": self.config,
             "path": self.path,
+            "python_version": self.python_version,
             "python_packages": self.python_packages,
             "checkpoints": [c.to_json() for c in self.checkpoints],
             "replicate_version": version,
@@ -483,6 +486,7 @@ class ExperimentCollection:
             user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
             host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
             command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
+            python_version=get_python_version(),
             python_packages=get_imported_packages(),
         )
 

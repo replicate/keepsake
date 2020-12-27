@@ -184,6 +184,10 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	}
 
 	fmt.Fprintf(w, "\t\n")
+	fmt.Fprintf(w, "%s\t\n", au.Bold("System"))
+	fmt.Fprintf(w, "Python version:\t%s\n", exp.PythonVersion)
+
+	fmt.Fprintf(w, "\t\n")
 	fmt.Fprintf(w, "%s\t\n", au.Bold("Python Packages"))
 	if len(exp.PythonPackages) > 0 {
 		packageNames := []string{}
