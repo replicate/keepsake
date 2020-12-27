@@ -23,6 +23,7 @@ type Experiment struct {
 	Config           *config.Config    `json:"config"`
 	Command          string            `json:"command"`
 	Path             string            `json:"path"`
+	PythonVersion    string            `json:"python_version"`
 	PythonPackages   map[string]string `json:"python_packages"`
 	Checkpoints      []*Checkpoint     `json:"checkpoints"`
 	ReplicateVersion string            `json:"replicate_version"`
