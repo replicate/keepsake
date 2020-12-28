@@ -1,0 +1,117 @@
+import DocsLayout from "../../../layouts/docs";
+
+<DocsLayout title="Pytorch Lightning integration">
+
+
+_This is an experimental feature, and the API may change in the future._
+
+Replicate works with any machine learning framework, but it includes a callback that makes it easier to use with [Pytorch Lightning](https://www.pytorchlightning.ai/).
+
+`ReplicateCallback` behaves like [Pytorch Lightning's `ModelCheckpoint` callback](https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html), but in addition to exporting a model at the end of each epoch, it also:
+
+1. Calls `replicate.init()` at the start of training to create an experiment, and
+2. Calls `experiment.checkpoint()` after saving the model at [`on_validation_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-validation-end). If no validation is defined, then the checkpoint is saved at [`on_epoch_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-epoch-end). All metrics that have been logged during training with [`self.log()`](https://pytorch-lightning.readthedocs.io/en/latest/logging.html#automatic-logging) are saved to the Replicate checkpoint.
+
+Here is a simple example:
+
+```python
+import torch
+from torch.nn import functional as F
+from pytorch_lightning.core.lightning import LightningModule
+from pytorch_lightning import Trainer
+from torch.optim import Adam
+from torch.utils.data import DataLoader, random_split, Subset
+from torchvision.datasets import MNIST
+from torchvision import transforms
+
+from replicate.pl_callback import ReplicateCallback
+
+
+class MyModel(LightningModule):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = torch.nn.Linear(28 * 28, 128)
+        self.layer_2 = torch.nn.Linear(128, 10)
+        self.batch_size = 8
+
+    def forward(self, x):
+        batch_size = x.size()[0]
+
+        x = x.view(batch_size, -1)
+        x = self.layer_1(x)
+        x = F.relu(x)
+        x = self.layer_2(x)
+        x = F.log_softmax(x, dim=1)
+        return x
+
+    def prepare_data(self):
+        # download only
+        MNIST(
+            "/tmp/replicate-test-mnist",
+            train=True,
+            download=True,
+            transform=transforms.ToTensor(),
+        )
+
+    def setup(self, stage):
+        # transform
+        transform = transforms.Compose([transforms.ToTensor()])
+        mnist_train = MNIST(
+            "/tmp/replicate-test-mnist", train=True, download=False, transform=transform
+        )
+        mnist_train = Subset(mnist_train, range(100))
+
+        # train/val split
+        mnist_train, mnist_val = random_split(mnist_train, [80, 20])
+
+        # assign to use in dataloaders
+        self.train_dataset = mnist_train
+        self.val_dataset = mnist_val
+
+    def train_dataloader(self):
+        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = F.nll_loss(logits, y)
+        self.log("train_loss", x, on_step=True, on_epoch=True, logger=False)
+        return loss
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=1e-3)
+
+
+def main():
+    dense_size = 784
+    learning_rate = 0.1
+
+    model = MyModel()
+    trainer = Trainer(
+        checkpoint_callback=False,
+        callbacks=[
+            ReplicateCallback(
+                params={"dense_size": dense_size, "learning_rate": learning_rate,},
+                primary_metric=("train_loss", "minimize"),
+                period=5,
+            )
+        ],
+        max_epochs=100,
+    )
+    trainer.fit(model)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+The `ReplicateCallback` class takes the following arguments, all optional:
+
+- **`filepath`**: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch. If it is `None`, the model is not saved, and the callback just gathers code and metrics. Default: `model.hdf5`
+- **`params`**: A dictionary of hyperparameters that will be recorded to the experiment at the start of training.
+- **`primary_metric`**: A tuple in the format `(metric_name, goal)`, where `goal` is either `minimize`, or `maximize`. For example, `("mean_absolute_error", "minimize")`.
+- **`period`**: The callback saves the model at end of this many epochs. Default: `1`
+- **`save_weights_only`**: If `True`, then only the model’s weights will be saved, else the full model is saved. Default: `False`
+
+</DocsLayout>
