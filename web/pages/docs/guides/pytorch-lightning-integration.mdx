@@ -17,33 +17,25 @@ Here is a simple example:
 ```python
 import torch
 from torch.nn import functional as F
-from pytorch_lightning.core.lightning import LightningModule
-from pytorch_lightning import Trainer
-from torch.optim import Adam
+import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision.datasets import MNIST
 from torchvision import transforms
+from replicate.pl_callback import ReplicateCallback #highlight-line
 
-from replicate.pl_callback import ReplicateCallback
-
-
-class MyModel(LightningModule):
+class MyModel(pl.LightningModule):
     def __init__(self):
         super().__init__()
-
         self.layer_1 = torch.nn.Linear(28 * 28, 128)
         self.layer_2 = torch.nn.Linear(128, 10)
         self.batch_size = 8
 
     def forward(self, x):
         batch_size = x.size()[0]
-
         x = x.view(batch_size, -1)
-        x = self.layer_1(x)
-        x = F.relu(x)
+        x = F.relu(self.layer_1(x))
         x = self.layer_2(x)
-        x = F.log_softmax(x, dim=1)
-        return x
+        return F.log_softmax(x, dim=1)
 
     def prepare_data(self):
         # download only
@@ -61,10 +53,8 @@ class MyModel(LightningModule):
             "/tmp/replicate-test-mnist", train=True, download=False, transform=transform
         )
         mnist_train = Subset(mnist_train, range(100))
-
         # train/val split
         mnist_train, mnist_val = random_split(mnist_train, [80, 20])
-
         # assign to use in dataloaders
         self.train_dataset = mnist_train
         self.val_dataset = mnist_val
@@ -80,30 +70,26 @@ class MyModel(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=1e-3)
 
+dense_size = 784
+learning_rate = 0.1
 
-def main():
-    dense_size = 784
-    learning_rate = 0.1
-
-    model = MyModel()
-    trainer = Trainer(
-        checkpoint_callback=False,
-        callbacks=[
-            ReplicateCallback(
-                params={"dense_size": dense_size, "learning_rate": learning_rate,},
-                primary_metric=("train_loss", "minimize"),
-                period=5,
-            )
-        ],
-        max_epochs=100,
-    )
-    trainer.fit(model)
-
-
-if __name__ == "__main__":
-    main()
+model = MyModel()
+trainer = pl.Trainer(
+    checkpoint_callback=False,
+    callbacks=[
+        #highlight-start
+        ReplicateCallback(
+            params={"dense_size": dense_size, "learning_rate": learning_rate,},
+            primary_metric=("train_loss", "minimize"),
+            period=5,
+        )
+        #highlight-end
+    ],
+    max_epochs=100,
+)
+trainer.fit(model)
 ```
 
 The `ReplicateCallback` class takes the following arguments, all optional:
