@@ -46,6 +46,7 @@ release: check-version-var verify-clean-main bump-version
 	git tag "v$(VERSION)"
 	git push git@github.com:replicate/replicate.git main
 	git push git@github.com:replicate/replicate.git main --tags
+	git push git@github.com:replicate/replicate.git main:website --force
 
 .PHONY: verify-version
 # quick and dirty
