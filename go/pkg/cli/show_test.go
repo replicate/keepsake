@@ -41,6 +41,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) re
 		Host:           "10.1.1.1",
 		User:           "andreas",
 		Config:         conf,
+		PythonVersion:  "3.4.5",
 		PythonPackages: map[string]string{"foo": "1.2.3"},
 		Checkpoints: []*project.Checkpoint{
 			{
@@ -154,6 +155,9 @@ Params
 param-1:         100
 param-2:         hello
 
+System
+Python version:  3.4.5
+
 Python Packages
 foo:             1.2.3
 
@@ -206,6 +210,9 @@ Command:         train.py --gamma=1.2 -x
 Params
 param-1:         100
 param-2:         hello
+
+System
+Python version:  3.4.5
 
 Python Packages
 foo:             1.2.3
