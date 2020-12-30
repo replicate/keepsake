@@ -104,7 +104,9 @@ func TestS3ListRecursive(t *testing.T) {
 	require.Empty(t, <-results)
 
 	// Works with non-existent bucket
-	repository, err = NewS3Repository("replicate-test-"+hash.Random()[0:10], "")
+	anotherBucketName := "replicate-test-go2-" + hash.Random()[0:10]
+	repository, err = NewS3Repository(anotherBucketName, "")
+	t.Cleanup(func() { deleteS3Bucket(t, anotherBucketName) })
 	require.NoError(t, err)
 	results = make(chan ListResult)
 	go repository.ListRecursive(results, "checkpoints")
@@ -112,7 +114,7 @@ func TestS3ListRecursive(t *testing.T) {
 }
 
 func createS3Bucket(t *testing.T) (string, *s3.S3) {
-	bucketName := "replicate-test-" + hash.Random()[0:10]
+	bucketName := "replicate-test-go-" + hash.Random()[0:10]
 	err := CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(t, err)
 
