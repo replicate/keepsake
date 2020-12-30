@@ -139,10 +139,14 @@ func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS       BEST CHECKPOINT    LATEST CHECKPOINT
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      param-1=200
+
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                     4cccccc (step 5)
+
+1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100  2cccccc (step 20)  3cccccc (step 20)
+                                                                         metric-1=0.01      metric-1=0.02
+
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -162,10 +166,21 @@ func TestListOutputTableWithPrimaryMetricAll(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  PARAM-2  PARAM-3  PARAM-4  LATEST CHECKPOINT  METRIC-1  METRIC-2  METRIC-3  BEST CHECKPOINT    METRIC-1  METRIC-2  METRIC-3
-3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200      hello    hi       null
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      hello    hi                4cccccc (step 5)                       0.5
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      hello                      3cccccc (step 20)  0.02      2         null      2cccccc (step 20)  0.01      2
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS         BEST CHECKPOINT    LATEST CHECKPOINT
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      param-1=200
+                                                            param-2=hello
+                                                            param-3=hi
+                                                            param-4=null
+
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                       4cccccc (step 5)
+                                                            param-2=hello                     metric-3=0.5
+                                                            param-3=hi
+
+1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100    2cccccc (step 20)  3cccccc (step 20)
+                                                            param-2=hello  metric-1=0.01      metric-1=0.02
+                                                                           metric-2=2         metric-2=2
+                                                                                              metric-3=null
+
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -188,9 +203,12 @@ func TestListOutputTableFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-2eeeeee     about a minute ago  stopped  10.1.1.2  200      4cccccc (step 5)
-1eeeeee     about a second ago  running  10.1.1.1  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   HOST      PARAMS       BEST CHECKPOINT    LATEST CHECKPOINT
+2eeeeee     about a minute ago  stopped  10.1.1.2  param-1=200                     4cccccc (step 5)
+
+1eeeeee     about a second ago  running  10.1.1.1  param-1=100  2cccccc (step 20)  3cccccc (step 20)
+                                                                metric-1=0.01      metric-1=0.02
+
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -213,8 +231,10 @@ func TestListOutputTableFilterRunning(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-1eeeeee     about a second ago  running  3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
+EXPERIMENT  STARTED             STATUS   PARAMS  BEST CHECKPOINT    LATEST CHECKPOINT
+1eeeeee     about a second ago  running          2cccccc (step 20)  3cccccc (step 20)
+                                                 metric-1=0.01      metric-1=0.02
+
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)
@@ -235,10 +255,14 @@ func TestListOutputTableSort(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAM-1  LATEST CHECKPOINT  METRIC-1  BEST CHECKPOINT    METRIC-1
-1eeeeee     about a second ago  running  10.1.1.1  andreas  100      3cccccc (step 20)  0.02      2cccccc (step 20)  0.01
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  200      4cccccc (step 5)
-3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      200
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS       BEST CHECKPOINT    LATEST CHECKPOINT
+1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100  2cccccc (step 20)  3cccccc (step 20)
+                                                                         metric-1=0.01      metric-1=0.02
+
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                     4cccccc (step 5)
+
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      param-1=200
+
 `
 	expected = expected[1:] // strip initial whitespace, added for readability
 	actual = testutil.TrimRightLines(actual)

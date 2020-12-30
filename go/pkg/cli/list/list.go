@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -117,13 +118,9 @@ func outputJSON(experiments []*ListExperiment) error {
 	return enc.Encode(experiments)
 }
 
-// output something like (TODO: this is getting very wide)
-// experiment  started             status   host      user     param-1  latest   step  metric-1  best     step  metric-1
-// 1eeeeee     10 seconds ago      running  10.1.1.1  andreas  100      3cccccc  20    0.02     2cccccc  20    0.01
-// 2eeeeee     about a second ago  stopped  10.1.1.2  andreas  200      4cccccc  5              N/A
 func outputTable(experiments []*ListExperiment, all bool) error {
 	if len(experiments) == 0 {
-		fmt.Println("No experiments found")
+		console.Info("No experiments found")
 		return nil
 	}
 
@@ -154,96 +151,67 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	keys := []string{"EXPERIMENT", "STARTED", "STATUS"}
+	headings := []string{"EXPERIMENT", "STARTED", "STATUS"}
 	if displayHost {
-		keys = append(keys, "HOST")
+		headings = append(headings, "HOST")
 	}
 	if displayUser {
-		keys = append(keys, "USER")
+		headings = append(headings, "USER")
 	}
-	keys = append(keys, upper(paramsToDisplay)...)
-	keys = append(keys, "LATEST CHECKPOINT")
-	keys = append(keys, upper(metricsToDisplay)...)
+	headings = append(headings, "PARAMS")
 	if hasBestCheckpoint {
-		keys = append(keys, "BEST CHECKPOINT")
-		keys = append(keys, upper(metricsToDisplay)...)
+		headings = append(headings, "BEST CHECKPOINT")
 	}
+	headings = append(headings, "LATEST CHECKPOINT")
 
-	for i, key := range keys {
+	for i, key := range headings {
 		fmt.Fprintf(tw, "%s", key)
-		if i < len(keys)-1 {
+		if i < len(headings)-1 {
 			fmt.Fprint(tw, "\t")
 		}
 	}
 	fmt.Fprint(tw, "\n")
 
 	for _, exp := range experiments {
-		// experiment
-		fmt.Fprintf(tw, "%s\t", exp.ID[:7])
-
-		// started
-		fmt.Fprintf(tw, "%s\t", console.FormatTime(exp.Created))
-
-		// status
+		columns := []string{exp.ID[:7], console.FormatTime(exp.Created)}
 		if exp.Running {
-			fmt.Fprint(tw, "running\t")
+			columns = append(columns, "running")
 		} else {
-			fmt.Fprint(tw, "stopped\t")
+			columns = append(columns, "stopped")
 		}
 
 		if displayHost {
-			fmt.Fprintf(tw, "%s\t", exp.Host)
+			columns = append(columns, exp.Host)
 		}
 
 		if displayUser {
-			fmt.Fprintf(tw, "%s\t", exp.User)
+			columns = append(columns, exp.User)
 		}
 
-		// experiment params
-		for _, heading := range paramsToDisplay {
-			if val, ok := exp.Params[heading]; ok {
-				fmt.Fprint(tw, val.ShortString(valueMaxLength, valueTruncate))
+		params := []string{}
+		for _, key := range paramsToDisplay {
+			if val, ok := exp.Params[key]; ok {
+				params = append(params, key+"="+val.ShortString(valueMaxLength, valueTruncate))
 			}
-			fmt.Fprintf(tw, "\t")
+		}
+		columns = append(columns, strings.Join(params, "\n"))
+
+		if hasBestCheckpoint {
+			bestCheckpoint := ""
+			if exp.BestCheckpoint != nil {
+				bestCheckpoint = displayCheckpoint(exp.BestCheckpoint, metricsToDisplay)
+			}
+			columns = append(columns, bestCheckpoint)
 		}
 
 		latestCheckpoint := ""
 		if exp.LatestCheckpoint != nil {
-			latestCheckpoint = fmt.Sprintf("%s (step %s)", exp.LatestCheckpoint.ShortID(), strconv.FormatInt(exp.LatestCheckpoint.Step, 10))
+			latestCheckpoint = displayCheckpoint(exp.LatestCheckpoint, metricsToDisplay)
 		}
-		fmt.Fprintf(tw, "%s\t", latestCheckpoint)
+		columns = append(columns, latestCheckpoint)
 
-		// latest checkpoint metrics
-		for _, heading := range metricsToDisplay {
-			val := ""
-			if exp.LatestCheckpoint != nil {
-				if v, ok := exp.LatestCheckpoint.Metrics[heading]; ok {
-					val = v.ShortString(valueMaxLength, valueTruncate)
-				}
-			}
-			fmt.Fprintf(tw, "%s\t", val)
-		}
+		writeRow(tw, columns)
 
-		bestCheckpoint := ""
-
-		if exp.BestCheckpoint != nil {
-			bestCheckpoint = fmt.Sprintf("%s (step %s)", exp.BestCheckpoint.ShortID(), strconv.FormatInt(exp.BestCheckpoint.Step, 10))
-		}
-		fmt.Fprintf(tw, "%s\t", bestCheckpoint)
-
-		// best checkpoint metrics
-		for _, heading := range metricsToDisplay {
-			val := ""
-			if exp.BestCheckpoint != nil {
-				if v, ok := exp.BestCheckpoint.Metrics[heading]; ok {
-					val = v.ShortString(valueMaxLength, valueTruncate)
-				}
-			}
-			fmt.Fprintf(tw, "%s\t", val)
-		}
-
-		// newline!
-		fmt.Fprint(tw, "\n")
 	}
 
 	if err := tw.Flush(); err != nil {
@@ -251,6 +219,54 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 	}
 
 	return nil
+}
+
+func displayCheckpoint(checkpoint *project.Checkpoint, metricsToDisplay []string) string {
+	out := []string{fmt.Sprintf("%s (step %s)", checkpoint.ShortID(), strconv.FormatInt(checkpoint.Step, 10))}
+
+	for _, key := range metricsToDisplay {
+		if v, ok := checkpoint.Metrics[key]; ok {
+			out = append(out, key+"="+v.ShortString(valueMaxLength, valueTruncate))
+		}
+	}
+	return strings.Join(out, "\n")
+}
+
+// Write columns with multiple rows to a tabwriter, adding correct padding tabs
+// E.g. ["foo", "foo\nbar"] turns into:
+// Fprint(w, "foo\tfoo")
+// Fprint(w, "\tbar")
+// Fprint(w, "\t")
+func writeRow(w io.Writer, columns []string) {
+	// Max number of lines in a column in this row
+	numLines := 1
+	for _, s := range columns {
+		n := strings.Count(s, "\n") + 1
+		if n > numLines {
+			numLines = n
+		}
+	}
+	// Add a blank line
+	numLines += 1
+
+	// Create sparse 2D array of lines/columns
+	lines := make([][]string, numLines)
+	for i := range lines {
+		lines[i] = make([]string, len(columns))
+	}
+
+	// Put everything in its right spot
+	for column := range columns {
+		columnRows := strings.Split(columns[column], "\n")
+		for row := range columnRows {
+			lines[row][column] = columnRows[row]
+		}
+	}
+
+	// Write the 2D array as lines and tabs
+	for _, line := range lines {
+		fmt.Fprintln(w, strings.Join(line, "\t"))
+	}
 }
 
 // Get experiment params to display in list. If onlyChangedParams is true, only return
@@ -364,12 +380,4 @@ func createListExperiments(proj *project.Project, filters *param.Filters) ([]*Li
 
 	return ret, nil
 
-}
-
-func upper(in []string) []string {
-	ret := make([]string, len(in))
-	for i, s := range in {
-		ret[i] = strings.ToUpper(s)
-	}
-	return ret
 }
