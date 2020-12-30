@@ -4,6 +4,7 @@ import os
 import datetime
 import dateutil.parser
 from dateutil.tz import tzutc
+import pytest
 from waiting import wait
 
 from replicate.heartbeat import Heartbeat
@@ -32,6 +33,7 @@ def test_heartbeat_running(tmpdir):
     heartbeat.kill()
 
 
+@pytest.mark.skip(reason="fix blocked on #436")
 def test_heartbeat_write(tmpdir):
     tmpdir = str(tmpdir)
     t1 = datetime.datetime.utcnow().replace(tzinfo=tzutc())
