@@ -49,7 +49,7 @@ def test_heartbeat_write(tmpdir):
 
     wait(lambda: os.path.exists(heartbeat_path), timeout_seconds=1, sleep_seconds=0.01)
     # sleep a little extra in case the file is created but not yet written
-    time.sleep(0.5)
+    time.sleep(0.01)
 
     with open(heartbeat_path) as f:
         obj = json.loads(f.read())
@@ -59,7 +59,7 @@ def test_heartbeat_write(tmpdir):
 
     assert t1 < last_heartbeat < t2
 
-    time.sleep(0.5)
+    time.sleep(0.2)
 
     with open(heartbeat_path) as f:
         obj = json.loads(f.read())
