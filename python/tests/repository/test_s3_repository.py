@@ -55,36 +55,23 @@ def test_s3_experiment(temp_bucket, tmpdir):
             path=".", step=10, metrics={"loss": 1.1, "baz": "qux"}
         )
 
-        actual_experiment_meta = s3_read_json(
+        meta = s3_read_json(
             temp_bucket,
             os.path.join("metadata", "experiments", experiment.id + ".json"),
         )
-        assert "host" in actual_experiment_meta
-        assert "user" in actual_experiment_meta
-        del actual_experiment_meta["host"]
-        del actual_experiment_meta["user"]
-        del actual_experiment_meta["command"]
-        del actual_experiment_meta["python_packages"]
-
-        expected_experiment_meta = {
-            "id": experiment.id,
-            "created": experiment.created.isoformat() + "Z",
-            "params": {"foo": "bar"},
-            "config": {"repository": "s3://" + temp_bucket},
-            "path": ".",
-            "checkpoints": [
-                {
-                    "id": checkpoint.id,
-                    "created": checkpoint.created.isoformat() + "Z",
-                    "step": 10,
-                    "metrics": {"loss": 1.1, "baz": "qux"},
-                    "path": ".",
-                    "primary_metric": None,
-                }
-            ],
-            "replicate_version": replicate.__version__,
-        }
-        assert actual_experiment_meta == expected_experiment_meta
+        assert meta["id"] == experiment.id
+        assert meta["created"] == experiment.created.isoformat() + "Z"
+        assert meta["params"] == {"foo": "bar"}
+        assert meta["checkpoints"] == [
+            {
+                "id": checkpoint.id,
+                "created": checkpoint.created.isoformat() + "Z",
+                "step": 10,
+                "metrics": {"loss": 1.1, "baz": "qux"},
+                "path": ".",
+                "primary_metric": None,
+            }
+        ]
 
     finally:
         os.chdir(current_workdir)
