@@ -503,9 +503,7 @@ class ExperimentCollection:
             else:
                 console.info(
                     "Creating experiment {}: copying '{}' to '{}'...".format(
-                        experiment.short_id(),
-                        experiment.path,
-                        root_url,
+                        experiment.short_id(), experiment.path, root_url,
                     )
                 )
 
