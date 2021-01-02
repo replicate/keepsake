@@ -339,6 +339,24 @@ class TestExperiment:
         assert experiment.checkpoints[0].id == chk1.id
         assert experiment.checkpoints[1].id == chk2.id
 
+    def test_checkpoint_auto_increments_steps(self, temp_workdir):
+        project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
+        experiment = project.experiments.create(
+            path=None, params={"foo": "bar"}, disable_heartbeat=True
+        )
+        chk1 = experiment.checkpoint()
+        chk2 = experiment.checkpoint()
+        chk3 = experiment.checkpoint(step=10)
+        chk4 = experiment.checkpoint()
+        assert chk1.step == 0
+        assert chk2.step == 1
+        assert chk3.step == 10
+        assert chk4.step == 11
+
     def test_delete(self, temp_workdir):
         project = Project()
 

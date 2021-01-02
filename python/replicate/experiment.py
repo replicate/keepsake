@@ -82,6 +82,7 @@ class Experiment:
     def __post_init__(self, project: "Project"):
         self._project = project
         self._heartbeat = None
+        self._step = -1
 
     def short_id(self):
         return self.id[:7]
@@ -136,6 +137,12 @@ class Experiment:
                     "name": primary_metric[0],
                     "goal": primary_metric[1],
                 }
+
+        # Auto-increment step if not provided
+        if step is None:
+            step = self._step + 1
+        # Remember the current step
+        self._step = step
 
         checkpoint = Checkpoint(
             id=random_hash(),
@@ -496,7 +503,9 @@ class ExperimentCollection:
             else:
                 console.info(
                     "Creating experiment {}: copying '{}' to '{}'...".format(
-                        experiment.short_id(), experiment.path, root_url,
+                        experiment.short_id(),
+                        experiment.path,
+                        root_url,
                     )
                 )
 
