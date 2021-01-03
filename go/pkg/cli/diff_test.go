@@ -73,6 +73,7 @@ ID:                       1eeeeee                        2eeeeee
 Command:                  train.py --gamma=1.2 -x
 Created:                  Mon, 02 Jan 2006 22:54:05 +08  Mon, 02 Jan 2006 23:03:05 +08
 Host:                     10.1.1.1                       10.1.1.2
+Python version:           3.4.5                          3.4.6
 
 Params
 param-1:                  100                            200
