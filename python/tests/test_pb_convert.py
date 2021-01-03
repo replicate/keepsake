@@ -3,7 +3,7 @@ import datetime
 from replicate import pb_convert
 from replicate.checkpoint import Checkpoint, PrimaryMetric, CheckpointList
 from replicate.experiment import Experiment
-from replicate.servicepb import service_pb2 as pb
+from replicate.servicepb import replicate_pb2 as pb
 from replicate.project import Project
 
 

@@ -17,6 +17,7 @@ service Daemon {
     rpc ListExperiments (ListExperimentsRequest) returns (ListExperimentsReply) {}
     rpc DeleteExperiment (DeleteExperimentRequest) returns (DeleteExperimentReply) {}
     rpc CheckoutCheckpoint (CheckoutCheckpointRequest) returns (CheckoutCheckpointReply) {}
+    rpc GetExperimentStatus (GetExperimentStatusRequest) returns (GetExperimentStatusReply) {}
 }
 
 message CreateExperimentRequest {
@@ -26,7 +27,6 @@ message CreateExperimentRequest {
 
 message CreateExperimentReply {
     Experiment experiment = 1;
-    Exception exception = 2;
 }
 
 message CreateCheckpointRequest {
@@ -82,6 +82,18 @@ message CheckoutCheckpointRequest {
 message CheckoutCheckpointReply {
 }
 
+message GetExperimentStatusRequest {
+    string experimentID = 1;
+}
+
+message GetExperimentStatusReply {
+    enum Status {
+        RUNNING = 0;
+        STOPPED = 1;
+    };
+    Status status = 1;
+}
+
 message Experiment {
     string id = 1;
     google.protobuf.Timestamp created = 2;
@@ -92,8 +104,9 @@ message Experiment {
     string command = 7;
     string path = 8;
     map<string, string> pythonPackages = 9;
-    repeated Checkpoint checkpoints = 10;
-    string replicateVersion = 11;
+    string pythonVersion = 10;
+    repeated Checkpoint checkpoints = 11;
+    string replicateVersion = 12;
 }
 
 message Config {

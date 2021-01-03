@@ -33,23 +33,9 @@ from .packages import get_imported_packages
 from .system import get_python_version
 from .validate import check_path
 from .version import version
-from .constants import (
-    HEARTBEAT_MISS_TOLERANCE,
-    EXPERIMENT_STATUS_RUNNING,
-    EXPERIMENT_STATUS_STOPPED,
-)
 
 if TYPE_CHECKING:
     from .project import Project
-
-
-def experiment_fields_from_json(data: Dict[str, Any]) -> Dict[str, Any]:
-    data = data.copy()
-    data["created"] = parse_rfc3339(data["created"])
-    data["checkpoints"] = CheckpointList(
-        [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
-    )
-    return data
 
 
 @dataclass
@@ -166,25 +152,20 @@ class Experiment:
         """
         Update this experiment with the latest data from the repository.
         """
-        repository = self._project._get_repository()
-        data = json.loads(
-            repository.get("metadata/experiments/{}.json".format(self.id))
-        )
-        fields = experiment_fields_from_json(data)
-        for k, v in fields.items():
-            setattr(self, k, v)
+        exp = self._project._daemon().get_experiment(experiment_id_prefix=self.id,)
+        self.created = exp.created
+        self.user = exp.user
+        self.host = exp.host
+        self.command = exp.command
+        self.config = exp.config
+        self.path = exp.path
+        self.params = exp.params
+        self.python_version = exp.python_version
+        self.python_packages = exp.python_packages
+        self.replicate_version = exp.replicate_version
+        self.checkpoints = exp.checkpoints
         for chk in self.checkpoints:
             chk._experiment = self
-
-    @classmethod
-    def from_json(cls, project: "Project", data: Dict[str, Any]) -> "Experiment":
-        data = data.copy()
-        data["created"] = parse_rfc3339(data["created"])
-        data["checkpoints"] = CheckpointList(
-            [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
-        )
-        experiment = Experiment(project=project, **data)
-        return experiment
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -279,34 +260,7 @@ class Experiment:
         In case the heartbeat metadata file is not present which means the
         experiment was stopped the function returns False.
         """
-        try:
-            repository = self._project._get_repository()
-            heartbeat_metadata_bytes = repository.get(self._heartbeat_path())
-            heartbeat_metadata = json.loads(heartbeat_metadata_bytes)
-        except DoesNotExistError as e:
-            return False
-        except Exception as e:
-            console.warn(
-                "Failed to load heartbeat metadata from {}: {}".format(
-                    self._heartbeat_path(), e
-                )
-            )
-            return False
-        now = datetime.datetime.utcnow()
-        last_heartbeat = parse_rfc3339(heartbeat_metadata["last_heartbeat"])
-        last_tolerable_heartbeat = (
-            now - DEFAULT_REFRESH_INTERVAL * HEARTBEAT_MISS_TOLERANCE
-        )
-        return last_tolerable_heartbeat < last_heartbeat
-
-    def _heartbeat_path(self) -> str:
-        return "metadata/heartbeats/{}.json".format(self.id)
-
-    def _repository_tar_path(self) -> str:
-        return "experiments/{}.tar.gz".format(self.id)
-
-    def _metadata_path(self) -> str:
-        return "metadata/experiments/{}.json".format(self.id)
+        return self._project._daemon().experiment_is_running(self.id)
 
     def primary_metric(self) -> str:
         """

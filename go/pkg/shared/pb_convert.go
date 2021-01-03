@@ -46,6 +46,7 @@ func experimentFromPb(expPb *servicepb.Experiment) *project.Experiment {
 		Command:          expPb.Command,
 		Path:             expPb.Path,
 		PythonPackages:   expPb.PythonPackages,
+		PythonVersion:    expPb.PythonVersion,
 		Checkpoints:      checkpointsFromPb(expPb.Checkpoints),
 		ReplicateVersion: expPb.ReplicateVersion,
 	}
@@ -125,6 +126,7 @@ func experimentToPb(exp *project.Experiment) *servicepb.Experiment {
 		Command:          exp.Command,
 		Path:             exp.Path,
 		PythonPackages:   exp.PythonPackages,
+		PythonVersion:    exp.PythonVersion,
 		ReplicateVersion: exp.ReplicateVersion,
 		Checkpoints:      checkpointsToPb(exp.Checkpoints),
 	}
@@ -208,6 +210,8 @@ func valueToPb(v param.Value) *servicepb.ParamType {
 		return &servicepb.ParamType{Value: &servicepb.ParamType_StringValue{StringValue: v.StringVal()}}
 	case param.TypeObject:
 		return &servicepb.ParamType{Value: &servicepb.ParamType_ObjectValueJson{ObjectValueJson: v.String()}}
+	case param.TypeNone:
+		return &servicepb.ParamType{Value: &servicepb.ParamType_ObjectValueJson{ObjectValueJson: "null"}}
 	}
 	panic("Uninitiazlied param.Value") // should never happen
 }

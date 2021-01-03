@@ -26,6 +26,7 @@ type DaemonClient interface {
 	ListExperiments(ctx context.Context, in *ListExperimentsRequest, opts ...grpc.CallOption) (*ListExperimentsReply, error)
 	DeleteExperiment(ctx context.Context, in *DeleteExperimentRequest, opts ...grpc.CallOption) (*DeleteExperimentReply, error)
 	CheckoutCheckpoint(ctx context.Context, in *CheckoutCheckpointRequest, opts ...grpc.CallOption) (*CheckoutCheckpointReply, error)
+	GetExperimentStatus(ctx context.Context, in *GetExperimentStatusRequest, opts ...grpc.CallOption) (*GetExperimentStatusReply, error)
 }
 
 type daemonClient struct {
@@ -108,6 +109,15 @@ func (c *daemonClient) CheckoutCheckpoint(ctx context.Context, in *CheckoutCheck
 	return out, nil
 }
 
+func (c *daemonClient) GetExperimentStatus(ctx context.Context, in *GetExperimentStatusRequest, opts ...grpc.CallOption) (*GetExperimentStatusReply, error) {
+	out := new(GetExperimentStatusReply)
+	err := c.cc.Invoke(ctx, "/service.Daemon/GetExperimentStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaemonServer is the server API for Daemon service.
 // All implementations must embed UnimplementedDaemonServer
 // for forward compatibility
@@ -120,6 +130,7 @@ type DaemonServer interface {
 	ListExperiments(context.Context, *ListExperimentsRequest) (*ListExperimentsReply, error)
 	DeleteExperiment(context.Context, *DeleteExperimentRequest) (*DeleteExperimentReply, error)
 	CheckoutCheckpoint(context.Context, *CheckoutCheckpointRequest) (*CheckoutCheckpointReply, error)
+	GetExperimentStatus(context.Context, *GetExperimentStatusRequest) (*GetExperimentStatusReply, error)
 	mustEmbedUnimplementedDaemonServer()
 }
 
@@ -150,6 +161,9 @@ func (UnimplementedDaemonServer) DeleteExperiment(context.Context, *DeleteExperi
 }
 func (UnimplementedDaemonServer) CheckoutCheckpoint(context.Context, *CheckoutCheckpointRequest) (*CheckoutCheckpointReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckoutCheckpoint not implemented")
+}
+func (UnimplementedDaemonServer) GetExperimentStatus(context.Context, *GetExperimentStatusRequest) (*GetExperimentStatusReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExperimentStatus not implemented")
 }
 func (UnimplementedDaemonServer) mustEmbedUnimplementedDaemonServer() {}
 
@@ -308,6 +322,24 @@ func _Daemon_CheckoutCheckpoint_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_GetExperimentStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetExperimentStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).GetExperimentStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.Daemon/GetExperimentStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).GetExperimentStatus(ctx, req.(*GetExperimentStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Daemon_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "service.Daemon",
 	HandlerType: (*DaemonServer)(nil),
@@ -344,7 +376,11 @@ var _Daemon_serviceDesc = grpc.ServiceDesc{
 			MethodName: "CheckoutCheckpoint",
 			Handler:    _Daemon_CheckoutCheckpoint_Handler,
 		},
+		{
+			MethodName: "GetExperimentStatus",
+			Handler:    _Daemon_GetExperimentStatus_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service.proto",
+	Metadata: "replicate.proto",
 }

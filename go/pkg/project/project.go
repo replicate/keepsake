@@ -312,6 +312,14 @@ func (p *Project) RefreshHeartbeat(experimentID string) error {
 	return CreateHeartbeat(p.repository, experimentID, time.Now().UTC())
 }
 
+func (p *Project) StopExperiment(experimentID string) error {
+	if err := DeleteHeartbeat(p.repository, experimentID); err != nil {
+		return err
+	}
+	p.invalidateCache()
+	return nil
+}
+
 func (p *Project) invalidateCache() {
 	p.hasLoaded = false
 }

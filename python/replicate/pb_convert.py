@@ -1,10 +1,10 @@
 import datetime
 import json
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, MutableMapping
 
 from google.protobuf import timestamp_pb2
 
-from .servicepb import service_pb2 as pb  # type: ignore
+from .servicepb import replicate_pb2 as pb
 from .experiment import Experiment
 from .checkpoint import Checkpoint, PrimaryMetric, CheckpointList
 
@@ -37,7 +37,8 @@ def timestamp_from_pb(t: timestamp_pb2.Timestamp) -> datetime.datetime:
 
 
 def checkpoints_from_pb(
-    experiment: Experiment, checkpoints_pb: List[pb.Checkpoint],
+    experiment: Experiment,
+    checkpoints_pb,  # TODO(andreas): should be RepeatedCompositeFieldContainer[pb.Checkpoint], but that throws TypeError
 ) -> CheckpointList:
     lst = CheckpointList()
     for chk_pb in checkpoints_pb:
@@ -79,6 +80,7 @@ def experiment_from_pb(project, exp_pb: pb.Experiment) -> Experiment:
         path=noneable(exp_pb.path),
         params=value_map_from_pb(exp_pb.params),
         python_packages=noneable(exp_pb.pythonPackages),
+        python_version=noneable(exp_pb.pythonVersion),
         replicate_version=noneable(exp_pb.replicateVersion),
     )
     exp.checkpoints = checkpoints_from_pb(exp, exp_pb.checkpoints)
@@ -104,7 +106,9 @@ def primary_metric_from_pb(pm_pb: pb.PrimaryMetric,) -> Optional[PrimaryMetric]:
     return PrimaryMetric(name=pm_pb.name, goal=goal,)
 
 
-def value_map_from_pb(vm_pb: Dict[str, pb.ParamType]) -> Optional[Dict[str, Any]]:
+def value_map_from_pb(
+    vm_pb: MutableMapping[str, pb.ParamType]
+) -> Optional[Dict[str, Any]]:
     if not vm_pb:
         return None
     return {k: value_from_pb(v) for k, v in vm_pb.items()}
@@ -141,6 +145,7 @@ def experiment_to_pb(exp: Experiment) -> pb.Experiment:
         path=exp.path,
         params=value_map_to_pb(exp.params),
         pythonPackages=exp.python_packages,
+        pythonVersion=exp.python_version,
         replicateVersion=exp.replicate_version,
         checkpoints=checkpoints_to_pb(exp.checkpoints),
     )
@@ -200,6 +205,8 @@ def value_to_pb(v: Any) -> pb.ParamType:
     if isinstance(v, list):
         return pb.ParamType(objectValueJson=json.dumps(v))
     if isinstance(v, dict):
+        return pb.ParamType(objectValueJson=json.dumps(v))
+    if v is None:
         return pb.ParamType(objectValueJson=json.dumps(v))
     else:
         raise ValueError("Invalid value: %s", v)

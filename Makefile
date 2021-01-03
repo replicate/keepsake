@@ -3,8 +3,7 @@ ENVIRONMENT := development
 OS := $(shell uname -s)
 
 .PHONY: build
-build:
-	cd proto && $(MAKE) build
+build: verify-dev-env
 	cd go && $(MAKE) build-all ENVIRONMENT=$(ENVIRONMENT)
 	cd python && $(MAKE) build
 

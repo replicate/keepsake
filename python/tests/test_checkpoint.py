@@ -1,14 +1,14 @@
 try:
     import dataclasses
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from replicate._vendor import dataclasses
 import datetime
 import os
 import pytest
+from waiting import wait
 
 from replicate.checkpoint import Checkpoint, CheckpointList
 from replicate.exceptions import DoesNotExist
-from replicate.experiment import Experiment
 from replicate.project import Project
 
 from tests.factories import experiment_factory, checkpoint_factory
@@ -107,6 +107,11 @@ class TestCheckpoint:
         with open("bar.txt", "w") as f:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
 
         # test with already existing checkpoint
         tmpdir = tmpdir_factory.mktemp("checkout")

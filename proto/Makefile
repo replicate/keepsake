@@ -5,7 +5,7 @@
 
 GO_OUTPUT_DIR=../go/pkg/servicepb
 PYTHON_OUTPUT_DIR=../python/replicate/servicepb
-PROTO_NAME=service
+PROTO_NAME=replicate
 SERVICE_PROTO=$(PROTO_NAME).proto
 
 .PHONY: build
@@ -18,6 +18,7 @@ build:
 	  --go-grpc_out=$(GO_OUTPUT_DIR) \
 	  --go-grpc_opt=paths=source_relative \
 	  --experimental_allow_proto3_optional \
+	  --mypy_out=$(PYTHON_OUTPUT_DIR) \
 	  $(SERVICE_PROTO)
 	python -m grpc_tools.protoc \
 	  --python_out=$(PYTHON_OUTPUT_DIR) \
@@ -28,3 +29,4 @@ build:
 	# need to post-process python-generated protobuf to make the import relative
 	# TODO(andreas): remove this when https://github.com/protocolbuffers/protobuf/pull/7470 is merged
 	sed -E -i '' 's/^import $(PROTO_NAME)_pb2 as $(PROTO_NAME)__pb2$$/from . import $(PROTO_NAME)_pb2 as $(PROTO_NAME)__pb2/' $(PYTHON_OUTPUT_DIR)/$(PROTO_NAME)_pb2_grpc.py
+	touch $(PYTHON_OUTPUT_DIR)/__init__.py

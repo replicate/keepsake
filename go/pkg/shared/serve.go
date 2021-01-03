@@ -96,6 +96,13 @@ func (s *server) StopExperiment(ctx context.Context, req *servicepb.StopExperime
 		s.heartbeatsByExperimentID[req.ExperimentID].Kill()
 		delete(s.heartbeatsByExperimentID, req.ExperimentID)
 	}
+	proj, err := s.getProject()
+	if err != nil {
+		return nil, handleError(err)
+	}
+	if err := proj.StopExperiment(req.ExperimentID); err != nil {
+		return nil, handleError(err)
+	}
 	return &servicepb.StopExperimentReply{}, nil
 }
 
@@ -162,6 +169,24 @@ func (s *server) CheckoutCheckpoint(ctx context.Context, req *servicepb.Checkout
 		return nil, handleError(err)
 	}
 	return &servicepb.CheckoutCheckpointReply{}, nil
+}
+
+func (s *server) GetExperimentStatus(ctx context.Context, req *servicepb.GetExperimentStatusRequest) (*servicepb.GetExperimentStatusReply, error) {
+	proj, err := s.getProject()
+	if err != nil {
+		return nil, handleError(err)
+	}
+	isRunning, err := proj.ExperimentIsRunning(req.ExperimentID)
+	if err != nil {
+		return nil, handleError(err)
+	}
+	var status servicepb.GetExperimentStatusReply_Status
+	if isRunning {
+		status = servicepb.GetExperimentStatusReply_RUNNING
+	} else {
+		status = servicepb.GetExperimentStatusReply_STOPPED
+	}
+	return &servicepb.GetExperimentStatusReply{Status: status}, nil
 }
 
 func (s *server) getProject() (*project.Project, error) {

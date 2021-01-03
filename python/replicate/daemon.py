@@ -11,8 +11,8 @@ import atexit
 import grpc  # type: ignore
 from google.rpc import status_pb2, error_details_pb2  # type: ignore
 
-from .servicepb.service_pb2_grpc import DaemonStub  # type: ignore
-from .servicepb import service_pb2 as pb  # type: ignore
+from .servicepb.replicate_pb2_grpc import DaemonStub
+from .servicepb import replicate_pb2 as pb
 from . import pb_convert
 from .experiment import Experiment
 from .checkpoint import Checkpoint, PrimaryMetric
@@ -119,6 +119,7 @@ class Daemon:
         params: Optional[Dict[str, Any]],
         command: Optional[str],
         python_packages: Dict[str, str],
+        python_version: str,
         quiet: bool,
         disable_hearbeat: bool,
     ) -> Experiment:
@@ -127,6 +128,7 @@ class Daemon:
             path=path,
             command=command,
             pythonPackages=python_packages,
+            pythonVersion=python_version,
         )
         ret = self.stub.CreateExperiment(
             pb.CreateExperimentRequest(
@@ -198,3 +200,10 @@ class Daemon:
                 outputDirectory=output_directory,
             ),
         )
+
+    @handle_error
+    def experiment_is_running(self, experiment_id: str) -> str:
+        ret = self.stub.GetExperimentStatus(
+            pb.GetExperimentStatusRequest(experimentID=experiment_id)
+        )
+        return ret.status == pb.GetExperimentStatusReply.Status.RUNNING

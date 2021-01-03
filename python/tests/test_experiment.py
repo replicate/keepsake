@@ -2,6 +2,7 @@ try:
     import dataclasses
 except ImportError:
     from replicate._vendor import dataclasses
+import math
 import datetime
 import json
 import os
@@ -21,8 +22,6 @@ from replicate.exceptions import (
 )
 from replicate.experiment import Experiment, ExperimentList
 from replicate.project import Project
-from replicate.heartbeat import DEFAULT_REFRESH_INTERVAL
-from replicate.constants import HEARTBEAT_MISS_TOLERANCE
 from replicate.metadata import rfc3339_datetime
 
 from tests.factories import experiment_factory, checkpoint_factory
@@ -217,38 +216,15 @@ def test_is_running(temp_workdir):
     experiment = replicate.init()
 
     heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
+
     assert wait(
-        lambda: os.path.exists(heartbeat_path), timeout_seconds=2, sleep_seconds=0.01
+        lambda: os.path.exists(heartbeat_path), timeout_seconds=10, sleep_seconds=0.01
     )
 
     # Check whether experiment is running after heartbeats are started
     assert experiment.is_running()
 
     # Heartbeats stopped
-    experiment._heartbeat.kill()
-    assert experiment.is_running()
-
-    # Modify heartbeat_metadata to record last heartbeat before last tolerable heartbeat
-    heartbeat_metadata = json.load(open(heartbeat_path))
-    heartbeat_metadata["last_heartbeat"] = rfc3339_datetime(
-        datetime.datetime.utcnow() - HEARTBEAT_MISS_TOLERANCE * DEFAULT_REFRESH_INTERVAL
-    )
-
-    out_file = open(heartbeat_path, "w")
-    json.dump(heartbeat_metadata, out_file)
-    out_file.close()
-
-    assert not experiment.is_running()
-
-    # New experiment to test is_running after stop()
-    experiment = replicate.init()
-    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
-    assert wait(
-        lambda: os.path.exists(heartbeat_path), timeout_seconds=2, sleep_seconds=0.01
-    )
-    assert experiment.is_running()
-
-    # Check is_running after stopping the experiment
     experiment.stop()
     assert not experiment.is_running()
 
@@ -290,37 +266,6 @@ class TestExperiment:
             "The path passed to the experiment does not exist: blah"
             in experiment.validate()[0]
         )
-
-    def test_from_json(self):
-        data = {
-            "id": "3132f9288bcc09a6b4d283c95a3968379d6b01fcf5d06500e789f90fdb02b7e1",
-            "created": "2020-10-07T22:44:06.243914Z",
-            "params": {"learning_rate": 0.01, "num_epochs": 100},
-            "user": "ben",
-            "host": "",
-            "command": "train.py",
-            "config": {"repository": ".replicate/"},
-            "path": ".",
-            "python_version": "3.4.5",
-            "python_packages": {"foo": "1.0.0"},
-            "checkpoints": [],
-            "replicate_version": "0.0.1",
-        }
-        exp = Experiment.from_json(None, data)
-        assert dataclasses.asdict(exp) == {
-            "id": "3132f9288bcc09a6b4d283c95a3968379d6b01fcf5d06500e789f90fdb02b7e1",
-            "created": datetime.datetime(2020, 10, 7, 22, 44, 6, 243914),
-            "params": {"learning_rate": 0.01, "num_epochs": 100},
-            "user": "ben",
-            "host": "",
-            "command": "train.py",
-            "config": {"repository": ".replicate/"},
-            "path": ".",
-            "python_version": "3.4.5",
-            "python_packages": {"foo": "1.0.0"},
-            "checkpoints": [],
-            "replicate_version": "0.0.1",
-        }
 
     def test_checkpoints(self, temp_workdir):
         project = Project()
@@ -375,6 +320,11 @@ class TestExperiment:
             return set(
                 str(p).replace(".replicate/", "") for p in Path(".replicate").rglob("*")
             )
+
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
 
         paths = get_paths()
         expected = set(
@@ -446,6 +396,42 @@ class TestExperiment:
             primary_metric=("accuracy", "maximize"),
         )
         assert experiment.best() is None
+
+    def test_exceptional_values(self, temp_workdir):
+        project = Project()
+
+        with open("replicate.yaml", "w") as f:
+            f.write("repository: file://.replicate/")
+
+        experiment = project.experiments.create(disable_heartbeat=True)
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": float("nan")},
+            primary_metric=("accuracy", "maximize"),
+        )
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": float("-inf")},
+            primary_metric=("accuracy", "maximize"),
+        )
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": float("+inf")},
+            primary_metric=("accuracy", "maximize"),
+        )
+        experiment.checkpoint(
+            path=None,
+            metrics={"accuracy": None},
+            primary_metric=("accuracy", "maximize"),
+        )
+
+        experiment = project.experiments.get(experiment.id)
+        assert math.isnan(experiment.checkpoints[0].metrics["accuracy"])
+        assert math.isinf(experiment.checkpoints[1].metrics["accuracy"])
+        assert experiment.checkpoints[1].metrics["accuracy"] < 0
+        assert math.isinf(experiment.checkpoints[2].metrics["accuracy"])
+        assert experiment.checkpoints[2].metrics["accuracy"] > 0
+        assert experiment.checkpoints[3].metrics["accuracy"] is None
 
 
 class TestExperimentCollection:
