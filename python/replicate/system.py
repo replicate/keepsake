@@ -5,4 +5,4 @@ def get_python_version():
     """
     Returns the Python version of the experiment as a str.
     """
-    return sys.version.split(" ")[0]
+    return ".".join([str(x) for x in sys.version_info[:3]])

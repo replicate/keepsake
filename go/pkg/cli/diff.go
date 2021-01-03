@@ -154,10 +154,11 @@ func checkpointToMap(checkpoint *project.Checkpoint) map[string]string {
 // Returns a map of checkpoint things we want to show in diff
 func experimentToMap(exp *project.Experiment) map[string]string {
 	return map[string]string{
-		"Created": exp.Created.In(timezone).Format(time.RFC1123),
-		"Host":    exp.Host,
-		"User":    exp.User,
-		"Command": exp.Command,
+		"Created":        exp.Created.In(timezone).Format(time.RFC1123),
+		"Host":           exp.Host,
+		"User":           exp.User,
+		"Command":        exp.Command,
+		"Python version": exp.PythonVersion,
 	}
 }
 

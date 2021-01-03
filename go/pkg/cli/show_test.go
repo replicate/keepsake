@@ -93,9 +93,10 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) re
 			"param-2": param.String("hello"),
 			"param-3": param.String("hi"),
 		},
-		Host:   "10.1.1.2",
-		User:   "andreas",
-		Config: conf,
+		Host:          "10.1.1.2",
+		User:          "andreas",
+		Config:        conf,
+		PythonVersion: "3.4.6",
 		Checkpoints: []*project.Checkpoint{
 			{
 				ID:      "4ccccccccc",
