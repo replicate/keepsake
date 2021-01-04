@@ -198,6 +198,7 @@ class Daemon:
             pb.CheckoutCheckpointRequest(
                 checkpointIDPrefix=checkpoint_id_prefix,
                 outputDirectory=output_directory,
+                quiet=quiet,
             ),
         )
 

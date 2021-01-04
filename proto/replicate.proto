@@ -23,6 +23,7 @@ service Daemon {
 message CreateExperimentRequest {
     Experiment experiment = 1;
     bool disableHeartbeat = 2;
+    bool quiet = 3;
 }
 
 message CreateExperimentReply {
@@ -31,6 +32,7 @@ message CreateExperimentReply {
 
 message CreateCheckpointRequest {
     Checkpoint checkpoint = 1;
+    bool quiet = 2;
 }
 
 message CreateCheckpointReply {
@@ -77,6 +79,7 @@ message DeleteExperimentReply {
 message CheckoutCheckpointRequest {
     string checkpointIDPrefix = 1;
     string outputDirectory = 2;
+    bool quiet = 3;
 }
 
 message CheckoutCheckpointReply {

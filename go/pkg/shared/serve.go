@@ -68,7 +68,7 @@ func (s *server) CreateCheckpoint(ctx context.Context, req *servicepb.CreateChec
 	if err != nil {
 		return nil, handleError(err)
 	}
-	chk, err := proj.CreateCheckpoint(args, true, s.workChan)
+	chk, err := proj.CreateCheckpoint(args, true, s.workChan, req.Quiet)
 	if err != nil {
 		return nil, handleError(err)
 	}

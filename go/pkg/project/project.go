@@ -270,7 +270,7 @@ type CreateCheckpointArgs struct {
 	PrimaryMetric *PrimaryMetric
 }
 
-func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workChan chan func() error) (*Checkpoint, error) {
+func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workChan chan func() error, quiet bool) (*Checkpoint, error) {
 	chk := &Checkpoint{
 		ID:            generateRandomID(),
 		Created:       time.Now().UTC(),
@@ -287,6 +287,9 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	}
 
 	work := func() error {
+		if !quiet {
+			console.Info("Copied the files from checkpoint %s to %s", chk.ID, chk.StorageTarPath())
+		}
 		return p.repository.PutPathTar(p.directory, chk.StorageTarPath(), chk.Path)
 	}
 	if async {
