@@ -3,6 +3,7 @@ try:
 except (ImportError, ModuleNotFoundError):
     from replicate._vendor import dataclasses
 import datetime
+import time
 import os
 import pytest
 from waiting import wait
@@ -112,6 +113,7 @@ class TestCheckpoint:
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
+        time.sleep(0.1)  # wait to finish writing
 
         # test with already existing checkpoint
         tmpdir = tmpdir_factory.mktemp("checkout")
@@ -177,6 +179,7 @@ class TestCheckpoint:
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
+        time.sleep(0.1)  # wait to finish writing
 
         # test with already existing checkpoint
         assert chk.open("foo.txt").read().decode() == "foo"

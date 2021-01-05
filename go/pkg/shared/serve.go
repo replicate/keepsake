@@ -226,7 +226,6 @@ func Serve(projGetter projectGetter, socketPath string) error {
 
 	// when the process exits, make sure any pending
 	// uploads are completed
-	exitChan := make(chan struct{})
 	completedChan := make(chan struct{})
 
 	sigc := make(chan os.Signal, 1)
@@ -239,26 +238,24 @@ func Serve(projGetter projectGetter, socketPath string) error {
 	go func() {
 		<-sigc
 		console.Debug("Exiting...")
-		exitChan <- struct{}{}
+		s.workChan <- nil // nil is an exit sentinel
 		for _, hb := range s.heartbeatsByExperimentID {
 			hb.Kill()
 		}
-		grpcServer.GracefulStop()
 		<-completedChan
+		grpcServer.GracefulStop()
 	}()
 
 	go func() {
 		for {
-			select {
-			case work := <-s.workChan:
-				// TODO(andreas): fail hard if an error occurs in CreateExperiment
-				if err := work(); err != nil {
-					console.Error("%v", err)
-					// TODO(andreas): poll status endpoint, put errors in chan of messages to return. also include progress in these messages
-				}
-			case <-exitChan:
+			work := <-s.workChan
+			if work == nil {
 				completedChan <- struct{}{}
 				return
+			}
+			if err := work(); err != nil {
+				console.Error("%v", err)
+				// TODO(andreas): poll status endpoint, put errors in chan of messages to return. also include progress in these messages
 			}
 		}
 	}()
