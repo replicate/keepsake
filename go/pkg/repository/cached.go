@@ -23,7 +23,7 @@ type CachedRepository struct {
 
 func NewCachedRepository(repo Repository, cachePrefix string, projectDir string, cacheDir string) (*CachedRepository, error) {
 	// This doesn't actually return an error, but catch in case of future errors
-	cacheRepository, err := NewDiskRepository(projectDir)
+	cacheRepository, err := NewDiskRepository(cacheDir)
 	if err != nil {
 		return nil, err
 	}

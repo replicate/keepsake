@@ -246,7 +246,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 	// save json synchronously to uncover repository write issues
 	if _, err := p.SaveExperiment(exp, false); err != nil {
 		if !quiet {
-			console.Info("Creating experiment %s", exp.ID)
+			console.Info("Creating experiment %s", exp.ShortID())
 		}
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 				return err
 			}
 			if !quiet {
-				console.Info("Created experiment %s, copied the files from %s to %s", exp.ID, exp.Path, exp.StorageTarPath())
+				console.Info("Created experiment %s, copied the files from %s to %s/%s", exp.ShortID(), exp.Path, p.repository.RootURL(), exp.StorageTarPath())
 			}
 			return nil
 		}
@@ -295,7 +295,7 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	// the checkpoint without saving anything
 	if chk.Path == "" {
 		if !quiet {
-			console.Info("Creating checkpoint %s", chk.ID)
+			console.Info("Creating checkpoint %s", chk.ShortID())
 		}
 		return chk, nil
 	}
@@ -305,7 +305,7 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 			return err
 		}
 		if !quiet {
-			console.Info("Created checkpoint %s, copied the files from %s to %s", chk.ID, chk.Path, chk.StorageTarPath())
+			console.Info("Created checkpoint %s, copied the files from %s to %s/%s", chk.ShortID(), chk.Path, p.repository.RootURL(), chk.StorageTarPath())
 		}
 		return nil
 	}

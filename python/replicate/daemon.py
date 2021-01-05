@@ -103,7 +103,7 @@ class Daemon:
             cmd += ["-D", self.project.directory]
         cmd.append(self.socket_path)
         self.process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1
         )
 
         # need to wrap stdout and stderr for this to work in jupyter
@@ -131,6 +131,11 @@ class Daemon:
             # the sigterm handler in the daemon process waits for any in-progress uploads etc. to finish.
             # the sigterm handler also deletes the socket file
             self.process.terminate()
+            self.process.wait()
+
+            # need to join these threads to avoid "could not acquire lock" error
+            self.stdout_thread.join()
+            self.stderr_thread.join()
         self.channel.close()
 
     @handle_error
