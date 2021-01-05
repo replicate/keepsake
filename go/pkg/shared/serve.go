@@ -44,7 +44,7 @@ func (s *server) CreateExperiment(ctx context.Context, req *servicepb.CreateExpe
 	if err != nil {
 		return nil, handleError(err)
 	}
-	exp, err := proj.CreateExperiment(args, true, s.workChan)
+	exp, err := proj.CreateExperiment(args, true, s.workChan, req.Quiet)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -164,7 +164,7 @@ func (s *server) CheckoutCheckpoint(ctx context.Context, req *servicepb.Checkout
 		return nil, handleError(err)
 	}
 
-	err = s.project.CheckoutCheckpoint(chk, exp, req.OutputDirectory)
+	err = s.project.CheckoutCheckpoint(chk, exp, req.OutputDirectory, req.Quiet)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -206,7 +206,7 @@ func (s *server) getProject() (*project.Project, error) {
 }
 
 func Serve(projGetter projectGetter, socketPath string) error {
-	console.Info("Starting daemon")
+	console.Debug("Starting daemon")
 
 	listener, err := net.Listen("unix", socketPath)
 	if err != nil {
@@ -238,7 +238,7 @@ func Serve(projGetter projectGetter, socketPath string) error {
 
 	go func() {
 		<-sigc
-		console.Info("Exiting...")
+		console.Debug("Exiting...")
 		exitChan <- struct{}{}
 		for _, hb := range s.heartbeatsByExperimentID {
 			hb.Kill()

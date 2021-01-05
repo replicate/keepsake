@@ -178,7 +178,7 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 
 	checkoutPath := opts.checkoutPath
 	if checkoutPath == "" {
-		return proj.CheckoutCheckpoint(checkpoint, experiment, outputDir)
+		return proj.CheckoutCheckpoint(checkpoint, experiment, outputDir, false)
 	} else {
 		return proj.CheckoutFileOrDirectory(checkpoint, experiment, outputDir, checkoutPath)
 	}

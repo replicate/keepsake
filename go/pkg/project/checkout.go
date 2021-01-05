@@ -9,7 +9,7 @@ import (
 	"github.com/replicate/replicate/go/pkg/errors"
 )
 
-func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experiment, outputDir string) error {
+func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experiment, outputDir string, quiet bool) error {
 	experimentFilesExist := true
 	checkpointFilesExist := true
 
@@ -22,7 +22,9 @@ func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experim
 			return err
 		}
 	} else {
-		console.Info("Copied the files from experiment %s to %q", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+		if !quiet {
+			console.Info("Copied the files from experiment %s to %q", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+		}
 	}
 
 	// Overlay checkpoint on top of experiment
@@ -37,7 +39,9 @@ func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experim
 
 			}
 		} else {
-			console.Info("Copied the files from checkpoint %s to %q", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+			if !quiet {
+				console.Info("Copied the files from checkpoint %s to %q", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+			}
 		}
 
 	}
@@ -50,10 +54,12 @@ func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experim
 		return errors.DoesNotExist(fmt.Sprintf("Neither the experiment %s nor the checkpoint %s has any files associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID()))
 	}
 
-	console.Info(`If you want to run this experiment again, this is how it was run:
+	if !quiet {
+		console.Info(`If you want to run this experiment again, this is how it was run:
 
   ` + experiment.Command + `
 `)
+	}
 
 	return nil
 }

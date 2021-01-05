@@ -199,7 +199,7 @@ type CreateExperimentArgs struct {
 	PythonPackages map[string]string
 }
 
-func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workChan chan func() error) (*Experiment, error) {
+func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workChan chan func() error, quiet bool) (*Experiment, error) {
 	spec, err := repository.LoadSpec(p.repository)
 	if err != nil {
 		return nil, err
@@ -243,13 +243,22 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 
 	// save json synchronously to uncover repository write issues
 	if _, err := p.SaveExperiment(exp); err != nil {
+		if !quiet {
+			console.Info("Creating experiment %s", exp.ID)
+		}
 		return nil, err
 	}
 
 	work := func() error { return nil }
 	if exp.Path != "" {
 		work = func() error {
-			return p.repository.PutPathTar(p.directory, exp.StorageTarPath(), exp.Path)
+			if err := p.repository.PutPathTar(p.directory, exp.StorageTarPath(), exp.Path); err != nil {
+				return err
+			}
+			if !quiet {
+				console.Info("Created experiment %s, copied the files from %s to %s", exp.ID, exp.Path, exp.StorageTarPath())
+			}
+			return nil
 		}
 	}
 
@@ -283,6 +292,9 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	// if path is empty (i.e. it was None in python), just return
 	// the checkpoint without saving anything
 	if chk.Path == "" {
+		if !quiet {
+			console.Info("Creating checkpoint %s", chk.ID)
+		}
 		return chk, nil
 	}
 
@@ -291,7 +303,7 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 			return err
 		}
 		if !quiet {
-			console.Info("Copied the files from checkpoint %s to %s", chk.ID, chk.StorageTarPath())
+			console.Info("Created checkpoint %s, copied the files from %s to %s", chk.ID, chk.Path, chk.StorageTarPath())
 		}
 		return nil
 	}

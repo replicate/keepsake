@@ -142,7 +142,9 @@ class Daemon:
         )
         ret = self.stub.CreateExperiment(
             pb.CreateExperimentRequest(
-                experiment=pb_experiment, disableHeartbeat=disable_hearbeat
+                experiment=pb_experiment,
+                disableHeartbeat=disable_hearbeat,
+                quiet=quiet,
             ),
         )
         return pb_convert.experiment_from_pb(self.project, ret.experiment)
@@ -165,7 +167,7 @@ class Daemon:
             step=step,
         )
         ret = self.stub.CreateCheckpoint(
-            pb.CreateCheckpointRequest(checkpoint=pb_checkpoint)
+            pb.CreateCheckpointRequest(checkpoint=pb_checkpoint, quiet=quiet)
         )
         return pb_convert.checkpoint_from_pb(experiment, ret.checkpoint)
 
