@@ -287,10 +287,13 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	}
 
 	work := func() error {
+		if err := p.repository.PutPathTar(p.directory, chk.StorageTarPath(), chk.Path); err != nil {
+			return err
+		}
 		if !quiet {
 			console.Info("Copied the files from checkpoint %s to %s", chk.ID, chk.StorageTarPath())
 		}
-		return p.repository.PutPathTar(p.directory, chk.StorageTarPath(), chk.Path)
+		return nil
 	}
 	if async {
 		workChan <- work

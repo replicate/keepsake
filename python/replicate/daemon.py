@@ -7,6 +7,8 @@ import os
 from typing import Optional, Dict, Any, List
 import subprocess
 import atexit
+import sys
+import threading
 
 import grpc  # type: ignore
 from google.rpc import status_pb2, error_details_pb2  # type: ignore
@@ -94,7 +96,15 @@ class Daemon:
         if self.project.directory:
             cmd += ["-D", self.project.directory]
         cmd.append(self.socket_path)
-        self.process = subprocess.Popen(cmd)
+        self.process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        # need to wrap stdout and stderr for this to work in jupyter
+        # notebooks. jupyter redefines sys.std{out,err} as custom
+        # writers that eventually write the output to the notebook.
+        self.stdout_thread = start_wrapped_pipe(self.process.stdout, sys.stdout)
+        self.stderr_thread = start_wrapped_pipe(self.process.stderr, sys.stderr)
 
         atexit.register(self.cleanup)
         self.channel = grpc.insecure_channel("unix://" + self.socket_path)
@@ -208,3 +218,21 @@ class Daemon:
             pb.GetExperimentStatusRequest(experimentID=experiment_id)
         )
         return ret.status == pb.GetExperimentStatusReply.Status.RUNNING
+
+
+def start_wrapped_pipe(pipe, writer):
+    def wrap_pipe(pipe, writer):
+        with pipe:
+            for line in iter(pipe.readline, b""):
+                writer.write(line)
+                writer.flush()
+
+    # if writer is normal sys.std{out,err}, it can't
+    # write bytes directly.
+    # see https://stackoverflow.com/a/908440/135797
+    if hasattr(writer, "buffer"):
+        writer = writer.buffer
+
+    thread = threading.Thread(target=wrap_pipe, args=[pipe, writer], daemon=True)
+    thread.start()
+    return thread
