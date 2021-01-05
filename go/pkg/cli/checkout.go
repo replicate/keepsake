@@ -90,12 +90,7 @@ func getExperimentAndCheckpoint(prefix string, repo repository.Repository) (*pro
 }
 
 // Handle errors related to the outputDir
-func validateOutputDir(outputDir string) error {
-	// FIXME(vastolorde95): If outputPath does not exist, there is no way to distinguish if
-	// it is supposed to be a file or a directory. Should we ask the user for a prompt if
-	// the checkoutPath is a file? This way we will be able to support:
-	//
-	// replicate checkout abc123 -o out/new_model.pth -file data/model.pth
+func validateOrCreateOutputDir(outputDir string) error {
 	exists, err := files.FileExists(outputDir)
 	if err != nil {
 		return err
@@ -175,7 +170,7 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 		}
 	}
 
-	err = validateOutputDir(outputDir)
+	err = validateOrCreateOutputDir(outputDir)
 	if err != nil {
 		return err
 	}
@@ -269,7 +264,7 @@ func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Re
 			return err
 		}
 	} else {
-		console.Info("Copied the files %s from experiment %s to %q", checkoutPath, experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+		console.Info("Copied the path %s from experiment %s to %q", checkoutPath, experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
 	}
 
 	// Overlay checkpoint on top of experiment
@@ -284,7 +279,7 @@ func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Re
 
 			}
 		} else {
-			console.Info("Copied the files %s from checkpoint %s to %q", checkoutPath, checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+			console.Info("Copied the path %s from checkpoint %s to %q", checkoutPath, checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
 		}
 
 	}

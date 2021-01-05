@@ -273,7 +273,7 @@ func (s *S3Repository) GetPathItemTar(tarPath, itemPath, localPath string) error
 		return err
 	}
 	if !exists {
-		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+		return &DoesNotExistError{msg: "Path does not exist: " + tmptarball}
 	}
 	return extractTarItem(tmptarball, itemPath, localPath)
 }
@@ -322,24 +322,24 @@ func (s *S3Repository) ListTarFile(tarPath string) ([]string, error) {
 	// TODO: make a better tar implementation
 	tmpdir, err := files.TempDir("tar")
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	defer os.RemoveAll(tmpdir)
 	tmptarball := filepath.Join(tmpdir, filepath.Base(tarPath))
 	if err := s.GetPath(tarPath, tmptarball); err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	exists, err := files.FileExists(tmptarball)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	if !exists {
-		return []string{}, &DoesNotExistError{msg: "ListTarFile: does not exist: " + tmptarball}
+		return nil, &DoesNotExistError{msg: "Path does not exist: " + tmptarball}
 	}
 
 	files, err := getListOfFilesInTar(tmptarball)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	tarname := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))

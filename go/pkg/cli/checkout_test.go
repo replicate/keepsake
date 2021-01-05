@@ -29,6 +29,7 @@ func TestCheckout(t *testing.T) {
 
 	rand1 := hash.Random()
 	rand2 := hash.Random()
+	rand3 := hash.Random()
 
 	experiment := &project.Experiment{
 		ID:      "1eeeeeeeee",
@@ -41,6 +42,11 @@ func TestCheckout(t *testing.T) {
 				Created: fixedTime.Add(-5 * time.Minute),
 				Path:    rand2,
 			},
+			{
+				ID:      "2aaaaaaaaa",
+				Created: fixedTime.Add(-5 * time.Minute),
+				Path:    "",
+			},
 		},
 	}
 	require.NoError(t, experiment.Save(repo))
@@ -49,16 +55,30 @@ func TestCheckout(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(codeDir)
 
+	//  codeDir
+	//  |-- rand1
+	//  |-- rand2
+	//  |--subdir
+	//     |--rand3
 	err = ioutil.WriteFile(path.Join(codeDir, rand1), []byte(rand1), 0644)
 	require.NoError(t, err)
 
 	err = ioutil.WriteFile(path.Join(codeDir, rand2), []byte(rand2), 0644)
 	require.NoError(t, err)
 
+	err = os.MkdirAll(path.Join(codeDir, "subdir"), 0755)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(codeDir, "subdir", rand3), []byte(rand3), 0644)
+	require.NoError(t, err)
+
 	err = repo.PutPathTar(codeDir, "experiments/1eeeeeeeee.tar.gz", rand1)
 	require.NoError(t, err)
 
 	err = repo.PutPathTar(codeDir, "checkpoints/1ccccccccc.tar.gz", rand2)
+	require.NoError(t, err)
+
+	err = repo.PutPathTar(codeDir, "checkpoints/2aaaaaaaaa.tar.gz", "")
 	require.NoError(t, err)
 
 	outputDir, err := files.TempDir("test-checkout-output")
@@ -142,4 +162,54 @@ func TestCheckout(t *testing.T) {
 	contents, err = ioutil.ReadFile(path.Join(outputDir3, rand2))
 	require.NoError(t, err)
 	require.Equal(t, rand2, string(contents))
+
+	outputDir4, err := files.TempDir("test-checkout-output-4")
+	require.NoError(t, err)
+	defer os.RemoveAll(outputDir4)
+
+	// checkout a single directory
+	err = checkoutCheckpoint(checkoutOpts{
+		outputDirectory: outputDir4,
+		checkoutPath:    "subdir",
+		force:           true,
+		repositoryURL:   "file://" + repoDir,
+	}, []string{"2aa"})
+	require.NoError(t, err)
+
+	_, err = ioutil.ReadFile(path.Join(outputDir4, rand1))
+	// checking out "subdir", should error
+	require.Error(t, err)
+
+	_, err = ioutil.ReadFile(path.Join(outputDir4, rand2))
+	// checking out "subdir", should error
+	require.Error(t, err)
+
+	contents, err = ioutil.ReadFile(path.Join(outputDir4, "subdir", rand3))
+	require.NoError(t, err)
+	require.Equal(t, rand3, string(contents))
+
+	outputDir5, err := files.TempDir("test-checkout-output-5")
+	require.NoError(t, err)
+	defer os.RemoveAll(outputDir5)
+
+	// checkout a single file from a subdirectory
+	err = checkoutCheckpoint(checkoutOpts{
+		outputDirectory: outputDir5,
+		checkoutPath:    "subdir/" + rand3,
+		force:           true,
+		repositoryURL:   "file://" + repoDir,
+	}, []string{"2aa"})
+	require.NoError(t, err)
+
+	_, err = ioutil.ReadFile(path.Join(outputDir5, rand1))
+	// checking out "subdir", should error
+	require.Error(t, err)
+
+	_, err = ioutil.ReadFile(path.Join(outputDir5, rand2))
+	// checking out "subdir", should error
+	require.Error(t, err)
+
+	contents, err = ioutil.ReadFile(path.Join(outputDir5, "subdir", rand3))
+	require.NoError(t, err)
+	require.Equal(t, rand3, string(contents))
 }
