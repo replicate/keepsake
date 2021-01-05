@@ -81,3 +81,8 @@ verify-go-version:
 .PHONY: verify-python-version
 verify-python-version:
 	@./makefile-scripts/verify-python-version.sh
+
+.PHONY: fmt
+fmt:
+	cd go && $(MAKE) fmt
+	cd python && $(MAKE) fmt

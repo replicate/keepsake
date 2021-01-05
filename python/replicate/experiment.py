@@ -4,7 +4,7 @@ try:
     import dataclasses
 except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
-    from _vendor import dataclasses
+    from _vendor import dataclasses  # type: ignore
 import getpass
 import os
 import math
