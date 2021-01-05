@@ -173,6 +173,11 @@ class TestCheckpoint:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+
         # test with already existing checkpoint
         assert chk.open("foo.txt").read().decode() == "foo"
         assert chk.open("bar.txt").read().decode() == "bar"
