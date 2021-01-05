@@ -257,10 +257,10 @@ func Serve(projGetter projectGetter, socketPath string) error {
 					// TODO(andreas): poll status endpoint, put errors in chan of messages to return. also include progress in these messages
 				}
 			case <-exitChan:
-				break
+				completedChan <- struct{}{}
+				return
 			}
 		}
-		completedChan <- struct{}{}
 	}()
 
 	if err := grpcServer.Serve(listener); err != nil {
