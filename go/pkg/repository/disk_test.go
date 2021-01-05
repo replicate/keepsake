@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -154,23 +153,6 @@ func TestDiskRepositoryList(t *testing.T) {
 	require.Equal(t, []string{}, paths)
 }
 
-type Alphabetic []string
-
-func (list Alphabetic) Len() int { return len(list) }
-
-func (list Alphabetic) Swap(i, j int) { list[i], list[j] = list[j], list[i] }
-
-func (list Alphabetic) Less(i, j int) bool {
-	var si string = list[i]
-	var sj string = list[j]
-	var si_lower = strings.ToLower(si)
-	var sj_lower = strings.ToLower(sj)
-	if si_lower == sj_lower {
-		return si < sj
-	}
-	return si_lower < sj_lower
-}
-
 func TestDiskRepositoryListTarFile(t *testing.T) {
 	dir, err := ioutil.TempDir("", "replicate-test")
 	require.NoError(t, err)
@@ -206,7 +188,7 @@ func TestDiskRepositoryListTarFile(t *testing.T) {
 	require.NoError(t, err)
 
 	paths, err := repository.ListTarFile("temp.tar.gz")
-	sort.Sort(Alphabetic(paths))
+	sort.Strings(paths)
 
 	require.NoError(t, err)
 	require.Equal(t, []string{"a.txt", "b.txt", "c/d.txt"}, paths)

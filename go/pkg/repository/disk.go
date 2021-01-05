@@ -166,15 +166,15 @@ func (s *DiskRepository) ListTarFile(tarPath string) ([]string, error) {
 	fullTarPath := path.Join(s.rootDir, tarPath)
 	exists, err := files.FileExists(fullTarPath)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 	if !exists {
-		return []string{}, &DoesNotExistError{msg: "ListTarFile: does not exist: " + fullTarPath}
+		return nil, &DoesNotExistError{msg: "Path does not exist: " + fullTarPath}
 	}
 
 	files, err := getListOfFilesInTar(fullTarPath)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	tarname := filepath.Base(strings.TrimSuffix(tarPath, ".tar.gz"))
