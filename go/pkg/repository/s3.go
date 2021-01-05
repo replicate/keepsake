@@ -173,7 +173,10 @@ func (s *S3Repository) PutPathTar(localPath, tarPath, includePath string) error 
 		})
 		return err
 	})
-	return errors.WriteError(errs.Wait().Error())
+	if err := errs.Wait(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 // GetPath recursively copies repoDir to localDir
