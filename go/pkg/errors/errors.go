@@ -14,6 +14,7 @@ const (
 	CodeConfigNotFound                = "CONFIG_NOT_FOUND"
 )
 
+// TODO: support wrapping https://blog.golang.org/go1.13-errors
 type CodedError interface {
 	Code() string
 }
@@ -58,15 +59,13 @@ For more information, see https://replicate.ai/docs/reference/python"""
 	}
 }
 
-func IncompatibleRepositoryVersion(msg string) error {
+func IncompatibleRepositoryVersion(rootURL string) error {
 	return &codedError{
 		code: CodeIncompatibleRepositoryVersion,
-		msg: msg + `
+		msg: `The repository at ` + rootURL + ` is using a newer storage mechanism which is incompatible with your version of Replicate.
 
-You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
-
-For more information, see https://replicate.ai/docs/reference/python"""
-`,
+To upgrade, run:
+pip install --upgrade replicate`,
 	}
 }
 

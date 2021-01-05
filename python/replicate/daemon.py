@@ -81,6 +81,8 @@ class Daemon:
         self.project = project
 
         if socket_path is None:
+            # create a new temporary file just to get a free name.
+            # the Go GRPC server will create the file.
             f = tempfile.NamedTemporaryFile(
                 prefix="replicate-daemon-", suffix=".sock", delete=False
             )
@@ -88,6 +90,9 @@ class Daemon:
             f.close()
         else:
             self.socket_path = socket_path
+
+        # the Go GRPC server will fail to start if the socket file
+        # already exists.
         os.unlink(self.socket_path)
 
         cmd = [DAEMON_BINARY]
@@ -173,11 +178,11 @@ class Daemon:
 
     @handle_error
     def save_experiment(
-        self, experiment: Experiment,
+        self, experiment: Experiment, quiet: bool,
     ):
         pb_experiment = pb_convert.experiment_to_pb(experiment)
         return self.stub.SaveExperiment(
-            pb.SaveExperimentRequest(experiment=pb_experiment)
+            pb.SaveExperimentRequest(experiment=pb_experiment, quiet=quiet)
         )
 
     @handle_error

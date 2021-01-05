@@ -41,6 +41,7 @@ message CreateCheckpointReply {
 
 message SaveExperimentRequest {
     Experiment experiment = 1;
+    bool quiet = 2;
 }
 
 message SaveExperimentReply {

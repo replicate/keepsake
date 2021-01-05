@@ -116,6 +116,10 @@ class Checkpoint(object):
 
         return errors
 
+    # TODO(andreas): this is only checking out checkpoints, which
+    # is different from the CLI where both checkpoints and
+    # experiments can be checked out with `replicate checkout`.
+    # Perhaps we should support experiment.checkout() as well?
     def checkout(self, output_directory: str, quiet: bool = False):
         """
         Copy files from this checkpoint to the output directory.

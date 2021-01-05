@@ -1,8 +1,10 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
     from dataclasses import dataclass, InitVar, field
+    import dataclasses
 except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
+    from _vendor import dataclasses
 import getpass
 import os
 import math
@@ -88,7 +90,7 @@ class Experiment:
 
         return errors
 
-    # @console.catch_and_print_exceptions(msg="Error creating checkpoint")
+    @console.catch_and_print_exceptions(msg="Error creating checkpoint")
     def checkpoint(
         self,
         path: Optional[str] = None,
@@ -145,25 +147,19 @@ class Experiment:
         """
         Save this experiment's metadata to repository.
         """
-        self._project._daemon().save_experiment(self)
+        self._project._daemon().save_experiment(self, quiet=quiet)
         return
 
     def refresh(self):
         """
         Update this experiment with the latest data from the repository.
         """
-        exp = self._project._daemon().get_experiment(experiment_id_prefix=self.id,)
-        self.created = exp.created
-        self.user = exp.user
-        self.host = exp.host
-        self.command = exp.command
-        self.config = exp.config
-        self.path = exp.path
-        self.params = exp.params
-        self.python_version = exp.python_version
-        self.python_packages = exp.python_packages
-        self.replicate_version = exp.replicate_version
-        self.checkpoints = exp.checkpoints
+        exp = self._project._daemon().get_experiment(experiment_id_prefix=self.id)
+
+        for field in dataclasses.fields(exp):
+            if field.name != "project":
+                value = getattr(exp, field.name)
+                setattr(self, field.name, value)
         for chk in self.checkpoints:
             chk._experiment = self
 

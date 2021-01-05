@@ -2,6 +2,8 @@
 # go get -u github.com/golang/protobuf/{proto,protoc-gen-go} google.golang.org/grpc
 # make sure ~/go/bin is in $PATH, but make sure ~ is expanded! ("Strangely protoc can't expand ~" https://stackoverflow.com/a/57731186/135797)
 # pip install grpcio
+#
+# TODO: make the process of installing the proto tools and verifying installation automatic.
 
 GO_OUTPUT_DIR=../go/pkg/servicepb
 PYTHON_OUTPUT_DIR=../python/replicate/servicepb

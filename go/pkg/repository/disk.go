@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	pathpkg "path"
 	"path/filepath"
 	"strings"
 
@@ -31,17 +31,17 @@ func (s *DiskRepository) RootURL() string {
 }
 
 // Get data at path
-func (s *DiskRepository) Get(p string) ([]byte, error) {
-	data, err := ioutil.ReadFile(path.Join(s.rootDir, p))
+func (s *DiskRepository) Get(path string) ([]byte, error) {
+	data, err := ioutil.ReadFile(pathpkg.Join(s.rootDir, path))
 	if err != nil && os.IsNotExist(err) {
-		return nil, errors.DoesNotExist(fmt.Sprintf("Get: path does not exist: %v", p))
+		return nil, errors.DoesNotExist(fmt.Sprintf("Get: path does not exist: %v", path))
 	}
 	return data, err
 }
 
 // GetPath recursively copies repoDir to localDir
 func (s *DiskRepository) GetPath(repoDir string, localDir string) error {
-	if err := copy.Copy(path.Join(s.rootDir, repoDir), localDir); err != nil {
+	if err := copy.Copy(pathpkg.Join(s.rootDir, repoDir), localDir); err != nil {
 		return errors.ReadError(fmt.Sprintf("Failed to copy directory from %s to %s: %v", repoDir, localDir, err))
 	}
 	return nil
@@ -51,7 +51,7 @@ func (s *DiskRepository) GetPath(repoDir string, localDir string) error {
 //
 // See repository.go for full documentation.
 func (s *DiskRepository) GetPathTar(tarPath, localPath string) error {
-	fullTarPath := path.Join(s.rootDir, tarPath)
+	fullTarPath := pathpkg.Join(s.rootDir, tarPath)
 	exists, err := files.FileExists(fullTarPath)
 	if err != nil {
 		return err
@@ -78,8 +78,8 @@ func (s *DiskRepository) GetPathItemTar(tarPath, itemPath, localPath string) err
 }
 
 // Put data at path
-func (s *DiskRepository) Put(p string, data []byte) error {
-	fullPath := path.Join(s.rootDir, p)
+func (s *DiskRepository) Put(path string, data []byte) error {
+	fullPath := pathpkg.Join(s.rootDir, path)
 	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
 	if err != nil {
 		return errors.WriteError(err.Error())
@@ -118,7 +118,7 @@ func (s *DiskRepository) PutPathTar(localPath, tarPath, includePath string) erro
 		return errors.WriteError("PutPathTar: tarPath must end with .tar.gz")
 	}
 
-	fullPath := path.Join(s.rootDir, tarPath)
+	fullPath := pathpkg.Join(s.rootDir, tarPath)
 	err := os.MkdirAll(filepath.Dir(fullPath), 0755)
 	if err != nil {
 		return errors.WriteError(err.Error())
@@ -144,7 +144,7 @@ func (s *DiskRepository) PutPathTar(localPath, tarPath, includePath string) erro
 // Delete deletes path. If path is a directory, it recursively deletes
 // all everything under path
 func (s *DiskRepository) Delete(pathToDelete string) error {
-	if err := os.RemoveAll(path.Join(s.rootDir, pathToDelete)); err != nil {
+	if err := os.RemoveAll(pathpkg.Join(s.rootDir, pathToDelete)); err != nil {
 		return errors.WriteError(fmt.Sprintf("Failed to delete %s/%s: %v", s.rootDir, pathToDelete, err))
 	}
 	return nil
@@ -155,8 +155,8 @@ func (s *DiskRepository) Delete(pathToDelete string) error {
 // Returns a list of paths, prefixed with the given path, that can be passed straight to Get().
 // Directories are not listed.
 // If path does not exist, an empty list will be returned.
-func (s *DiskRepository) List(p string) ([]string, error) {
-	files, err := ioutil.ReadDir(path.Join(s.rootDir, p))
+func (s *DiskRepository) List(path string) ([]string, error) {
+	files, err := ioutil.ReadDir(pathpkg.Join(s.rootDir, path))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []string{}, nil
@@ -166,7 +166,7 @@ func (s *DiskRepository) List(p string) ([]string, error) {
 	result := []string{}
 	for _, f := range files {
 		if !f.IsDir() {
-			result = append(result, path.Join(p, f.Name()))
+			result = append(result, pathpkg.Join(path, f.Name()))
 		}
 	}
 	return result, nil
@@ -196,17 +196,17 @@ func (s *DiskRepository) ListTarFile(tarPath string) ([]string, error) {
 }
 
 func (s *DiskRepository) ListRecursive(results chan<- ListResult, folder string) {
-	err := filepath.Walk(path.Join(s.rootDir, folder), func(p string, info os.FileInfo, err error) error {
+	err := filepath.Walk(pathpkg.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if !info.IsDir() {
-			relPath, err := filepath.Rel(s.rootDir, p)
+			relPath, err := filepath.Rel(s.rootDir, path)
 			if err != nil {
 				return err
 			}
 
-			md5sum, err := md5File(p)
+			md5sum, err := md5File(path)
 			if err != nil {
 				return err
 			}
@@ -227,12 +227,12 @@ func (s *DiskRepository) ListRecursive(results chan<- ListResult, folder string)
 }
 
 func (s *DiskRepository) MatchFilenamesRecursive(results chan<- ListResult, folder string, filename string) {
-	err := filepath.Walk(path.Join(s.rootDir, folder), func(p string, info os.FileInfo, err error) error {
+	err := filepath.Walk(pathpkg.Join(s.rootDir, folder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if filepath.Base(p) == filename {
-			relPath, err := filepath.Rel(s.rootDir, p)
+		if filepath.Base(path) == filename {
+			relPath, err := filepath.Rel(s.rootDir, path)
 			if err != nil {
 				return err
 			}

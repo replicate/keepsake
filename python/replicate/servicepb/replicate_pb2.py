@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z/github.com/replicate/replicate/go/pkg/servicepb',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0freplicate.proto\x12\x07service\x1a\x1fgoogle/protobuf/timestamp.proto\"k\n\x17\x43reateExperimentRequest\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\x12\x18\n\x10\x64isableHeartbeat\x18\x02 \x01(\x08\x12\r\n\x05quiet\x18\x03 \x01(\x08\"@\n\x15\x43reateExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"Q\n\x17\x43reateCheckpointRequest\x12\'\n\ncheckpoint\x18\x01 \x01(\x0b\x32\x13.service.Checkpoint\x12\r\n\x05quiet\x18\x02 \x01(\x08\"@\n\x15\x43reateCheckpointReply\x12\'\n\ncheckpoint\x18\x01 \x01(\x0b\x32\x13.service.Checkpoint\"@\n\x15SaveExperimentRequest\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\">\n\x13SaveExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"-\n\x15StopExperimentRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"\x15\n\x13StopExperimentReply\"2\n\x14GetExperimentRequest\x12\x1a\n\x12\x65xperimentIDPrefix\x18\x01 \x01(\t\"=\n\x12GetExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"\x18\n\x16ListExperimentsRequest\"@\n\x14ListExperimentsReply\x12(\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x13.service.Experiment\"/\n\x17\x44\x65leteExperimentRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"\x17\n\x15\x44\x65leteExperimentReply\"_\n\x19\x43heckoutCheckpointRequest\x12\x1a\n\x12\x63heckpointIDPrefix\x18\x01 \x01(\t\x12\x17\n\x0foutputDirectory\x18\x02 \x01(\t\x12\r\n\x05quiet\x18\x03 \x01(\x08\"\x19\n\x17\x43heckoutCheckpointReply\"2\n\x1aGetExperimentStatusRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"x\n\x18GetExperimentStatusReply\x12\x38\n\x06status\x18\x01 \x01(\x0e\x32(.service.GetExperimentStatusReply.Status\"\"\n\x06Status\x12\x0b\n\x07RUNNING\x10\x00\x12\x0b\n\x07STOPPED\x10\x01\"\xe8\x03\n\nExperiment\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x07\x63reated\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x06params\x18\x03 \x03(\x0b\x32\x1f.service.Experiment.ParamsEntry\x12\x0c\n\x04host\x18\x04 \x01(\t\x12\x0c\n\x04user\x18\x05 \x01(\t\x12\x1f\n\x06\x63onfig\x18\x06 \x01(\x0b\x32\x0f.service.Config\x12\x0f\n\x07\x63ommand\x18\x07 \x01(\t\x12\x0c\n\x04path\x18\x08 \x01(\t\x12?\n\x0epythonPackages\x18\t \x03(\x0b\x32\'.service.Experiment.PythonPackagesEntry\x12\x15\n\rpythonVersion\x18\n \x01(\t\x12(\n\x0b\x63heckpoints\x18\x0b \x03(\x0b\x32\x13.service.Checkpoint\x12\x18\n\x10replicateVersion\x18\x0c \x01(\t\x1a\x41\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.service.ParamType:\x02\x38\x01\x1a\x35\n\x13PythonPackagesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"-\n\x06\x43onfig\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0f\n\x07storage\x18\x02 \x01(\t\"\x87\x02\n\nCheckpoint\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x07\x63reated\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x31\n\x07metrics\x18\x03 \x03(\x0b\x32 .service.Checkpoint.MetricsEntry\x12\x0c\n\x04step\x18\x04 \x01(\x03\x12\x0c\n\x04path\x18\x05 \x01(\t\x12-\n\rprimaryMetric\x18\x06 \x01(\x0b\x32\x16.service.PrimaryMetric\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.service.ParamType:\x02\x38\x01\"l\n\rPrimaryMetric\x12\x0c\n\x04name\x18\x01 \x01(\t\x12)\n\x04goal\x18\x02 \x01(\x0e\x32\x1b.service.PrimaryMetric.Goal\"\"\n\x04Goal\x12\x0c\n\x08MAXIMIZE\x10\x00\x12\x0c\n\x08MINIMIZE\x10\x01\"\x85\x01\n\tParamType\x12\x13\n\tboolValue\x18\x01 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x02 \x01(\x03H\x00\x12\x14\n\nfloatValue\x18\x03 \x01(\x01H\x00\x12\x15\n\x0bstringValue\x18\x04 \x01(\tH\x00\x12\x19\n\x0fobjectValueJson\x18\x05 \x01(\tH\x00\x42\x07\n\x05value2\x97\x06\n\x06\x44\x61\x65mon\x12V\n\x10\x43reateExperiment\x12 .service.CreateExperimentRequest\x1a\x1e.service.CreateExperimentReply\"\x00\x12V\n\x10\x43reateCheckpoint\x12 .service.CreateCheckpointRequest\x1a\x1e.service.CreateCheckpointReply\"\x00\x12P\n\x0eSaveExperiment\x12\x1e.service.SaveExperimentRequest\x1a\x1c.service.SaveExperimentReply\"\x00\x12P\n\x0eStopExperiment\x12\x1e.service.StopExperimentRequest\x1a\x1c.service.StopExperimentReply\"\x00\x12M\n\rGetExperiment\x12\x1d.service.GetExperimentRequest\x1a\x1b.service.GetExperimentReply\"\x00\x12S\n\x0fListExperiments\x12\x1f.service.ListExperimentsRequest\x1a\x1d.service.ListExperimentsReply\"\x00\x12V\n\x10\x44\x65leteExperiment\x12 .service.DeleteExperimentRequest\x1a\x1e.service.DeleteExperimentReply\"\x00\x12\\\n\x12\x43heckoutCheckpoint\x12\".service.CheckoutCheckpointRequest\x1a .service.CheckoutCheckpointReply\"\x00\x12_\n\x13GetExperimentStatus\x12#.service.GetExperimentStatusRequest\x1a!.service.GetExperimentStatusReply\"\x00\x42\x31Z/github.com/replicate/replicate/go/pkg/servicepbb\x06proto3'
+  serialized_pb=b'\n\x0freplicate.proto\x12\x07service\x1a\x1fgoogle/protobuf/timestamp.proto\"k\n\x17\x43reateExperimentRequest\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\x12\x18\n\x10\x64isableHeartbeat\x18\x02 \x01(\x08\x12\r\n\x05quiet\x18\x03 \x01(\x08\"@\n\x15\x43reateExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"Q\n\x17\x43reateCheckpointRequest\x12\'\n\ncheckpoint\x18\x01 \x01(\x0b\x32\x13.service.Checkpoint\x12\r\n\x05quiet\x18\x02 \x01(\x08\"@\n\x15\x43reateCheckpointReply\x12\'\n\ncheckpoint\x18\x01 \x01(\x0b\x32\x13.service.Checkpoint\"O\n\x15SaveExperimentRequest\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\x12\r\n\x05quiet\x18\x02 \x01(\x08\">\n\x13SaveExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"-\n\x15StopExperimentRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"\x15\n\x13StopExperimentReply\"2\n\x14GetExperimentRequest\x12\x1a\n\x12\x65xperimentIDPrefix\x18\x01 \x01(\t\"=\n\x12GetExperimentReply\x12\'\n\nexperiment\x18\x01 \x01(\x0b\x32\x13.service.Experiment\"\x18\n\x16ListExperimentsRequest\"@\n\x14ListExperimentsReply\x12(\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x13.service.Experiment\"/\n\x17\x44\x65leteExperimentRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"\x17\n\x15\x44\x65leteExperimentReply\"_\n\x19\x43heckoutCheckpointRequest\x12\x1a\n\x12\x63heckpointIDPrefix\x18\x01 \x01(\t\x12\x17\n\x0foutputDirectory\x18\x02 \x01(\t\x12\r\n\x05quiet\x18\x03 \x01(\x08\"\x19\n\x17\x43heckoutCheckpointReply\"2\n\x1aGetExperimentStatusRequest\x12\x14\n\x0c\x65xperimentID\x18\x01 \x01(\t\"x\n\x18GetExperimentStatusReply\x12\x38\n\x06status\x18\x01 \x01(\x0e\x32(.service.GetExperimentStatusReply.Status\"\"\n\x06Status\x12\x0b\n\x07RUNNING\x10\x00\x12\x0b\n\x07STOPPED\x10\x01\"\xe8\x03\n\nExperiment\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x07\x63reated\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x06params\x18\x03 \x03(\x0b\x32\x1f.service.Experiment.ParamsEntry\x12\x0c\n\x04host\x18\x04 \x01(\t\x12\x0c\n\x04user\x18\x05 \x01(\t\x12\x1f\n\x06\x63onfig\x18\x06 \x01(\x0b\x32\x0f.service.Config\x12\x0f\n\x07\x63ommand\x18\x07 \x01(\t\x12\x0c\n\x04path\x18\x08 \x01(\t\x12?\n\x0epythonPackages\x18\t \x03(\x0b\x32\'.service.Experiment.PythonPackagesEntry\x12\x15\n\rpythonVersion\x18\n \x01(\t\x12(\n\x0b\x63heckpoints\x18\x0b \x03(\x0b\x32\x13.service.Checkpoint\x12\x18\n\x10replicateVersion\x18\x0c \x01(\t\x1a\x41\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.service.ParamType:\x02\x38\x01\x1a\x35\n\x13PythonPackagesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"-\n\x06\x43onfig\x12\x12\n\nrepository\x18\x01 \x01(\t\x12\x0f\n\x07storage\x18\x02 \x01(\t\"\x87\x02\n\nCheckpoint\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x07\x63reated\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x31\n\x07metrics\x18\x03 \x03(\x0b\x32 .service.Checkpoint.MetricsEntry\x12\x0c\n\x04step\x18\x04 \x01(\x03\x12\x0c\n\x04path\x18\x05 \x01(\t\x12-\n\rprimaryMetric\x18\x06 \x01(\x0b\x32\x16.service.PrimaryMetric\x1a\x42\n\x0cMetricsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.service.ParamType:\x02\x38\x01\"l\n\rPrimaryMetric\x12\x0c\n\x04name\x18\x01 \x01(\t\x12)\n\x04goal\x18\x02 \x01(\x0e\x32\x1b.service.PrimaryMetric.Goal\"\"\n\x04Goal\x12\x0c\n\x08MAXIMIZE\x10\x00\x12\x0c\n\x08MINIMIZE\x10\x01\"\x85\x01\n\tParamType\x12\x13\n\tboolValue\x18\x01 \x01(\x08H\x00\x12\x12\n\x08intValue\x18\x02 \x01(\x03H\x00\x12\x14\n\nfloatValue\x18\x03 \x01(\x01H\x00\x12\x15\n\x0bstringValue\x18\x04 \x01(\tH\x00\x12\x19\n\x0fobjectValueJson\x18\x05 \x01(\tH\x00\x42\x07\n\x05value2\x97\x06\n\x06\x44\x61\x65mon\x12V\n\x10\x43reateExperiment\x12 .service.CreateExperimentRequest\x1a\x1e.service.CreateExperimentReply\"\x00\x12V\n\x10\x43reateCheckpoint\x12 .service.CreateCheckpointRequest\x1a\x1e.service.CreateCheckpointReply\"\x00\x12P\n\x0eSaveExperiment\x12\x1e.service.SaveExperimentRequest\x1a\x1c.service.SaveExperimentReply\"\x00\x12P\n\x0eStopExperiment\x12\x1e.service.StopExperimentRequest\x1a\x1c.service.StopExperimentReply\"\x00\x12M\n\rGetExperiment\x12\x1d.service.GetExperimentRequest\x1a\x1b.service.GetExperimentReply\"\x00\x12S\n\x0fListExperiments\x12\x1f.service.ListExperimentsRequest\x1a\x1d.service.ListExperimentsReply\"\x00\x12V\n\x10\x44\x65leteExperiment\x12 .service.DeleteExperimentRequest\x1a\x1e.service.DeleteExperimentReply\"\x00\x12\\\n\x12\x43heckoutCheckpoint\x12\".service.CheckoutCheckpointRequest\x1a .service.CheckoutCheckpointReply\"\x00\x12_\n\x13GetExperimentStatus\x12#.service.GetExperimentStatusRequest\x1a!.service.GetExperimentStatusReply\"\x00\x42\x31Z/github.com/replicate/replicate/go/pkg/servicepbb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -46,8 +46,8 @@ _GETEXPERIMENTSTATUSREPLY_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1128,
-  serialized_end=1162,
+  serialized_start=1143,
+  serialized_end=1177,
 )
 _sym_db.RegisterEnumDescriptor(_GETEXPERIMENTSTATUSREPLY_STATUS)
 
@@ -71,8 +71,8 @@ _PRIMARYMETRIC_GOAL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2042,
-  serialized_end=2076,
+  serialized_start=2057,
+  serialized_end=2091,
 )
 _sym_db.RegisterEnumDescriptor(_PRIMARYMETRIC_GOAL)
 
@@ -241,6 +241,13 @@ _SAVEEXPERIMENTREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='quiet', full_name='service.SaveExperimentRequest.quiet', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -254,7 +261,7 @@ _SAVEEXPERIMENTREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=385,
-  serialized_end=449,
+  serialized_end=464,
 )
 
 
@@ -285,8 +292,8 @@ _SAVEEXPERIMENTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=451,
-  serialized_end=513,
+  serialized_start=466,
+  serialized_end=528,
 )
 
 
@@ -317,8 +324,8 @@ _STOPEXPERIMENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=515,
-  serialized_end=560,
+  serialized_start=530,
+  serialized_end=575,
 )
 
 
@@ -342,8 +349,8 @@ _STOPEXPERIMENTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=562,
-  serialized_end=583,
+  serialized_start=577,
+  serialized_end=598,
 )
 
 
@@ -374,8 +381,8 @@ _GETEXPERIMENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=585,
-  serialized_end=635,
+  serialized_start=600,
+  serialized_end=650,
 )
 
 
@@ -406,8 +413,8 @@ _GETEXPERIMENTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=637,
-  serialized_end=698,
+  serialized_start=652,
+  serialized_end=713,
 )
 
 
@@ -431,8 +438,8 @@ _LISTEXPERIMENTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=700,
-  serialized_end=724,
+  serialized_start=715,
+  serialized_end=739,
 )
 
 
@@ -463,8 +470,8 @@ _LISTEXPERIMENTSREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=726,
-  serialized_end=790,
+  serialized_start=741,
+  serialized_end=805,
 )
 
 
@@ -495,8 +502,8 @@ _DELETEEXPERIMENTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=792,
-  serialized_end=839,
+  serialized_start=807,
+  serialized_end=854,
 )
 
 
@@ -520,8 +527,8 @@ _DELETEEXPERIMENTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=841,
-  serialized_end=864,
+  serialized_start=856,
+  serialized_end=879,
 )
 
 
@@ -566,8 +573,8 @@ _CHECKOUTCHECKPOINTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=866,
-  serialized_end=961,
+  serialized_start=881,
+  serialized_end=976,
 )
 
 
@@ -591,8 +598,8 @@ _CHECKOUTCHECKPOINTREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=963,
-  serialized_end=988,
+  serialized_start=978,
+  serialized_end=1003,
 )
 
 
@@ -623,8 +630,8 @@ _GETEXPERIMENTSTATUSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=990,
-  serialized_end=1040,
+  serialized_start=1005,
+  serialized_end=1055,
 )
 
 
@@ -656,8 +663,8 @@ _GETEXPERIMENTSTATUSREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1042,
-  serialized_end=1162,
+  serialized_start=1057,
+  serialized_end=1177,
 )
 
 
@@ -695,8 +702,8 @@ _EXPERIMENT_PARAMSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1533,
-  serialized_end=1598,
+  serialized_start=1548,
+  serialized_end=1613,
 )
 
 _EXPERIMENT_PYTHONPACKAGESENTRY = _descriptor.Descriptor(
@@ -733,8 +740,8 @@ _EXPERIMENT_PYTHONPACKAGESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1600,
-  serialized_end=1653,
+  serialized_start=1615,
+  serialized_end=1668,
 )
 
 _EXPERIMENT = _descriptor.Descriptor(
@@ -841,8 +848,8 @@ _EXPERIMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1165,
-  serialized_end=1653,
+  serialized_start=1180,
+  serialized_end=1668,
 )
 
 
@@ -880,8 +887,8 @@ _CONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1655,
-  serialized_end=1700,
+  serialized_start=1670,
+  serialized_end=1715,
 )
 
 
@@ -919,8 +926,8 @@ _CHECKPOINT_METRICSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1900,
-  serialized_end=1966,
+  serialized_start=1915,
+  serialized_end=1981,
 )
 
 _CHECKPOINT = _descriptor.Descriptor(
@@ -985,8 +992,8 @@ _CHECKPOINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1703,
-  serialized_end=1966,
+  serialized_start=1718,
+  serialized_end=1981,
 )
 
 
@@ -1025,8 +1032,8 @@ _PRIMARYMETRIC = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1968,
-  serialized_end=2076,
+  serialized_start=1983,
+  serialized_end=2091,
 )
 
 
@@ -1090,8 +1097,8 @@ _PARAMTYPE = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=2079,
-  serialized_end=2212,
+  serialized_start=2094,
+  serialized_end=2227,
 )
 
 _CREATEEXPERIMENTREQUEST.fields_by_name['experiment'].message_type = _EXPERIMENT
@@ -1357,8 +1364,8 @@ _DAEMON = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2215,
-  serialized_end=3006,
+  serialized_start=2230,
+  serialized_end=3021,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateExperiment',

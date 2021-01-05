@@ -84,7 +84,7 @@ func (s *server) SaveExperiment(ctx context.Context, req *servicepb.SaveExperime
 	if err != nil {
 		return nil, handleError(err)
 	}
-	exp, err = proj.SaveExperiment(exp)
+	exp, err = proj.SaveExperiment(exp, req.Quiet)
 	if err != nil {
 		return nil, handleError(err)
 	}

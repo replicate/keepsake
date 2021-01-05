@@ -49,6 +49,8 @@ func (p *Project) Experiments() ([]*Experiment, error) {
 	return experiments, nil
 }
 
+// ExperimentIsRunning returns true if an experiment is still running
+// (i.e. the heartbeat has beat in the last n seconds).
 func (p *Project) ExperimentIsRunning(experimentID string) (bool, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return false, err
@@ -62,7 +64,7 @@ func (p *Project) ExperimentIsRunning(experimentID string) (bool, error) {
 	return heartbeat.IsRunning(), nil
 }
 
-// TODO(andreas): docstring
+// ExperimentFromPrefix returns an experiment that matches a given ID prefix.
 func (p *Project) ExperimentFromPrefix(prefix string) (*Experiment, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
@@ -86,7 +88,7 @@ func (p *Project) ExperimentFromPrefix(prefix string) (*Experiment, error) {
 	return matches[0], nil
 }
 
-// TODO(andreas): docstring
+// ExperimentByID returns an experiment that matches a given ID.
 func (p *Project) ExperimentByID(id string) (*Experiment, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, err
@@ -97,7 +99,7 @@ func (p *Project) ExperimentByID(id string) (*Experiment, error) {
 	return nil, fmt.Errorf("Experiment not found: %s", id)
 }
 
-// TODO(andreas): docstring
+// CheckpointFromPrefix returns an experiment that matches a given ID prefix.
 func (p *Project) CheckpointFromPrefix(prefix string) (*Checkpoint, *Experiment, error) {
 	if err := p.ensureLoaded(); err != nil {
 		return nil, nil, err
@@ -242,7 +244,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 	}
 
 	// save json synchronously to uncover repository write issues
-	if _, err := p.SaveExperiment(exp); err != nil {
+	if _, err := p.SaveExperiment(exp, false); err != nil {
 		if !quiet {
 			console.Info("Creating experiment %s", exp.ID)
 		}
@@ -318,7 +320,8 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	return chk, nil
 }
 
-func (p *Project) SaveExperiment(exp *Experiment) (*Experiment, error) {
+func (p *Project) SaveExperiment(exp *Experiment, quiet bool) (*Experiment, error) {
+	// TODO(andreas): use quiet flag
 	if err := exp.Save(p.repository); err != nil {
 		return nil, err
 	}
@@ -385,6 +388,10 @@ func loadFromPath(repo repository.Repository, path string, obj interface{}) erro
 	return nil
 }
 
+// TODO(andreas): even though this random generator isn't affected by
+// python's random seed, it might still be a good idea to include a
+// timestamp or something else to ensure uniqueness in case you
+// use the Go API directly.
 func generateRandomID() string {
 	chars := []rune("0123456789abcdef")
 	var b strings.Builder
