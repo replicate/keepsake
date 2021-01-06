@@ -12,25 +12,13 @@ import (
 	"github.com/ghodss/yaml"
 
 	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/global"
 )
 
 const maxSearchDepth = 100
 const deprecatedRepositoryDir = ".replicate/storage"
-
-type configNotFoundError struct {
-	message string
-}
-
-func (e *configNotFoundError) Error() string {
-	return e.message + `
-
-You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
-
-For more information, see https://replicate.ai/docs/reference/python"""
-`
-}
 
 // FindConfigInWorkingDir searches working directory and any parent directories
 // for replicate.yaml (or replicate.yml) and loads it.
@@ -43,8 +31,7 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string
 	if overrideDir != "" {
 		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[0]))
 		if err != nil {
-			if _, ok := err.(*configNotFoundError); ok {
-
+			if errors.IsConfigNotFound(err) {
 				// Try to locate replicate.yml
 				conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[1]))
 				if err != nil {
@@ -97,7 +84,7 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 	text, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, &configNotFoundError{fmt.Sprintf("The config path does not exist: %s", configPath)}
+			return nil, errors.ConfigNotFound("The config path does not exist: " + configPath)
 		}
 		return nil, fmt.Errorf("Failed to read config file '%s': %w", configPath, err)
 	}
@@ -174,10 +161,10 @@ func FindConfigPath(startFolder string) (configPath string, deprecatedRepository
 
 		if folder == "/" {
 			// These error messages aren't used anywhere, but I've left them in in case this function is used elsewhere in the future
-			return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilenames[0], startFolder)}
+			return "", "", errors.ConfigNotFound(fmt.Sprintf("%s not found in %s (or in any parent directories", global.ConfigFilenames[0], startFolder))
 		}
 
 		folder = filepath.Dir(folder)
 	}
-	return "", "", &configNotFoundError{message: fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilenames[0])}
+	return "", "", errors.ConfigNotFound(fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilenames[0]))
 }

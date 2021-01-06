@@ -9,8 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func IP(i int) *int {
-	return &i
+func IP(i int) *int64 {
+	i64 := int64(i)
+	return &i64
 }
 
 func FP(f float64) *float64 {

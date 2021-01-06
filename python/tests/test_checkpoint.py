@@ -1,14 +1,15 @@
 try:
     import dataclasses
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from replicate._vendor import dataclasses
 import datetime
+import time
 import os
 import pytest
+from waiting import wait
 
 from replicate.checkpoint import Checkpoint, CheckpointList
-from replicate.exceptions import DoesNotExistError
-from replicate.experiment import Experiment
+from replicate.exceptions import DoesNotExist
 from replicate.project import Project
 
 from tests.factories import experiment_factory, checkpoint_factory
@@ -108,6 +109,12 @@ class TestCheckpoint:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+        time.sleep(0.1)  # wait to finish writing
+
         # test with already existing checkpoint
         tmpdir = tmpdir_factory.mktemp("checkout")
         chk.checkout(output_directory=str(tmpdir))
@@ -130,12 +137,19 @@ class TestCheckpoint:
         exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
         chk = exp.checkpoint(metrics={"accuracy": "awesome"})
         tmpdir = tmpdir_factory.mktemp("checkout")
-        with pytest.raises(DoesNotExistError):
+        with pytest.raises(DoesNotExist):
             chk.checkout(output_directory=str(tmpdir))
 
         # test experiment with no path
         exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+        time.sleep(0.1)  # wait to finish writing
+
         tmpdir = tmpdir_factory.mktemp("checkout")
         chk.checkout(output_directory=str(tmpdir))
         assert not os.path.exists(tmpdir / "foo.txt")
@@ -147,6 +161,13 @@ class TestCheckpoint:
             path="foo.txt", params={"foo": "bar"}, disable_heartbeat=True
         )
         chk = exp.checkpoint(metrics={"accuracy": "awesome"})
+
+        exp_tar_path = os.path.join(".replicate/experiments", exp.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(exp_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+        time.sleep(0.1)  # wait to finish writing
+
         tmpdir = tmpdir_factory.mktemp("checkout")
         chk.checkout(output_directory=str(tmpdir))
         assert not os.path.exists(tmpdir / "bar.txt")
@@ -167,6 +188,12 @@ class TestCheckpoint:
         with open("bar.txt", "w") as f:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
+
+        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+        time.sleep(0.1)  # wait to finish writing
 
         # test with already existing checkpoint
         assert chk.open("foo.txt").read().decode() == "foo"

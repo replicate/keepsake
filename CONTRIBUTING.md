@@ -18,12 +18,13 @@ But perhaps the most useful thing you can do is **use the tool**. Join the [Disc
 
 ## Project structure
 
-There are two main parts to the codebase:
+There are three main parts to the codebase:
 
-- `go/`: This contains the `replicate` command-line interface. It also provides a shared library that the Python library uses in `go/pkg/shared/`. This is called with subprocess and jsonrpc via stdout/in (it's like CGI RPC!).
+- `go/`: This contains the `replicate` command-line interface. It also provides a shared library that the Python library uses in `go/pkg/shared/`. The shared library runs in a standalone GRPC server in a Python subprocess.
 - `python/`: This is the `replicate` Python library. The Python package also includes the `replicate` Go command-line interface and a Go shared library.
+- `proto/`: This defines the interface between the Go server and the Python client.
 
-The main mechanism that is shared between these two parts is the storage mechanism – reading/saving files on Amazon S3 or Google Cloud Storage. By implementing this in Go, we don't have to add a bazillion dependencies to the Python project. All other abstractions are mostly duplicated across the two languages (repositories, experiments, checkpoints, etc), but this line might move over time.
+The Python library acts as a thin client on top of the Go GRPC server, and all the heavy lifting is done in Go.
 
 The other parts are:
 
@@ -99,6 +100,8 @@ This will build the CLI and the Python package:
     make build
 
 The built Python packages are in `python/dist/`. These contain both the CLI and the Python library.
+
+To generate the Protobuf implementations you need to install the required Protobuf tools. This is documented in `proto/Makefile`. Once they're installed, simply run `make build` from the `proto` folder.
 
 ## Release
 

@@ -1,8 +1,10 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
     from dataclasses import dataclass, InitVar, field
+    import dataclasses
 except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
+    from ._vendor import dataclasses  # type: ignore
 import getpass
 import os
 import math
@@ -23,39 +25,19 @@ from typing import (
 )
 
 from . import console
-from .exceptions import DoesNotExistError, NewerRepositoryVersion
 from .checkpoint import (
     Checkpoint,
     PrimaryMetric,
     CheckpointList,
 )
-from .hash import random_hash
-from .heartbeat import Heartbeat, DEFAULT_REFRESH_INTERVAL
-from .json import CustomJSONEncoder
 from .metadata import rfc3339_datetime, parse_rfc3339
 from .packages import get_imported_packages
 from .system import get_python_version
 from .validate import check_path
 from .version import version
-from .constants import (
-    REPOSITORY_VERSION,
-    PYTHON_REFERENCE_DOCS_URL,
-    HEARTBEAT_MISS_TOLERANCE,
-    EXPERIMENT_STATUS_RUNNING,
-    EXPERIMENT_STATUS_STOPPED,
-)
 
 if TYPE_CHECKING:
     from .project import Project
-
-
-def experiment_fields_from_json(data: Dict[str, Any]) -> Dict[str, Any]:
-    data = data.copy()
-    data["created"] = parse_rfc3339(data["created"])
-    data["checkpoints"] = CheckpointList(
-        [Checkpoint.from_json(d) for d in data.get("checkpoints", [])]
-    )
-    return data
 
 
 @dataclass
@@ -68,10 +50,10 @@ class Experiment:
 
     id: str
     created: datetime.datetime
-    user: str
-    host: str
-    command: str
-    config: dict
+    user: Optional[str] = None
+    host: Optional[str] = None
+    command: Optional[str] = None
+    config: Optional[dict] = None
     path: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
     python_version: Optional[str] = None
@@ -81,7 +63,6 @@ class Experiment:
 
     def __post_init__(self, project: "Project"):
         self._project = project
-        self._heartbeat = None
         self._step = -1
 
     def short_id(self):
@@ -123,8 +104,14 @@ class Experiment:
 
         This saves the metrics at this point, and makes a copy of the file or directory passed to `path`, which could be weights or any other artifact.
         """
-        # TODO(bfirsh): display warning if primary_metric changes in an experiment
-        # FIXME: store as tuple throughout for consistency?
+        # protobuf 3 doesn't have optionals, so path=None becomes ""
+        # and we have no way of differentiating between empty strings
+        # and Nones
+        if path == "":
+            raise ValueError(
+                "path cannot be an empty string. Please use path=None or omit path if you don't want to save any files."
+            )
+
         primary_metric_dict: Optional[PrimaryMetric] = None
         if primary_metric is not None:
             if len(primary_metric) != 2:
@@ -144,79 +131,37 @@ class Experiment:
         # Remember the current step
         self._step = step
 
-        checkpoint = Checkpoint(
-            id=random_hash(),
-            created=datetime.datetime.utcnow(),
+        checkpoint = self._project._daemon().create_checkpoint(
+            experiment=self,
             path=path,
             step=step,
             metrics=metrics,
             primary_metric=primary_metric_dict,
+            quiet=quiet,
         )
-        if not quiet:
-            if path is None:
-                console.info("Creating checkpoint {}".format(checkpoint.short_id()))
-            else:
-                console.info(
-                    "Creating checkpoint {}: copying '{}' to '{}'...".format(
-                        checkpoint.short_id(),
-                        checkpoint.path,
-                        self._project._get_repository().root_url(),
-                    )
-                )
-
-        errors = checkpoint.validate()
-        if errors:
-            for error in errors:
-                console.error("Not saving checkpoint: " + error)
-            return checkpoint
-
-        checkpoint._experiment = self
-
-        # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
-        if checkpoint.path is not None:
-            tar_path = checkpoint._repository_tar_path()
-            repository = self._project._get_repository()
-            repository.put_path_tar(self._project.directory, tar_path, checkpoint.path)
-
         self.checkpoints.append(checkpoint)
-        self.save()
-
-        if self._heartbeat is not None:
-            self._heartbeat.ensure_running()
-
+        self.save(quiet=quiet)
         return checkpoint
 
-    def save(self):
+    def save(self, quiet: bool):
         """
         Save this experiment's metadata to repository.
         """
-        repository = self._project._get_repository()
-        repository.put(
-            self._metadata_path(),
-            json.dumps(self.to_json(), indent=2, cls=CustomJSONEncoder),
-        )
+        self._project._daemon().save_experiment(self, quiet=quiet)
+        return
 
     def refresh(self):
         """
         Update this experiment with the latest data from the repository.
         """
-        repository = self._project._get_repository()
-        data = json.loads(
-            repository.get("metadata/experiments/{}.json".format(self.id))
-        )
-        fields = experiment_fields_from_json(data)
-        for k, v in fields.items():
-            setattr(self, k, v)
+        exp = self._project._daemon().get_experiment(experiment_id_prefix=self.id)
+
+        for field in dataclasses.fields(exp):
+            if field.name != "project":
+                value = getattr(exp, field.name)
+                setattr(self, field.name, value)
         for chk in self.checkpoints:
             chk._experiment = self
-
-    @classmethod
-    def from_json(cls, project: "Project", data: Dict[str, Any]) -> "Experiment":
-        kwargs = experiment_fields_from_json(data)
-        experiment = Experiment(project=project, **kwargs)
-        for chk in experiment.checkpoints:
-            chk._experiment = experiment
-        return experiment
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -234,14 +179,6 @@ class Experiment:
             "replicate_version": version,
         }
 
-    def start_heartbeat(self):
-        self._heartbeat = Heartbeat(
-            experiment_id=self.id,
-            repository_url=self._project._get_config()["repository"],
-            path=self._heartbeat_path(),
-        )
-        self._heartbeat.start()
-
     def stop(self):
         """
         Stop an experiment.
@@ -249,10 +186,7 @@ class Experiment:
         Experiments running in a script will eventually timeout, but when running in a notebook,
         you are required to call this method to mark an experiment as stopped.
         """
-        if self._heartbeat is not None:
-            self._heartbeat.kill()
-            self._heartbeat = None
-        self._project._get_repository().delete(self._heartbeat_path())
+        self._project._daemon().stop_experiment(self.id)
 
     def delete(self):
         """
@@ -260,18 +194,7 @@ class Experiment:
         """
         # We should consolidate delete logic, see https://github.com/replicate/replicate/issues/332
         # It's also slow https://github.com/replicate/replicate/issues/333
-        repository = self._project._get_repository()
-        console.info(
-            "Deleting {} checkpoints in experiment {}".format(
-                len(self.checkpoints), self.short_id()
-            )
-        )
-        for checkpoint in self.checkpoints:
-            repository.delete(checkpoint._repository_tar_path())
-        console.info("Deleting experiment: {}".format(self.short_id()))
-        repository.delete(self._heartbeat_path())
-        repository.delete(self._repository_tar_path())
-        repository.delete(self._metadata_path())
+        self._project._daemon().delete_experiment(self.id)
 
     def latest(self) -> Optional[Checkpoint]:
         """
@@ -333,34 +256,7 @@ class Experiment:
         In case the heartbeat metadata file is not present which means the
         experiment was stopped the function returns False.
         """
-        try:
-            repository = self._project._get_repository()
-            heartbeat_metadata_bytes = repository.get(self._heartbeat_path())
-            heartbeat_metadata = json.loads(heartbeat_metadata_bytes)
-        except DoesNotExistError as e:
-            return False
-        except Exception as e:
-            console.warn(
-                "Failed to load heartbeat metadata from {}: {}".format(
-                    self._heartbeat_path(), e
-                )
-            )
-            return False
-        now = datetime.datetime.utcnow()
-        last_heartbeat = parse_rfc3339(heartbeat_metadata["last_heartbeat"])
-        last_tolerable_heartbeat = (
-            now - DEFAULT_REFRESH_INTERVAL * HEARTBEAT_MISS_TOLERANCE
-        )
-        return last_tolerable_heartbeat < last_heartbeat
-
-    def _heartbeat_path(self) -> str:
-        return "metadata/heartbeats/{}.json".format(self.id)
-
-    def _repository_tar_path(self) -> str:
-        return "experiments/{}.tar.gz".format(self.id)
-
-    def _metadata_path(self) -> str:
-        return "metadata/experiments/{}.json".format(self.id)
+        return self._project._daemon().experiment_is_running(self.id)
 
     def primary_metric(self) -> str:
         """
@@ -470,103 +366,32 @@ class ExperimentCollection:
     def create(
         self, path=None, params=None, quiet=False, disable_heartbeat=False
     ) -> Experiment:
-        root_url = self.project._get_repository().root_url()
-
-        # check that the project's repository version isn't
-        # higher than what this version of replicate can write.
-        # projects have to use a single consistent repository version.
-        project_spec = self.project._load_project_spec()
-        if project_spec is None:
-            self.project._write_project_spec(version=REPOSITORY_VERSION)
-        elif project_spec.version > REPOSITORY_VERSION:
-            raise NewerRepositoryVersion(root_url)
-
         command = " ".join(map(shlex.quote, sys.argv))
-        config = self.project._get_config()
-        experiment = Experiment(
-            project=self.project,
-            id=random_hash(),
-            created=datetime.datetime.utcnow(),
+        return self.project._daemon().create_experiment(
             path=path,
             params=params,
-            config=config,
-            user=os.getenv("REPLICATE_INTERNAL_USER", getpass.getuser()),
-            host=os.getenv("REPLICATE_INTERNAL_HOST", ""),
-            command=os.getenv("REPLICATE_INTERNAL_COMMAND", command),
+            command=command,
             python_version=get_python_version(),
             python_packages=get_imported_packages(),
+            quiet=quiet,
+            disable_hearbeat=disable_heartbeat,
         )
 
-        if not quiet:
-            if path is None:
-                console.info("Creating experiment {}".format(experiment.short_id()))
-            else:
-                console.info(
-                    "Creating experiment {}: copying '{}' to '{}'...".format(
-                        experiment.short_id(), experiment.path, root_url,
-                    )
-                )
-
-        errors = experiment.validate()
-        if errors:
-            if len(errors) == 1:
-                s = [f"Could not create Replicate experiment: {errors[0]}"]
-            else:
-                s = ["Could not create Replicate experiment:"]
-                for error in errors:
-                    s.append(f"- {error}")
-            s.append("")
-            s.append(f"For help, see the docs: {PYTHON_REFERENCE_DOCS_URL}")
-            raise ValueError("\n".join(s))
-
-        # Upload files before writing metadata so if it is cancelled, there isn't metadata pointing at non-existent data
-        if experiment.path is not None:
-            repository = self.project._get_repository()
-            tar_path = experiment._repository_tar_path()
-            repository.put_path_tar(self.project.directory, tar_path, experiment.path)
-
-        experiment.save()
-
-        if not disable_heartbeat:
-            experiment.start_heartbeat()
-
-        return experiment
-
-    def get(self, experiment_id) -> Experiment:
+    def get(self, experiment_id_prefix) -> Experiment:
         """
         Returns the experiment with the given ID.
         """
-        repository = self.project._get_repository()
-        ids = []
-        for path in repository.list("metadata/experiments/"):
-            ids.append(os.path.basename(path).split(".")[0])
-
-        matching_ids = list(filter(lambda i: i.startswith(experiment_id), ids))
-        if len(matching_ids) == 0:
-            raise DoesNotExistError(
-                "'{}' does not match any experiment IDs".format(experiment_id)
-            )
-        elif len(matching_ids) > 1:
-            raise DoesNotExistError(
-                "'{}' is ambiguous - it matches {} experiment IDs".format(
-                    experiment_id, len(matching_ids)
-                )
-            )
-
-        data = json.loads(
-            repository.get("metadata/experiments/{}.json".format(matching_ids[0]))
+        return self.project._daemon().get_experiment(
+            experiment_id_prefix=experiment_id_prefix,
         )
-        return Experiment.from_json(self.project, data)
 
-    def list(self, filter: Optional[Callable[[Any], bool]] = None) -> List[Experiment]:
+    def list(self, filter: Optional[Callable[[Any], bool]] = None) -> "ExperimentList":
         """
         Return all experiments for a project, sorted by creation date.
         """
-        repository = self.project._get_repository()
+        experiments = self.project._daemon().list_experiments()
         result: ExperimentList = ExperimentList()
-        for path in repository.list("metadata/experiments/"):
-            data = json.loads(repository.get(path))
-            exp = Experiment.from_json(self.project, data)
+        for exp in experiments:
             if filter is not None:
                 include = False
                 try:

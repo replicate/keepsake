@@ -21,6 +21,7 @@ import (
 
 	"github.com/replicate/replicate/go/pkg/concurrency"
 	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
@@ -46,7 +47,7 @@ func NewS3Repository(bucket, root string) (*S3Repository, error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to S3: %s", err)
+		return nil, errors.RepositoryConfigurationError(fmt.Sprintf("Failed to connect to S3: %s", err))
 	}
 	s.svc = s3.New(s.sess)
 
@@ -71,14 +72,14 @@ func (s *S3Repository) Get(path string) ([]byte, error) {
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			if aerr.Code() == s3.ErrCodeNoSuchKey {
-				return nil, &DoesNotExistError{msg: "Get: path does not exist: " + path}
+				return nil, errors.DoesNotExist(fmt.Sprintf("Get: path does not exist: %v", path))
 			}
 		}
-		return nil, fmt.Errorf("Failed to read %s/%s: %s", s.RootURL(), path, err)
+		return nil, errors.ReadError(fmt.Sprintf("Failed to read %s/%s: %s", s.RootURL(), path, err))
 	}
 	body, err := ioutil.ReadAll(obj.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read body from %s/%s: %s", s.RootURL(), path, err)
+		return nil, errors.ReadError(fmt.Sprintf("Failed to read body from %s/%s: %s", s.RootURL(), path, err))
 	}
 	return body, nil
 }
@@ -91,7 +92,7 @@ func (s *S3Repository) Delete(path string) error {
 		Prefix: &key,
 	})
 	if err := s3manager.NewBatchDeleteWithClient(s.svc).Delete(aws.BackgroundContext(), iter); err != nil {
-		return fmt.Errorf("Failed to delete %s/%s: %w", s.RootURL(), path, err)
+		return errors.WriteError(fmt.Sprintf("Failed to delete %s/%s: %v", s.RootURL(), path, err))
 	}
 	return nil
 }
@@ -106,7 +107,7 @@ func (s *S3Repository) Put(path string, data []byte) error {
 		Body:   bytes.NewReader(data),
 	})
 	if err != nil {
-		return fmt.Errorf("Unable to upload to %s/%s: %w", s.RootURL(), path, err)
+		return errors.WriteError(fmt.Sprintf("Unable to upload to %s/%s: %v", s.RootURL(), path, err))
 	}
 	return nil
 }
@@ -114,7 +115,7 @@ func (s *S3Repository) Put(path string, data []byte) error {
 func (s *S3Repository) PutPath(localPath string, destPath string) error {
 	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, destPath))
 	if err != nil {
-		return err
+		return errors.WriteError(err.Error())
 	}
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 
@@ -136,11 +137,14 @@ func (s *S3Repository) PutPath(localPath string, destPath string) error {
 			return err
 		})
 		if err != nil {
-			return err
+			return errors.WriteError(err.Error())
 		}
 	}
 
-	return queue.Wait()
+	if err := queue.Wait(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 func (s *S3Repository) PutPathTar(localPath, tarPath, includePath string) error {
@@ -169,7 +173,10 @@ func (s *S3Repository) PutPathTar(localPath, tarPath, includePath string) error 
 		})
 		return err
 	})
-	return errs.Wait()
+	if err := errs.Wait(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 // GetPath recursively copies repoDir to localDir
@@ -196,23 +203,23 @@ func (s *S3Repository) GetPath(remoteDir string, localDir string) error {
 		return true
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to list objects in s3://%s/%s: %w", s.bucketName, prefix, err)
+		return errors.ReadError(fmt.Sprintf("Failed to list objects in s3://%s/%s: %v", s.bucketName, prefix, err))
 	}
 
 	for _, key := range keys {
 		relPath, err := filepath.Rel(prefix, *key)
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", *key, prefix, err)
+			return fmt.Errorf("Failed to determine directory of %s relative to %s: %v", *key, prefix, err)
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
 		if err := os.MkdirAll(localDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %s: %w", localDir, err)
+			return fmt.Errorf("Failed to create directory %s: %v", localDir, err)
 		}
 
 		f, err := os.Create(localPath)
 		if err != nil {
-			return fmt.Errorf("Failed to create file %s: %w", localPath, err)
+			return fmt.Errorf("Failed to create file %s: %v", localPath, err)
 		}
 
 		console.Debug("Downloading %s to %s", *key, localPath)
@@ -229,7 +236,7 @@ func (s *S3Repository) GetPath(remoteDir string, localDir string) error {
 
 	downloader := s3manager.NewDownloader(s.sess)
 	if err := downloader.DownloadWithIterator(aws.BackgroundContext(), iter); err != nil {
-		return fmt.Errorf("Failed to download s3://%s/%s to %s", s.bucketName, prefix, localDir)
+		return errors.ReadError(fmt.Sprintf("Failed to download s3://%s/%s to %s", s.bucketName, prefix, localDir))
 	}
 	return nil
 }
@@ -251,7 +258,7 @@ func (s *S3Repository) GetPathTar(tarPath, localPath string) error {
 		return err
 	}
 	if !exists {
-		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+		return errors.DoesNotExist(fmt.Sprintf("GetPathTar: does not exist: %v", tmptarball))
 	}
 	return extractTar(tmptarball, localPath)
 }
@@ -273,7 +280,7 @@ func (s *S3Repository) GetPathItemTar(tarPath, itemPath, localPath string) error
 		return err
 	}
 	if !exists {
-		return &DoesNotExistError{msg: "Path does not exist: " + tmptarball}
+		return errors.DoesNotExist("Path does not exist: " + tmptarball)
 	}
 	return extractTarItem(tmptarball, itemPath, localPath)
 }
@@ -314,7 +321,10 @@ func (s *S3Repository) List(dir string) ([]string, error) {
 		}
 		return true
 	})
-	return results, err
+	if err != nil {
+		return nil, errors.ReadError(err.Error())
+	}
+	return results, nil
 }
 
 func (s *S3Repository) ListTarFile(tarPath string) ([]string, error) {
@@ -334,7 +344,7 @@ func (s *S3Repository) ListTarFile(tarPath string) ([]string, error) {
 		return nil, err
 	}
 	if !exists {
-		return nil, &DoesNotExistError{msg: "Path does not exist: " + tmptarball}
+		return nil, errors.DoesNotExist("Path does not exist: " + tmptarball)
 	}
 
 	files, err := getListOfFilesInTar(tmptarball)
@@ -364,13 +374,17 @@ func CreateS3Bucket(region, bucket string) (err error) {
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return fmt.Errorf("Unable to create bucket %q, %w", bucket, err)
+		return errors.WriteError(fmt.Sprintf("Unable to create bucket %q, %v", bucket, err))
 	}
 
 	// Default max attempts is 20, but we hit this sometimes
-	return svc.WaitUntilBucketExistsWithContext(aws.BackgroundContext(), &s3.HeadBucketInput{
+	err = svc.WaitUntilBucketExistsWithContext(aws.BackgroundContext(), &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
 	}, request.WithWaiterMaxAttempts(50))
+	if err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 func DeleteS3Bucket(region, bucket string) (err error) {
@@ -379,7 +393,7 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to connect to S3: %w", err)
+		return fmt.Errorf("Failed to connect to S3: %v", err)
 	}
 	svc := s3.New(sess)
 
@@ -388,13 +402,13 @@ func DeleteS3Bucket(region, bucket string) (err error) {
 	})
 
 	if err := s3manager.NewBatchDeleteWithClient(svc).Delete(aws.BackgroundContext(), iter); err != nil {
-		return fmt.Errorf("Unable to delete objects from bucket %q, %w", bucket, err)
+		return errors.WriteError(fmt.Sprintf("Unable to delete objects from bucket %q, %v", bucket, err))
 	}
 	_, err = svc.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return fmt.Errorf("Unable to delete bucket %q, %w", bucket, err)
+		return errors.WriteError(fmt.Sprintf("Unable to delete bucket %q, %v", bucket, err))
 	}
 	return nil
 }
@@ -435,7 +449,11 @@ func (s *S3Repository) listRecursive(results chan<- ListResult, dir string, filt
 func discoverBucketRegion(bucket string) (string, error) {
 	sess := session.Must(session.NewSession(&aws.Config{}))
 	ctx := context.Background()
-	return s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+	if err != nil {
+		return "", err
+	}
+	return region, nil
 }
 
 func getBucketRegionOrCreateBucket(bucket string) (string, error) {
@@ -448,7 +466,7 @@ func getBucketRegionOrCreateBucket(bucket string) (string, error) {
 				// TODO (bfirsh): report to use that this is being created, in a way that is compatible with shared library
 				region = "us-east-1"
 				if err := CreateS3Bucket(region, bucket); err != nil {
-					return "", fmt.Errorf("Error creating bucket: %w", err)
+					return "", fmt.Errorf("Error creating bucket: %v", err)
 				}
 				return region, nil
 			}

@@ -1,9 +1,13 @@
 package main
 
 import (
-	"github.com/replicate/replicate/go/pkg/shared"
+	"github.com/replicate/replicate/go/pkg/cli"
+	"github.com/replicate/replicate/go/pkg/console"
 )
 
 func main() {
-	shared.Serve()
+	cmd := cli.NewDaemonCommand()
+	if err := cmd.Execute(); err != nil {
+		console.Fatal("%s", err)
+	}
 }

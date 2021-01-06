@@ -34,6 +34,10 @@ func CreateHeartbeat(repo repository.Repository, experimentID string, t time.Tim
 	return repo.Put(path.Join("metadata", "heartbeats", experimentID+".json"), data)
 }
 
+func DeleteHeartbeat(repo repository.Repository, experimentID string) error {
+	return repo.Delete(path.Join("metadata", "heartbeats", experimentID+".json"))
+}
+
 func listHeartbeats(repo repository.Repository) ([]*Heartbeat, error) {
 	paths, err := repo.List("metadata/heartbeats/")
 	if err != nil {

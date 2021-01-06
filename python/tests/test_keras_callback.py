@@ -108,5 +108,5 @@ def test_keras_callback_with_no_filepath(temp_workdir):
 
     assert len(exp_meta["checkpoints"]) == 5
     chkp_meta = exp_meta["checkpoints"][0]
-    assert chkp_meta["path"] is None
+    assert chkp_meta["path"] == ""
     assert not os.path.exists(".replicate/checkpoints/" + chkp_meta["id"] + ".tar.gz")

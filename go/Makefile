@@ -95,8 +95,8 @@ lint:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint run ./...
 
 .PHONY: fmt
-fmt: install-goimports
-	goimports --local replicate.ai -w -d .
+fmt:
+	go run golang.org/x/tools/cmd/goimports --local replicate.ai -w -d .
 
 .PHONY: mod-tidy
 mod-tidy:

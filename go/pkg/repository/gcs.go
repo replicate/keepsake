@@ -17,6 +17,7 @@ import (
 
 	"github.com/replicate/replicate/go/pkg/concurrency"
 	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 )
 
@@ -33,13 +34,13 @@ func NewGCSRepository(bucket, root string) (*GCSRepository, error) {
 	if applicationCredentialsJSON != "" {
 		jwtConfig, err := google.JWTConfigFromJSON([]byte(applicationCredentialsJSON), storage.ScopeReadWrite)
 		if err != nil {
-			return nil, err
+			return nil, errors.RepositoryConfigurationError(err.Error())
 		}
 		options = append(options, option.WithTokenSource(jwtConfig.TokenSource(context.TODO())))
 	}
 	client, err := storage.NewClient(context.TODO(), options...)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to Google Cloud Storage: %w", err)
+		return nil, errors.RepositoryConfigurationError(fmt.Sprintf("Failed to connect to Google Cloud Storage: %v", err))
 	}
 
 	return &GCSRepository{
@@ -65,15 +66,15 @@ func (s *GCSRepository) Get(path string) ([]byte, error) {
 	reader, err := obj.NewReader(context.TODO())
 	if err != nil {
 		if err == storage.ErrObjectNotExist {
-			return nil, &DoesNotExistError{msg: "Get: path does not exist: " + pathString}
+			return nil, errors.DoesNotExist(fmt.Sprintf("Get: path does not exist: %s", pathString))
 		}
-		return nil, fmt.Errorf("Failed to open %s: %s", pathString, err)
+		return nil, errors.ReadError(fmt.Sprintf("Failed to open %s: %s", pathString, err))
 	}
 	// FIXME: unhandled error
 	defer reader.Close()
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read %s: %s", pathString, err)
+		return nil, errors.ReadError(fmt.Sprintf("Failed to read %s: %s", pathString, err))
 	}
 
 	return data, nil
@@ -88,7 +89,7 @@ func (s *GCSRepository) Delete(path string) error {
 		return obj.Delete(context.TODO())
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to delete %s/%s: %w", s.RootURL(), path, err)
+		return errors.WriteError(fmt.Sprintf("Failed to delete %s/%s: %v", s.RootURL(), path, err))
 	}
 	return nil
 }
@@ -102,34 +103,34 @@ func (s *GCSRepository) Put(path string, data []byte) error {
 	writer := obj.NewWriter(context.TODO())
 	_, err := writer.Write(data)
 	if err != nil {
-		return fmt.Errorf("Failed to write %q: %w", pathString, err)
+		return errors.WriteError(fmt.Sprintf("Failed to write %q: %v", pathString, err))
 	}
 	if err := writer.Close(); err != nil {
 		if strings.Contains(err.Error(), "notFound") {
 			if err := s.ensureBucketExists(); err != nil {
-				return fmt.Errorf("Error creating bucket: %w", err)
+				return err
 			}
 			writer := obj.NewWriter(context.TODO())
 			_, err := writer.Write(data)
 			if err != nil {
-				return fmt.Errorf("Failed to write %q: %w", pathString, err)
+				return errors.WriteError(fmt.Sprintf("Failed to write %q: %v", pathString, err))
 			}
 			if err := writer.Close(); err != nil {
-				return fmt.Errorf("Failed to write %q: %w", pathString, err)
+				return errors.WriteError(fmt.Sprintf("Failed to write %q: %v", pathString, err))
 			}
 			return nil
 		}
-		return fmt.Errorf("Failed to write %q: %w", pathString, err)
+		return errors.WriteError(fmt.Sprintf("Failed to write %q: %v", pathString, err))
 	}
 	return nil
 }
 
 func (s *GCSRepository) PutPath(localPath string, repoPath string) error {
 	files, err := getListOfFilesToPut(localPath, filepath.Join(s.root, repoPath))
-	bucket := s.client.Bucket(s.bucketName)
 	if err != nil {
 		return err
 	}
+	bucket := s.client.Bucket(s.bucketName)
 	queue := concurrency.NewWorkerQueue(context.Background(), maxWorkers)
 	for _, file := range files {
 		// Variables used in closure
@@ -153,10 +154,13 @@ func (s *GCSRepository) PutPath(localPath string, repoPath string) error {
 			return nil
 		})
 		if err != nil {
-			return err
+			return errors.WriteError(err.Error())
 		}
 	}
-	return queue.Wait()
+	if err := queue.Wait(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 func (s *GCSRepository) PutPathTar(localPath, tarPath, includePath string) error {
@@ -164,7 +168,7 @@ func (s *GCSRepository) PutPathTar(localPath, tarPath, includePath string) error
 		return fmt.Errorf("PutPathTar: tarPath must end with .tar.gz")
 	}
 	if err := s.ensureBucketExists(); err != nil {
-		return fmt.Errorf("Error creating bucket: %w", err)
+		return err
 	}
 
 	key := filepath.Join(s.root, tarPath)
@@ -173,9 +177,12 @@ func (s *GCSRepository) PutPathTar(localPath, tarPath, includePath string) error
 	writer := obj.NewWriter(context.TODO())
 
 	if err := putPathTar(localPath, writer, filepath.Base(tarPath), includePath); err != nil {
-		return err
+		return errors.WriteError(err.Error())
 	}
-	return writer.Close()
+	if err := writer.Close(); err != nil {
+		return errors.WriteError(err.Error())
+	}
+	return nil
 }
 
 // List files in a path non-recursively
@@ -200,7 +207,7 @@ func (s *GCSRepository) List(dir string) ([]string, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Failed to list %s/%s: %s", s.RootURL(), dir, err)
+			return nil, errors.ReadError(fmt.Sprintf("Failed to list %s/%s: %s", s.RootURL(), dir, err))
 		}
 		p := attrs.Name
 		if s.root != "" {
@@ -230,7 +237,7 @@ func (s *GCSRepository) ListTarFile(tarPath string) ([]string, error) {
 		return []string{}, err
 	}
 	if !exists {
-		return nil, &DoesNotExistError{msg: "Path does not exist: " + tmptarball}
+		return nil, errors.DoesNotExist("Path does not exist: " + tmptarball)
 	}
 
 	files, err := getListOfFilesInTar(tmptarball)
@@ -302,35 +309,35 @@ func (s *GCSRepository) GetPath(repoDir string, localDir string) error {
 		gcsPathString := fmt.Sprintf("gs://%s/%s", s.bucketName, obj.ObjectName())
 		reader, err := obj.NewReader(context.TODO())
 		if err != nil {
-			return fmt.Errorf("Failed to open %s: %w", gcsPathString, err)
+			return errors.ReadError(fmt.Sprintf("Failed to open %s: %v", gcsPathString, err))
 		}
 		defer reader.Close()
 
 		relPath, err := filepath.Rel(prefix, obj.ObjectName())
 		if err != nil {
-			return fmt.Errorf("Failed to determine directory of %s relative to %s: %w", obj.ObjectName(), repoDir, err)
+			return errors.ReadError(fmt.Sprintf("Failed to determine directory of %s relative to %s: %v", obj.ObjectName(), repoDir, err))
 		}
 		localPath := filepath.Join(localDir, relPath)
 		localDir := filepath.Dir(localPath)
 		if err := os.MkdirAll(localDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create directory %s: %w", localDir, err)
+			return errors.ReadError(fmt.Sprintf("Failed to create directory %s: %v", localDir, err))
 		}
 
 		f, err := os.Create(localPath)
 		if err != nil {
-			return fmt.Errorf("Failed to create file %s: %w", localPath, err)
+			return errors.ReadError(fmt.Sprintf("Failed to create file %s: %v", localPath, err))
 		}
 		defer f.Close()
 
 		console.Debug("Downloading %s to %s", gcsPathString, localPath)
 		if _, err := io.Copy(f, reader); err != nil {
-			return fmt.Errorf("Failed to copy %s to %s: %w", gcsPathString, localPath, err)
+			return errors.ReadError(fmt.Sprintf("Failed to copy %s to %s: %v", gcsPathString, localPath, err))
 		}
 		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %w", s.bucketName, repoDir, localDir, err)
+		return fmt.Errorf("Failed to copy gs://%s/%s to %s: %v", s.bucketName, repoDir, localDir, err)
 	}
 	return nil
 }
@@ -352,7 +359,7 @@ func (s *GCSRepository) GetPathTar(tarPath, localPath string) error {
 		return err
 	}
 	if !exists {
-		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+		return errors.DoesNotExist(fmt.Sprintf("Path does not exist: %s", tmptarball))
 	}
 	return extractTar(tmptarball, localPath)
 }
@@ -374,7 +381,7 @@ func (s *GCSRepository) GetPathItemTar(tarPath, itemPath, localPath string) erro
 		return err
 	}
 	if !exists {
-		return &DoesNotExistError{msg: "GetPathTar: does not exist: " + tmptarball}
+		return errors.DoesNotExist("Path does not exist: " + tmptarball)
 	}
 	return extractTarItem(tmptarball, itemPath, localPath)
 }
@@ -388,7 +395,7 @@ func (s *GCSRepository) bucketExists() (bool, error) {
 	if err == storage.ErrBucketNotExist {
 		return false, nil
 	}
-	return false, fmt.Errorf("Failed to determine if bucket gs://%s exists: %w", s.bucketName, err)
+	return false, errors.RepositoryConfigurationError(fmt.Sprintf("Failed to determine if bucket gs://%s exists: %v", s.bucketName, err))
 }
 
 func (s *GCSRepository) ensureBucketExists() error {
@@ -409,7 +416,7 @@ func (s *GCSRepository) CreateBucket() error {
 	}
 	bucket := s.client.Bucket(s.bucketName)
 	if err := bucket.Create(context.TODO(), projectID, nil); err != nil {
-		return fmt.Errorf("Failed to create bucket gs://%s: %w", s.bucketName, err)
+		return fmt.Errorf("Failed to create bucket gs://%s: %v", s.bucketName, err)
 	}
 	return nil
 }
@@ -467,7 +474,7 @@ func discoverProjectID() (string, error) {
 		if ee, ok := err.(*exec.ExitError); ok {
 			stderr += "\n" + string(ee.Stderr)
 		}
-		return "", fmt.Errorf("Failed to determine default GCP project (using gcloud config config-helper): %w\n%s", err, stderr)
+		return "", errors.RepositoryConfigurationError(fmt.Sprintf("Failed to determine default GCP project (using gcloud config config-helper): %v\n%s", err, stderr))
 	}
 	return strings.TrimSpace(string(out)), nil
 }

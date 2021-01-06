@@ -18,12 +18,18 @@ const (
 	TypeBool   Type = "bool"
 	TypeObject Type = "object"
 	TypeNone   Type = "none"
+
+	// hack in nan, +inf and -inf since json doesn't support
+	// them natively.
+	JsonNaN              = `"[NaN]"`
+	JsonPositiveInfinity = `"[+Infinity]"`
+	JsonNegativeInfinity = `"[-Infinity]"`
 )
 
 // TODO(bfirsh): could complexity be reduced here if it were implemented as interface{}?
 
 type Value struct {
-	intVal    *int
+	intVal    *int64
 	floatVal  *float64
 	stringVal *string
 	boolVal   *bool
@@ -39,6 +45,15 @@ func (v Value) MarshalJSON() ([]byte, error) {
 	case v.intVal != nil:
 		return json.Marshal(v.intVal)
 	case v.floatVal != nil:
+		if math.IsNaN(*v.floatVal) {
+			return []byte(JsonNaN), nil
+		}
+		if math.IsInf(*v.floatVal, 1) {
+			return []byte(JsonPositiveInfinity), nil
+		}
+		if math.IsInf(*v.floatVal, -1) {
+			return []byte(JsonNegativeInfinity), nil
+		}
 		return json.Marshal(v.floatVal)
 	case v.stringVal != nil:
 		return json.Marshal(v.stringVal)
@@ -55,7 +70,7 @@ func (v Value) MarshalJSON() ([]byte, error) {
 func (v *Value) UnmarshalJSON(data []byte) error {
 	// FIXME(bfirsh): this might be more robust if it unmarshalled to interface{}
 	// then we used reflect? the error returned from json.Unmarshal might be other things
-	if i := new(int); json.Unmarshal(data, i) == nil {
+	if i := new(int64); json.Unmarshal(data, i) == nil {
 		v.intVal = i
 		return nil
 	}
@@ -71,6 +86,21 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 		v.isNone = true
 		return nil
 	}
+	if string(data) == JsonNaN {
+		f := math.NaN()
+		v.floatVal = &f
+		return nil
+	}
+	if string(data) == JsonPositiveInfinity {
+		f := math.Inf(1)
+		v.floatVal = &f
+		return nil
+	}
+	if string(data) == JsonNegativeInfinity {
+		f := math.Inf(-1)
+		v.floatVal = &f
+		return nil
+	}
 	if s := new(string); json.Unmarshal(data, s) == nil {
 		v.stringVal = s
 		return nil
@@ -83,11 +113,12 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 func ParseFromString(s string) Value {
 	data := []byte(s)
 	v := Value{}
+
 	if s == "null" || s == "None" {
 		v.isNone = true
 		return v
 	}
-	if i := new(int); json.Unmarshal(data, i) == nil {
+	if i := new(int64); json.Unmarshal(data, i) == nil {
 		v.intVal = i
 		return v
 	}
@@ -190,7 +221,7 @@ func (v Value) BoolVal() bool {
 	return *v.boolVal
 }
 
-func (v Value) IntVal() int {
+func (v Value) IntVal() int64 {
 	if v.Type() != TypeInt {
 		panic(fmt.Sprintf("Can't use %s as int", v))
 	}
@@ -369,7 +400,7 @@ func Bool(v bool) Value {
 	return Value{boolVal: &v}
 }
 
-func Int(v int) Value {
+func Int(v int64) Value {
 	return Value{intVal: &v}
 }
 

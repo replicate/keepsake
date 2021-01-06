@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/logrusorgru/aurora"
@@ -12,7 +11,6 @@ import (
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
 )
 
 type checkoutOpts struct {
@@ -42,24 +40,8 @@ func newCheckoutCommand() *cobra.Command {
 	return cmd
 }
 
-// Returns the repository requested by opts.repositoryURL
-func getRepositoryFromOpts(opts checkoutOpts) (repository.Repository, error) {
-	repositoryURL, projectDir, err := getRepositoryURLFromStringOrConfig(opts.repositoryURL)
-	if err != nil {
-		return nil, err
-	}
-
-	repo, err := getRepository(repositoryURL, projectDir)
-	if err != nil {
-		return nil, err
-	}
-
-	return repo, nil
-}
-
 // Returns the experiment and the most appropriate checkpoint for that experiment.
-func getExperimentAndCheckpoint(prefix string, repo repository.Repository) (*project.Experiment, *project.Checkpoint, error) {
-	proj := project.NewProject(repo)
+func getExperimentAndCheckpoint(prefix string, proj *project.Project, projectDir string) (*project.Experiment, *project.Checkpoint, error) {
 	result, err := proj.CheckpointOrExperimentFromPrefix(prefix)
 	if err != nil {
 		return nil, nil, err
@@ -151,12 +133,17 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 	prefix := args[0]
 
-	repo, err := getRepositoryFromOpts(opts)
+	repositoryURL, projectDir, err := getRepositoryURLFromStringOrConfig(opts.repositoryURL)
+	if err != nil {
+		return err
+	}
+	repo, err := getRepository(repositoryURL, projectDir)
 	if err != nil {
 		return err
 	}
 
-	experiment, checkpoint, err := getExperimentAndCheckpoint(prefix, repo)
+	proj := project.NewProject(repo, projectDir)
+	experiment, checkpoint, err := getExperimentAndCheckpoint(prefix, proj, projectDir)
 	if err != nil {
 		return err
 	}
@@ -191,112 +178,8 @@ func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 
 	checkoutPath := opts.checkoutPath
 	if checkoutPath == "" {
-		return checkoutEntireCheckpoint(outputDir, repo, experiment, checkpoint)
+		return proj.CheckoutCheckpoint(checkpoint, experiment, outputDir, false)
 	} else {
-		return checkoutFileOrDir(outputDir, checkoutPath, repo, experiment, checkpoint)
+		return proj.CheckoutFileOrDirectory(checkpoint, experiment, outputDir, checkoutPath)
 	}
-}
-
-// checkout all the files from an experiment or checkpoint
-func checkoutEntireCheckpoint(outputDir string, repo repository.Repository, experiment *project.Experiment, checkpoint *project.Checkpoint) error {
-	// Extract the tarfile
-	experimentFilesExist := true
-	checkpointFilesExist := true
-
-	if err := repo.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
-		// Ignore does not exist errors
-		if _, ok := err.(*repository.DoesNotExistError); ok {
-			console.Debug("No experiment data found")
-			experimentFilesExist = false
-		} else {
-			return err
-		}
-	} else {
-		console.Info("Copied the files from experiment %s to %q", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
-	}
-
-	// Overlay checkpoint on top of experiment
-	if checkpoint != nil {
-
-		if err := repo.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
-			if _, ok := err.(*repository.DoesNotExistError); ok {
-				console.Debug("No checkpoint data found")
-				checkpointFilesExist = false
-			} else {
-				return err
-
-			}
-		} else {
-			console.Info("Copied the files from checkpoint %s to %q", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
-		}
-
-	}
-
-	if !experimentFilesExist && !checkpointFilesExist {
-		// Just an experiment, no checkpoints
-		if checkpoint == nil {
-			return fmt.Errorf("The experiment %s does not have any files associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID())
-		}
-		return fmt.Errorf("Neither the experiment %s nor the checkpoint %s has any files associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID())
-	}
-
-	console.Info(`If you want to run this experiment again, this is how it was run:
-
-  ` + experiment.Command + `
-`)
-
-	return nil
-
-}
-
-// checkout all the files from an experiment or checkpoint
-func checkoutFileOrDir(outputDir string, checkoutPath string, repo repository.Repository, experiment *project.Experiment, checkpoint *project.Checkpoint) error {
-	// Extract the tarfile
-	experimentFilesExist := true
-	checkpointFilesExist := true
-
-	if err := repo.GetPathItemTar(path.Join("experiments", experiment.ID+".tar.gz"), checkoutPath, outputDir); err != nil {
-		// Ignore does not exist errors
-		if _, ok := err.(*repository.DoesNotExistError); ok {
-			console.Debug("No experiment data found")
-			experimentFilesExist = false
-		} else {
-			return err
-		}
-	} else {
-		console.Info("Copied the path %s from experiment %s to %q", checkoutPath, experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
-	}
-
-	// Overlay checkpoint on top of experiment
-	if checkpoint != nil {
-
-		if err := repo.GetPathItemTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), checkoutPath, outputDir); err != nil {
-			if _, ok := err.(*repository.DoesNotExistError); ok {
-				console.Debug("No checkpoint data found")
-				checkpointFilesExist = false
-			} else {
-				return err
-
-			}
-		} else {
-			console.Info("Copied the path %s from checkpoint %s to %q", checkoutPath, checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
-		}
-
-	}
-
-	if !experimentFilesExist && !checkpointFilesExist {
-		// Just an experiment, no checkpoints
-		if checkpoint == nil {
-			return fmt.Errorf("The experiment %s does not have the path %s associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID(), checkoutPath)
-		}
-		return fmt.Errorf("Neither the experiment %s nor the checkpoint %s has the path %s associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID(), checkoutPath)
-	}
-
-	console.Info(`If you want to run this experiment again, this is how it was run:
-
-  ` + experiment.Command + `
-`)
-
-	return nil
-
 }

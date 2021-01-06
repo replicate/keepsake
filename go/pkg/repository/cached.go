@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"path"
 	"strings"
 
 	"github.com/replicate/replicate/go/pkg/console"
@@ -22,7 +21,7 @@ type CachedRepository struct {
 	isSynced        bool
 }
 
-func NewCachedRepository(repo Repository, cachePrefix string, cacheDir string) (*CachedRepository, error) {
+func NewCachedRepository(repo Repository, cachePrefix string, projectDir string, cacheDir string) (*CachedRepository, error) {
 	// This doesn't actually return an error, but catch in case of future errors
 	cacheRepository, err := NewDiskRepository(cacheDir)
 	if err != nil {
@@ -39,8 +38,8 @@ func NewCachedRepository(repo Repository, cachePrefix string, cacheDir string) (
 
 // NewCachedMetadataRepository returns a CachedRepository that caches the metadata/ path in
 // .replicate/metadata-cache in a source dir
-func NewCachedMetadataRepository(repo Repository, projectDir string) (*CachedRepository, error) {
-	return NewCachedRepository(repo, "metadata", path.Join(projectDir, ".replicate/metadata-cache"))
+func NewCachedMetadataRepository(projectDir string, repo Repository) (*CachedRepository, error) {
+	return NewCachedRepository(repo, "metadata", projectDir, ".replicate/metadata-cache")
 }
 
 func (s *CachedRepository) Get(p string) ([]byte, error) {

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/replicate/replicate/go/pkg/errors"
 )
 
 func TestSync(t *testing.T) {
@@ -51,7 +53,7 @@ func TestSync(t *testing.T) {
 	require.Equal(t, []byte("hello"), data)
 
 	_, err = destRepository.Get("dest-path/in-dest-but-not-in-source")
-	require.IsType(t, &DoesNotExistError{}, err)
+	require.True(t, errors.IsDoesNotExist(err))
 
 	data, err = destRepository.Get("dest-path/different-content")
 	require.NoError(t, err)

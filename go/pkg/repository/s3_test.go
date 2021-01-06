@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/require"
 
+	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/hash"
 )
@@ -38,7 +39,7 @@ func TestS3RepositoryGet(t *testing.T) {
 
 	_, err = repository.Get("does-not-exist")
 	fmt.Println(err)
-	require.IsType(t, &DoesNotExistError{}, err)
+	require.True(t, errors.IsDoesNotExist(err))
 }
 
 func TestS3GetPathTar(t *testing.T) {
@@ -51,7 +52,7 @@ func TestS3GetPathTar(t *testing.T) {
 	tmpDir, err := files.TempDir("test")
 	require.NoError(t, err)
 	err = repository.GetPathTar("does-not-exist.tar.gz", tmpDir)
-	require.IsType(t, &DoesNotExistError{}, err)
+	require.True(t, errors.IsDoesNotExist(err))
 }
 
 func TestS3RepositoryPutPath(t *testing.T) {

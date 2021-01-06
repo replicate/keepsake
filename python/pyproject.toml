@@ -1,5 +1,5 @@
 [tool.black]
-exclude = '(\.eggs|\.git|\.hg|\.mypy|_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist|_vendor)'
+exclude = '(\.eggs|\.git|\.hg|\.mypy|_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist|_vendor|servicepb)'
 
 [tool.vendoring]
 destination = "replicate/_vendor/"
