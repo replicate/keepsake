@@ -1,10 +1,13 @@
 package console
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/mattn/go-isatty"
 )
+
+const truncateLength = 80
 
 // ConsoleInstance is the global instance of console, so we don't have to pass it around everywhere
 var ConsoleInstance *Console = &Console{
@@ -65,4 +68,12 @@ func DebugOutput(line string) {
 
 func IsTTY() bool {
 	return isatty.IsTerminal(os.Stdout.Fd())
+}
+
+func Truncate(msg string, v ...interface{}) string {
+	s := fmt.Sprintf(msg, v...)
+	if len(s) > truncateLength && truncateLength > 3 {
+		return s[:truncateLength-3] + "..."
+	}
+	return s
 }

@@ -258,7 +258,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 				return err
 			}
 			if !quiet {
-				console.Info("Created experiment %s, copied the files from %s to %s/%s", exp.ShortID(), exp.Path, p.repository.RootURL(), exp.StorageTarPath())
+				console.Info(console.Truncate("Created experiment %s, copied the files from %s to %s/%s", exp.ShortID(), exp.Path, p.repository.RootURL(), exp.StorageTarPath()))
 			}
 			return nil
 		}
@@ -305,7 +305,7 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 			return err
 		}
 		if !quiet {
-			console.Info("Created checkpoint %s, copied the files from %s to %s/%s", chk.ShortID(), chk.Path, p.repository.RootURL(), chk.StorageTarPath())
+			console.Info(console.Truncate("Created checkpoint %s, copied the files from %s to %s/%s", chk.ShortID(), chk.Path, p.repository.RootURL(), chk.StorageTarPath()))
 		}
 		return nil
 	}
