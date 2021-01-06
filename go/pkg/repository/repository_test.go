@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/files"
 	"github.com/replicate/replicate/go/pkg/errors"
+	"github.com/replicate/replicate/go/pkg/files"
 )
 
 func shim(v ...interface{}) []interface{} {

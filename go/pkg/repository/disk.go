@@ -66,7 +66,7 @@ func (s *DiskRepository) GetPathTar(tarPath, localPath string) error {
 }
 
 func (s *DiskRepository) GetPathItemTar(tarPath, itemPath, localPath string) error {
-	fullTarPath := path.Join(s.rootDir, tarPath)
+	fullTarPath := pathpkg.Join(s.rootDir, tarPath)
 	exists, err := files.FileExists(fullTarPath)
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (s *DiskRepository) List(path string) ([]string, error) {
 }
 
 func (s *DiskRepository) ListTarFile(tarPath string) ([]string, error) {
-	fullTarPath := path.Join(s.rootDir, tarPath)
+	fullTarPath := pathpkg.Join(s.rootDir, tarPath)
 	exists, err := files.FileExists(fullTarPath)
 	if err != nil {
 		return nil, err
