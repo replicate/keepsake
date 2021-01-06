@@ -177,7 +177,7 @@ func (s *GCSRepository) PutPathTar(localPath, tarPath, includePath string) error
 	writer := obj.NewWriter(context.TODO())
 
 	if err := putPathTar(localPath, writer, filepath.Base(tarPath), includePath); err != nil {
-		return err
+		return errors.WriteError(err.Error())
 	}
 	if err := writer.Close(); err != nil {
 		return errors.WriteError(err.Error())
