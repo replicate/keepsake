@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"net"
 	"os/user"
 	"strings"
 	"time"
@@ -214,13 +213,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 		return nil, errors.IncompatibleRepositoryVersion(p.repository.RootURL())
 	}
 
-	hostIP, err := localIP()
-	host := ""
-	if err == nil {
-		host = hostIP.String()
-	} else {
-		console.Warn("Failed to determine host IP: %s", err)
-	}
+	host := "" // currently disabled and unused
 	currentUser, err := user.Current()
 	username := ""
 	if err == nil {
@@ -403,27 +396,4 @@ func generateRandomID() string {
 		}
 	}
 	return b.String()
-}
-
-// Get local IP address of this machine
-func localIP() (net.IP, error) {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-	for _, iface := range ifaces {
-		addrs, err := iface.Addrs()
-		if err != nil {
-			return nil, err
-		}
-		for _, addr := range addrs {
-			switch v := addr.(type) {
-			case *net.IPNet:
-				return v.IP, nil
-			case *net.IPAddr:
-				return v.IP, nil
-			}
-		}
-	}
-	return nil, fmt.Errorf("No local IP address found")
 }
