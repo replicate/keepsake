@@ -244,14 +244,15 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 		return nil, err
 	}
 
+	if !quiet {
+		console.Info("Creating experiment %s, copying '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
+	}
+
 	work := func() error { return nil }
 	if exp.Path != "" {
 		work = func() error {
 			if err := p.repository.PutPathTar(p.directory, exp.StorageTarPath(), exp.Path); err != nil {
 				return err
-			}
-			if !quiet {
-				console.Info("Created experiment %s, copied '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
 			}
 			return nil
 		}
@@ -293,12 +294,13 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 		return chk, nil
 	}
 
+	if !quiet {
+		console.Info("Creating checkpoint %s, copying '%s' to '%s'...", chk.ShortID(), chk.Path, p.repository.RootURL())
+	}
+
 	work := func() error {
 		if err := p.repository.PutPathTar(p.directory, chk.StorageTarPath(), chk.Path); err != nil {
 			return err
-		}
-		if !quiet {
-			console.Info("Created checkpoint %s, copied '%s' to '%s'...", chk.ShortID(), chk.Path, p.repository.RootURL())
 		}
 		return nil
 	}
