@@ -161,6 +161,13 @@ class TestCheckpoint:
             path="foo.txt", params={"foo": "bar"}, disable_heartbeat=True
         )
         chk = exp.checkpoint(metrics={"accuracy": "awesome"})
+
+        exp_tar_path = os.path.join(".replicate/experiments", exp.id + ".tar.gz")
+        wait(
+            lambda: os.path.exists(exp_tar_path), timeout_seconds=5, sleep_seconds=0.01,
+        )
+        time.sleep(0.1)  # wait to finish writing
+
         tmpdir = tmpdir_factory.mktemp("checkout")
         chk.checkout(output_directory=str(tmpdir))
         assert not os.path.exists(tmpdir / "bar.txt")
