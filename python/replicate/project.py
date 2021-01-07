@@ -38,12 +38,16 @@ class Project:
     """
 
     def __init__(
-        self, repository: Optional[str] = None, directory: Optional[str] = None
+        self,
+        repository: Optional[str] = None,
+        directory: Optional[str] = None,
+        debug: bool = False,
     ):
         # Project is initialized on import, so don't do anything slow or anything that will raise an exception
         self.directory = directory
         self.repository = repository
         self._daemon_instance: Optional[Daemon] = None
+        self._debug = debug
 
     @property
     def experiments(self) -> ExperimentCollection:
@@ -51,7 +55,7 @@ class Project:
 
     def _daemon(self) -> Daemon:
         if self._daemon_instance is None:
-            self._daemon_instance = Daemon(self)
+            self._daemon_instance = Daemon(self, debug=self._debug)
         return self._daemon_instance
 
 
@@ -59,11 +63,12 @@ def init(
     path: Optional[str] = None,
     params: Optional[Dict[str, Any]] = None,
     disable_heartbeat: bool = False,
+    debug: bool = False,
 ) -> Experiment:
     """
     Create a new experiment.
     """
-    project = Project()
+    project = Project(debug=debug)
     return project.experiments.create(
         path=path, params=params, disable_heartbeat=disable_heartbeat
     )

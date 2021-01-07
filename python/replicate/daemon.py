@@ -78,7 +78,7 @@ def is_status_detail(x):
 
 
 class Daemon:
-    def __init__(self, project, socket_path=None):
+    def __init__(self, project, socket_path=None, debug=False):
         self.project = project
 
         if socket_path is None:
@@ -101,6 +101,8 @@ class Daemon:
             cmd += ["-R", self.project.repository]
         if self.project.directory:
             cmd += ["-D", self.project.directory]
+        if debug:
+            cmd += ["-v"]
         cmd.append(self.socket_path)
         self.process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
