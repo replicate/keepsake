@@ -30,10 +30,9 @@ require (
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
-	golang.org/x/tools v0.0.0-20201121010211-780cb80bd7fb
-	google.golang.org/api v0.32.0
-	google.golang.org/genproto v0.0.0-20200921151605-7abf4a1a14d5
+	golang.org/x/tools v0.0.0-20201201161351-ac6f37ff4c2a
+	google.golang.org/api v0.36.0
+	google.golang.org/genproto v0.0.0-20201201144952-b05cb90ed32e
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
 	gotest.tools/gotestsum v0.6.0
