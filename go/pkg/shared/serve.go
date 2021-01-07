@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
@@ -239,7 +240,28 @@ func Serve(projGetter projectGetter, socketPath string) error {
 		<-sigc
 		console.Debug("Exiting...")
 		s.workChan <- nil // nil is an exit sentinel
-		<-completedChan
+
+		// Wait a short sec so completedChan gets filled if workChan is empty. (Surely there's a more elegant way to do this.)
+		time.Sleep(1 * time.Millisecond)
+
+		select {
+		case <-completedChan:
+			console.Debug("No work left to do, exiting immediately")
+		// Wait a sec so the log messages displays after KeyboardInterrupt traceback from Python.
+		// If tasks complete within this time, then previous case will be selected and message will never be displayed.
+		// Anything slower than this and Python seems to beat it. This isn't a perfect solution,
+		// but it's just to make a log message prettier so it doesn't need to be perfect.
+		case <-time.After(250 * time.Millisecond):
+			console.Info("Your program has ended, but Replicate is still saving data. It will exit when it has finished. Hold on...")
+			select {
+			case <-completedChan:
+				console.Debug("Work completed")
+			case <-time.After(5 * time.Second):
+				console.Info("Replicate is still saving. If you force quit, you might lose data.")
+				<-completedChan
+			}
+		}
+
 		for _, hb := range s.heartbeatsByExperimentID {
 			hb.Kill()
 		}
