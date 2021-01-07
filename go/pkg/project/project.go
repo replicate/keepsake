@@ -236,16 +236,17 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 		ReplicateVersion: global.Version,
 	}
 
-	// save json synchronously to uncover repository write issues
-	if _, err := p.SaveExperiment(exp, false); err != nil {
-		if !quiet {
-			console.Info("Creating experiment %s", exp.ShortID())
+	if !quiet {
+		if exp.Path == "" {
+			console.Info("Creating experiment %s...", exp.ShortID())
+		} else {
+			console.Info("Creating experiment %s, copying '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
 		}
-		return nil, err
 	}
 
-	if !quiet {
-		console.Info("Creating experiment %s, copying '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
+	// save json synchronously to uncover repository write issues
+	if _, err := p.SaveExperiment(exp, false); err != nil {
+		return nil, err
 	}
 
 	work := func() error { return nil }
