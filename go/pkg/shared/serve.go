@@ -265,7 +265,7 @@ func Serve(projGetter projectGetter, socketPath string) error {
 		for _, hb := range s.heartbeatsByExperimentID {
 			hb.Kill()
 		}
-		grpcServer.GracefulStop()
+		grpcServer.Stop()
 	}()
 
 	go func() {
