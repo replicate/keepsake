@@ -151,3 +151,55 @@ func TestExtractTarItem(t *testing.T) {
 	err = extractTarItem(path.Join(dir, "temp.tar.gz"), "does-not-exist.txt", tmpDir)
 	require.True(t, errors.IsDoesNotExist(err))
 }
+
+func TestCopyToTempDir(t *testing.T) {
+	dir, err := files.TempDir("test")
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(dir, "foo"), []byte("foo"), 0644)
+	require.NoError(t, err)
+
+	err = os.MkdirAll(path.Join(dir, "my/folder"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(dir, "my/folder/bar"), []byte("bar"), 0644)
+	require.NoError(t, err)
+
+	// without includePath
+	tempDir, err := CopyToTempDir(dir, ".")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	contents, err := ioutil.ReadFile(path.Join(tempDir, "foo"))
+	require.NoError(t, err)
+	require.Equal(t, "foo", string(contents))
+
+	contents, err = ioutil.ReadFile(path.Join(tempDir, "my/folder/bar"))
+	require.NoError(t, err)
+	require.Equal(t, "bar", string(contents))
+
+	// with directory includePath
+	tempDir, err = CopyToTempDir(dir, "my")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	exists, err := files.FileExists(path.Join(tempDir, "foo"))
+	require.NoError(t, err)
+	require.False(t, exists)
+
+	contents, err = ioutil.ReadFile(path.Join(tempDir, "my/folder/bar"))
+	require.NoError(t, err)
+	require.Equal(t, "bar", string(contents))
+
+	// with file includePath
+	tempDir, err = CopyToTempDir(dir, "my/folder/bar")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	exists, err = files.FileExists(path.Join(tempDir, "foo"))
+	require.NoError(t, err)
+	require.False(t, exists)
+
+	contents, err = ioutil.ReadFile(path.Join(tempDir, "my/folder/bar"))
+	require.NoError(t, err)
+	require.Equal(t, "bar", string(contents))
+}

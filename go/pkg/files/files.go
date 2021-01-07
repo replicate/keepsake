@@ -57,3 +57,14 @@ func DirIsEmpty(dirPath string) (bool, error) {
 	}
 	return false, nil
 }
+
+func CopyFile(src string, dest string) error {
+	contents, err := ioutil.ReadFile(src)
+	if err != nil {
+		return fmt.Errorf("Failed to read %s: %v", src, err)
+	}
+	if err := ioutil.WriteFile(dest, contents, 0644); err != nil {
+		return fmt.Errorf("Failed to write to %s: %v", dest, err)
+	}
+	return nil
+}

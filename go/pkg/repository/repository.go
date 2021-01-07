@@ -9,10 +9,12 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/mholt/archiver/v3"
 	gitignore "github.com/sabhiram/go-gitignore"
 
+	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/errors"
 	"github.com/replicate/replicate/go/pkg/files"
 )
@@ -370,4 +372,53 @@ See the documentation for more details: https://replicate.ai/docs/reference/yaml
 func isVirtualenvDir(path string) (bool, error) {
 	// TODO(andreas): this is maybe not super robust
 	return files.FileExists(filepath.Join(path, "pyvenv.cfg"))
+}
+
+func CopyToTempDir(localPath string, includePath string) (tempDir string, err error) {
+	// normalize path
+	includePath = filepath.Join(includePath)
+
+	console.Debug("Copying files to temporary directory")
+	start := time.Now()
+
+	tempDir, err = files.TempDir("copy-to-temp-dir")
+	if err != nil {
+		return "", err
+	}
+
+	// we first scan the whole repository to get the list of eligable files,
+	// then copy the ones that match the includePath.
+	// TODO(andreas): only scan files in the includePath
+	filesToCopy, err := getListOfFilesToPut(localPath, tempDir)
+	count := 0
+	for _, file := range filesToCopy {
+
+		// only include files in includePath
+		relPath, err := filepath.Rel(localPath, file.Source)
+		if err != nil {
+			return "", err
+		}
+		if !(includePath == "." || relPath == includePath || strings.HasPrefix(relPath, includePath+"/")) {
+			continue
+		}
+
+		dir := path.Dir(file.Dest)
+		dirExists, err := files.FileExists(dir)
+		if err != nil {
+			return "", err
+		}
+		if !dirExists {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return "", fmt.Errorf("Failed to create directory %s: %v", dir, err)
+			}
+		}
+		if err := files.CopyFile(file.Source, file.Dest); err != nil {
+			return "", fmt.Errorf("Failed to copy %s to %s: %v", file.Source, file.Dest, err)
+		}
+		count += 1
+	}
+
+	console.Debug("Copied %d files to temporary directory (took %.3f seconds)", count, time.Since(start).Seconds())
+
+	return tempDir, err
 }
