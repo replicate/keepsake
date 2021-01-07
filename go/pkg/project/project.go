@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"os/user"
 	"strings"
 	"time"
@@ -238,24 +239,33 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 
 	// save json synchronously to uncover repository write issues
 	if _, err := p.SaveExperiment(exp, false); err != nil {
+		return nil, err
+	}
+
+	if exp.Path == "" {
 		if !quiet {
 			console.Info("Creating experiment %s", exp.ShortID())
 		}
-		return nil, err
+		return exp, nil
+	}
+
+	tempDir, err := repository.CopyToTempDir(p.directory, exp.Path)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to copy files to temporary directory: %v", err)
 	}
 
 	if !quiet {
 		console.Info("Creating experiment %s, copying '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
 	}
 
-	work := func() error { return nil }
-	if exp.Path != "" {
-		work = func() error {
-			if err := p.repository.PutPathTar(p.directory, exp.StorageTarPath(), exp.Path); err != nil {
-				return err
-			}
-			return nil
+	work := func() error {
+		defer os.RemoveAll(tempDir)
+		start := time.Now()
+		if err := p.repository.PutPathTar(tempDir, exp.StorageTarPath(), exp.Path); err != nil {
+			return err
 		}
+		console.Debug("Copied files for experiment %s from '%s' to '%s/%s' (took %.3f seconds)", exp.ShortID(), exp.Path, p.repository.RootURL(), exp.StorageTarPath(), time.Since(start).Seconds())
+		return nil
 	}
 
 	if async {
@@ -298,10 +308,18 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 		console.Info("Creating checkpoint %s, copying '%s' to '%s'...", chk.ShortID(), chk.Path, p.repository.RootURL())
 	}
 
+	tempDir, err := repository.CopyToTempDir(p.directory, chk.Path)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to copy files to temporary directory: %v", err)
+	}
+
 	work := func() error {
-		if err := p.repository.PutPathTar(p.directory, chk.StorageTarPath(), chk.Path); err != nil {
+		defer os.RemoveAll(tempDir)
+		start := time.Now()
+		if err := p.repository.PutPathTar(tempDir, chk.StorageTarPath(), chk.Path); err != nil {
 			return err
 		}
+		console.Debug("Copied files for checkpoint %s from '%s' to '%s/%s' (took %.3f seconds)", chk.ShortID(), chk.Path, p.repository.RootURL(), chk.StorageTarPath(), time.Since(start).Seconds())
 		return nil
 	}
 	if async {
