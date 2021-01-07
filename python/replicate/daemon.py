@@ -103,7 +103,7 @@ class Daemon:
             cmd += ["-D", self.project.directory]
         cmd.append(self.socket_path)
         self.process = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         # need to wrap stdout and stderr for this to work in jupyter
