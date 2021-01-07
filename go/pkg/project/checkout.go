@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 
 	"github.com/replicate/replicate/go/pkg/console"
@@ -10,48 +9,45 @@ import (
 )
 
 func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experiment, outputDir string, quiet bool) error {
-	experimentFilesExist := true
-	checkpointFilesExist := true
+	// TODO: This function checks out both experiments and checkpoints. This logic should probably be split out so those two things can be done explicitly. This will involve moving some logic to cli/checkpoint.go
 
-	if err := p.repository.GetPathTar(path.Join("experiments", experiment.ID+".tar.gz"), outputDir); err != nil {
-		// Ignore does not exist errors
-		if errors.IsDoesNotExist(err) {
-			console.Debug("No experiment data found")
-			experimentFilesExist = false
-		} else {
-			return err
+	if checkpoint == nil {
+		if experiment.Path == "" {
+			return errors.DoesNotExist(fmt.Sprintf("The experiment %s does not have any files associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID()))
 		}
 	} else {
+		if experiment.Path == "" && checkpoint.Path == "" {
+			return errors.DoesNotExist(fmt.Sprintf("Neither the checkpoint %s nor its experiment experiment %s have any files associated with them. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", checkpoint.ShortID(), experiment.ShortID()))
+		}
+	}
+
+	if experiment.Path != "" {
 		if !quiet {
-			console.Info("Copied the files from experiment %s to %q", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+			console.Info("Copying files from experiment %s to %q...", experiment.ShortID(), filepath.Join(outputDir, experiment.Path))
+		}
+		if err := p.repository.GetPathTar(experiment.StorageTarPath(), outputDir); err != nil {
+			if errors.IsDoesNotExist(err) {
+				return errors.DoesNotExist(fmt.Sprintf("Experiment %s is supposed to have files associated with it, but could not find the files at %q.\nMaybe it hasn't been written yet, or the repository is corrupted?", experiment.ShortID(), experiment.StorageTarPath()))
+			} else {
+				return err
+			}
 		}
 	}
 
 	// Overlay checkpoint on top of experiment
-	if checkpoint != nil {
+	if checkpoint != nil && checkpoint.Path != "" {
+		if !quiet {
+			console.Info("Copying the files from checkpoint %s to %q...", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+		}
 
-		if err := p.repository.GetPathTar(path.Join("checkpoints", checkpoint.ID+".tar.gz"), outputDir); err != nil {
+		if err := p.repository.GetPathTar(checkpoint.StorageTarPath(), outputDir); err != nil {
 			if errors.IsDoesNotExist(err) {
-				console.Debug("No checkpoint data found")
-				checkpointFilesExist = false
+				return errors.DoesNotExist(fmt.Sprintf("Checkpoint %s is supposed to have files associated with it, but could not find the files at %q.\nMaybe it hasn't been written yet, or the repository is corrupted?", checkpoint.ShortID(), checkpoint.StorageTarPath()))
 			} else {
 				return err
 
 			}
-		} else {
-			if !quiet {
-				console.Info("Copied the files from checkpoint %s to %q", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
-			}
 		}
-
-	}
-
-	if !experimentFilesExist && !checkpointFilesExist {
-		// Just an experiment, no checkpoints
-		if checkpoint == nil {
-			return fmt.Errorf("The experiment %s does not have any files associated with it. You need to pass the 'path' argument to 'init()' to check out files.", experiment.ShortID())
-		}
-		return errors.DoesNotExist(fmt.Sprintf("Neither the experiment %s nor the checkpoint %s has any files associated with it. You need to pass the 'path' argument to 'init()' or 'checkpoint()' to check out files.", experiment.ShortID(), checkpoint.ShortID()))
 	}
 
 	if !quiet {
