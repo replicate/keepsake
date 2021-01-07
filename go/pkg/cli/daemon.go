@@ -3,6 +3,8 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/replicate/go/pkg/global"
 	"github.com/replicate/replicate/go/pkg/project"
 	"github.com/replicate/replicate/go/pkg/shared"
 )
@@ -19,6 +21,10 @@ func NewDaemonCommand() *cobra.Command {
 
 func runDaemon(cmd *cobra.Command, args []string) error {
 	socketPath := args[0]
+
+	if global.Verbose {
+		console.SetLevel(console.DebugLevel)
+	}
 
 	projectGetter := func() (proj *project.Project, err error) {
 		repositoryURL, projectDir, err := getRepositoryURLFromFlagOrConfig(cmd)
