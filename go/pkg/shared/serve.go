@@ -239,10 +239,10 @@ func Serve(projGetter projectGetter, socketPath string) error {
 		<-sigc
 		console.Debug("Exiting...")
 		s.workChan <- nil // nil is an exit sentinel
+		<-completedChan
 		for _, hb := range s.heartbeatsByExperimentID {
 			hb.Kill()
 		}
-		<-completedChan
 		grpcServer.GracefulStop()
 	}()
 
