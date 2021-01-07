@@ -123,11 +123,6 @@ class Daemon:
 
     def cleanup(self):
         if self.process.poll() is None:  # check if process is still running:
-            # TODO(andreas): if the process takes more than a couple
-            # of seconds to quit, write another message indicating
-            # that it's still cleaning things up.
-            console.info("Replicate is quitting...")
-
             # the sigterm handler in the daemon process waits for any in-progress uploads etc. to finish.
             # the sigterm handler also deletes the socket file
             self.process.terminate()
