@@ -73,6 +73,11 @@ function DocsLayout({ title, children, ...props }) {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/docs/guides/pytorch-lightning-integration">
+                    <a>PyTorch Lightning integration</a>
+                  </Link>
+                </li>
+                <li>
                   <Link href="/docs/guides/inference">
                     <a>Load models for inference</a>
                   </Link>

@@ -1,13 +1,13 @@
 import DocsLayout from "../../../layouts/docs";
 
-<DocsLayout title="Pytorch Lightning integration">
+<DocsLayout title="PyTorch Lightning integration">
 
 
-_This is an experimental feature, and the API may change in the future._
+_This is an experimental feature so the API may change in the future._
 
-Replicate works with any machine learning framework, but it includes a callback that makes it easier to use with [Pytorch Lightning](https://www.pytorchlightning.ai/).
+Replicate works with any machine learning framework, but it includes a callback that makes it easier to use with [PyTorch Lightning](https://www.pytorchlightning.ai/).
 
-`ReplicateCallback` behaves like [Pytorch Lightning's `ModelCheckpoint` callback](https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html), but in addition to exporting a model at the end of each epoch, it also:
+`ReplicateCallback` behaves like [PyTorch Lightning's `ModelCheckpoint` callback](https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html), but in addition to exporting a model at the end of each epoch, it also:
 
 1. Calls `replicate.init()` at the start of training to create an experiment, and
 2. Calls `experiment.checkpoint()` after saving the model at [`on_validation_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-validation-end). If no validation is defined, then the checkpoint is saved at [`on_epoch_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-epoch-end). All metrics that have been logged during training with [`self.log()`](https://pytorch-lightning.readthedocs.io/en/latest/logging.html#automatic-logging) are saved to the Replicate checkpoint.
