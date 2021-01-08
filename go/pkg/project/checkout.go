@@ -37,7 +37,7 @@ func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experim
 	// Overlay checkpoint on top of experiment
 	if checkpoint != nil && checkpoint.Path != "" {
 		if !quiet {
-			console.Info("Copying the files from checkpoint %s to %q...", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
+			console.Info("Copying files from checkpoint %s to %q...", checkpoint.ShortID(), filepath.Join(outputDir, checkpoint.Path))
 		}
 
 		if err := p.repository.GetPathTar(checkpoint.StorageTarPath(), outputDir); err != nil {
