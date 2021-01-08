@@ -244,7 +244,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 
 	if exp.Path == "" {
 		if !quiet {
-			console.Info("Creating experiment %s", exp.ShortID())
+			console.Info("Creating experiment %s...", exp.ShortID())
 		}
 		return exp, nil
 	}
@@ -255,7 +255,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 	}
 
 	if !quiet {
-		console.Info("Creating experiment %s, copying '%s' to '%s'...", exp.ShortID(), exp.Path, p.repository.RootURL())
+		console.Info("Creating experiment %s, copying '%s' to '%s' in the background...", exp.ShortID(), exp.Path, p.repository.RootURL())
 	}
 
 	work := func() error {
@@ -299,13 +299,13 @@ func (p *Project) CreateCheckpoint(args CreateCheckpointArgs, async bool, workCh
 	// the checkpoint without saving anything
 	if chk.Path == "" {
 		if !quiet {
-			console.Info("Creating checkpoint %s", chk.ShortID())
+			console.Info("Creating checkpoint %s...", chk.ShortID())
 		}
 		return chk, nil
 	}
 
 	if !quiet {
-		console.Info("Creating checkpoint %s, copying '%s' to '%s'...", chk.ShortID(), chk.Path, p.repository.RootURL())
+		console.Info("Creating checkpoint %s, copying '%s' to '%s' in the background...", chk.ShortID(), chk.Path, p.repository.RootURL())
 	}
 
 	tempDir, err := repository.CopyToTempDir(p.directory, chk.Path)
