@@ -120,6 +120,7 @@ setuptools.setup(
     url="https://replicate.ai",
     license="Apache License 2.0",
     python_requires='>=3.6.0',
+    install_requires=["googleapis-common-protos[grpc]>=1.0.0"],
     packages=setuptools.find_packages(),
     package_data={'replicate': ['bin/replicate-shared']},
     cmdclass={
