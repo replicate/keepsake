@@ -118,6 +118,39 @@ jobs:
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
         run: make test-external
 
+  test-python-nodeps:
+    name: "Test (Python, no dependencies installed)"
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources
+        platform: [ubuntu-20.04, macos-10.15]
+    runs-on: ${{ matrix.platform }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: nodeps-test
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install
+        run: |
+          (cd ../ && make install)
+      - name: Test
+        run: make test
+
   test-end-to-end:
     name: "Test (end to end)"
     strategy:
@@ -183,7 +216,7 @@ jobs:
         run: make test-external
 
   release:
-    needs: [test-go, test-python, test-end-to-end]
+    needs: [test-go, test-python, test-python-nodeps, test-end-to-end]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
