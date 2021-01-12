@@ -33,7 +33,7 @@ require (
 	golang.org/x/tools v0.0.0-20210105210202-9ed45478a130
 	google.golang.org/api v0.36.0
 	google.golang.org/genproto v0.0.0-20201201144952-b05cb90ed32e
-	google.golang.org/grpc v1.34.0
+	google.golang.org/grpc v1.34.1
 	google.golang.org/protobuf v1.25.0
 	gotest.tools/gotestsum v0.6.0
 )
