@@ -48,7 +48,7 @@ type ListExperiment struct {
 
 // We should add some validation and better error messages, see https://github.com/replicate/replicate/issues/340
 func (exp *ListExperiment) GetValue(name string) param.Value {
-	if name == "started" {
+	if name == "started" || name == "created" {
 		// floating point timestamp used in sorting
 		return param.Float(float64(exp.Created.Unix()))
 	}
