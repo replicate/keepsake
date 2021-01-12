@@ -156,7 +156,7 @@ $ replicate ls --sort "val_loss" --filter "status = stopped"
       --json                 Print output in JSON format
   -q, --quiet                Only print experiment IDs
   -R, --repository string    Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
-  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
+  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=created-desc (default "created")
 
       --color                      Display color in output (default true)
   -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
@@ -181,7 +181,7 @@ replicate ps [flags]
       --json                 Print output in JSON format
   -q, --quiet                Only print experiment IDs
   -R, --repository string    Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
-  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc (default "started")
+  -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=created-desc (default "created")
 
       --color                      Display color in output (default true)
   -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
