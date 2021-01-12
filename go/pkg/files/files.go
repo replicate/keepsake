@@ -59,12 +59,21 @@ func DirIsEmpty(dirPath string) (bool, error) {
 }
 
 func CopyFile(src string, dest string) error {
-	contents, err := ioutil.ReadFile(src)
+	in, err := os.Open(src)
 	if err != nil {
-		return fmt.Errorf("Failed to read %s: %v", src, err)
+		return fmt.Errorf("Failed to open %s while copying to %s: %w", src, dest, err)
 	}
-	if err := ioutil.WriteFile(dest, contents, 0644); err != nil {
-		return fmt.Errorf("Failed to write to %s: %v", dest, err)
+	defer in.Close()
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return fmt.Errorf("Failed to create %s while copying %s: %w", dest, src, err)
 	}
-	return nil
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return fmt.Errorf("Failed to copy %s to %s: %w", src, dest, err)
+	}
+	return out.Close()
 }
