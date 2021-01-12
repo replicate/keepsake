@@ -150,7 +150,6 @@ where <operator> can be
 	}
 
 	// This is a hack, see https://github.com/replicate/replicate/issues/341
-	// "started" should probably be renamed/aliased to "created", see https://github.com/replicate/replicate/issues/342
 	if f.name == "started" || f.name == "created" {
 		if f.name == "started" {
 			console.Warn("The filter name 'started' is deprecated, please use 'created' instead")
