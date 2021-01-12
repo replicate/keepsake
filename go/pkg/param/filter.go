@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/araddon/dateparse"
+	"github.com/replicate/replicate/go/pkg/console"
 )
 
 type ValueGetter interface {
@@ -150,7 +151,10 @@ where <operator> can be
 
 	// This is a hack, see https://github.com/replicate/replicate/issues/341
 	// "started" should probably be renamed/aliased to "created", see https://github.com/replicate/replicate/issues/342
-	if f.name == "started" {
+	if f.name == "started" || f.name == "created" {
+		if f.name == "started" {
+			console.Warn("Deprecated started use created instead")
+		}
 		t, err := dateparse.ParseLocal(value)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse created time: %s", err)
