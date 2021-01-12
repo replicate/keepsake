@@ -153,7 +153,7 @@ where <operator> can be
 	// "started" should probably be renamed/aliased to "created", see https://github.com/replicate/replicate/issues/342
 	if f.name == "started" || f.name == "created" {
 		if f.name == "started" {
-			console.Warn("Deprecated started use created instead")
+			console.Warn("The filter name 'started' is deprecated, please use 'created' instead")
 		}
 		t, err := dateparse.ParseLocal(value)
 		if err != nil {
