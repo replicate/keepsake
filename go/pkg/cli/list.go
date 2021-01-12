@@ -124,7 +124,7 @@ func parseListFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 }
 
 func addListSortFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("sort", "s", "started", "Sort key. Suffix with '-desc' for descending sort, e.g. --sort=started-desc")
+	cmd.Flags().StringP("sort", "s", "created", "Sort key. Suffix with '-desc' for descending sort, e.g. --sort=created-desc")
 }
 
 func parseListSortFlag(cmd *cobra.Command) (*param.Sorter, error) {
