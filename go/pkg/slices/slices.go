@@ -20,6 +20,16 @@ func ContainsAnyString(strings interface{}, query interface{}) bool {
 	return ContainsString(StringSlice(strings), query.(string))
 }
 
+// FilterString returns a copy of a slice with the items that return true when passed to `test`
+func FilterString(ss []string, test func(string) bool) (ret []string) {
+	for _, s := range ss {
+		if test(s) {
+			ret = append(ret, s)
+		}
+	}
+	return
+}
+
 // StringSlice converts an []interface{} slice to a []string slice
 func StringSlice(strings interface{}) []string {
 	if reflect.TypeOf(strings).Kind() != reflect.Slice {

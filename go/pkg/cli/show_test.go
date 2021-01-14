@@ -42,7 +42,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) re
 		User:           "andreas",
 		Config:         conf,
 		PythonVersion:  "3.4.5",
-		PythonPackages: map[string]string{"foo": "1.2.3"},
+		PythonPackages: map[string]string{"foo": "1.2.3", "foo2": "1.2.3", "foo3": "1.2.3", "foo4": "1.2.3", "foo5": "1.2.3", "tensorflow": "2.0.0"},
 		Checkpoints: []*project.Checkpoint{
 			{
 				ID:      "1ccccccccc",
@@ -133,7 +133,7 @@ func TestShowCheckpoint(t *testing.T) {
 
 	out := new(bytes.Buffer)
 	au := aurora.NewAurora(false)
-	err = showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint)
+	err = showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint, false)
 	require.NoError(t, err)
 	actual := out.String()
 
@@ -159,12 +159,13 @@ param-2:         hello
 System
 Python version:  3.4.5
 
-Python Packages
-foo:             1.2.3
+Python packages
+tensorflow:      2.0.0
+... and 5 more. Use --all to view.
 
 Metrics
-metric-1:        0.02 (primary, minimize)
-metric-2:        2
+metric-1:  0.02 (primary, minimize)
+metric-2:  2
 
 `
 	// remove initial newline
@@ -195,7 +196,7 @@ func TestShowExperiment(t *testing.T) {
 
 	out := new(bytes.Buffer)
 	au := aurora.NewAurora(false)
-	err = showExperiment(au, out, proj, result.Experiment)
+	err = showExperiment(au, out, proj, result.Experiment, false)
 	require.NoError(t, err)
 	actual := out.String()
 
@@ -215,8 +216,53 @@ param-2:         hello
 System
 Python version:  3.4.5
 
-Python Packages
+Python packages
+tensorflow:      2.0.0
+... and 5 more. Use --all to view.
+
+Checkpoints
+ID       STEP  CREATED     METRIC-1     METRIC-2
+1cccccc  10    2006-01-02  0.1          2
+2cccccc  20    2006-01-02  0.01 (best)  2
+3cccccc  20    2006-01-02  0.02         2
+
+To see more details about a checkpoint, run:
+  replicate show <checkpoint ID>
+`
+	// remove initial newline
+	expected = expected[1:]
+	actual = testutil.TrimRightLines(actual)
+	require.Equal(t, expected, actual)
+
+	// --all
+	out = new(bytes.Buffer)
+	err = showExperiment(au, out, proj, result.Experiment, true)
+	require.NoError(t, err)
+	actual = out.String()
+
+	expected = `
+Experiment: 1eeeeeeeee
+
+Created:         Mon, 02 Jan 2006 22:54:05 +08
+Status:          running
+Host:            10.1.1.1
+User:            andreas
+Command:         train.py --gamma=1.2 -x
+
+Params
+param-1:         100
+param-2:         hello
+
+System
+Python version:  3.4.5
+
+Python packages
 foo:             1.2.3
+foo2:            1.2.3
+foo3:            1.2.3
+foo4:            1.2.3
+foo5:            1.2.3
+tensorflow:      2.0.0
 
 Checkpoints
 ID       STEP  CREATED     METRIC-1     METRIC-2
