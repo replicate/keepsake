@@ -81,6 +81,11 @@ param-3:                  (not set)                      hi
 
 Python Packages
 foo:                      1.2.3                          (not set)
+foo2:                     1.2.3                          (not set)
+foo3:                     1.2.3                          (not set)
+foo4:                     1.2.3                          (not set)
+foo5:                     1.2.3                          (not set)
+tensorflow:               2.0.0                          (not set)
 
 Checkpoint
 ID:                       2cccccc                        4cccccc

@@ -16,11 +16,13 @@ import (
 
 	"github.com/replicate/replicate/go/pkg/console"
 	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/replicate/go/pkg/slices"
 )
 
 var timezone = time.Local
 
 type showOpts struct {
+	all           bool
 	json          bool
 	repositoryURL string
 }
@@ -37,6 +39,7 @@ func newShowCommand() *cobra.Command {
 		Args: cobra.ExactArgs(1),
 	}
 
+	cmd.Flags().BoolVar(&opts.all, "all", false, "Show all information")
 	cmd.Flags().BoolVar(&opts.json, "json", false, "Print output in JSON format")
 	addRepositoryURLFlagVar(cmd, &opts.repositoryURL)
 
@@ -71,12 +74,12 @@ func show(opts showOpts, args []string, out io.Writer) error {
 	}
 
 	if result.Checkpoint != nil {
-		return showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint)
+		return showCheckpoint(au, out, proj, result.Experiment, result.Checkpoint, opts.all)
 	}
-	return showExperiment(au, out, proj, result.Experiment)
+	return showExperiment(au, out, proj, result.Experiment, opts.all)
 }
 
-func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment, com *project.Checkpoint) error {
+func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment, com *project.Checkpoint, all bool) error {
 	experimentRunning, err := proj.ExperimentIsRunning(exp.ID)
 	if err != nil {
 		return err
@@ -94,7 +97,7 @@ func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 
 	fmt.Fprintf(w, "ID:\t%s\n", exp.ID)
 
-	writeExperimentCommon(au, w, exp, experimentRunning)
+	writeExperimentCommon(au, w, exp, experimentRunning, all)
 
 	if err := writeCheckpointMetrics(au, w, proj, com); err != nil {
 		return err
@@ -104,7 +107,7 @@ func showCheckpoint(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	return w.Flush()
 }
 
-func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment) error {
+func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp *project.Experiment, all bool) error {
 	experimentRunning, err := proj.ExperimentIsRunning(exp.ID)
 	if err != nil {
 		return err
@@ -113,7 +116,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	fmt.Fprintf(out, "%s\n\n", au.Underline(au.Bold(fmt.Sprintf("Experiment: %s", exp.ID))))
 
 	w := tabwriter.NewWriter(out, 0, 8, 2, ' ', 0)
-	writeExperimentCommon(au, w, exp, experimentRunning)
+	writeExperimentCommon(au, w, exp, experimentRunning, all)
 	if err := w.Flush(); err != nil {
 		return err
 	}
@@ -161,7 +164,25 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 	return nil
 }
 
-func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment, experimentRunning bool) {
+func isInterestingPythonPackage(pkg string) bool {
+	switch pkg {
+	case
+		"cntk",
+		"keras",
+		"jax",
+		"mxnet",
+		"numpy",
+		"pandas",
+		"pytorch_lightning",
+		"sklearn",
+		"tensorflow",
+		"torch":
+		return true
+	}
+	return false
+}
+
+func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.Experiment, experimentRunning bool, all bool) {
 	fmt.Fprintf(w, "Created:\t%s\n", exp.Created.In(timezone).Format(time.RFC1123))
 	if experimentRunning {
 		fmt.Fprint(w, "Status:\trunning\n")
@@ -188,15 +209,33 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 	fmt.Fprintf(w, "Python version:\t%s\n", exp.PythonVersion)
 
 	fmt.Fprintf(w, "\t\n")
-	fmt.Fprintf(w, "%s\t\n", au.Bold("Python Packages"))
+	fmt.Fprintf(w, "%s\t\n", au.Bold("Python packages"))
 	if len(exp.PythonPackages) > 0 {
 		packageNames := []string{}
+		displayMore := false
+
 		for name := range exp.PythonPackages {
 			packageNames = append(packageNames, name)
 		}
 		sort.Strings(packageNames)
+
+		if !all && len(packageNames) > 5 {
+			interestingPackageNames := slices.FilterString(packageNames, isInterestingPythonPackage)
+			if len(interestingPackageNames) == 0 {
+				packageNames = packageNames[0:5]
+			} else {
+				packageNames = interestingPackageNames
+			}
+			displayMore = true
+		}
 		for _, name := range packageNames {
 			fmt.Fprintf(w, "%s:\t%s\n", name, exp.PythonPackages[name])
+		}
+		if displayMore {
+			moreCount := len(exp.PythonPackages) - len(packageNames)
+			// This doesn't include a tab, breaking the alignment of subsequent tabwriter lines.
+			// We should use a less shitty tabwriter that lets things span multiple columns.
+			fmt.Fprintf(w, "%s\n", au.Faint(fmt.Sprintf("... and %d more. Use --all to view.", moreCount)))
 		}
 	} else {
 		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
