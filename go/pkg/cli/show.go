@@ -183,9 +183,11 @@ func writeExperimentCommon(au aurora.Aurora, w *tabwriter.Writer, exp *project.E
 		fmt.Fprintf(w, "%s\t\n", au.Faint("(none)"))
 	}
 
-	fmt.Fprintf(w, "\t\n")
-	fmt.Fprintf(w, "%s\t\n", au.Bold("System"))
-	fmt.Fprintf(w, "Python version:\t%s\n", exp.PythonVersion)
+	if exp.PythonVersion != "" {
+		fmt.Fprintf(w, "\t\n")
+		fmt.Fprintf(w, "%s\t\n", au.Bold("System"))
+		fmt.Fprintf(w, "Python version:\t%s\n", exp.PythonVersion)
+	}
 
 	fmt.Fprintf(w, "\t\n")
 	fmt.Fprintf(w, "%s\t\n", au.Bold("Python Packages"))

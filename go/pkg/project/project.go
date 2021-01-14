@@ -199,6 +199,7 @@ type CreateExperimentArgs struct {
 	Command        string
 	Params         map[string]param.Value
 	PythonPackages map[string]string
+	PythonVersion  string
 }
 
 func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workChan chan func() error, quiet bool) (*Experiment, error) {
@@ -233,6 +234,7 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 		Config:           conf,
 		Command:          args.Command,
 		Path:             args.Path,
+		PythonVersion:    args.PythonVersion,
 		PythonPackages:   args.PythonPackages,
 		ReplicateVersion: global.Version,
 	}
