@@ -40,6 +40,7 @@ func (s *server) CreateExperiment(ctx context.Context, req *servicepb.CreateExpe
 		Command:        pbReqExp.GetCommand(),
 		Params:         valueMapFromPb(pbReqExp.GetParams()),
 		PythonPackages: pbReqExp.GetPythonPackages(),
+		PythonVersion:  pbReqExp.GetPythonVersion(),
 	}
 	proj, err := s.getProject()
 	if err != nil {

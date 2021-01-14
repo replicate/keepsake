@@ -55,6 +55,15 @@ def test_init_and_checkpoint(temp_workdir):
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
+    assert metadata["host"] == ""
+    assert metadata["user"] != ""
+    # FIXME: this is broken https://github.com/replicate/replicate/issues/492
+    assert metadata["config"]["repository"].startswith("file://")
+    assert metadata["command"] != ""
+    assert metadata["path"] == "."
+    assert metadata["python_version"] != ""
+    assert len(metadata["python_packages"]) > 0
+    assert metadata["replicate_version"] != ""
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(experiment_tar_path) as tar:
