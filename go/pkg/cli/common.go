@@ -82,13 +82,20 @@ func getProjectDir() (string, error) {
 // getRepository returns the project's repository, with caching if needed
 // This is not in repository package so we can do user interface stuff around syncing
 func getRepository(repositoryURL, projectDir string) (repository.Repository, error) {
+	needsCaching, err := repository.NeedsCaching(repositoryURL)
+	if err != nil {
+		return nil, err
+	}
+	// Before repository initialization so this displays as quickly as possible
+	if needsCaching && projectDir != "" {
+		console.Info("Fetching new data from %q...", repositoryURL)
+	}
 	repo, err := repository.ForURL(repositoryURL, projectDir)
 	if err != nil {
 		return nil, err
 	}
 	// projectDir might be "" if you use --repository option
-	if repository.NeedsCaching(repo) && projectDir != "" {
-		console.Info("Fetching new data from %q...", repo.RootURL())
+	if needsCaching && projectDir != "" {
 		repo, err = repository.NewCachedMetadataRepository(projectDir, repo)
 		if err != nil {
 			return nil, err

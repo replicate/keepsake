@@ -350,10 +350,10 @@ func extractTarItem(tarPath, itemPath, localPath string) error {
 	return nil
 }
 
-// NeedsCaching returns true if the repository is slow and needs caching
-func NeedsCaching(repo Repository) bool {
-	_, isDiskRepository := repo.(*DiskRepository)
-	return !isDiskRepository
+// NeedsCaching returns true if the repository URL is slow and needs caching
+func NeedsCaching(repositoryURL string) (bool, error) {
+	scheme, _, _, err := SplitURL(repositoryURL)
+	return scheme != "file", err
 }
 
 func unknownRepositoryScheme(scheme string) error {
