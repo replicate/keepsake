@@ -1,7 +1,10 @@
+ROOTDIR=../
+VENV=$(ROOTDIR)venv/bin/
+
 .PHONY: test
 test:
-	pytest -m "not external"
+	$(VENV)pytest -m "not external"
 
 .PHONY: test-external
 test-external:
-	pytest
+	$(VENV)pytest

@@ -1,25 +1,32 @@
+ROOTDIR=../
+VENV=$(ROOTDIR)venv/bin/
+
 .PHONY: pre-commit
 pre-commit: lint
 
 .PHONY: fmt
 fmt:
-	black .
+	$(VENV)black .
+
+.PHONY: develop
+develop:
+	$(VENV)python setup.py develop
 
 # --import-mode makes pytest import from globally installed package by default instead of local replicate/ module.
 # This assumes you've run `make develop` before running tests
 # https://docs.pytest.org/en/stable/pythonpath.html#pythonpath
 .PHONY: test
 test: lint
-	pytest --import-mode=importlib -m "not external"
+	$(VENV)pytest --import-mode=importlib -m "not external"
 
 .PHONY: test-external
 test-external: lint
-	pytest --import-mode=importlib
+	$(VENV)pytest --import-mode=importlib
 
 .PHONY: lint
 lint:
-	mypy .
-	black --check .
+	$(VENV)mypy .
+	$(VENV)black --check .
 
 .PHONY: clean
 clean:
@@ -42,9 +49,9 @@ clean:
 # https://docs.python.org/3/distutils/apiref.html#distutils.util.get_platform
 .PHONY: build
 build: clean
-	pip install wheel
-	python setup.py bdist_wheel --plat-name manylinux1_x86_64
-	python setup.py bdist_wheel --plat-name macosx_10_9_x86_64
+	$(VENV)pip install wheel
+	$(VENV)python setup.py bdist_wheel --plat-name manylinux1_x86_64
+	$(VENV)python setup.py bdist_wheel --plat-name macosx_10_9_x86_64
 
 .PHONY: targets
 targets:
@@ -52,5 +59,5 @@ targets:
 
 .PHONY: vendor
 vendor:
-	pip install vendoring
-	vendoring sync -v .
+	$(VENV)pip install vendoring
+	$(VENV)vendoring sync -v .

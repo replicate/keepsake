@@ -1,5 +1,13 @@
 {
   "files.exclude": {
     "go": true
-  }
+  },
+  "python.pythonPath": "${workspaceFolder}/venv/bin/python3",
+  "python.testing.pytestArgs": [
+    "python/tests",
+    "end-to-end-test/end_to_end_test",
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true
 }

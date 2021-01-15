@@ -5,6 +5,7 @@ import botocore
 from google.cloud import storage as google_storage
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.parent
+PYTHON_PATH = os.path.abspath(os.path.join(ROOT_DIRECTORY, "venv/bin/python"))
 
 
 def get_env():

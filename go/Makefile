@@ -51,13 +51,16 @@ build-all:
 
 # install without sudo if the install path exists and is writeable,
 # or if it doesn't exist and its directory is writeable
-.PHONY: install
-install: build
+.PHONY: copy-binary
+copy-binary:
 	if [[ (-f "$(INSTALL_PATH)" && -w "$(INSTALL_PATH)") || (! -f "$(INSTALL_PATH)" && -w $$(dirname "$(INSTALL_PATH)")) ]]; then \
 	    cp $(BINARY) $(INSTALL_PATH); \
 	else \
 	    sudo cp $(BINARY) $(INSTALL_PATH); \
 	fi
+
+.PHONY: install
+install: build copy-binary
 
 .PHONY: clean
 clean:
