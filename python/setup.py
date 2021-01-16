@@ -121,7 +121,7 @@ setuptools.setup(
     license="Apache License 2.0",
     python_requires='>=3.6.0',
     install_requires=["googleapis-common-protos[grpc]>=1.0.0"],
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["tests"]),
     package_data={'replicate': ['bin/replicate-shared']},
     cmdclass={
         'bdist_wheel': bdist_wheel,
