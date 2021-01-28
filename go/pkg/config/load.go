@@ -15,6 +15,7 @@ import (
 	"github.com/replicate/keepsake/go/pkg/errors"
 	"github.com/replicate/keepsake/go/pkg/files"
 	"github.com/replicate/keepsake/go/pkg/global"
+	"github.com/replicate/keepsake/go/pkg/slices"
 )
 
 const maxSearchDepth = 100
@@ -29,20 +30,16 @@ const deprecatedRepositoryDir = ".replicate/storage"
 // If overrideDir is passed, it uses that directory instead.
 func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string, err error) {
 	if overrideDir != "" {
-		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[0]))
+		configPath, err := findConfigPathInDirectory(overrideDir)
 		if err != nil {
 			if errors.IsConfigNotFound(err) {
-				// Try to locate keepsake.yml
-				conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[1]))
-				if err != nil {
-					if os.IsNotExist(err) {
-						return getDefaultConfig(overrideDir), overrideDir, nil
-					}
-					return nil, "", err
-				}
-				return conf, overrideDir, nil
-
+				return getDefaultConfig(overrideDir), overrideDir, nil
 			}
+			return nil, "", err
+		}
+
+		conf, err := LoadConfig(configPath)
+		if err != nil {
 			return nil, "", err
 		}
 		return conf, overrideDir, nil
@@ -139,15 +136,12 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 func FindConfigPath(startFolder string) (configPath string, deprecatedRepositoryProjectRoot string, err error) {
 	folder := startFolder
 	for i := 0; i < maxSearchDepth; i++ {
-		for _, configFilename := range global.ConfigFilenames {
-			configPath = filepath.Join(folder, configFilename)
-			exists, err := files.FileExists(configPath)
-			if err != nil {
-				return "", "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
-			}
-			if exists {
-				return configPath, "", nil
-			}
+		configPath, err := findConfigPathInDirectory(folder)
+		if err != nil && !errors.IsConfigNotFound(err) {
+			return "", "", err
+		}
+		if err == nil {
+			return configPath, "", nil
 		}
 
 		deprecatedRepo := filepath.Join(folder, deprecatedRepositoryDir)
@@ -167,4 +161,22 @@ func FindConfigPath(startFolder string) (configPath string, deprecatedRepository
 		folder = filepath.Dir(folder)
 	}
 	return "", "", errors.ConfigNotFound(fmt.Sprintf("%s not found, recursive reached max depth", global.ConfigFilenames[0]))
+}
+
+func findConfigPathInDirectory(folder string) (configPath string, err error) {
+	for _, configFilename := range global.ConfigFilenames {
+		configPath = filepath.Join(folder, configFilename)
+		exists, err := files.FileExists(configPath)
+		if err != nil {
+			return "", fmt.Errorf("Failed to scan directory %s: %s", folder, err)
+		}
+		if exists {
+			if slices.ContainsString(global.DeprecatedConfigFilenames, configFilename) {
+				console.Warn("%s is deprecated, please name your configuration file %s", configFilename, global.ConfigFilenames[0])
+			}
+
+			return configPath, nil
+		}
+	}
+	return "", errors.ConfigNotFound(fmt.Sprintf("%s not found in %s", global.ConfigFilenames[0], folder))
 }
