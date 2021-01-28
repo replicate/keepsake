@@ -3,7 +3,8 @@ package global
 var Version = "development"     // set in Makefile
 var Environment = "development" // set in Makefile
 
-var ConfigFilenames [2]string = [2]string{"keepsake.yaml", "keepsake.yml"}
+var ConfigFilenames []string = []string{"keepsake.yaml", "keepsake.yml", "replicate.yaml", "replicate.yml"}
+var DeprecatedConfigFilenames []string = []string{"replicate.yaml", "replicate.yml"}
 var Verbose = false
 var WebURL = "https://keepsake.ai"
 var Color = true

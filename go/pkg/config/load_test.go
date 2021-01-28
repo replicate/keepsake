@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/kami-zh/go-capturer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,6 +35,25 @@ func TestFindConfigYml(t *testing.T) {
 	err = ioutil.WriteFile(path.Join(dir, "keepsake.yml"), []byte("repository: 'foo'"), 0644)
 	require.NoError(t, err)
 	conf, _, err := FindConfig(dir)
+	require.NoError(t, err)
+	require.Equal(t, &Config{
+		Repository: "foo",
+	}, conf)
+}
+
+func TestFindConfigDeprecatedFilename(t *testing.T) {
+	dir, err := ioutil.TempDir("", "keepsake-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	// Loads a basic config
+	err = ioutil.WriteFile(path.Join(dir, "replicate.yaml"), []byte("repository: 'foo'"), 0644)
+	require.NoError(t, err)
+	var conf *Config
+	stderr := capturer.CaptureStderr(func() {
+		conf, _, err = FindConfig(dir)
+	})
+	require.Contains(t, stderr, "replicate.yaml is deprecated")
 	require.NoError(t, err)
 	require.Equal(t, &Config{
 		Repository: "foo",
@@ -116,13 +136,13 @@ func TestDeprecatedRepositoryBackwardsCompatible(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
 
-	err = os.MkdirAll(filepath.Join(tmpDir, ".keepsake/storage"), 0755)
+	err = os.MkdirAll(filepath.Join(tmpDir, ".replicate/storage"), 0755)
 	require.NoError(t, err)
 
 	conf, projectDir, err := FindConfig(tmpDir)
 	require.NoError(t, err)
 	require.Equal(t, &Config{
-		Repository: "file://.keepsake/storage",
+		Repository: "file://.replicate/storage",
 	}, conf)
 	require.Equal(t, tmpDir, projectDir)
 }
