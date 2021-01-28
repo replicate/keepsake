@@ -10,9 +10,9 @@ build: verify-dev-env
 .PHONY: install
 install: build
 ifeq ($(OS),Linux)
-	pip install python/dist/replicate-*-py3-none-manylinux1_x86_64.whl
+	pip install python/dist/keepsake-*-py3-none-manylinux1_x86_64.whl
 else ifeq ($(OS),Darwin)
-	pip install python/dist/replicate-*-py3-none-macosx_*.whl
+	pip install python/dist/keepsake-*-py3-none-macosx_*.whl
 else
 	@echo Unknown OS: $(OS)
 endif
@@ -41,25 +41,25 @@ test-external: install-test-dependencies develop
 
 .PHONY: release
 release: check-version-var verify-clean-main bump-version
-	git add go/Makefile python/replicate/version.py web/.env
+	git add go/Makefile python/keepsake/version.py web/.env
 	git commit -m "Bump to version $(VERSION)"
 	git tag "v$(VERSION)"
-	git push git@github.com:replicate/replicate.git main
-	git push git@github.com:replicate/replicate.git main --tags
-	git push git@github.com:replicate/replicate.git main:website --force
+	git push git@github.com:replicate/keepsake.git main
+	git push git@github.com:replicate/keepsake.git main --tags
+	git push git@github.com:replicate/keepsake.git main:website --force
 
 .PHONY: verify-version
 # quick and dirty
 bump-version:
 	sed -E -i '' "s/VERSION := .+/VERSION := $(VERSION)/" go/Makefile
-	sed -E -i '' 's/version = ".+"/version = "$(VERSION)"/' python/replicate/version.py
+	sed -E -i '' 's/version = ".+"/version = "$(VERSION)"/' python/keepsake/version.py
 	sed -E -i '' 's/NEXT_PUBLIC_VERSION=.+/NEXT_PUBLIC_VERSION=$(VERSION)/' web/.env
 
 .PHONY: verify-clean-main
 verify-clean-main:
 	git diff-index --quiet HEAD  # make sure git is clean
 	git checkout main
-	git pull git@github.com:replicate/replicate.git main
+	git pull git@github.com:replicate/keepsake.git main
 
 .PHONY: release-manual
 release-manual: check-version-var verify-clean-main

@@ -10,9 +10,9 @@ from sklearn.linear_model import LinearRegression
 graphs = {}
 
 for line in fileinput.input():
-    # BenchmarkReplicateDisk/list_first_run_with_10_experiments-8         	      10	  20338507 ns/op
+    # BenchmarkKeepsakeDisk/list_first_run_with_10_experiments-8         	      10	  20338507 ns/op
     match = re.search(
-        r"BenchmarkReplicate(.+)\/(.+)_with_(\d+).+\s+\d+\s+(\d+) ns\/op", line
+        r"BenchmarkKeepsake(.+)\/(.+)_with_(\d+).+\s+\d+\s+(\d+) ns\/op", line
     )
     if match:
         graph = match.group(1) + " " + match.group(2)

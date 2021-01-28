@@ -8,17 +8,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/errors"
 )
 
 func TestSync(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	sourceRepository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 
-	dir, err = ioutil.TempDir("", "replicate-test")
+	dir, err = ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	destRepository, err := NewDiskRepository(dir)

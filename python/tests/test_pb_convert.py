@@ -1,10 +1,10 @@
 import datetime
 
-from replicate import pb_convert
-from replicate.checkpoint import Checkpoint, PrimaryMetric, CheckpointList
-from replicate.experiment import Experiment
-from replicate.servicepb import replicate_pb2 as pb
-from replicate.project import Project
+from keepsake import pb_convert
+from keepsake.checkpoint import Checkpoint, PrimaryMetric, CheckpointList
+from keepsake.experiment import Experiment
+from keepsake.servicepb import keepsake_pb2 as pb
+from keepsake.project import Project
 
 
 def full_checkpoint_pb():
@@ -85,7 +85,7 @@ def full_experiment_pb():
             "mymap": pb.ParamType(objectValueJson='{"bar": "baz"}'),
         },
         pythonPackages={"pkg1": "1.1", "pkg2": "2.2"},
-        replicateVersion="1.2.3",
+        keepsakeVersion="1.2.3",
         checkpoints=[
             pb.Checkpoint(
                 id="c1",
@@ -122,7 +122,7 @@ def full_experiment(project):
             "mymap": {"bar": "baz"},
         },
         python_packages={"pkg1": "1.1", "pkg2": "2.2"},
-        replicate_version="1.2.3",
+        keepsake_version="1.2.3",
         checkpoints=CheckpointList(
             [
                 Checkpoint(id="c1", created=t + datetime.timedelta(minutes=1), step=1,),

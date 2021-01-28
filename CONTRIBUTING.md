@@ -2,26 +2,26 @@
 
 ## Where to start?
 
-You can contribute to Replicate in a number of ways, depending on your expertise, experience, and interest.
+You can contribute to Keepsake in a number of ways, depending on your expertise, experience, and interest.
 
-If you want to **dive into the code**, the next sections of this document describes the project structure, commit instructions, etc. We have compiled a list of ["Good first issues"](https://github.com/replicate/replicate/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22), which are small and well-defined tasks for getting started. We also have a ["Help wanted"](https://github.com/replicate/replicate/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag that has more general issues.
+If you want to **dive into the code**, the next sections of this document describes the project structure, commit instructions, etc. We have compiled a list of ["Good first issues"](https://github.com/replicate/keepsake/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22), which are small and well-defined tasks for getting started. We also have a ["Help wanted"](https://github.com/replicate/keepsake/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag that has more general issues.
 
 When you pick up an issue, please post a comment on the Github issue so others know that it's being worked on.
 
-If you have **thoughts about ML versioning**, we would really appreciate a review of [the roadmap](https://github.com/replicate/replicate/projects/1). You can use the thumbs up/down feature to let us know if you think a roadmap item is useful or not. It's also great if you comment on roadmap issues that you have specific thoughts about. If something is missing on the roadmap, please open a new issue and we'll discuss it there on Github.
+If you have **thoughts about ML versioning**, we would really appreciate a review of [the roadmap](https://github.com/replicate/keepsake/projects/1). You can use the thumbs up/down feature to let us know if you think a roadmap item is useful or not. It's also great if you comment on roadmap issues that you have specific thoughts about. If something is missing on the roadmap, please open a new issue and we'll discuss it there on Github.
 
 The roadmap is a work in progress, not a waterfall-y specification, and we want it to evolve based on the input from the community!
 
 We also host regular "community meetings" where we discuss specific roadmap items, and ML versioning and replicability in general. We send out invites to the meeting in advance, in the [`#community-meeting` Discord channel](https://discord.gg/qabvVCFv). Anyone is welcome to join, and they tend to be interesting discussions with a mix of industry practitioners and academics.
 
-But perhaps the most useful thing you can do is **use the tool**. Join the [Discord chat](https://discord.gg/QmzJApGjyE) and let us know if Replicate is useful to you, and how it can be improved. Open issues on [Github](https://github.com/replicate/replicate) if you find bugs or have ideas for enhancements.
+But perhaps the most useful thing you can do is **use the tool**. Join the [Discord chat](https://discord.gg/QmzJApGjyE) and let us know if Keepsake is useful to you, and how it can be improved. Open issues on [Github](https://github.com/replicate/keepsake) if you find bugs or have ideas for enhancements.
 
 ## Project structure
 
 There are three main parts to the codebase:
 
-- `go/`: This contains the `replicate` command-line interface. It also provides a shared library that the Python library uses in `go/pkg/shared/`. The shared library runs in a standalone GRPC server in a Python subprocess.
-- `python/`: This is the `replicate` Python library. The Python package also includes the `replicate` Go command-line interface and a Go shared library.
+- `go/`: This contains the `keepsake` command-line interface. It also provides a shared library that the Python library uses in `go/pkg/shared/`. The shared library runs in a standalone GRPC server in a Python subprocess.
+- `python/`: This is the `keepsake` Python library. The Python package also includes the `keepsake` Go command-line interface and a Go shared library.
 - `proto/`: This defines the interface between the Go server and the Python client.
 
 The Python library acts as a thin client on top of the Go GRPC server, and all the heavy lifting is done in Go.
@@ -29,13 +29,13 @@ The Python library acts as a thin client on top of the Go GRPC server, and all t
 The other parts are:
 
 - `end-to-end-test/`: A test suite that runs the Python library and Go CLI together against real S3/GCS buckets.
-- `web/`: https://replicate.ai
+- `web/`: https://keepsake.ai
 
 ## Making a contribution
 
 ### Signing your work
 
-Each commit you contribute to Replicate must be signed off. It certifies that you wrote the patch, or have the right to contribute it. It is called the [Developer Certificate of Origin](https://developercertificate.org/) and was originally developed for the Linux kernel.
+Each commit you contribute to Keepsake must be signed off. It certifies that you wrote the patch, or have the right to contribute it. It is called the [Developer Certificate of Origin](https://developercertificate.org/) and was originally developed for the Linux kernel.
 
 If you can certify the following:
 
@@ -115,4 +115,4 @@ It pushes a new tag, which will trigger the "Release" Github action.
 
 If you use VSCode, we've included a workspace that will set up everything with the correct settings (formatting, autocomplete, and so on). Open it by running:
 
-    code replicate.code-workspace
+    code keepsake.code-workspace

@@ -1,4 +1,4 @@
-module github.com/replicate/replicate/go
+module github.com/replicate/keepsake/go
 
 go 1.13
 

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/repository"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func TestCheckoutWithNoPaths(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(projectDir)
 
-	repo, err := repository.NewDiskRepository(path.Join(projectDir, ".replicate"))
+	repo, err := repository.NewDiskRepository(path.Join(projectDir, ".keepsake"))
 	require.NoError(t, err)
 
 	fixedTime, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")

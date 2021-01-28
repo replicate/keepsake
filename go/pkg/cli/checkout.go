@@ -8,9 +8,9 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/project"
 )
 
 type checkoutOpts struct {
@@ -33,7 +33,7 @@ func newCheckoutCommand() *cobra.Command {
 	}
 
 	addRepositoryURLFlagVar(cmd, &opts.repositoryURL)
-	cmd.Flags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "Output directory (defaults to working directory or directory with replicate.yaml in it)")
+	cmd.Flags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "Output directory (defaults to working directory or directory with keepsake.yaml in it)")
 	cmd.Flags().BoolVarP(&opts.force, "force", "f", false, "Force checkout without prompt, even if the directory is not empty")
 	cmd.Flags().StringVarP(&opts.checkoutPath, "path", "", "", "A specific file or directory to checkout (defaults to all files or directory in checkpoint/experiment)")
 
@@ -110,9 +110,9 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 		}
 		if !isEmpty && !force {
 			console.Warn("The directory %q is not empty.", displayPath)
-			console.Warn("%s Make sure they're saved in Git or Replicate so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
+			console.Warn("%s Make sure they're saved in Git or Keepsake so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
 			fmt.Println()
-			// This is scary! See https://github.com/replicate/replicate/issues/300
+			// This is scary! See https://github.com/replicate/keepsake/issues/300
 			doOverwrite, err := console.InteractiveBool{
 				Prompt:  "Do you want to continue?",
 				Default: false,
@@ -129,7 +129,7 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 	return nil
 }
 
-// replicate CLI `checkout` command
+// keepsake CLI `checkout` command
 func checkoutCheckpoint(opts checkoutOpts, args []string) error {
 	prefix := args[0]
 

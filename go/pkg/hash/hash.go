@@ -13,7 +13,7 @@ const letters = "1234567890abcdef"
 
 // Random generates a random hash
 //
-// intended to be the same as python/replicate/hash.py
+// intended to be the same as python/keepsake/hash.py
 func Random() string {
 	n := 64
 	b := make([]byte, n)

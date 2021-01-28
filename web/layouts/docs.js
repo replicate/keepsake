@@ -109,7 +109,7 @@ function DocsLayout({ title, children, ...props }) {
                 </li>
                 <li>
                   <Link href="/docs/reference/yaml">
-                    <a>replicate.yaml</a>
+                    <a>keepsake.yaml</a>
                   </Link>
                 </li>
                 <li>

@@ -14,9 +14,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/hash"
 )
 
 // It is possible to mock this stuff, but integration test is quick and easy
@@ -105,7 +105,7 @@ func TestS3ListRecursive(t *testing.T) {
 	require.Empty(t, <-results)
 
 	// Works with non-existent bucket
-	anotherBucketName := "replicate-test-go2-" + hash.Random()[0:10]
+	anotherBucketName := "keepsake-test-go2-" + hash.Random()[0:10]
 	repository, err = NewS3Repository(anotherBucketName, "")
 	t.Cleanup(func() { deleteS3Bucket(t, anotherBucketName) })
 	require.NoError(t, err)
@@ -115,7 +115,7 @@ func TestS3ListRecursive(t *testing.T) {
 }
 
 func createS3Bucket(t *testing.T) (string, *s3.S3) {
-	bucketName := "replicate-test-go-" + hash.Random()[0:10]
+	bucketName := "keepsake-test-go-" + hash.Random()[0:10]
 	err := CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(t, err)
 

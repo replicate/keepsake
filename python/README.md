@@ -1,4 +1,4 @@
-# Replicate Python library
+# Keepsake Python library
 
 ## Development environment
 
@@ -29,6 +29,6 @@ Any contributions must be formatted with [Black](https://github.com/psf/black). 
 
 We vendor the few Python libraries we depend on to avoid dependency hell. We use [vendoring](https://pypi.org/project/vendoring/), the same tool used by pip.
 
-The vendored packages are defined in `replicate/_vendor/vendor.txt`. If you add/change anything in there, run this to update the vendored libraries:
+The vendored packages are defined in `keepsake/_vendor/vendor.txt`. If you add/change anything in there, run this to update the vendored libraries:
 
     make vendor

@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/servicepb"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/servicepb"
 )
 
 func fullCheckpointPb() *servicepb.Checkpoint {
@@ -89,8 +89,8 @@ func fullExperimentPb() *servicepb.Experiment {
 			"mylist":   {Value: &servicepb.ParamType_ObjectValueJson{ObjectValueJson: "[1,2,3]"}},
 			"mymap":    {Value: &servicepb.ParamType_ObjectValueJson{ObjectValueJson: `{"bar":"baz"}`}},
 		},
-		PythonPackages:   map[string]string{"pkg1": "1.1", "pkg2": "2.2"},
-		ReplicateVersion: "1.2.3",
+		PythonPackages:  map[string]string{"pkg1": "1.1", "pkg2": "2.2"},
+		KeepsakeVersion: "1.2.3",
 		Checkpoints: []*servicepb.Checkpoint{
 			{
 				Id:      "c1",
@@ -125,8 +125,8 @@ func fullExperiment() *project.Experiment {
 			"mylist":   param.Object([]interface{}{1.0, 2.0, 3.0}),
 			"mymap":    param.Object(map[string]interface{}{"bar": "baz"}),
 		},
-		PythonPackages:   map[string]string{"pkg1": "1.1", "pkg2": "2.2"},
-		ReplicateVersion: "1.2.3",
+		PythonPackages:  map[string]string{"pkg1": "1.1", "pkg2": "2.2"},
+		KeepsakeVersion: "1.2.3",
 		Checkpoints: []*project.Checkpoint{
 			{ID: "c1", Created: t.Add(time.Minute * 1), Step: 1},
 			{ID: "c2", Created: t.Add(time.Minute * 2), Step: 2},

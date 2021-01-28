@@ -1,16 +1,16 @@
 try:
     import dataclasses
 except (ImportError, ModuleNotFoundError):
-    from replicate._vendor import dataclasses
+    from keepsake._vendor import dataclasses
 import datetime
 import time
 import os
 import pytest
 from waiting import wait
 
-from replicate.checkpoint import Checkpoint, CheckpointList
-from replicate.exceptions import DoesNotExist
-from replicate.project import Project
+from keepsake.checkpoint import Checkpoint, CheckpointList
+from keepsake.exceptions import DoesNotExist
+from keepsake.project import Project
 
 from tests.factories import experiment_factory, checkpoint_factory
 
@@ -99,8 +99,8 @@ class TestCheckpoint:
         with open("foo.txt", "w") as f:
             f.write("foo")
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         exp = project.experiments.create(
             path=".", params={"foo": "bar"}, disable_heartbeat=True
@@ -109,7 +109,7 @@ class TestCheckpoint:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
-        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        chk_tar_path = os.path.join(".keepsake/checkpoints", chk.id + ".tar.gz")
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
@@ -123,7 +123,7 @@ class TestCheckpoint:
         with open(tmpdir / "bar.txt") as f:
             assert f.read() == "bar"
 
-        # test with checkpoint from replicate.experiments.list()
+        # test with checkpoint from keepsake.experiments.list()
         exp = project.experiments.list()[0]
         chk = exp.checkpoints[0]
         tmpdir = tmpdir_factory.mktemp("checkout")
@@ -144,7 +144,7 @@ class TestCheckpoint:
         exp = project.experiments.create(params={"foo": "bar"}, disable_heartbeat=True)
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
-        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        chk_tar_path = os.path.join(".keepsake/checkpoints", chk.id + ".tar.gz")
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
@@ -162,7 +162,7 @@ class TestCheckpoint:
         )
         chk = exp.checkpoint(metrics={"accuracy": "awesome"})
 
-        exp_tar_path = os.path.join(".replicate/experiments", exp.id + ".tar.gz")
+        exp_tar_path = os.path.join(".keepsake/experiments", exp.id + ".tar.gz")
         wait(
             lambda: os.path.exists(exp_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
@@ -179,8 +179,8 @@ class TestCheckpoint:
         with open("foo.txt", "w") as f:
             f.write("foo")
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         exp = project.experiments.create(
             path=".", params={"foo": "bar"}, disable_heartbeat=True
@@ -189,7 +189,7 @@ class TestCheckpoint:
             f.write("bar")
         chk = exp.checkpoint(path="bar.txt", metrics={"accuracy": "awesome"})
 
-        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        chk_tar_path = os.path.join(".keepsake/checkpoints", chk.id + ".tar.gz")
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
@@ -199,7 +199,7 @@ class TestCheckpoint:
         assert chk.open("foo.txt").read().decode() == "foo"
         assert chk.open("bar.txt").read().decode() == "bar"
 
-        # test with checkpoint from replicate.experiments.list()
+        # test with checkpoint from keepsake.experiments.list()
         exp = project.experiments.list()[0]
         chk = exp.checkpoints[0]
         assert chk.open("foo.txt").read().decode() == "foo"

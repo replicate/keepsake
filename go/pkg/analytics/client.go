@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 	segment "github.com/segmentio/analytics-go"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 // Event used for repository on disk.

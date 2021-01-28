@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/global"
-	"github.com/replicate/replicate/go/pkg/settings"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/global"
+	"github.com/replicate/keepsake/go/pkg/settings"
 )
 
 // TrackCommand is the main entrypoint for analytics. This does all the checking
@@ -21,8 +21,8 @@ import (
 // Any errors are assumed to be non-fatal and just sent to logs.
 func TrackCommand(cmdName string) error {
 	// Envvar bypasses everything
-	if os.Getenv("REPLICATE_NO_ANALYTICS") != "" {
-		console.Debug("REPLICATE_NO_ANALYTICS set, not tracking")
+	if os.Getenv("REPLICATE_NO_ANALYTICS") != "" || os.Getenv("KEEPSAKE_NO_ANALYTICS") != "" {
+		console.Debug("KEEPSAKE_NO_ANALYTICS set, not tracking")
 		return nil
 	}
 
@@ -37,14 +37,14 @@ func TrackCommand(cmdName string) error {
 		return err
 	}
 
-	// Check this here because user might have already run `replicate analytics off`, and we don't want to onboard if they have.
+	// Check this here because user might have already run `keepsake analytics off`, and we don't want to onboard if they have.
 	// Default is true, so this isn't hit when file is first created
 	if !userSettings.AnalyticsEnabled {
 		console.Debug("Analytics disabled")
 		return nil
 	}
 
-	// Check if AnalyticsEnabled is set, because user might have already run `replicate analytics off`
+	// Check if AnalyticsEnabled is set, because user might have already run `keepsake analytics off`
 	if !userSettings.FirstRun {
 		userSettings.FirstRun = true
 		userSettings.AnalyticsEnabled = true
@@ -72,6 +72,7 @@ func TrackCommand(cmdName string) error {
 	if err := client.Track("Run Command", map[string]interface{}{
 		// Update analytics.md in the docs if you add anything here
 		"command":           cmdName,
+		"keepsake_version":  global.Version,
 		"replicate_version": global.Version,
 		"operating_system":  runtime.GOOS,
 		"cpu_architecture":  runtime.GOARCH,
@@ -82,11 +83,11 @@ func TrackCommand(cmdName string) error {
 }
 
 func Onboarding() {
-	console.Info(`Replicate gathers anonymous usage data. Lots of programs do this without telling you, so we want to make sure you know and can opt-out.
+	console.Info(`Keepsake gathers anonymous usage data. Lots of programs do this without telling you, so we want to make sure you know and can opt-out.
 For more information, see ` + global.WebURL + `/docs/analytics
 
-The analytics helps us make Replicate better, so leaving it on is really appreciated, but if you want switch it off run:
-  $ replicate analytics off
+The analytics helps us make Keepsake better, so leaving it on is really appreciated, but if you want switch it off run:
+  $ keepsake analytics off
 
 We haven't gathered anything yet, so if you run that, nothing will have been sent to us.`)
 	// Add a bit of space between the onboarding and rest of command

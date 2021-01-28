@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/araddon/dateparse"
-	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/console"
 )
 
 type ValueGetter interface {
@@ -149,7 +149,7 @@ where <operator> can be
 		return nil, parseErr
 	}
 
-	// This is a hack, see https://github.com/replicate/replicate/issues/341
+	// This is a hack, see https://github.com/replicate/keepsake/issues/341
 	if f.name == "started" || f.name == "created" {
 		if f.name == "started" {
 			console.Warn("The filter name 'started' is deprecated, please use 'created' instead")

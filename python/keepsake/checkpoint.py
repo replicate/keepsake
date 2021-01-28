@@ -118,7 +118,7 @@ class Checkpoint(object):
 
     # TODO(andreas): this is only checking out checkpoints, which
     # is different from the CLI where both checkpoints and
-    # experiments can be checked out with `replicate checkout`.
+    # experiments can be checked out with `keepsake checkout`.
     # Perhaps we should support experiment.checkout() as well?
     def checkout(self, output_directory: str, quiet: bool = False):
         """
@@ -138,7 +138,7 @@ class Checkpoint(object):
         with tempfile.TemporaryDirectory() as tempdir:
             self.checkout(tempdir, quiet=True)
             with open(os.path.join(tempdir, path), "rb") as f:
-                # We shouldn't load entire file into memory, see https://github.com/replicate/replicate/issues/331
+                # We shouldn't load entire file into memory, see https://github.com/replicate/keepsake/issues/331
                 out_f = io.BytesIO(f.read())
             return out_f
 
@@ -234,7 +234,7 @@ class CheckpointList(list, MutableSequence[Checkpoint]):
 
     @property
     def metrics(self):
-        # Make this eager instead of lazy? See https://github.com/replicate/replicate/issues/337
+        # Make this eager instead of lazy? See https://github.com/replicate/keepsake/issues/337
         return CheckpointListMetrics(self)
 
     @property

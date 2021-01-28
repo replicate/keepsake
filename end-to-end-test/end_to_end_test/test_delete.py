@@ -32,7 +32,7 @@ def test_delete(
     if use_root:
         repository += "/root"
 
-    with open(Path(tmpdir) / "replicate.yaml", "w") as f:
+    with open(Path(tmpdir) / "keepsake.yaml", "w") as f:
         f.write(
             """
 repository: {repository}
@@ -43,10 +43,10 @@ repository: {repository}
     with open(Path(tmpdir) / "train.py", "w") as f:
         f.write(
             """
-import replicate
+import keepsake
 
 def main():
-    experiment = replicate.init(path=".", params={"my_param": "my-value"})
+    experiment = keepsake.init(path=".", params={"my_param": "my-value"})
 
     for step in range(3):
         experiment.checkpoint(path=".", step=step)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "list", "--json"],
+            ["keepsake", "list", "--json"],
             cwd=tmpdir,
             env=env,
             capture_output=True,
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     assert path_exists(repository, checkpoint_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", "--force", checkpoint_id],
+        ["keepsake", "delete", "--force", checkpoint_id],
         cwd=tmpdir,
         env=env,
         check=True,
@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "list", "--json"],
+            ["keepsake", "list", "--json"],
             cwd=tmpdir,
             env=env,
             capture_output=True,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     assert path_exists(repository, experiment_storage_path)
 
     subprocess.run(
-        ["replicate", "delete", "--force", experiment_id],
+        ["keepsake", "delete", "--force", experiment_id],
         cwd=tmpdir,
         env=env,
         check=True,
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "list", "--json"],
+            ["keepsake", "list", "--json"],
             cwd=tmpdir,
             env=env,
             capture_output=True,

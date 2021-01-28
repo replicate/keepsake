@@ -6,8 +6,8 @@
 # TODO: make the process of installing the proto tools and verifying installation automatic.
 
 GO_OUTPUT_DIR=../go/pkg/servicepb
-PYTHON_OUTPUT_DIR=../python/replicate/servicepb
-PROTO_NAME=replicate
+PYTHON_OUTPUT_DIR=../python/keepsake/servicepb
+PROTO_NAME=keepsake
 SERVICE_PROTO=$(PROTO_NAME).proto
 
 .PHONY: build
@@ -32,3 +32,8 @@ build:
 	# TODO(andreas): remove this when https://github.com/protocolbuffers/protobuf/pull/7470 is merged
 	sed -E -i '' 's/^import $(PROTO_NAME)_pb2 as $(PROTO_NAME)__pb2$$/from . import $(PROTO_NAME)_pb2 as $(PROTO_NAME)__pb2/' $(PYTHON_OUTPUT_DIR)/$(PROTO_NAME)_pb2_grpc.py
 	touch $(PYTHON_OUTPUT_DIR)/__init__.py
+
+.PHONY: clean
+clean:
+	rm -r $(GO_OUTPUT_DIR)
+	rm -r $(PYTHON_OUTPUT_DIR)

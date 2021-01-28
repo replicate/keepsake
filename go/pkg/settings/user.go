@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/mitchellh/go-homedir"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 // UserSettings represents global user settings that span multiple projects
@@ -82,9 +82,9 @@ func (s *UserSettings) Save() error {
 }
 
 func UserSettingsDir() (string, error) {
-	return homedir.Expand("~/.config/replicate")
+	return homedir.Expand("~/.config/keepsake")
 }
 
 func userSettingsPath() (string, error) {
-	return homedir.Expand("~/.config/replicate/settings.json")
+	return homedir.Expand("~/.config/keepsake/settings.json")
 }

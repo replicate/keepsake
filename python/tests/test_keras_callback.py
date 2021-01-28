@@ -5,7 +5,7 @@ from tensorflow import keras  # type: ignore
 import pytest
 import os
 
-from replicate.keras_callback import ReplicateCallback
+from keepsake.keras_callback import KeepsakeCallback
 
 
 def _model(dense_size, learning_rate):
@@ -33,8 +33,8 @@ def _model(dense_size, learning_rate):
 
 
 def test_keras_callback(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake/")
 
     dense_size = 784
     learning_rate = 0.1
@@ -49,14 +49,14 @@ def test_keras_callback(temp_workdir):
         verbose=0,
         validation_split=0.5,
         callbacks=[
-            ReplicateCallback(
+            KeepsakeCallback(
                 params={"dense_size": dense_size, "learning_rate": learning_rate,},
                 primary_metric=("mean_absolute_error", "minimize"),
             )
         ],
     )
 
-    exp_meta_paths = glob(".replicate/metadata/experiments/*.json")
+    exp_meta_paths = glob(".keepsake/metadata/experiments/*.json")
     assert len(exp_meta_paths) == 1
     with open(exp_meta_paths[0]) as f:
         exp_meta = json.load(f)
@@ -73,12 +73,12 @@ def test_keras_callback(temp_workdir):
     assert set(chkp_meta["metrics"].keys()) == set(
         ["mean_absolute_error", "loss", "val_mean_absolute_error", "val_loss"]
     )
-    assert os.path.exists(".replicate/checkpoints/" + chkp_meta["id"] + ".tar.gz")
+    assert os.path.exists(".keepsake/checkpoints/" + chkp_meta["id"] + ".tar.gz")
 
 
 def test_keras_callback_with_no_filepath(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake/")
 
     dense_size = 784
     learning_rate = 0.1
@@ -93,7 +93,7 @@ def test_keras_callback_with_no_filepath(temp_workdir):
         verbose=0,
         validation_split=0.5,
         callbacks=[
-            ReplicateCallback(
+            KeepsakeCallback(
                 filepath=None,
                 params={"dense_size": dense_size, "learning_rate": learning_rate,},
                 primary_metric=("mean_absolute_error", "minimize"),
@@ -101,7 +101,7 @@ def test_keras_callback_with_no_filepath(temp_workdir):
         ],
     )
 
-    exp_meta_paths = glob(".replicate/metadata/experiments/*.json")
+    exp_meta_paths = glob(".keepsake/metadata/experiments/*.json")
     assert len(exp_meta_paths) == 1
     with open(exp_meta_paths[0]) as f:
         exp_meta = json.load(f)
@@ -109,4 +109,4 @@ def test_keras_callback_with_no_filepath(temp_workdir):
     assert len(exp_meta["checkpoints"]) == 5
     chkp_meta = exp_meta["checkpoints"][0]
     assert chkp_meta["path"] == ""
-    assert not os.path.exists(".replicate/checkpoints/" + chkp_meta["id"] + ".tar.gz")
+    assert not os.path.exists(".keepsake/checkpoints/" + chkp_meta["id"] + ".tar.gz")

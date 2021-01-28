@@ -12,9 +12,9 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
 )
 
 func newDiffCommand() *cobra.Command {
@@ -23,19 +23,19 @@ func newDiffCommand() *cobra.Command {
 		Short: "Compare two experiments or checkpoints",
 		Long: `Compare two experiments or checkpoints.
 
-If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest checkpoint.`,
+If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in keepsake.yaml, it will use the latest checkpoint.`,
 		Run:  handleErrors(diffCheckpoints),
 		Args: cobra.ExactArgs(2),
 	}
 
-	// We should have a --json flag here, see https://github.com/replicate/replicate/issues/338
+	// We should have a --json flag here, see https://github.com/replicate/keepsake/issues/338
 	addRepositoryURLFlag(cmd)
 
 	return cmd
 }
 
 func diffCheckpoints(cmd *cobra.Command, args []string) error {
-	// We should allow >2 experiments/checkpoints, see https://github.com/replicate/replicate/issues/339
+	// We should allow >2 experiments/checkpoints, see https://github.com/replicate/keepsake/issues/339
 	// TODO(bfirsh): it probably makes sense to refactor this to diff param.Values instead of strings at some point.
 	// that way we can do interesting stuff like diff JSON structures, using param.Value comparison methods, ShortString, etc.
 

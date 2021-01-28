@@ -42,7 +42,7 @@ def test_checkout(
     cicada_url = "https://storage.googleapis.com/replicate-public/cicada.ogg"
     urllib.request.urlretrieve(cicada_url, os.path.join(tmpdir, "cicada.ogg"))
 
-    with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
+    with open(os.path.join(tmpdir, "keepsake.yaml"), "w") as f:
         f.write(
             """
 repository: {repository}
@@ -54,10 +54,10 @@ repository: {repository}
         f.write(
             """
 import os
-import replicate
+import keepsake
 
 def main():
-    experiment = replicate.init(path=".")
+    experiment = keepsake.init(path=".")
     os.mkdir("data")
     with open("data/weights", "w") as fh:
         fh.write("42 lbs")
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "ls", "--json"],
+            ["keepsake", "ls", "--json"],
             cwd=tmpdir,
             env=env,
             capture_output=True,
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     # checking out experiment
     output_dir = str(tmpdir_factory.mktemp("output"))
     subprocess.run(
-        ["replicate", "checkout", "-o", output_dir, exp["id"]],
+        ["keepsake", "checkout", "-o", output_dir, exp["id"]],
         cwd=tmpdir,
         env=env,
         check=True,
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     actual_paths = [
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
-    expected_paths = ["replicate.yaml", "train.py", "data", rand, "cicada.ogg"]
+    expected_paths = ["keepsake.yaml", "train.py", "data", rand, "cicada.ogg"]
     assert set(actual_paths) == set(expected_paths)
 
     # checking out checkpoint
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     output_dir = str(tmpdir_factory.mktemp("output"))
     subprocess.run(
-        ["replicate", "checkout", "-o", output_dir, latest_id],
+        ["keepsake", "checkout", "-o", output_dir, latest_id],
         cwd=tmpdir,
         env=env,
         check=True,
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
     ]
     expected_paths = [
-        "replicate.yaml",
+        "keepsake.yaml",
         "train.py",
         "data",
         rand,

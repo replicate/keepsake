@@ -3,8 +3,8 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/cli/list"
-	"github.com/replicate/replicate/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/cli/list"
+	"github.com/replicate/keepsake/go/pkg/param"
 )
 
 func newPsCommand() *cobra.Command {

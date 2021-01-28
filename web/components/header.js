@@ -7,12 +7,12 @@ function Header({ className, children }) {
         <Link href="/docs">
           <a>Docs</a>
         </Link>
-        <a href="https://github.com/replicate/replicate">GitHub</a>
+        <a href="https://github.com/replicate/keepsake">GitHub</a>
       </nav>
       <h1 className="tagline">
         <Link href="/">
           <a>
-            <strong>Replicate</strong> Version control for machine&nbsp;learning
+            <strong>Keepsake</strong> Version control for machine&nbsp;learning
           </a>
         </Link>
       </h1>

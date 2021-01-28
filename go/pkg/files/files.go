@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const tempFolder = "/tmp/replicate"
+const tempFolder = "/tmp/keepsake"
 
 func FileExists(filePath string) (bool, error) {
 	if _, err := os.Stat(filePath); err == nil {
@@ -28,7 +28,7 @@ func IsDir(dirPath string) (bool, error) {
 }
 
 func TempDir(prefix string) (string, error) {
-	// FIXME(bfirsh): make this more unique (e.g. ai.replicate, like some OS X applications do)
+	// FIXME(bfirsh): make this more unique (e.g. ai.keepsake, like some OS X applications do)
 
 	err := os.MkdirAll(tempFolder, 0755)
 	if err != nil {

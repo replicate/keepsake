@@ -5,7 +5,7 @@ pre-commit: lint
 fmt:
 	black .
 
-# --import-mode makes pytest import from globally installed package by default instead of local replicate/ module.
+# --import-mode makes pytest import from globally installed package by default instead of local keepsake/ module.
 # This assumes you've run `make develop` before running tests
 # https://docs.pytest.org/en/stable/pythonpath.html#pythonpath
 .PHONY: test
@@ -23,7 +23,7 @@ lint:
 
 .PHONY: clean
 clean:
-	rm -rf build dist replicate/bin
+	rm -rf build dist keepsake/bin replicate/bin
 
 # Build packages for the various platforms.
 # setup.py handles converting these platform names into Go platforms.

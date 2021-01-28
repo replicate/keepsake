@@ -9,7 +9,7 @@ def get_imported_packages() -> Dict[str, str]:
     Returns a list of packages that have been imported, as a {name: version} dict.
     """
     try:
-        # Should we vendor pkg_resources? See https://github.com/replicate/replicate/issues/350
+        # Should we vendor pkg_resources? See https://github.com/replicate/keepsake/issues/350
         import pkg_resources
     except ImportError:
         console.warn(

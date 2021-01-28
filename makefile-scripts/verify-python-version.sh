@@ -30,7 +30,7 @@ PYTHON_VERSION_NUMBER=$(echo "$PYTHON_VERSION" | sed -E 's/^Python (.+)$/\1/')
 
 if $(echo "$PYTHON_VERSION_NUMBER" | grep -q -E -v '^3\.[6789]'); then
     echo "ERROR: Unsupported Python version: $PYTHON_VERSION_NUMBER"
-    echo "Replicate requires Python >= 3.6.0"
+    echo "Keepsake requires Python >= 3.6.0"
     echo
     echo "$INSTALL_MESSAGE"
     exit 1
@@ -57,7 +57,7 @@ PIP_PYTHON_VERSION_NUMBER=$(echo "$PIP_VERSION" | sed -E 's/^pip.*\(python (.+)\
 
 if $(echo "$PIP_PYTHON_VERSION_NUMBER" | grep -q -E -v '^3\.[6789]'); then
     echo "ERROR: Unsupported Python version in pip: $PIP_PYTHON_VERSION_NUMBER"
-    echo "Replicate requires pip with Python >= 3.6.0"
+    echo "Keepsake requires pip with Python >= 3.6.0"
     echo
     echo "$INSTALL_MESSAGE"
     exit 1

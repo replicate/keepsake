@@ -13,7 +13,6 @@ from .experiment import ExperimentCollection, Experiment
 
 
 MAX_SEARCH_DEPTH = 100
-DEPRECATED_REPOSITORY_DIR = ".replicate/storage"
 
 
 @dataclass

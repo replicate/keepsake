@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
 )
 
 func (p *Project) CheckoutCheckpoint(checkpoint *Checkpoint, experiment *Experiment, outputDir string, quiet bool) error {

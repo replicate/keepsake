@@ -1,8 +1,8 @@
 import re
-import replicate
-import replicate.version
+import keepsake
+import keepsake.version
 
 
 def test_version():
-    assert re.match("^[0-9]+\.[0-9]+\.[0-9]+$", replicate.__version__)
-    assert replicate.__version__ == replicate.version.version
+    assert re.match("^[0-9]+\.[0-9]+\.[0-9]+$", keepsake.__version__)
+    assert keepsake.__version__ == keepsake.version.version

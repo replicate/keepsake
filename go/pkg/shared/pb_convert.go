@@ -5,10 +5,10 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/servicepb"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/servicepb"
 )
 
 // convert from protobuf
@@ -37,18 +37,18 @@ func checkpointFromPb(chkPb *servicepb.Checkpoint) *project.Checkpoint {
 
 func experimentFromPb(expPb *servicepb.Experiment) *project.Experiment {
 	return &project.Experiment{
-		ID:               expPb.Id,
-		Created:          expPb.Created.AsTime(),
-		Params:           valueMapFromPb(expPb.Params),
-		Host:             expPb.Host,
-		User:             expPb.User,
-		Config:           configFromPb(expPb.Config),
-		Command:          expPb.Command,
-		Path:             expPb.Path,
-		PythonPackages:   expPb.PythonPackages,
-		PythonVersion:    expPb.PythonVersion,
-		Checkpoints:      checkpointsFromPb(expPb.Checkpoints),
-		ReplicateVersion: expPb.ReplicateVersion,
+		ID:              expPb.Id,
+		Created:         expPb.Created.AsTime(),
+		Params:          valueMapFromPb(expPb.Params),
+		Host:            expPb.Host,
+		User:            expPb.User,
+		Config:          configFromPb(expPb.Config),
+		Command:         expPb.Command,
+		Path:            expPb.Path,
+		PythonPackages:  expPb.PythonPackages,
+		PythonVersion:   expPb.PythonVersion,
+		Checkpoints:     checkpointsFromPb(expPb.Checkpoints),
+		KeepsakeVersion: expPb.KeepsakeVersion,
 	}
 }
 
@@ -117,18 +117,18 @@ func experimentsToPb(experiments []*project.Experiment) []*servicepb.Experiment 
 
 func experimentToPb(exp *project.Experiment) *servicepb.Experiment {
 	return &servicepb.Experiment{
-		Id:               exp.ID,
-		Created:          timestamppb.New(exp.Created),
-		Params:           valueMapToPb(exp.Params),
-		Host:             exp.Host,
-		User:             exp.User,
-		Config:           configToPb(exp.Config),
-		Command:          exp.Command,
-		Path:             exp.Path,
-		PythonPackages:   exp.PythonPackages,
-		PythonVersion:    exp.PythonVersion,
-		ReplicateVersion: exp.ReplicateVersion,
-		Checkpoints:      checkpointsToPb(exp.Checkpoints),
+		Id:              exp.ID,
+		Created:         timestamppb.New(exp.Created),
+		Params:          valueMapToPb(exp.Params),
+		Host:            exp.Host,
+		User:            exp.User,
+		Config:          configToPb(exp.Config),
+		Command:         exp.Command,
+		Path:            exp.Path,
+		PythonPackages:  exp.PythonPackages,
+		PythonVersion:   exp.PythonVersion,
+		KeepsakeVersion: exp.KeepsakeVersion,
+		Checkpoints:     checkpointsToPb(exp.Checkpoints),
 	}
 }
 

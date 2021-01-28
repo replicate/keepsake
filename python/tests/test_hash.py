@@ -1,6 +1,6 @@
 import random
 
-from replicate.hash import random_hash
+from keepsake.hash import random_hash
 
 
 def test_hash_length():

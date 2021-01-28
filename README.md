@@ -1,8 +1,8 @@
-# Replicate
+# Keepsake
 
 Version control for machine learning.
 
-Replicate is a Python library that uploads files and metadata (like hyperparameters) to Amazon S3 or Google Cloud Storage. You can get the data back out using the command-line interface or a notebook.
+Keepsake is a Python library that uploads files and metadata (like hyperparameters) to Amazon S3 or Google Cloud Storage. You can get the data back out using the command-line interface or a notebook.
 
 - **Track experiments:** Automatically track code, hyperparameters, training data, weights, metrics, Python dependencies — _everything_.
 - **Go back in time:** Get back the code and weights from any checkpoint if you need to replicate your results or commit to Git after the fact.
@@ -14,11 +14,11 @@ Just add two lines to your training code:
 
 ```python
 import torch
-import replicate
+import keepsake
 
 def train():
     # Save training code and hyperparameters
-    experiment = replicate.init(path=".", params={...})
+    experiment = keepsake.init(path=".", params={...})
     model = Model()
 
     for epoch in range(num_epochs):
@@ -29,7 +29,7 @@ def train():
         experiment.checkpoint(path="model.pth", metrics={...})
 ```
 
-Then Replicate will start tracking everything: code, hyperparameters, training data, weights, metrics, Python dependencies, and so on.
+Then Keepsake will start tracking everything: code, hyperparameters, training data, weights, metrics, Python dependencies, and so on.
 
 - **Open source & community-built:** We’re trying to pull together the ML community so we can build this foundational piece of technology together.
 - **You're in control of your data:** All the data is stored on your own Amazon S3 or Google Cloud Storage as plain old files. There's no server to run.
@@ -42,7 +42,7 @@ Then Replicate will start tracking everything: code, hyperparameters, training d
 Your experiments are all in one place, with filter and sort. Because the data's stored on S3, you can even see experiments that were run on other machines.
 
 ```shell-session
-$ replicate ls --filter "val_loss<0.2"
+$ keepsake ls --filter "val_loss<0.2"
 EXPERIMENT   HOST         STATUS    BEST CHECKPOINT
 e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
 9e97e07      10.52.7.11   running   41f0c60 (val_loss=0.1989)
@@ -59,7 +59,7 @@ Don't like the CLI? No problem. You can retrieve, analyze, and plot your results
 It diffs everything, all the way down to versions of dependencies, just in case that latest Tensorflow version did something weird.
 
 ```shell-session
-$ replicate diff 49668cb 41f0c60
+$ keepsake diff 49668cb 41f0c60
 Checkpoint:       49668cb     41f0c60
 Experiment:       e510303     9e97e07
 
@@ -79,12 +79,12 @@ val_accuracy:     0.9607      0.9411
 ### Commit to Git, after the fact
 
 If you eventually want to store your code on Git, there's no need to
-commit everything as you go. Replicate lets you get back to any
+commit everything as you go. Keepsake lets you get back to any
 point you called `experiment.checkpoint()` so, you can
 commit to Git once you've found something that works.
 
 ```shell-session
-$ replicate checkout f81069d
+$ keepsake checkout f81069d
 Copying code and weights to working directory...
 
 # save the code to git
@@ -93,26 +93,26 @@ $ git commit -am "Use hinge loss"
 
 ### Load models in production
 
-You can use Replicate to feed your models into production systems. Connect them back to how they were trained, who trained them, and what their metrics were.
+You can use Keepsake to feed your models into production systems. Connect them back to how they were trained, who trained them, and what their metrics were.
 
 ```python
-import replicate
-model = torch.load(replicate.experiments.get("e45a203").best().open("model.pth"))
+import keepsake
+model = torch.load(keepsake.experiments.get("e45a203").best().open("model.pth"))
 ```
 
 ## Install
 
 ```
-pip install -U replicate
+pip install -U keepsake
 ```
 
 ## Get started
 
-If you prefer **training scripts and the CLI**, [follow the our tutorial to learn how Replicate works](https://replicate.ai/docs/tutorial).
+If you prefer **training scripts and the CLI**, [follow the our tutorial to learn how Keepsake works](https://keepsake.ai/docs/tutorial).
 
 If you prefer **working in notebooks**, <a href="https://colab.research.google.com/drive/1vjZReg--45P-NZ4j8TXAJFWuepamXc7K" target="_blank">follow our notebook tutorial on Colab</a>.
 
-If you like to **learn concepts first**, [read our guide about how Replicate works](https://replicate.ai/docs/learn/how-it-works).
+If you like to **learn concepts first**, [read our guide about how Keepsake works](https://keepsake.ai/docs/learn/how-it-works).
 
 ## Get involved
 
@@ -131,8 +131,8 @@ Have you strung together some shell scripts to build this for yourself? Are you 
 Here are some ways you can help out:
 
 - [Join our Discord to chat to us and other contributors.](https://discord.gg/QmzJApGjyE)
-- [Have your say about what you want from a version control system on our public roadmap.](https://github.com/replicate/replicate/projects/1)
-- [Try your hand at one of our issues labelled "help wanted".](https://github.com/replicate/replicate/labels/help%20wanted)
+- [Have your say about what you want from a version control system on our public roadmap.](https://github.com/replicate/keepsake/projects/1)
+- [Try your hand at one of our issues labelled "help wanted".](https://github.com/replicate/keepsake/labels/help%20wanted)
 
 ## Contributing & development environment
 

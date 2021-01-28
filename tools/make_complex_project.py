@@ -9,8 +9,8 @@ from torch import nn
 from torch.autograd import Variable
 
 
-from replicate.project import Project
-from replicate.repository import repository_for_url
+from keepsake.project import Project
+from keepsake.repository import repository_for_url
 
 
 def train(project, learning_rate, num_epochs, hidden_layer_size=15, **kwargs):
@@ -70,7 +70,7 @@ def train(project, learning_rate, num_epochs, hidden_layer_size=15, **kwargs):
 
 
 parser = argparse.ArgumentParser(
-    description="Create a project with a bunch of realistic-ish data to test `replicate ls` output and things"
+    description="Create a project with a bunch of realistic-ish data to test `keepsake ls` output and things"
 )
 parser.add_argument("repository")
 args = parser.parse_args()
@@ -150,4 +150,4 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     # print("Uploading to repository...")
     # repository = repository_for_url(args.repository)
-    # repository.put_path(os.path.join(project_dir, ".replicate/"), "")
+    # repository.put_path(os.path.join(project_dir, ".keepsake/"), "")

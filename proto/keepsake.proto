@@ -2,7 +2,7 @@ syntax = "proto3";
 
 // TODO: docstrings
 
-option go_package = "github.com/replicate/replicate/go/pkg/servicepb";
+option go_package = "github.com/replicate/keepsake/go/pkg/servicepb";
 
 package service;
 
@@ -110,7 +110,7 @@ message Experiment {
     map<string, string> pythonPackages = 9;
     string pythonVersion = 10;
     repeated Checkpoint checkpoints = 11;
-    string replicateVersion = 12;
+    string keepsakeVersion = 12;
 }
 
 message Config {

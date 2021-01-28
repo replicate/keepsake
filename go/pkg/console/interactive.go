@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/replicate/replicate/go/pkg/slices"
+	"github.com/replicate/keepsake/go/pkg/slices"
 )
 
 type Interactive struct {
