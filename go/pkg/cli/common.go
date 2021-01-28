@@ -8,10 +8,10 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/global"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/global"
+	"github.com/replicate/keepsake/go/pkg/repository"
 )
 
 func getAurora() aurora.Aurora {
@@ -20,18 +20,18 @@ func getAurora() aurora.Aurora {
 }
 
 func addRepositoryURLFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("repository", "R", "", "Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)")
+	cmd.Flags().StringP("repository", "R", "", "Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)")
 }
 
 func addRepositoryURLFlagVar(cmd *cobra.Command, opt *string) {
-	cmd.Flags().StringVarP(opt, "repository", "R", "", "Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)")
+	cmd.Flags().StringVarP(opt, "repository", "R", "", "Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)")
 }
 
 // getRepositoryURLFromStringOrConfig attempts to get it from passed string from --repository,
-// otherwise finds replicate.yaml recursively.
+// otherwise finds keepsake.yaml recursively.
 // The project directory is determined by the following logic:
 // * If an explicit directory is passed with -D, that is used
-// * Else, if repository URL isn't manually passed with -R, the directory of replicate.yaml is used
+// * Else, if repository URL isn't manually passed with -R, the directory of keepsake.yaml is used
 // * Otherwise, the current working directory is used
 // Returns (repositoryURL, projectDir, error)
 func getRepositoryURLFromStringOrConfig(repositoryURL string) (string, string, error) {
@@ -61,7 +61,7 @@ func getRepositoryURLFromStringOrConfig(repositoryURL string) (string, string, e
 }
 
 // getRepositoryURLFromConfigOrFlag uses --repository if it exists,
-// otherwise finds replicate.yaml recursively
+// otherwise finds keepsake.yaml recursively
 func getRepositoryURLFromFlagOrConfig(cmd *cobra.Command) (repositoryURL string, projectDir string, err error) {
 	repositoryURL, err = cmd.Flags().GetString("repository")
 	if err != nil {

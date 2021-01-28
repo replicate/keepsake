@@ -2,7 +2,7 @@ import Head from "next/head";
 
 function Layout({ title, wholeTitle, description = "", children }) {
   if (!wholeTitle) {
-    wholeTitle = `${title} | Replicate` || "Replicate";
+    wholeTitle = `${title} | Keepsake` || "Keepsake";
   }
   return (
     <>

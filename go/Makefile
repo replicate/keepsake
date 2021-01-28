@@ -6,15 +6,15 @@ PLATFORMS := darwin linux
 ARCHITECTURES := amd64
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
-MAIN := cmd/replicate/main.go
-SHARED_MAIN := cmd/replicate-shared/main.go
-NAME := replicate
+MAIN := cmd/keepsake/main.go
+SHARED_MAIN := cmd/keepsake-shared/main.go
+NAME := keepsake
 RELEASE_DIR := release
 BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/$(NAME)
-SHARED_BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/replicate-shared
+SHARED_BINARY = $(RELEASE_DIR)/$(GOOS)/$(GOARCH)/keepsake-shared
 INSTALL_PATH := /usr/local/bin/$(NAME)
 
-LDFLAGS := -ldflags "-X github.com/replicate/replicate/go/pkg/global.Version=$(VERSION) -X github.com/replicate/replicate/go/pkg/global.Environment=$(ENVIRONMENT) -w"
+LDFLAGS := -ldflags "-X github.com/replicate/keepsake/go/pkg/global.Version=$(VERSION) -X github.com/replicate/keepsake/go/pkg/global.Environment=$(ENVIRONMENT) -w"
 
 export GO111MODULE = on
 
@@ -79,8 +79,8 @@ benchmark: build
 
 .PHONY: check-fmt
 check-fmt:
-	go run golang.org/x/tools/cmd/goimports --local replicate.ai -d .
-	@test -z $$(go run golang.org/x/tools/cmd/goimports --local replicate.ai -l .)
+	go run golang.org/x/tools/cmd/goimports --local keepsake.ai -d .
+	@test -z $$(go run golang.org/x/tools/cmd/goimports --local keepsake.ai -l .)
 
 .PHONY: vet
 vet:
@@ -96,7 +96,7 @@ lint:
 
 .PHONY: fmt
 fmt:
-	go run golang.org/x/tools/cmd/goimports --local replicate.ai -w -d .
+	go run golang.org/x/tools/cmd/goimports --local keepsake.ai -w -d .
 
 .PHONY: mod-tidy
 mod-tidy:
@@ -111,17 +111,17 @@ pre-commit: check-fmt vet lint
 
 .PHONY: cover-profile
 cover-profile: vet lint
-	go test -timeout 1200s -coverprofile=/tmp/replicate-cover-profile.out ./...
-	go tool cover -html=/tmp/replicate-cover-profile.out
+	go test -timeout 1200s -coverprofile=/tmp/keepsake-cover-profile.out ./...
+	go tool cover -html=/tmp/keepsake-cover-profile.out
 
 .PHONY: strings
 strings:
-	find . -name "*.go" | grep -v _test.go | while read f; do echo $$f; grep -onE '"[^"]+"' $$f | grep -v "github.com/replicate/replicate/go"; echo; done
+	find . -name "*.go" | grep -v _test.go | while read f; do echo $$f; grep -onE '"[^"]+"' $$f | grep -v "github.com/replicate/keepsake/go"; echo; done
 
 # FIXME (bfirsh): get this working again
 .PHONY: docs
 docs:
-	go run ./cmd/replicate/main.go generate-docs --docs-folder ../web/pages/docs/reference/
+	go run ./cmd/keepsake/main.go generate-docs --docs-folder ../web/pages/docs/reference/
 
 # Check this is a valid Git commit
 #

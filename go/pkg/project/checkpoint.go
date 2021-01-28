@@ -4,8 +4,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/hash"
-	"github.com/replicate/replicate/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/param"
 )
 
 type MetricGoal string

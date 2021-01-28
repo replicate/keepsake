@@ -15,10 +15,10 @@ import (
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
-	"github.com/replicate/replicate/go/pkg/concurrency"
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/concurrency"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 type GCSRepository struct {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/replicate/replicate/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/errors"
 )
 
 const Version = 1

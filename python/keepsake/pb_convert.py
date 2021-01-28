@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional, MutableMapping
 
 from google.protobuf import timestamp_pb2
 
-from .servicepb import replicate_pb2 as pb
+from .servicepb import keepsake_pb2 as pb
 from .experiment import Experiment
 from .checkpoint import Checkpoint, PrimaryMetric, CheckpointList
 
@@ -81,7 +81,7 @@ def experiment_from_pb(project, exp_pb: pb.Experiment) -> Experiment:
         params=value_map_from_pb(exp_pb.params),
         python_packages=noneable(exp_pb.pythonPackages),
         python_version=noneable(exp_pb.pythonVersion),
-        replicate_version=noneable(exp_pb.replicateVersion),
+        keepsake_version=noneable(exp_pb.keepsakeVersion),
     )
     exp.checkpoints = checkpoints_from_pb(exp, exp_pb.checkpoints)
     return exp
@@ -146,7 +146,7 @@ def experiment_to_pb(exp: Experiment) -> pb.Experiment:
         params=value_map_to_pb(exp.params),
         pythonPackages=exp.python_packages,
         pythonVersion=exp.python_version,
-        replicateVersion=exp.replicate_version,
+        keepsakeVersion=exp.keepsake_version,
         checkpoints=checkpoints_to_pb(exp.checkpoints),
     )
 

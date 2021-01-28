@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/replicate/replicate/go/pkg/cli"
-	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/cli"
+	"github.com/replicate/keepsake/go/pkg/console"
 )
 
 func main() {

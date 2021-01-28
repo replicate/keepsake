@@ -19,10 +19,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/replicate/replicate/go/pkg/concurrency"
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/concurrency"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 type S3Repository struct {

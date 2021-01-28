@@ -1,7 +1,7 @@
 try:
     import dataclasses
 except ImportError:
-    from replicate._vendor import dataclasses
+    from keepsake._vendor import dataclasses
 import math
 import datetime
 import json
@@ -14,22 +14,22 @@ from pathlib import Path
 from unittest.mock import patch
 from waiting import wait
 
-import replicate
-from replicate.exceptions import (
+import keepsake
+from keepsake.exceptions import (
     DoesNotExist,
     ConfigNotFound,
     IncompatibleRepositoryVersion,
 )
-from replicate.experiment import Experiment, ExperimentList
-from replicate.project import Project
-from replicate.metadata import rfc3339_datetime
+from keepsake.experiment import Experiment, ExperimentList
+from keepsake.project import Project
+from keepsake.metadata import rfc3339_datetime
 
 from tests.factories import experiment_factory, checkpoint_factory
 
 
 def test_init_and_checkpoint(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake/")
 
     with open("train.py", "w") as fh:
         fh.write("print(1 + 1)")
@@ -38,11 +38,11 @@ def test_init_and_checkpoint(temp_workdir):
         fh.write("Hello")
 
     # basic experiment
-    experiment = replicate.init(
+    experiment = keepsake.init(
         path=".", params={"learning_rate": 0.002}, disable_heartbeat=True
     )
 
-    experiment_tar_path = ".replicate/experiments/{}.tar.gz".format(experiment.id)
+    experiment_tar_path = ".keepsake/experiments/{}.tar.gz".format(experiment.id)
     wait(
         lambda: os.path.exists(experiment_tar_path),
         timeout_seconds=5,
@@ -51,19 +51,19 @@ def test_init_and_checkpoint(temp_workdir):
     time.sleep(0.1)  # wait for file to be written
 
     assert len(experiment.id) == 64
-    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
+    with open(".keepsake/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
     assert metadata["host"] == ""
     assert metadata["user"] != ""
-    # FIXME: this is broken https://github.com/replicate/replicate/issues/492
+    # FIXME: this is broken https://github.com/replicate/keepsake/issues/492
     assert metadata["config"]["repository"].startswith("file://")
     assert metadata["command"] != ""
     assert metadata["path"] == "."
     assert metadata["python_version"] != ""
     assert len(metadata["python_packages"]) > 0
-    assert metadata["replicate_version"] != ""
+    assert metadata["keepsake_version"] != ""
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(experiment_tar_path) as tar:
@@ -83,7 +83,7 @@ def test_init_and_checkpoint(temp_workdir):
         path="weights", step=1, metrics={"validation_loss": 0.123}
     )
 
-    checkpoint_tar_path = ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
+    checkpoint_tar_path = ".keepsake/checkpoints/{}.tar.gz".format(checkpoint.id)
     wait(
         lambda: os.path.exists(checkpoint_tar_path),
         timeout_seconds=5,
@@ -92,7 +92,7 @@ def test_init_and_checkpoint(temp_workdir):
     time.sleep(0.1)  # wait for file to be written
 
     assert len(checkpoint.id) == 64
-    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
+    with open(".keepsake/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert len(metadata["checkpoints"]) == 1
     checkpoint_metadata = metadata["checkpoints"][0]
@@ -116,7 +116,7 @@ def test_init_and_checkpoint(temp_workdir):
         path="data", step=1, metrics={"validation_loss": 0.123}
     )
 
-    checkpoint_tar_path = ".replicate/checkpoints/{}.tar.gz".format(checkpoint.id)
+    checkpoint_tar_path = ".keepsake/checkpoints/{}.tar.gz".format(checkpoint.id)
     wait(
         lambda: os.path.exists(checkpoint_tar_path),
         timeout_seconds=5,
@@ -141,17 +141,17 @@ def test_init_and_checkpoint(temp_workdir):
     # wait in case async process tries to create a path anyway
     time.sleep(0.5)
 
-    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
+    with open(".keepsake/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["checkpoints"][-1]["id"] == checkpoint.id
-    assert not os.path.exists(".replicate/checkpoints/{}.tar.gz".format(checkpoint.id))
+    assert not os.path.exists(".keepsake/checkpoints/{}.tar.gz".format(checkpoint.id))
 
     # experiment with file
-    experiment = replicate.init(
+    experiment = keepsake.init(
         path="train.py", params={"learning_rate": 0.002}, disable_heartbeat=True
     )
 
-    experiment_tar_path = ".replicate/experiments/{}.tar.gz".format(experiment.id)
+    experiment_tar_path = ".keepsake/experiments/{}.tar.gz".format(experiment.id)
     wait(
         lambda: os.path.exists(experiment_tar_path),
         timeout_seconds=5,
@@ -170,61 +170,61 @@ def test_init_and_checkpoint(temp_workdir):
         assert not os.path.exists(os.path.join(tmpdir, experiment.id, "README.md"))
 
     # experiment with no path!
-    experiment = replicate.init(
+    experiment = keepsake.init(
         path=None, params={"learning_rate": 0.002}, disable_heartbeat=True
     )
 
     # wait in case async process tries to create a path anyway
     time.sleep(0.5)
 
-    with open(".replicate/metadata/experiments/{}.json".format(experiment.id)) as fh:
+    with open(".keepsake/metadata/experiments/{}.json".format(experiment.id)) as fh:
         metadata = json.load(fh)
     assert metadata["id"] == experiment.id
     assert metadata["params"] == {"learning_rate": 0.002}
-    assert not os.path.exists(".replicate/experiments/{}.tar.gz".format(experiment.id))
+    assert not os.path.exists(".keepsake/experiments/{}.tar.gz".format(experiment.id))
 
 
 def test_init_with_config_file(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
-    experiment = replicate.init()
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake/")
+    experiment = keepsake.init()
     assert isinstance(experiment, Experiment)
     experiment.stop()
 
 
 def test_init_without_config_file(temp_workdir):
     with pytest.raises(ConfigNotFound):
-        replicate.init()
+        keepsake.init()
 
 
 def test_project_repository_version(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate")
-    experiment = replicate.init()
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake")
+    experiment = keepsake.init()
 
     expected = """{"version":1}"""
-    with open(".replicate/repository.json") as f:
+    with open(".keepsake/repository.json") as f:
         assert f.read() == expected
 
     # no error on second init
-    experiment = replicate.init()
-    with open(".replicate/repository.json") as f:
+    experiment = keepsake.init()
+    with open(".keepsake/repository.json") as f:
         # repository.json shouldn't have changed
         assert f.read() == expected
 
-    with open(".replicate/repository.json", "w") as f:
+    with open(".keepsake/repository.json", "w") as f:
         f.write("""{"version":2}""")
     with pytest.raises(IncompatibleRepositoryVersion):
-        replicate.init()
+        keepsake.init()
 
 
 def test_is_running(temp_workdir):
-    with open("replicate.yaml", "w") as f:
-        f.write("repository: file://.replicate/")
+    with open("keepsake.yaml", "w") as f:
+        f.write("repository: file://.keepsake/")
 
-    experiment = replicate.init()
+    experiment = keepsake.init()
 
-    heartbeat_path = f".replicate/metadata/heartbeats/{experiment.id}.json"
+    heartbeat_path = f".keepsake/metadata/heartbeats/{experiment.id}.json"
 
     assert wait(
         lambda: os.path.exists(heartbeat_path), timeout_seconds=10, sleep_seconds=0.01
@@ -279,8 +279,8 @@ class TestExperiment:
     def test_checkpoints(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         experiment = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
@@ -294,8 +294,8 @@ class TestExperiment:
     def test_checkpoint_auto_increments_step(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         experiment = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
@@ -312,8 +312,8 @@ class TestExperiment:
     def test_delete(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         with open("foo.txt", "w") as f:
             f.write("hello")
@@ -327,10 +327,10 @@ class TestExperiment:
 
         def get_paths():
             return set(
-                str(p).replace(".replicate/", "") for p in Path(".replicate").rglob("*")
+                str(p).replace(".keepsake/", "") for p in Path(".keepsake").rglob("*")
             )
 
-        chk_tar_path = os.path.join(".replicate/checkpoints", chk.id + ".tar.gz")
+        chk_tar_path = os.path.join(".keepsake/checkpoints", chk.id + ".tar.gz")
         wait(
             lambda: os.path.exists(chk_tar_path), timeout_seconds=5, sleep_seconds=0.01,
         )
@@ -367,8 +367,8 @@ class TestExperiment:
     def test_refresh(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         experiment = project.experiments.create(
             params={"foo": "bar"}, disable_heartbeat=True
@@ -389,8 +389,8 @@ class TestExperiment:
     def test_best_none(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         experiment = project.experiments.create(disable_heartbeat=True)
 
@@ -409,8 +409,8 @@ class TestExperiment:
     def test_exceptional_values(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         experiment = project.experiments.create(disable_heartbeat=True)
         experiment.checkpoint(
@@ -447,8 +447,8 @@ class TestExperimentCollection:
     def test_get(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         exp1 = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
@@ -471,8 +471,8 @@ class TestExperimentCollection:
     def test_list(self, temp_workdir):
         project = Project()
 
-        with open("replicate.yaml", "w") as f:
-            f.write("repository: file://.replicate/")
+        with open("keepsake.yaml", "w") as f:
+            f.write("repository: file://.keepsake/")
 
         exp1 = project.experiments.create(
             path=None, params={"foo": "bar"}, disable_heartbeat=True
@@ -521,12 +521,12 @@ class TestExperimentCollection:
     def test_create_project_options(
         self, has_repository, has_directory, has_config, exception, temp_workdir
     ):
-        repo = "file://.replicate/" if has_repository else None
+        repo = "file://.keepsake/" if has_repository else None
         directory = "." if has_directory else None
 
         if has_config:
-            with open("replicate.yaml", "w") as f:
-                f.write("repository: file://.replicate/")
+            with open("keepsake.yaml", "w") as f:
+                f.write("repository: file://.keepsake/")
 
         project = Project(repository=repo, directory=directory)
 
@@ -569,12 +569,12 @@ class TestExperimentCollection:
     def test_list_project_options(
         self, has_repository, has_directory, has_config, should_error, temp_workdir
     ):
-        repo = "file://.replicate/" if has_repository else None
+        repo = "file://.keepsake/" if has_repository else None
         directory = "." if has_directory else None
 
         if has_config:
-            with open("replicate.yaml", "w") as f:
-                f.write("repository: file://.replicate/")
+            with open("keepsake.yaml", "w") as f:
+                f.write("repository: file://.keepsake/")
 
         project = Project(repository=repo, directory=directory)
         if should_error:

@@ -19,7 +19,7 @@ func newGenerateDocsCommand(rootCmd *cobra.Command) *cobra.Command {
 		Hidden: true,
 	}
 
-	cmd.Flags().StringP("docs-folder", "f", "", "Path to replicate-docs")
+	cmd.Flags().StringP("docs-folder", "f", "", "Path to keepsake-docs")
 	if err := cmd.MarkFlagRequired("docs-folder"); err != nil {
 		panic(err)
 	}
@@ -59,7 +59,7 @@ import DocsLayout from "../../../layouts/docs";
 
 <DocsLayout title="CLI reference">
 
-This is the reference for the Replicate command-line interface. You can also see this in the terminal by running `+"`replicate --help` or `replicate command --help`"+`.
+This is the reference for the Keepsake command-line interface. You can also see this in the terminal by running `+"`keepsake --help` or `keepsake command --help`"+`.
 
 To install the command-line interface, [see the installation instructions](/docs).
 
@@ -75,7 +75,7 @@ To install the command-line interface, [see the installation instructions](/docs
 			continue
 		}
 
-		fmt.Fprintf(f, "* [`%s %s`](#replicate-%s) – %s\n", cmd.Name(), c.Name(), c.Name(), c.Short)
+		fmt.Fprintf(f, "* [`%s %s`](#keepsake-%s) – %s\n", cmd.Name(), c.Name(), c.Name(), c.Short)
 	}
 
 	fmt.Fprintln(f, "")

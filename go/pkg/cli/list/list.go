@@ -11,12 +11,12 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
-	"github.com/replicate/replicate/go/pkg/slices"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/slices"
 )
 
 type Format int
@@ -46,7 +46,7 @@ type ListExperiment struct {
 	Config *config.Config `json:"-"`
 }
 
-// We should add some validation and better error messages, see https://github.com/replicate/replicate/issues/340
+// We should add some validation and better error messages, see https://github.com/replicate/keepsake/issues/340
 func (exp *ListExperiment) GetValue(name string) param.Value {
 	if name == "started" || name == "created" {
 		// floating point timestamp used in sorting

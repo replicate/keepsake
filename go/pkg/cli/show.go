@@ -14,9 +14,9 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/slices"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/slices"
 )
 
 var timezone = time.Local
@@ -160,7 +160,7 @@ func showExperiment(au aurora.Aurora, out io.Writer, proj *project.Project, exp 
 
 	fmt.Fprintf(out, "\n")
 	fmt.Fprintf(out, "To see more details about a checkpoint, run:\n")
-	fmt.Fprintf(out, "  replicate show <checkpoint ID>\n")
+	fmt.Fprintf(out, "  keepsake show <checkpoint ID>\n")
 	return nil
 }
 

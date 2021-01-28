@@ -9,12 +9,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 func TestDiskRepositoryGet(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -33,7 +33,7 @@ func TestDiskRepositoryGet(t *testing.T) {
 }
 
 func TestDiskGetPathTar(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -47,7 +47,7 @@ func TestDiskGetPathTar(t *testing.T) {
 }
 
 func TestDiskGetPathItemTar(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -106,7 +106,7 @@ func TestDiskGetPathItemTar(t *testing.T) {
 }
 
 func TestDiskRepositoryPut(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -129,7 +129,7 @@ func TestDiskRepositoryPut(t *testing.T) {
 }
 
 func TestDiskRepositoryList(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -155,7 +155,7 @@ func TestDiskRepositoryList(t *testing.T) {
 }
 
 func TestDiskRepositoryListTarFile(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -196,14 +196,14 @@ func TestDiskRepositoryListTarFile(t *testing.T) {
 }
 
 func TestPutPath(t *testing.T) {
-	repositoryDir, err := ioutil.TempDir("", "replicate-test")
+	repositoryDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(repositoryDir)
 
 	repository, err := NewDiskRepository(repositoryDir)
 	require.NoError(t, err)
 
-	workDir, err := ioutil.TempDir("", "replicate-test")
+	workDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workDir)
 	require.NoError(t, ioutil.WriteFile(path.Join(workDir, "some-file"), []byte("hello"), 0644))
@@ -223,7 +223,7 @@ func TestPutPath(t *testing.T) {
 }
 
 func TestDiskListRecursive(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -247,7 +247,7 @@ func TestDiskListRecursive(t *testing.T) {
 }
 
 func TestDiskMatchFilenamesRecursive(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -255,7 +255,7 @@ func TestDiskMatchFilenamesRecursive(t *testing.T) {
 	repository, err := NewDiskRepository(dir)
 	require.NoError(t, err)
 	results := make(chan ListResult)
-	go repository.MatchFilenamesRecursive(results, "checkpoints", "replicate-metadata.json")
+	go repository.MatchFilenamesRecursive(results, "checkpoints", "keepsake-metadata.json")
 	v := <-results
 	require.Empty(t, v)
 }

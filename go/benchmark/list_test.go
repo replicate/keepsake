@@ -16,18 +16,18 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/concurrency"
-	"github.com/replicate/replicate/go/pkg/hash"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/concurrency"
+	"github.com/replicate/keepsake/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/repository"
 )
 
 // run a command and return stdout. If there is an error, print stdout/err and fail test
-func replicate(b *testing.B, arg ...string) string {
+func keepsake(b *testing.B, arg ...string) string {
 	// Get absolute path to built binary
 	_, currentFilename, _, _ := runtime.Caller(0)
-	binPath, err := filepath.Abs(path.Join(path.Dir(currentFilename), "../release", runtime.GOOS, runtime.GOARCH, "replicate"))
+	binPath, err := filepath.Abs(path.Join(path.Dir(currentFilename), "../release", runtime.GOOS, runtime.GOARCH, "keepsake"))
 	require.NoError(b, err)
 
 	var stdout bytes.Buffer
@@ -36,7 +36,7 @@ func replicate(b *testing.B, arg ...string) string {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "REPLICATE_NO_ANALYTICS=1")
+	cmd.Env = append(cmd.Env, "KEEPSAKE_NO_ANALYTICS=1")
 	if err := cmd.Run(); err != nil {
 		fmt.Println(stdout.String())
 		fmt.Println(stderr.String())
@@ -46,8 +46,8 @@ func replicate(b *testing.B, arg ...string) string {
 
 }
 
-func replicateList(b *testing.B, workingDir string, numExperiments int) {
-	out := replicate(b, "list", "-D", workingDir)
+func keepsakeList(b *testing.B, workingDir string, numExperiments int) {
+	out := keepsake(b, "list", "-D", workingDir)
 
 	// Check the output is sensible
 	firstLine := strings.Split(out, "\n")[0]
@@ -58,7 +58,7 @@ func replicateList(b *testing.B, workingDir string, numExperiments int) {
 }
 
 func removeCache(b *testing.B, workingDir string) {
-	cachePath := path.Join(workingDir, ".replicate", "metadata-cache")
+	cachePath := path.Join(workingDir, ".keepsake", "metadata-cache")
 	require.NoError(b, os.RemoveAll(cachePath))
 }
 
@@ -107,16 +107,16 @@ func createLotsOfExperiments(workingDir string, repository repository.Repository
 	return queue.Wait()
 }
 
-func BenchmarkReplicateDisk(b *testing.B) {
+func BenchmarkKeepsakeDisk(b *testing.B) {
 	// Create working dir
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(b, err)
 	defer os.RemoveAll(workingDir)
 
 	createLotsOfFiles(b, workingDir)
 
 	// Create repository
-	repositoryDir := path.Join(workingDir, ".replicate/repository")
+	repositoryDir := path.Join(workingDir, ".keepsake/repository")
 	repository, err := repository.NewDiskRepository(repositoryDir)
 	require.NoError(b, err)
 	defer os.RemoveAll(repositoryDir)
@@ -126,7 +126,7 @@ func BenchmarkReplicateDisk(b *testing.B) {
 
 	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 10)
+			keepsakeList(b, workingDir, 10)
 		}
 	})
 
@@ -135,7 +135,7 @@ func BenchmarkReplicateDisk(b *testing.B) {
 
 	b.Run("list first run with 20 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 20)
+			keepsakeList(b, workingDir, 20)
 		}
 	})
 
@@ -144,14 +144,14 @@ func BenchmarkReplicateDisk(b *testing.B) {
 
 	b.Run("list first run with 30 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 30)
+			keepsakeList(b, workingDir, 30)
 		}
 	})
 }
 
-func BenchmarkReplicateS3(b *testing.B) {
+func BenchmarkKeepsakeS3(b *testing.B) {
 	// Create working dir
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(b, err)
 	defer os.RemoveAll(workingDir)
 
@@ -161,7 +161,7 @@ func BenchmarkReplicateS3(b *testing.B) {
 	// createLotsOfFiles(b, workingDir)
 
 	// Create a bucket
-	bucketName := "replicate-test-benchmark-" + hash.Random()[0:10]
+	bucketName := "keepsake-test-benchmark-" + hash.Random()[0:10]
 	err = repository.CreateS3Bucket("us-east-1", bucketName)
 	require.NoError(b, err)
 	defer func() {
@@ -170,9 +170,9 @@ func BenchmarkReplicateS3(b *testing.B) {
 	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
 	time.Sleep(1 * time.Second)
 
-	// replicate.yaml
+	// keepsake.yaml
 	err = ioutil.WriteFile(
-		path.Join(workingDir, "replicate.yaml"),
+		path.Join(workingDir, "keepsake.yaml"),
 		[]byte(fmt.Sprintf("repository: s3://%s", bucketName)), 0644)
 	require.NoError(b, err)
 
@@ -185,15 +185,15 @@ func BenchmarkReplicateS3(b *testing.B) {
 
 	b.Run("list first run with 5 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 5)
+			keepsakeList(b, workingDir, 5)
 			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 5)
+	keepsakeList(b, workingDir, 5)
 	b.Run("list second run with 5 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 5)
+			keepsakeList(b, workingDir, 5)
 		}
 	})
 
@@ -202,15 +202,15 @@ func BenchmarkReplicateS3(b *testing.B) {
 
 	b.Run("list first run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 10)
+			keepsakeList(b, workingDir, 10)
 			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 10)
+	keepsakeList(b, workingDir, 10)
 	b.Run("list second run with 10 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 10)
+			keepsakeList(b, workingDir, 10)
 		}
 	})
 
@@ -219,22 +219,22 @@ func BenchmarkReplicateS3(b *testing.B) {
 
 	b.Run("list first run with 15 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 15)
+			keepsakeList(b, workingDir, 15)
 			removeCache(b, workingDir)
 		}
 	})
 
-	replicateList(b, workingDir, 15)
+	keepsakeList(b, workingDir, 15)
 	b.Run("list second run with 15 experiments", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			replicateList(b, workingDir, 15)
+			keepsakeList(b, workingDir, 15)
 		}
 	})
 }
 
-func BenchmarkReplicateHelp(b *testing.B) {
+func BenchmarkKeepsakeHelp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		out := replicate(b, "--help")
+		out := keepsake(b, "--help")
 		require.Contains(b, out, "Usage:")
 	}
 }

@@ -58,7 +58,7 @@ class Experiment:
     params: Optional[Dict[str, Any]] = None
     python_version: Optional[str] = None
     python_packages: Optional[Dict[str, str]] = None
-    replicate_version: Optional[str] = None
+    keepsake_version: Optional[str] = None
     checkpoints: CheckpointList = field(default_factory=CheckpointList)
 
     def __post_init__(self, project: "Project"):
@@ -176,7 +176,7 @@ class Experiment:
             "python_version": self.python_version,
             "python_packages": self.python_packages,
             "checkpoints": [c.to_json() for c in self.checkpoints],
-            "replicate_version": version,
+            "keepsake_version": version,
         }
 
     def stop(self):
@@ -192,8 +192,8 @@ class Experiment:
         """
         Delete this experiment and all associated checkpoints.
         """
-        # We should consolidate delete logic, see https://github.com/replicate/replicate/issues/332
-        # It's also slow https://github.com/replicate/replicate/issues/333
+        # We should consolidate delete logic, see https://github.com/replicate/keepsake/issues/332
+        # It's also slow https://github.com/replicate/keepsake/issues/333
         self._project._daemon().delete_experiment(self.id)
 
     def latest(self) -> Optional[Checkpoint]:
@@ -286,7 +286,7 @@ class Experiment:
             self.id
         )
         out += "<p>"
-        # We should add status here, see https://github.com/replicate/replicate/issues/334
+        # We should add status here, see https://github.com/replicate/keepsake/issues/334
         for field in ["created", "host", "user", "command", "duration"]:
             out += '<pre style="display: inline">{:10s}</pre> {}<br/>'.format(
                 html.escape(field) + ":", html.escape(str(getattr(self, field)))

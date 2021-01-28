@@ -2,8 +2,8 @@ import argparse
 import os
 import tempfile
 
-from replicate.project import Project
-from replicate.repository import repository_for_url
+from keepsake.project import Project
+from keepsake.repository import repository_for_url
 
 parser = argparse.ArgumentParser(
     description="Create two projects: one with lots of metadata, and another which is the same but with a few new projects and checkpoints to test incremental updates"
@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket...")
     repository = repository_for_url(args.bucket)
-    repository.put_path(os.path.join(project_dir, ".replicate/"), "")
+    repository.put_path(os.path.join(project_dir, ".keepsake/"), "")
 
     print("Creating extra data...")
     for i in range(10):
@@ -40,4 +40,4 @@ with tempfile.TemporaryDirectory() as project_dir:
 
     print("Uploading to bucket_prime...")
     repository = repository_for_url(args.bucket_prime)
-    repository.put_path(os.path.join(project_dir, ".replicate/"), "")
+    repository.put_path(os.path.join(project_dir, ".keepsake/"), "")

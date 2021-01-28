@@ -1,6 +1,6 @@
-# Replicate CLI & Go library
+# Keepsake CLI & Go library
 
-This is the `replicate` command-line program and a shared library used by Python to store data on S3/GCS (see `pkg/shared/`).
+This is the `keepsake` command-line program and a shared library used by Python to store data on S3/GCS (see `pkg/shared/`).
 
 ## Build / install
 
@@ -22,4 +22,4 @@ The benchmarks test the CLI against both the local disk and S3:
 
 You can run specific benchmarks with the `BENCH` variable. For example:
 
-    make benchmark BENCH="BenchmarkReplicateListOnDisk"
+    make benchmark BENCH="BenchmarkKeepsakeListOnDisk"

@@ -1,6 +1,6 @@
 package config
 
-// Config is replicate.yaml
+// Config is keepsake.yaml
 type Config struct {
 	Repository string `json:"repository"`
 

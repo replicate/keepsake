@@ -16,10 +16,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/servicepb"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/servicepb"
 )
 
 type projectGetter func() (proj *project.Project, err error)
@@ -146,7 +146,7 @@ func (s *server) DeleteExperiment(ctx context.Context, req *servicepb.DeleteExpe
 	if err := s.project.DeleteExperiment(exp); err != nil {
 		return nil, handleError(err)
 	}
-	// This is slow, see https://github.com/replicate/replicate/issues/333
+	// This is slow, see https://github.com/replicate/keepsake/issues/333
 	for _, checkpoint := range exp.Checkpoints {
 		if err := s.project.DeleteCheckpoint(checkpoint); err != nil {
 			return nil, handleError(err)
@@ -253,12 +253,12 @@ func Serve(projGetter projectGetter, socketPath string) error {
 		// Anything slower than this and Python seems to beat it. This isn't a perfect solution,
 		// but it's just to make a log message prettier so it doesn't need to be perfect.
 		case <-time.After(250 * time.Millisecond):
-			console.Info("Your program has ended, but Replicate is still saving data. It will exit when it has finished. Hold on...")
+			console.Info("Your program has ended, but Keepsake is still saving data. It will exit when it has finished. Hold on...")
 			select {
 			case <-completedChan:
 				console.Debug("Work completed")
 			case <-time.After(5 * time.Second):
-				console.Info("Replicate is still saving. If you force quit, you might lose data.")
+				console.Info("Keepsake is still saving. If you force quit, you might lose data.")
 				<-completedChan
 			}
 		}

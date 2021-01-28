@@ -1,5 +1,5 @@
 import argparse
-import replicate
+import keepsake
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -12,7 +12,7 @@ def train(learning_rate, num_epochs):
     # highlight-start
     # Create an "experiment". This represents a run of your training script.
     # It saves the training code at the given path and any hyperparameters.
-    experiment = replicate.init(
+    experiment = keepsake.init(
         path=".",
         # highlight-start
         params={"learning_rate": learning_rate, "num_epochs": num_epochs},

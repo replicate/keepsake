@@ -52,9 +52,9 @@ func ConfigNotFound(msg string) error {
 		code: CodeConfigNotFound,
 		msg: msg + `
 
-You must either create a replicate.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to replicate.Project().
+You must either create a keepsake.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to keepsake.Project().
 
-For more information, see https://replicate.ai/docs/reference/python"""
+For more information, see https://keepsake.ai/docs/reference/python"""
 `,
 	}
 }
@@ -62,10 +62,10 @@ For more information, see https://replicate.ai/docs/reference/python"""
 func IncompatibleRepositoryVersion(rootURL string) error {
 	return &codedError{
 		code: CodeIncompatibleRepositoryVersion,
-		msg: `The repository at ` + rootURL + ` is using a newer storage mechanism which is incompatible with your version of Replicate.
+		msg: `The repository at ` + rootURL + ` is using a newer storage mechanism which is incompatible with your version of Keepsake.
 
 To upgrade, run:
-pip install --upgrade replicate`,
+pip install --upgrade keepsake`,
 	}
 }
 

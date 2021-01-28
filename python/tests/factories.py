@@ -1,9 +1,9 @@
 import datetime
 from typing import List, Any, Dict, Optional
 
-from replicate.checkpoint import Checkpoint, CheckpointList
-from replicate.experiment import Experiment
-from replicate.project import Project
+from keepsake.checkpoint import Checkpoint, CheckpointList
+from keepsake.experiment import Experiment
+from keepsake.project import Project
 
 
 def experiment_factory(
@@ -14,7 +14,7 @@ def experiment_factory(
     host: str = "",
     command: str = "",
     config: dict = {},
-    replicate_version: str = "0.0.1",
+    keepsake_version: str = "0.0.1",
     checkpoints: Optional[List[Checkpoint]] = None,
     **kwargs,
 ):
@@ -29,7 +29,7 @@ def experiment_factory(
         host=host,
         command=command,
         config=config,
-        replicate_version=replicate_version,
+        keepsake_version=keepsake_version,
         checkpoints=checkpoints,
         **kwargs,
     )

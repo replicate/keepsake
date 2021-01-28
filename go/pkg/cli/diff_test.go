@@ -9,13 +9,13 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/testutil"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/testutil"
 )
 
 func TestDiffSameExperiment(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -53,7 +53,7 @@ metric-1:                 0.01                           0.02
 }
 
 func TestDiffDifferentExperiment(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 

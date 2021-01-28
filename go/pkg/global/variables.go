@@ -3,9 +3,9 @@ package global
 var Version = "development"     // set in Makefile
 var Environment = "development" // set in Makefile
 
-var ConfigFilenames [2]string = [2]string{"replicate.yaml", "replicate.yml"}
+var ConfigFilenames [2]string = [2]string{"keepsake.yaml", "keepsake.yml"}
 var Verbose = false
-var WebURL = "https://replicate.ai"
+var WebURL = "https://keepsake.ai"
 var Color = true
 var ProjectDirectory = ""
 var BugsEmail = "bugs@replicate.ai"

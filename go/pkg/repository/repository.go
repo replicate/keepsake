@@ -14,9 +14,9 @@ import (
 	"github.com/mholt/archiver/v3"
 	gitignore "github.com/sabhiram/go-gitignore"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 var maxWorkers = 128
@@ -139,7 +139,7 @@ func ForURL(repositoryURL string, projectDir string) (Repository, error) {
 }
 
 // FIXME: should we keep on doing this?
-var putPathAlwaysIgnore = []string{".replicate", ".git", ".mypy_cache"}
+var putPathAlwaysIgnore = []string{".keepsake", ".replicate", ".git", ".mypy_cache"}
 
 type fileToPut struct {
 	Source string
@@ -151,7 +151,7 @@ func getListOfFilesToPut(localPath string, repoPath string) ([]fileToPut, error)
 	// Perhaps this should be configurable, or done at a higher-level? It seems odd this is done at such a low level.
 	var ignore *gitignore.GitIgnore
 	var err error
-	ignoreFilePath := filepath.Join(localPath, ".replicateignore")
+	ignoreFilePath := filepath.Join(localPath, ".keepsakeignore")
 	if isDir, _ := files.IsDir(localPath); isDir {
 		if exists, _ := files.FileExists(ignoreFilePath); exists {
 			ignore, err = gitignore.CompileIgnoreFile(ignoreFilePath)
@@ -366,7 +366,7 @@ func unknownRepositoryScheme(scheme string) error {
 	return fmt.Errorf(message + `.
 
 Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
-See the documentation for more details: https://replicate.ai/docs/reference/yaml`)
+See the documentation for more details: https://keepsake.ai/docs/reference/yaml`)
 }
 
 func isVirtualenvDir(path string) (bool, error) {

@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import replicate_pb2 as replicate__pb2
+from . import keepsake_pb2 as keepsake__pb2
 
 
 class DaemonStub(object):
@@ -16,48 +16,48 @@ class DaemonStub(object):
         """
         self.CreateExperiment = channel.unary_unary(
                 '/service.Daemon/CreateExperiment',
-                request_serializer=replicate__pb2.CreateExperimentRequest.SerializeToString,
-                response_deserializer=replicate__pb2.CreateExperimentReply.FromString,
+                request_serializer=keepsake__pb2.CreateExperimentRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.CreateExperimentReply.FromString,
                 )
         self.CreateCheckpoint = channel.unary_unary(
                 '/service.Daemon/CreateCheckpoint',
-                request_serializer=replicate__pb2.CreateCheckpointRequest.SerializeToString,
-                response_deserializer=replicate__pb2.CreateCheckpointReply.FromString,
+                request_serializer=keepsake__pb2.CreateCheckpointRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.CreateCheckpointReply.FromString,
                 )
         self.SaveExperiment = channel.unary_unary(
                 '/service.Daemon/SaveExperiment',
-                request_serializer=replicate__pb2.SaveExperimentRequest.SerializeToString,
-                response_deserializer=replicate__pb2.SaveExperimentReply.FromString,
+                request_serializer=keepsake__pb2.SaveExperimentRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.SaveExperimentReply.FromString,
                 )
         self.StopExperiment = channel.unary_unary(
                 '/service.Daemon/StopExperiment',
-                request_serializer=replicate__pb2.StopExperimentRequest.SerializeToString,
-                response_deserializer=replicate__pb2.StopExperimentReply.FromString,
+                request_serializer=keepsake__pb2.StopExperimentRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.StopExperimentReply.FromString,
                 )
         self.GetExperiment = channel.unary_unary(
                 '/service.Daemon/GetExperiment',
-                request_serializer=replicate__pb2.GetExperimentRequest.SerializeToString,
-                response_deserializer=replicate__pb2.GetExperimentReply.FromString,
+                request_serializer=keepsake__pb2.GetExperimentRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.GetExperimentReply.FromString,
                 )
         self.ListExperiments = channel.unary_unary(
                 '/service.Daemon/ListExperiments',
-                request_serializer=replicate__pb2.ListExperimentsRequest.SerializeToString,
-                response_deserializer=replicate__pb2.ListExperimentsReply.FromString,
+                request_serializer=keepsake__pb2.ListExperimentsRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.ListExperimentsReply.FromString,
                 )
         self.DeleteExperiment = channel.unary_unary(
                 '/service.Daemon/DeleteExperiment',
-                request_serializer=replicate__pb2.DeleteExperimentRequest.SerializeToString,
-                response_deserializer=replicate__pb2.DeleteExperimentReply.FromString,
+                request_serializer=keepsake__pb2.DeleteExperimentRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.DeleteExperimentReply.FromString,
                 )
         self.CheckoutCheckpoint = channel.unary_unary(
                 '/service.Daemon/CheckoutCheckpoint',
-                request_serializer=replicate__pb2.CheckoutCheckpointRequest.SerializeToString,
-                response_deserializer=replicate__pb2.CheckoutCheckpointReply.FromString,
+                request_serializer=keepsake__pb2.CheckoutCheckpointRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.CheckoutCheckpointReply.FromString,
                 )
         self.GetExperimentStatus = channel.unary_unary(
                 '/service.Daemon/GetExperimentStatus',
-                request_serializer=replicate__pb2.GetExperimentStatusRequest.SerializeToString,
-                response_deserializer=replicate__pb2.GetExperimentStatusReply.FromString,
+                request_serializer=keepsake__pb2.GetExperimentStatusRequest.SerializeToString,
+                response_deserializer=keepsake__pb2.GetExperimentStatusReply.FromString,
                 )
 
 
@@ -123,48 +123,48 @@ def add_DaemonServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'CreateExperiment': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateExperiment,
-                    request_deserializer=replicate__pb2.CreateExperimentRequest.FromString,
-                    response_serializer=replicate__pb2.CreateExperimentReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.CreateExperimentRequest.FromString,
+                    response_serializer=keepsake__pb2.CreateExperimentReply.SerializeToString,
             ),
             'CreateCheckpoint': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateCheckpoint,
-                    request_deserializer=replicate__pb2.CreateCheckpointRequest.FromString,
-                    response_serializer=replicate__pb2.CreateCheckpointReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.CreateCheckpointRequest.FromString,
+                    response_serializer=keepsake__pb2.CreateCheckpointReply.SerializeToString,
             ),
             'SaveExperiment': grpc.unary_unary_rpc_method_handler(
                     servicer.SaveExperiment,
-                    request_deserializer=replicate__pb2.SaveExperimentRequest.FromString,
-                    response_serializer=replicate__pb2.SaveExperimentReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.SaveExperimentRequest.FromString,
+                    response_serializer=keepsake__pb2.SaveExperimentReply.SerializeToString,
             ),
             'StopExperiment': grpc.unary_unary_rpc_method_handler(
                     servicer.StopExperiment,
-                    request_deserializer=replicate__pb2.StopExperimentRequest.FromString,
-                    response_serializer=replicate__pb2.StopExperimentReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.StopExperimentRequest.FromString,
+                    response_serializer=keepsake__pb2.StopExperimentReply.SerializeToString,
             ),
             'GetExperiment': grpc.unary_unary_rpc_method_handler(
                     servicer.GetExperiment,
-                    request_deserializer=replicate__pb2.GetExperimentRequest.FromString,
-                    response_serializer=replicate__pb2.GetExperimentReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.GetExperimentRequest.FromString,
+                    response_serializer=keepsake__pb2.GetExperimentReply.SerializeToString,
             ),
             'ListExperiments': grpc.unary_unary_rpc_method_handler(
                     servicer.ListExperiments,
-                    request_deserializer=replicate__pb2.ListExperimentsRequest.FromString,
-                    response_serializer=replicate__pb2.ListExperimentsReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.ListExperimentsRequest.FromString,
+                    response_serializer=keepsake__pb2.ListExperimentsReply.SerializeToString,
             ),
             'DeleteExperiment': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteExperiment,
-                    request_deserializer=replicate__pb2.DeleteExperimentRequest.FromString,
-                    response_serializer=replicate__pb2.DeleteExperimentReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.DeleteExperimentRequest.FromString,
+                    response_serializer=keepsake__pb2.DeleteExperimentReply.SerializeToString,
             ),
             'CheckoutCheckpoint': grpc.unary_unary_rpc_method_handler(
                     servicer.CheckoutCheckpoint,
-                    request_deserializer=replicate__pb2.CheckoutCheckpointRequest.FromString,
-                    response_serializer=replicate__pb2.CheckoutCheckpointReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.CheckoutCheckpointRequest.FromString,
+                    response_serializer=keepsake__pb2.CheckoutCheckpointReply.SerializeToString,
             ),
             'GetExperimentStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.GetExperimentStatus,
-                    request_deserializer=replicate__pb2.GetExperimentStatusRequest.FromString,
-                    response_serializer=replicate__pb2.GetExperimentStatusReply.SerializeToString,
+                    request_deserializer=keepsake__pb2.GetExperimentStatusRequest.FromString,
+                    response_serializer=keepsake__pb2.GetExperimentStatusReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -188,8 +188,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/CreateExperiment',
-            replicate__pb2.CreateExperimentRequest.SerializeToString,
-            replicate__pb2.CreateExperimentReply.FromString,
+            keepsake__pb2.CreateExperimentRequest.SerializeToString,
+            keepsake__pb2.CreateExperimentReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -205,8 +205,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/CreateCheckpoint',
-            replicate__pb2.CreateCheckpointRequest.SerializeToString,
-            replicate__pb2.CreateCheckpointReply.FromString,
+            keepsake__pb2.CreateCheckpointRequest.SerializeToString,
+            keepsake__pb2.CreateCheckpointReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -222,8 +222,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/SaveExperiment',
-            replicate__pb2.SaveExperimentRequest.SerializeToString,
-            replicate__pb2.SaveExperimentReply.FromString,
+            keepsake__pb2.SaveExperimentRequest.SerializeToString,
+            keepsake__pb2.SaveExperimentReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -239,8 +239,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/StopExperiment',
-            replicate__pb2.StopExperimentRequest.SerializeToString,
-            replicate__pb2.StopExperimentReply.FromString,
+            keepsake__pb2.StopExperimentRequest.SerializeToString,
+            keepsake__pb2.StopExperimentReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -256,8 +256,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/GetExperiment',
-            replicate__pb2.GetExperimentRequest.SerializeToString,
-            replicate__pb2.GetExperimentReply.FromString,
+            keepsake__pb2.GetExperimentRequest.SerializeToString,
+            keepsake__pb2.GetExperimentReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -273,8 +273,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/ListExperiments',
-            replicate__pb2.ListExperimentsRequest.SerializeToString,
-            replicate__pb2.ListExperimentsReply.FromString,
+            keepsake__pb2.ListExperimentsRequest.SerializeToString,
+            keepsake__pb2.ListExperimentsReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -290,8 +290,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/DeleteExperiment',
-            replicate__pb2.DeleteExperimentRequest.SerializeToString,
-            replicate__pb2.DeleteExperimentReply.FromString,
+            keepsake__pb2.DeleteExperimentRequest.SerializeToString,
+            keepsake__pb2.DeleteExperimentReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -307,8 +307,8 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/CheckoutCheckpoint',
-            replicate__pb2.CheckoutCheckpointRequest.SerializeToString,
-            replicate__pb2.CheckoutCheckpointReply.FromString,
+            keepsake__pb2.CheckoutCheckpointRequest.SerializeToString,
+            keepsake__pb2.CheckoutCheckpointReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -324,7 +324,7 @@ class Daemon(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/service.Daemon/GetExperimentStatus',
-            replicate__pb2.GetExperimentStatusRequest.SerializeToString,
-            replicate__pb2.GetExperimentStatusReply.FromString,
+            keepsake__pb2.GetExperimentStatusRequest.SerializeToString,
+            keepsake__pb2.GetExperimentStatusReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

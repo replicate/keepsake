@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/hash"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/repository"
 )
 
 func TestCheckout(t *testing.T) {
@@ -111,7 +111,7 @@ func TestCheckout(t *testing.T) {
 	require.NoError(t, os.Chdir(outputDir2))
 	defer func() { require.NoError(t, os.Chdir(cwd)) }()
 
-	// checkout to working directory without replicate.yaml
+	// checkout to working directory without keepsake.yaml
 	err = checkoutCheckpoint(checkoutOpts{
 		outputDirectory: "",
 		checkoutPath:    "",
@@ -119,12 +119,12 @@ func TestCheckout(t *testing.T) {
 		repositoryURL:   "file://" + repoDir,
 	}, []string{"1cc"})
 
-	// no replicate.yaml, should error
+	// no keepsake.yaml, should error
 	require.Error(t, err)
 
-	require.NoError(t, ioutil.WriteFile("replicate.yaml", []byte("repository: file://"+repoDir), 0644))
+	require.NoError(t, ioutil.WriteFile("keepsake.yaml", []byte("repository: file://"+repoDir), 0644))
 
-	// checkout to working directory with replicate.yaml
+	// checkout to working directory with keepsake.yaml
 	err = checkoutCheckpoint(checkoutOpts{
 		outputDirectory: "",
 		checkoutPath:    "",

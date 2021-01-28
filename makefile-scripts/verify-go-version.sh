@@ -23,7 +23,7 @@ GO_VERSION_NUMBER=$(echo "$GO_VERSION" | sed -E 's/^go version go([^ ]+) .+$/\1/
 
 if $(echo "$GO_VERSION_NUMBER" | grep -q -E -v '^1\.1[456]'); then
     echo "ERROR: Unsupported Go version: $GO_VERSION_NUMBER"
-    echo "Replicate requires Go >= 1.14"
+    echo "Keepsake requires Go >= 1.14"
     echo
     echo "$INSTALL_MESSAGE"
     exit 1

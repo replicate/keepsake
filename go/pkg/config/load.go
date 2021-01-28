@@ -11,17 +11,17 @@ import (
 
 	"github.com/ghodss/yaml"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/global"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/global"
 )
 
 const maxSearchDepth = 100
 const deprecatedRepositoryDir = ".replicate/storage"
 
 // FindConfigInWorkingDir searches working directory and any parent directories
-// for replicate.yaml (or replicate.yml) and loads it.
+// for keepsake.yaml (or keepsake.yml) and loads it.
 //
 // This function can also be used to discover the source dir -- it returns a
 // (config, projectDir) tuple.
@@ -32,7 +32,7 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string
 		conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[0]))
 		if err != nil {
 			if errors.IsConfigNotFound(err) {
-				// Try to locate replicate.yml
+				// Try to locate keepsake.yml
 				conf, err := LoadConfig(path.Join(overrideDir, global.ConfigFilenames[1]))
 				if err != nil {
 					if os.IsNotExist(err) {
@@ -55,17 +55,17 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string
 }
 
 // FindConfig searches the given directory and any parent
-// directories for replicate.yaml, then loads it
+// directories for keepsake.yaml, then loads it
 func FindConfig(dir string) (conf *Config, projectDir string, err error) {
 	configPath, deprecatedRepositoryProjectRoot, err := FindConfigPath(dir)
 	if err != nil {
 		return nil, "", err
 	}
 	if deprecatedRepositoryProjectRoot != "" {
-		// go up two directories from .replicate/storage
-		console.Warn(`replicate.yaml is required now. put this file in the project directory %s to remove this warning:
+		// go up two directories from .keepsake/storage
+		console.Warn(`keepsake.yaml is required now. put this file in the project directory %s to remove this warning:
 
-repository: file://.replicate/storage`, deprecatedRepositoryProjectRoot)
+repository: file://%s`, projectDir, deprecatedRepositoryProjectRoot)
 
 		conf = &Config{
 			Repository: "file://" + deprecatedRepositoryDir,
@@ -79,7 +79,7 @@ repository: file://.replicate/storage`, deprecatedRepositoryProjectRoot)
 	return conf, filepath.Dir(configPath), nil
 }
 
-// LoadConfig reads and validates replicate.yaml
+// LoadConfig reads and validates keepsake.yaml
 func LoadConfig(configPath string) (conf *Config, err error) {
 	text, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -92,14 +92,14 @@ func LoadConfig(configPath string) (conf *Config, err error) {
 	if err != nil {
 		// FIXME (bfirsh): implement standard way of displaying config errors so this can be used in other places
 		msg := fmt.Sprintf("%v\n\n", err)
-		msg += "To fix this, take a look at the replicate.yaml reference:\n"
+		msg += "To fix this, take a look at the keepsake.yaml reference:\n"
 		msg += fmt.Sprintf("%s/docs/reference/yaml", global.WebURL)
 		return nil, fmt.Errorf(msg)
 	}
 	return conf, nil
 }
 
-// Parse replicate.yaml
+// Parse keepsake.yaml
 func Parse(text []byte, dir string) (conf *Config, err error) {
 	conf = getDefaultConfig(dir)
 
@@ -116,7 +116,7 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&conf)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse replicate.yaml: %s", err)
+		return nil, fmt.Errorf("Failed to parse keepsake.yaml: %s", err)
 	}
 
 	if conf.Storage != "" {
@@ -124,13 +124,13 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 			return nil, fmt.Errorf("'repository' and 'storage' (deprecated) cannot both be defined, please only use 'repository'")
 		}
 
-		console.Warn("'storage' is deprecated in replicate.yaml, please use 'repository'")
+		console.Warn("'storage' is deprecated in keepsake.yaml, please use 'repository'")
 		conf.Repository = conf.Storage
 		conf.Storage = ""
 	}
 
 	if conf.Repository == "" {
-		return nil, fmt.Errorf("Missing required field in replicate.yaml: repository")
+		return nil, fmt.Errorf("Missing required field in keepsake.yaml: repository")
 	}
 
 	return conf, nil

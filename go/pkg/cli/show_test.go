@@ -12,11 +12,11 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
-	"github.com/replicate/replicate/go/pkg/testutil"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/testutil"
 )
 
 func init() {
@@ -24,7 +24,7 @@ func init() {
 }
 
 func createShowTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
-	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate"))
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".keepsake"))
 	require.NoError(t, err)
 
 	fixedTime, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
@@ -120,7 +120,7 @@ func createShowTestData(t *testing.T, workingDir string, conf *config.Config) re
 }
 
 func TestShowCheckpoint(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -175,7 +175,7 @@ metric-2:  2
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".replicate"), json: true}, []string{"3ccc"}, out)
+	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".keepsake"), json: true}, []string{"3ccc"}, out)
 	require.NoError(t, err)
 	var chkpt project.Checkpoint
 	require.NoError(t, json.Unmarshal(out.Bytes(), &chkpt))
@@ -183,7 +183,7 @@ metric-2:  2
 }
 
 func TestShowExperiment(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -227,7 +227,7 @@ ID       STEP  CREATED     METRIC-1     METRIC-2
 3cccccc  20    2006-01-02  0.02         2
 
 To see more details about a checkpoint, run:
-  replicate show <checkpoint ID>
+  keepsake show <checkpoint ID>
 `
 	// remove initial newline
 	expected = expected[1:]
@@ -271,7 +271,7 @@ ID       STEP  CREATED     METRIC-1     METRIC-2
 3cccccc  20    2006-01-02  0.02         2
 
 To see more details about a checkpoint, run:
-  replicate show <checkpoint ID>
+  keepsake show <checkpoint ID>
 `
 	// remove initial newline
 	expected = expected[1:]
@@ -280,7 +280,7 @@ To see more details about a checkpoint, run:
 
 	// json
 	out = new(bytes.Buffer)
-	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".replicate"), json: true}, []string{"1eee"}, out)
+	err = show(showOpts{repositoryURL: "file://" + path.Join(workingDir, ".keepsake"), json: true}, []string{"1eee"}, out)
 	require.NoError(t, err)
 	var exp project.Experiment
 	require.NoError(t, json.Unmarshal(out.Bytes(), &exp))

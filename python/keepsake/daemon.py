@@ -13,16 +13,16 @@ import threading
 import grpc  # type: ignore
 from google.rpc import status_pb2, error_details_pb2  # type: ignore
 
-from .servicepb.replicate_pb2_grpc import DaemonStub
-from .servicepb import replicate_pb2 as pb
+from .servicepb.keepsake_pb2_grpc import DaemonStub
+from .servicepb import keepsake_pb2 as pb
 from . import pb_convert
 from .experiment import Experiment
 from .checkpoint import Checkpoint, PrimaryMetric
 from . import exceptions
 from . import console
 
-# TODO(andreas): rename to replicate-daemon
-DAEMON_BINARY = os.path.join(os.path.dirname(__file__), "bin/replicate-shared")
+# TODO(andreas): rename to keepsake-daemon
+DAEMON_BINARY = os.path.join(os.path.dirname(__file__), "bin/keepsake-shared")
 
 
 def handle_error(f):
@@ -85,7 +85,7 @@ class Daemon:
             # create a new temporary file just to get a free name.
             # the Go GRPC server will create the file.
             f = tempfile.NamedTemporaryFile(
-                prefix="replicate-daemon-", suffix=".sock", delete=False
+                prefix="keepsake-daemon-", suffix=".sock", delete=False
             )
             self.socket_path = f.name
             f.close()

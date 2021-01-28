@@ -63,7 +63,7 @@ function Footer({ children }) {
             &nbsp;&nbsp;or&nbsp;&nbsp;
             <a
               className="button"
-              href="https://github.com/replicate/replicate#get-involved"
+              href="https://github.com/replicate/keepsake#get-involved"
             >
               <strong>Get involved on GitHub</strong>
             </a>
@@ -154,14 +154,14 @@ function Footer({ children }) {
         <Link href="/docs">
           <a>Docs</a>
         </Link>
-        <a href="https://github.com/replicate/replicate">GitHub</a>
+        <a href="https://github.com/replicate/keepsake">GitHub</a>
         <a href="https://twitter.com/replicateai">Twitter</a>
         <a href="mailto:team@replicate.ai">team@replicate.ai</a>
       </nav>
       <p className="tagline">
         <Link href="/">
           <a>
-            <strong>Replicate</strong> Version control for machine&nbsp;learning
+            <strong>Keepsake</strong> Version control for machine&nbsp;learning
           </a>
         </Link>
       </p>

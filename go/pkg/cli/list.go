@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/cli/list"
-	"github.com/replicate/replicate/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/cli/list"
+	"github.com/replicate/keepsake/go/pkg/param"
 )
 
 func newListCommand() *cobra.Command {
@@ -17,17 +17,17 @@ func newListCommand() *cobra.Command {
 		Run:     handleErrors(listExperiments),
 		Args:    cobra.NoArgs,
 		Example: `List all experiments in the current project:
-$ replicate ls
+$ keepsake ls
 
 List experiments that have run for 50 steps or less:
-$ replicate ls --filter "step <= 50"
+$ keepsake ls --filter "step <= 50"
 
 List experiments where the parameter "optimizer" is "adam" and
 the best "accuracy" metric is greater than 0.8:
-$ replicate ls --filter "optimizer = adam" --filter "accuracy > 0.8"
+$ keepsake ls --filter "optimizer = adam" --filter "accuracy > 0.8"
 
 Sort all stopped experiments by the metric "val_loss":
-$ replicate ls --sort "val_loss" --filter "status = stopped"
+$ keepsake ls --sort "val_loss" --filter "status = stopped"
 `,
 	}
 
@@ -107,7 +107,7 @@ func addListFilterFlag(cmd *cobra.Command) {
 	cmd.Flags().StringArrayP("filter", "f", []string{}, "Filters (format: \"<name> <operator> <value>\")")
 }
 
-// The filter names ought to be validated, see https://github.com/replicate/replicate/issues/340
+// The filter names ought to be validated, see https://github.com/replicate/keepsake/issues/340
 func parseListFilterFlag(cmd *cobra.Command) (*param.Filters, error) {
 	filtersStr, err := cmd.Flags().GetStringArray("filter")
 	if err != nil {

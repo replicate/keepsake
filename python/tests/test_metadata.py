@@ -1,5 +1,5 @@
 import datetime
-from replicate.metadata import parse_rfc3339
+from keepsake.metadata import parse_rfc3339
 
 
 def test_parse_rfc3339():

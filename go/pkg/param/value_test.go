@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	. "github.com/replicate/replicate/go/pkg/testutil"
+	. "github.com/replicate/keepsake/go/pkg/testutil"
 )
 
 func TestUnmarshalValue(t *testing.T) {

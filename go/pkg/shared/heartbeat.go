@@ -3,8 +3,8 @@ package shared
 import (
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/project"
 )
 
 type HeartbeatProcess struct {

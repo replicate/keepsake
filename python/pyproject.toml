@@ -2,9 +2,9 @@
 exclude = '(\.eggs|\.git|\.hg|\.mypy|_cache|\.nox|\.tox|\.venv|\.svn|_build|buck-out|build|dist|_vendor|servicepb)'
 
 [tool.vendoring]
-destination = "replicate/_vendor/"
-requirements = "replicate/_vendor/vendor.txt"
-namespace = "replicate._vendor"
+destination = "keepsake/_vendor/"
+requirements = "keepsake/_vendor/vendor.txt"
+namespace = "keepsake._vendor"
 
 protected-files = ["__init__.py", "README.rst", "vendor.txt"]
 patches-dir = ""

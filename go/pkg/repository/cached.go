@@ -3,7 +3,7 @@ package repository
 import (
 	"strings"
 
-	"github.com/replicate/replicate/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/console"
 )
 
 // CachedRepository wraps another repository, caching a prefix in a local directory.
@@ -37,9 +37,9 @@ func NewCachedRepository(repo Repository, cachePrefix string, projectDir string,
 }
 
 // NewCachedMetadataRepository returns a CachedRepository that caches the metadata/ path in
-// .replicate/metadata-cache in a source dir
+// .keepsake/metadata-cache in a source dir
 func NewCachedMetadataRepository(projectDir string, repo Repository) (*CachedRepository, error) {
-	return NewCachedRepository(repo, "metadata", projectDir, ".replicate/metadata-cache")
+	return NewCachedRepository(repo, "metadata", projectDir, ".keepsake/metadata-cache")
 }
 
 func (s *CachedRepository) Get(p string) ([]byte, error) {

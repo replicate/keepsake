@@ -12,8 +12,8 @@ import (
 
 	"github.com/otiai10/copy"
 
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 type DiskRepository struct {

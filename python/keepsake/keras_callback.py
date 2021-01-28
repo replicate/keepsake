@@ -10,9 +10,9 @@ from .experiment import Experiment
 from .project import Project
 
 
-class ReplicateCallback(ModelCheckpoint):
+class KeepsakeCallback(ModelCheckpoint):
     """
-    Experimental class that wraps replicate.init() and
+    Experimental class that wraps keepsake.init() and
     experiment.checkpoint() in a Keras callback.
     """
 

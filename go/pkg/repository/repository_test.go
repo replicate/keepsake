@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
 )
 
 func shim(v ...interface{}) []interface{} {
@@ -33,18 +33,18 @@ func TestSplitURL(t *testing.T) {
 	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf(`Unknown repository scheme: foo.
 
 Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
-See the documentation for more details: https://replicate.ai/docs/reference/yaml`)), shim(SplitURL("foo://my-bucket")))
+See the documentation for more details: https://keepsake.ai/docs/reference/yaml`)), shim(SplitURL("foo://my-bucket")))
 	require.Equal(t, shim(Scheme(""), "", "", fmt.Errorf(`Missing repository scheme.
 
 Make sure your repository URL starts with either 'file://', 's3://', or 'gs://'.
-See the documentation for more details: https://replicate.ai/docs/reference/yaml`)), shim(SplitURL("/foo/bar")))
+See the documentation for more details: https://keepsake.ai/docs/reference/yaml`)), shim(SplitURL("/foo/bar")))
 }
 
 func TestListOfFilesToPut(t *testing.T) {
 	tmpDir, err := files.TempDir("repository-test")
 	require.NoError(t, err)
 
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpDir, ".replicateignore"), []byte("ignoreme"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpDir, ".keepsakeignore"), []byte("ignoreme"), 0644))
 
 	require.NoError(t, os.Mkdir(filepath.Join(tmpDir, "dir"), 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(tmpDir, ".git"), 0755))
@@ -60,7 +60,7 @@ func TestListOfFilesToPut(t *testing.T) {
 	// test that .git is ignored
 	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpDir, ".git/baz.txt"), []byte("baz"), 0644))
 
-	// test that .replicateignore is used
+	// test that .keepsakeignore is used
 	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpDir, "ignoreme/qux.txt"), []byte("qux"), 0644))
 
 	filesToPut, err := getListOfFilesToPut(tmpDir, "")
@@ -82,8 +82,8 @@ func TestListOfFilesToPut(t *testing.T) {
 		Source: filepath.Join(tmpDir, "dir/bar.txt"),
 		Dest:   "dir/bar.txt",
 	}, {
-		Source: filepath.Join(tmpDir, ".replicateignore"),
-		Dest:   ".replicateignore",
+		Source: filepath.Join(tmpDir, ".keepsakeignore"),
+		Dest:   ".keepsakeignore",
 	}}
 
 	sort.Slice(actual, func(i, j int) bool { return actual[i].Source < actual[j].Source })
@@ -93,7 +93,7 @@ func TestListOfFilesToPut(t *testing.T) {
 }
 
 func TestExtractTarItem(t *testing.T) {
-	dir, err := ioutil.TempDir("", "replicate-test")
+	dir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 

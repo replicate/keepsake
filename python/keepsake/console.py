@@ -26,12 +26,12 @@ def error(s: str):
 
 
 def log(s: str, level: Level):
-    # Add word wrapping, see https://github.com/replicate/replicate/issues/348
+    # Add word wrapping, see https://github.com/replicate/keepsake/issues/348
 
     prompt = "═══╡ "
     continuation_prompt = "   │ "
 
-    # We should support NO_COLOR, see https://github.com/replicate/replicate/issues/349
+    # We should support NO_COLOR, see https://github.com/replicate/keepsake/issues/349
     if sys.stderr.isatty():
         kwargs = {"style": "faint"}
         if level == Level.WARN:
@@ -49,7 +49,7 @@ def log(s: str, level: Level):
             print(continuation_prompt + line, file=sys.stderr)
 
 
-# Replicate should never break your training
+# Keepsake should never break your training
 def catch_and_print_exceptions(msg=None, return_value=None):
     def decorator(f):
         @wraps(f)

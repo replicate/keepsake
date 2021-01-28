@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/replicate/replicate/go/pkg/concurrency"
+	"github.com/replicate/keepsake/go/pkg/concurrency"
 )
 
 // Sync destRepository/destPath to match sourceRepository/sourcePath

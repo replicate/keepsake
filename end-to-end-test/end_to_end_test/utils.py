@@ -9,7 +9,7 @@ ROOT_DIRECTORY = Path(__file__).parent.parent.parent
 
 def get_env():
     """
-    Returns environment for running Replicate commands in
+    Returns environment for running Keepsake commands in
     """
     env = os.environ
     env["PATH"] = os.environ["PATH"] + ":/usr/local/bin"

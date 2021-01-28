@@ -11,16 +11,16 @@ import (
 	"github.com/kami-zh/go-capturer"
 	"github.com/stretchr/testify/require"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/hash"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/project"
-	"github.com/replicate/replicate/go/pkg/repository"
-	"github.com/replicate/replicate/go/pkg/testutil"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/testutil"
 )
 
 func createTestData(t *testing.T, workingDir string, conf *config.Config) repository.Repository {
-	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".replicate"))
+	repo, err := repository.NewDiskRepository(path.Join(workingDir, ".keepsake"))
 	require.NoError(t, err)
 
 	require.NoError(t, err)
@@ -126,7 +126,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) reposi
 }
 
 func TestListOutputTableWithPrimaryMetricOnlyChangedParams(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -154,7 +154,7 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS       BEST CH
 }
 
 func TestListOutputTableWithPrimaryMetricAll(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -188,7 +188,7 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS         BEST 
 }
 
 func TestListOutputTableFilter(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -216,7 +216,7 @@ EXPERIMENT  STARTED             STATUS   HOST      PARAMS       BEST CHECKPOINT 
 }
 
 func TestListOutputTableFilterRunning(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -242,7 +242,7 @@ EXPERIMENT  STARTED             STATUS   PARAMS  BEST CHECKPOINT    LATEST CHECK
 }
 
 func TestListOutputTableSort(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(workingDir)
 
@@ -270,9 +270,9 @@ EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS       BEST CH
 }
 
 func TestListJSON(t *testing.T) {
-	workingDir, err := ioutil.TempDir("", "replicate-test")
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
 	require.NoError(t, err)
-	repoDir := path.Join(workingDir, ".replicate")
+	repoDir := path.Join(workingDir, ".keepsake")
 
 	repository, err := repository.NewDiskRepository(repoDir)
 	require.NoError(t, err)
@@ -314,7 +314,7 @@ func TestListJSON(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, project.CreateHeartbeat(repository, exp.ID, time.Now().UTC()))
 
-	// replicate ls
+	// keepsake ls
 	actual := capturer.CaptureStdout(func() {
 		err = Experiments(repository, FormatJSON, true, new(param.Filters), &param.Sorter{Key: "started"})
 	})

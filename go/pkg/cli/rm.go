@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/project"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/project"
 )
 
 func newRmCommand() *cobra.Command {
@@ -23,11 +23,11 @@ To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 		SuggestFor: []string{"remove"},
 		Example: `Delete an experiment and its checkpoints
 (where a1b2c3d4 is an experiment ID):
-replicate rm a1b2c3d4
+keepsake rm a1b2c3d4
 
 Delete all experiments where the metric "val_accuracy" is less
 than 0.2 at the best checkpoints:
-replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
+keepsake rm $(keepsake ls -q --filter "val_accuracy < 0.2")
 `,
 	}
 
@@ -102,7 +102,7 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 		} else {
 			console.Info("Removing experiment %s and its checkpoints...", comOrExp.Experiment.ShortID())
 			experiment := comOrExp.Experiment
-			// This is slow, see https://github.com/replicate/replicate/issues/333
+			// This is slow, see https://github.com/replicate/keepsake/issues/333
 			for _, checkpoint := range experiment.Checkpoints {
 				if err := proj.DeleteCheckpoint(checkpoint); err != nil {
 					return err

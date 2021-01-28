@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/files"
-	"github.com/replicate/replicate/go/pkg/hash"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/hash"
 )
 
 // TODO: use Google's httpreplay library so this doesn't hit network
@@ -27,7 +27,7 @@ import (
 func createGCSBucket(t *testing.T, client *storage.Client) (*storage.BucketHandle, string) {
 	projectID, err := discoverProjectID()
 	require.NoError(t, err)
-	bucketName := "replicate-test-" + hash.Random()[0:10]
+	bucketName := "keepsake-test-" + hash.Random()[0:10]
 	bucket := client.Bucket(bucketName)
 	err = bucket.Create(context.Background(), projectID, nil)
 	require.NoError(t, err)
@@ -165,7 +165,7 @@ func TestGCSRepository(t *testing.T) {
 		require.Empty(t, <-results)
 
 		// Works with non-existent bucket
-		repository, err = NewGCSRepository("replicate-test-"+hash.Random()[0:10], "")
+		repository, err = NewGCSRepository("keepsake-test-"+hash.Random()[0:10], "")
 		require.NoError(t, err)
 		results = make(chan ListResult)
 		go repository.ListRecursive(results, "checkpoints")

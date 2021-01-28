@@ -56,10 +56,10 @@ def copy_binaries(plat_name):
     this_dir = Path(__file__).resolve().parent
     binary_path = this_dir / "../go/release" / plat_name_to_binary_path(plat_name)
     (this_dir / "build/bin").mkdir(parents=True, exist_ok=True)
-    (this_dir / "replicate/bin").mkdir(parents=True, exist_ok=True)
-    shutil.copy(binary_path / "replicate", this_dir / "build/bin/replicate")
+    (this_dir / "keepsake/bin").mkdir(parents=True, exist_ok=True)
+    shutil.copy(binary_path / "keepsake", this_dir / "build/bin/keepsake")
     shutil.copy(
-        binary_path / "replicate-shared", this_dir / "replicate/bin/replicate-shared"
+        binary_path / "keepsake-shared", this_dir / "keepsake/bin/keepsake-shared"
     )
 
 
@@ -107,27 +107,27 @@ class develop(_develop):
 
 
 # read version from auto-generated version.py file
-version = ast.parse(open("replicate/version.py").read()).body[0].value.s
+version = ast.parse(open("keepsake/version.py").read()).body[0].value.s
 
 # fmt: off
 setuptools.setup(
-    name="replicate",
+    name="keepsake",
     version=version,
     author_email="team@replicate.ai",
     description="Version control for machine learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://replicate.ai",
+    url="https://keepsake.ai",
     license="Apache License 2.0",
     python_requires='>=3.6.0',
     install_requires=["googleapis-common-protos[grpc]>=1.0.0"],
     packages=setuptools.find_packages(),
-    package_data={'replicate': ['bin/replicate-shared']},
+    package_data={'keepsake': ['bin/keepsake-shared']},
     cmdclass={
         'bdist_wheel': bdist_wheel,
         'build_scripts': build_scripts,
         'develop': develop,
     },
-    scripts=["build/bin/replicate"],
+    scripts=["build/bin/keepsake"],
 )
 # fmt: on

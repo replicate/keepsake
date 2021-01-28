@@ -6,8 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/repository"
 )
 
 // corresponds to DEFAULT_REFRESH_INTERVAL in heartbeat.py
@@ -48,7 +48,7 @@ func listHeartbeats(repo repository.Repository) ([]*Heartbeat, error) {
 		if hb, err := loadHeartbeatFromPath(repo, p); err == nil {
 			heartbeats = append(heartbeats, hb)
 		} else {
-			// Should we complain more loudly? https://github.com/replicate/replicate/issues/347
+			// Should we complain more loudly? https://github.com/replicate/keepsake/issues/347
 			console.Warn("Failed to load metadata from %q: %s", p, err)
 		}
 	}

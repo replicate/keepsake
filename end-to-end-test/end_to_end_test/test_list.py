@@ -32,7 +32,7 @@ def test_list(
     if use_root:
         repository += "/root"
 
-    with open(os.path.join(tmpdir, "replicate.yaml"), "w") as f:
+    with open(os.path.join(tmpdir, "keepsake.yaml"), "w") as f:
         f.write(
             """
 repository: {repository}
@@ -43,10 +43,10 @@ repository: {repository}
     with open(os.path.join(tmpdir, "train.py"), "w") as f:
         f.write(
             """
-import replicate
+import keepsake
 
 def main():
-    experiment = replicate.init(path=".", params={"my_param": "my-value"})
+    experiment = keepsake.init(path=".", params={"my_param": "my-value"})
 
     for step in range(3):
         experiment.checkpoint(path=".", step=step)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "--verbose", "list", "--json"],
+            ["keepsake", "--verbose", "list", "--json"],
             cwd=tmpdir,
             env=env,
             stdout=subprocess.PIPE,
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # test that --repository works
     experiments2 = json.loads(
         subprocess.run(
-            ["replicate", "--verbose", "ls", "--json", "--repository=" + repository],
+            ["keepsake", "--verbose", "ls", "--json", "--repository=" + repository],
             cwd=tmpdir_factory.mktemp("list"),
             env=env,
             stdout=subprocess.PIPE,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     with open(os.path.join(tmpdir, "train2.py"), "w") as f:
         f.write(
             """
-from replicate.project import Project
+from keepsake.project import Project
 import sys
 
 experiment_id = sys.argv[1]
@@ -109,7 +109,7 @@ experiment.checkpoint(path=".", step=3)
     subprocess.run(["python", "train2.py", exp["id"]], cwd=tmpdir, env=env, check=True)
     experiments = json.loads(
         subprocess.run(
-            ["replicate", "--verbose", "list", "--json"],
+            ["keepsake", "--verbose", "list", "--json"],
             cwd=tmpdir,
             env=env,
             stdout=subprocess.PIPE,

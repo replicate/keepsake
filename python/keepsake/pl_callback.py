@@ -1,29 +1,29 @@
 from copy import deepcopy
 from typing import Optional, Dict, Tuple, Any
 
-import replicate
+import keepsake
 from pytorch_lightning.callbacks.base import Callback
 
 
-class ReplicateCallback(Callback):
+class KeepsakeCallback(Callback):
     """
-    Experimental class that wraps replicate.init() and
+    Experimental class that wraps keepsake.init() and
     experiment.checkpoint() in a PyTorch Lightning callback.
-    API is mostly consistent with keras_callback.ReplicateCallback.
+    API is mostly consistent with keras_callback.KeepsakeCallback.
 
     This integration is subject to change, we'll probably
     try to get it into Pytorch Lightning itself as a logger.
-    See https://github.com/replicate/replicate/issues/432
+    See https://github.com/replicate/keepsake/issues/432
 
-    The ReplicateCallback instantiates a new Replicate experiment with
-    replicate.init on_pretrain_routine_start, using the parameters
-    that are passed to the ReplicateCallback constructor.
+    The KeepsakeCallback instantiates a new Keepsake experiment with
+    keepsake.init on_pretrain_routine_start, using the parameters
+    that are passed to the KeepsakeCallback constructor.
 
     Checkpoints are saved on_validation_end if validation is defined,
     otherwise on_epoch_end.
 
     For an example of how to use this callback, see the guide at
-    https://replicate.ai/docs/guides/pytorch-lightning-integration
+    https://keepsake.ai/docs/guides/pytorch-lightning-integration
     """
 
     def __init__(
@@ -35,7 +35,7 @@ class ReplicateCallback(Callback):
         save_weights_only: Optional[bool] = False,
     ):
         """
-        Create a new Pytorch Lightning Replicate callback.
+        Create a new Pytorch Lightning Keepsake callback.
 
         Parameters
         ----------
@@ -64,7 +64,7 @@ class ReplicateCallback(Callback):
         self.last_global_step_saved = -1
 
     def on_pretrain_routine_start(self, trainer, pl_module):
-        self.experiment = replicate.init(path=".", params=self.params)
+        self.experiment = keepsake.init(path=".", params=self.params)
 
     def on_epoch_end(self, trainer, pl_module):
         self._save_model(trainer, pl_module)

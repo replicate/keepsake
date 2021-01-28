@@ -382,5 +382,5 @@ var _Daemon_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "replicate.proto",
+	Metadata: "keepsake.proto",
 }

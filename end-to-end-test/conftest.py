@@ -14,7 +14,7 @@ class TempBucketFactory:
         self.gs_bucket_names = []
 
     def make_name(self):
-        return "replicate-test-endtoend-" + "".join(
+        return "keepsake-test-endtoend-" + "".join(
             random.choice(string.ascii_lowercase) for _ in range(20)
         )
 
@@ -46,7 +46,7 @@ class TempBucketFactory:
 
 @pytest.fixture(scope="function")
 def temp_bucket_factory() -> TempBucketFactory:
-    # We don't create bucket here so we can test Replicate's ability to create
+    # We don't create bucket here so we can test Keepsake's ability to create
     # buckets.
     factory = TempBucketFactory()
     yield factory

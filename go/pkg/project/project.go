@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/replicate/replicate/go/pkg/config"
-	"github.com/replicate/replicate/go/pkg/console"
-	"github.com/replicate/replicate/go/pkg/errors"
-	"github.com/replicate/replicate/go/pkg/global"
-	"github.com/replicate/replicate/go/pkg/param"
-	"github.com/replicate/replicate/go/pkg/repository"
+	"github.com/replicate/keepsake/go/pkg/config"
+	"github.com/replicate/keepsake/go/pkg/console"
+	"github.com/replicate/keepsake/go/pkg/errors"
+	"github.com/replicate/keepsake/go/pkg/global"
+	"github.com/replicate/keepsake/go/pkg/param"
+	"github.com/replicate/keepsake/go/pkg/repository"
 )
 
 const IDLength = 64
@@ -57,7 +57,7 @@ func (p *Project) ExperimentIsRunning(experimentID string) (bool, error) {
 	}
 	heartbeat, ok := p.heartbeatsByExpID[experimentID]
 	if !ok {
-		// TODO(bfirsh): unknown state? https://github.com/replicate/replicate/issues/36
+		// TODO(bfirsh): unknown state? https://github.com/replicate/keepsake/issues/36
 		console.Debug("No heartbeat found for experiment %s", experimentID)
 		return false, nil
 	}
@@ -226,17 +226,17 @@ func (p *Project) CreateExperiment(args CreateExperimentArgs, async bool, workCh
 	conf := &config.Config{Repository: p.repository.RootURL()}
 
 	exp := &Experiment{
-		ID:               generateRandomID(),
-		Created:          time.Now().UTC(),
-		Params:           args.Params,
-		Host:             host,
-		User:             username,
-		Config:           conf,
-		Command:          args.Command,
-		Path:             args.Path,
-		PythonVersion:    args.PythonVersion,
-		PythonPackages:   args.PythonPackages,
-		ReplicateVersion: global.Version,
+		ID:              generateRandomID(),
+		Created:         time.Now().UTC(),
+		Params:          args.Params,
+		Host:            host,
+		User:            username,
+		Config:          conf,
+		Command:         args.Command,
+		Path:            args.Path,
+		PythonVersion:   args.PythonVersion,
+		PythonPackages:  args.PythonPackages,
+		KeepsakeVersion: global.Version,
 	}
 
 	// save json synchronously to uncover repository write issues
@@ -361,7 +361,7 @@ func (p *Project) invalidateCache() {
 }
 
 // ensureLoaded eagerly loads all the metadata for this project.
-// This is highly inefficient, see https://github.com/replicate/replicate/issues/305
+// This is highly inefficient, see https://github.com/replicate/keepsake/issues/305
 func (p *Project) ensureLoaded() error {
 	// TODO(andreas): 5(?) second caching instead
 	if p.hasLoaded {
