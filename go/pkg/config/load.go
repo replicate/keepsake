@@ -32,9 +32,6 @@ func FindConfigInWorkingDir(overrideDir string) (conf *Config, projectDir string
 	if overrideDir != "" {
 		configPath, err := findConfigPathInDirectory(overrideDir)
 		if err != nil {
-			if errors.IsConfigNotFound(err) {
-				return getDefaultConfig(overrideDir), overrideDir, nil
-			}
 			return nil, "", err
 		}
 
