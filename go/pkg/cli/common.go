@@ -51,7 +51,7 @@ func getRepositoryURLFromStringOrConfig(repositoryURL string) (string, string, e
 		}
 	}
 
-	// abs of "" if cwd
+	// abs of "" is cwd
 	projectDir, err := filepath.Abs(projectDir)
 	if err != nil {
 		return "", "", fmt.Errorf("Failed to determine absolute directory of '%s': %w", global.ProjectDirectory, err)
