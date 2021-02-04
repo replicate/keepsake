@@ -32,6 +32,11 @@ func LoadUserSettings() (*UserSettings, error) {
 		AnalyticsEnabled: true,
 		FirstRun:         false,
 	}
+
+	if err := MaybeMoveDeprecatedUserSettingsDir(); err != nil {
+		return nil, err
+	}
+
 	settingsPath, err := userSettingsPath()
 	if err != nil {
 		return nil, err
@@ -85,6 +90,39 @@ func UserSettingsDir() (string, error) {
 	return homedir.Expand("~/.config/keepsake")
 }
 
+func deprecatedUserSettingsDir() (string, error) {
+	return homedir.Expand("~/.config/keepsake")
+}
+
 func userSettingsPath() (string, error) {
-	return homedir.Expand("~/.config/keepsake/settings.json")
+	dir, err := UserSettingsDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "settings.json"), nil
+}
+
+func MaybeMoveDeprecatedUserSettingsDir() error {
+	deprecatedDir, err := deprecatedUserSettingsDir()
+	if err != nil {
+		return err
+	}
+	exists, err := files.FileExists(deprecatedDir)
+	if err != nil {
+		return err
+	}
+	if exists {
+		dir, err := UserSettingsDir()
+		if err != nil {
+			return err
+		}
+		exists, err := files.FileExists(dir)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return os.Rename(deprecatedDir, dir)
+		}
+	}
+	return nil
 }
