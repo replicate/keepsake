@@ -15,18 +15,19 @@ import (
 
 // Experiment represents a training run
 type Experiment struct {
-	ID              string            `json:"id"`
-	Created         time.Time         `json:"created"`
-	Params          param.ValueMap    `json:"params"`
-	Host            string            `json:"host"`
-	User            string            `json:"user"`
-	Config          *config.Config    `json:"config"`
-	Command         string            `json:"command"`
-	Path            string            `json:"path"`
-	PythonVersion   string            `json:"python_version"`
-	PythonPackages  map[string]string `json:"python_packages"`
-	Checkpoints     []*Checkpoint     `json:"checkpoints"`
-	KeepsakeVersion string            `json:"keepsake_version"`
+	ID               string            `json:"id"`
+	Created          time.Time         `json:"created"`
+	Params           param.ValueMap    `json:"params"`
+	Host             string            `json:"host"`
+	User             string            `json:"user"`
+	Config           *config.Config    `json:"config"`
+	Command          string            `json:"command"`
+	Path             string            `json:"path"`
+	PythonVersion    string            `json:"python_version"`
+	PythonPackages   map[string]string `json:"python_packages"`
+	Checkpoints      []*Checkpoint     `json:"checkpoints"`
+	KeepsakeVersion  string            `json:"keepsake_version"`
+	ReplicateVersion string            `json:"replicate_version,omitempty"`
 }
 
 type NamedParam struct {
@@ -149,6 +150,9 @@ func listExperiments(repo repository.Repository) ([]*Experiment, error) {
 	for _, p := range paths {
 		exp := new(Experiment)
 		if err := loadFromPath(repo, p, exp); err == nil {
+			if exp.KeepsakeVersion == "" && exp.ReplicateVersion != "" {
+				exp.KeepsakeVersion = exp.ReplicateVersion
+			}
 			experiments = append(experiments, exp)
 		} else {
 			// Should we complain more loudly? https://github.com/replicate/keepsake/issues/347
