@@ -152,9 +152,15 @@ func getListOfFilesToPut(localPath string, repoPath string) ([]fileToPut, error)
 	var ignore *gitignore.GitIgnore
 	var err error
 	ignoreFilePath := filepath.Join(localPath, ".keepsakeignore")
+	deprecatedIgnoreFilePath := filepath.Join(localPath, ".replicateignore")
 	if isDir, _ := files.IsDir(localPath); isDir {
 		if exists, _ := files.FileExists(ignoreFilePath); exists {
 			ignore, err = gitignore.CompileIgnoreFile(ignoreFilePath)
+			if err != nil {
+				return nil, err
+			}
+		} else if exists, _ := files.FileExists(deprecatedIgnoreFilePath); exists {
+			ignore, err = gitignore.CompileIgnoreFile(deprecatedIgnoreFilePath)
 			if err != nil {
 				return nil, err
 			}
