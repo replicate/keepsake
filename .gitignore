@@ -15,3 +15,7 @@ python/keepsake/bin
 # scratch notebooks
 Untitled.ipynb
 .ipynb_checkpoints
+
+# backwards-compatibility before PR505
+.replicate
+python/replicate/bin
