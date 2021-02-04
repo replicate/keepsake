@@ -61,6 +61,10 @@ func TrackCommand(cmdName string) error {
 		return err
 	}
 
+	if err := settings.MaybeMoveDeprecatedUserSettingsDir(); err != nil {
+		return err
+	}
+
 	client, err := NewClient(&Config{
 		Dir:         filepath.Join(settingsDir, "analytics"),
 		SegmentKey:  global.SegmentKey,
