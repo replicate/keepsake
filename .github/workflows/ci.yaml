@@ -34,7 +34,7 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{ secrets.CACHE_VERSION }}-
       - name: Configure AWS Credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
@@ -85,13 +85,13 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{ secrets.CACHE_VERSION }}-
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-test.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_VERSION }}-
       - name: Configure AWS Credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
@@ -144,7 +144,7 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{ secrets.CACHE_VERSION }}-
       - name: Install
         run: |
           (cd ../ && make install)
@@ -177,13 +177,13 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{ secrets.CACHE_VERSION }}-
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-test.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ secrets.CACHE_VERSION }}-
       - name: Configure AWS Credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
         uses: aws-actions/configure-aws-credentials@v1
