@@ -244,7 +244,7 @@ e510303      10.52.2.23   stopped   49668cb (val_loss=0.1484)
               Learn more.
             </a>
           </p>
-          <img src="images/notebook.png" width="800" />
+          <img src="images/notebook.png" width="700" />
 
           <h3 id="anchor-2">Compare experiments</h3>
           <p>
