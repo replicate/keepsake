@@ -5,11 +5,11 @@ let config = {
   pageExtensions: ["js", "jsx", "mdx"],
   env: {
     TUTORIAL_COLAB_URL:
-      "https://colab.research.google.com/drive/1iypzEOysdACpIIXrM0RoGz9kg6z93XMP",
+      "https://colab.research.google.com/drive/1zzcQHd5ZtIgLA_vQjdQ0PUcAfYwcc43H",
     ANALYSIS_COLAB_URL:
-      "https://colab.research.google.com/drive/18sVRE4Zi484G2rBeOYjobE3zek2gDBvy",
+      "https://colab.research.google.com/drive/11maIJO1C1yKSagTRyCJkPMAj6EjgLa73",
     INFERENCE_COLAB_URL:
-      "https://colab.research.google.com/drive/18sVRE4Zi484G2rBeOYjobE3zek2gDBvy#scrollTo=J_Z02qBik8c9",
+      "https://colab.research.google.com/drive/11maIJO1C1yKSagTRyCJkPMAj6EjgLa73#scrollTo=J_Z02qBik8c9",
   },
   async redirects() {
     return [
