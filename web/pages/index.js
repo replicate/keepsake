@@ -46,7 +46,7 @@ export default function Home() {
             <Link href="/docs">Get started</Link>{" "}
             <a href="#manifesto">Get involved</a>{" "}
             <iframe
-              src="https://ghbtns.com/github-btn.html?user=keepsake&amp;repo=keepsake&amp;type=star&amp;count=true&amp;size=large"
+              src="https://ghbtns.com/github-btn.html?user=replicate&amp;repo=keepsake&amp;type=star&amp;count=true&amp;size=large"
               frameBorder="0"
               scrolling="0"
               width="170"
@@ -61,8 +61,8 @@ export default function Home() {
               <span>{num()}</span> Never lose your work
             </h2>
             <p>
-              Train as usual, and Keepsake will automatically save your code
-              and weights to Amazon S3 or Google Cloud Storage.
+              Train as usual, and Keepsake will automatically save your code and
+              weights to Amazon S3 or Google Cloud Storage.
             </p>
           </div>
           <div>
