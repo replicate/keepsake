@@ -1,11 +1,11 @@
 import DocsLayout from "../../../layouts/docs";
 
-<DocsLayout title="replicate.yaml reference">
+<DocsLayout title="keepsake.yaml reference">
 
 
-The `replicate.yaml` file configures Replicate.
+The `keepsake.yaml` file configures Keepsake.
 
-`replicate.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Replicate uses the location of the file to figure out where your model is located.
+`keepsake.yaml` goes in the same directory as your model's source code. It must be in the root directory (the same directory as the root of your Git repository, for example) because Keepsake uses the location of the file to figure out where your model is located.
 
 It looks a bit like this:
 
@@ -15,14 +15,14 @@ repository: "s3://hooli-hotdog-model"
 
 ## `repository`
 
-The location where Replicate will store your project data (experiments, checkpoints, etc).
+The location where Keepsake will store your project data (experiments, checkpoints, etc).
 
 It supports several different storage mechanisms:
 
-- **Local disk**: If you use the form `file://path`, it is assumed to be a path on disk, relative to the location of `replicate.yaml`. For example:
+- **Local disk**: If you use the form `file://path`, it is assumed to be a path on disk, relative to the location of `keepsake.yaml`. For example:
 
   ```yaml
-  repository: "file://.replicate"
+  repository: "file://.keepsake"
   ```
 
   Or:

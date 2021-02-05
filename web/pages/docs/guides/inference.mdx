@@ -4,17 +4,17 @@ import Note from "../../../components/note";
 <DocsLayout title="Load models for inference">
 
 
-Replicate versions all of the models you train and stores them on Amazon S3 or Google Cloud Storage, so you can pull down those models into inference systems.
+Keepsake versions all of the models you train and stores them on Amazon S3 or Google Cloud Storage, so you can pull down those models into inference systems.
 
 # Load models within Python
 
-Using the Replicate Python API, you can load a model directly from within your inference script. For example, if you did this in your training script:
+Using the Keepsake Python API, you can load a model directly from within your inference script. For example, if you did this in your training script:
 
 ```python
 import torch
-import replicate
+import keepsake
 def train():
-    experiment = replicate.init(path=".", params={...})
+    experiment = keepsake.init(path=".", params={...})
 
     for epoch in range(num_epochs):
         # ...
@@ -30,8 +30,8 @@ def train():
 Then you can use this in your inference script to get the model back:
 
 ```python
-import replicate
-experiment = replicate.experiments.get("e510303")
+import keepsake
+experiment = keepsake.experiments.get("e510303")
 checkpoint = experiment.best()
 
 model = torch.load(checkpoint.open("model.pth"))
@@ -48,7 +48,7 @@ You can also get files using the command-line interface. This might be useful if
 For example, if you run this for the example training script above:
 
 ```
-replicate checkout e510303 -o weights/
+keepsake checkout e510303 -o weights/
 ```
 
 Then the model weights will be written to `weights/model.pth`.
@@ -56,9 +56,9 @@ Then the model weights will be written to `weights/model.pth`.
 <Note>
 
 
-**Note:** Either an experiment ID or checkpoint ID can be passed to `replicate checkout`. The checkpoint ID makes a better versioning identifier because it specifies a specific version of your model weights.
+**Note:** Either an experiment ID or checkpoint ID can be passed to `keepsake checkout`. The checkpoint ID makes a better versioning identifier because it specifies a specific version of your model weights.
 
-You can only use an experiment ID in the Python API, currently. Support for checkpoint IDs is being worked on. [See this GitHub issue for more details.](https://github.com/replicate/replicate/issues/360)
+You can only use an experiment ID in the Python API, currently. Support for checkpoint IDs is being worked on. [See this GitHub issue for more details.](https://github.com/replicate/keepsake/issues/360)
 
 </Note>
 

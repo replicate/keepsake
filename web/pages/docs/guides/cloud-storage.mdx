@@ -41,12 +41,12 @@ Next, run this, because Cloud SDK needs you to log in a second time to let other
 gcloud auth application-default login
 ```
 
-### Point Replicate at Google Cloud
+### Point Keepsake at Google Cloud
 
-Then, create `replicate.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
+Then, create `keepsake.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
 
 ```yaml
-repository: "gs://replicate-repository-[your model name]"
+repository: "gs://keepsake-repository-[your model name]"
 ```
 
 </TabPanel>
@@ -64,12 +64,12 @@ First, you need to install and configure the Amazon Web Services CLI if you have
 
 If you're on another platform, [follow these instructions to install the Amazon Web Services CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 
-### Point Replicate at Amazon S3
+### Point Keepsake at Amazon S3
 
-Then, create `replicate.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
+Then, create `keepsake.yaml` with this content, replacing `[your model name]` with your model's name, or some other unique string:
 
 ```yaml
-repository: "s3://replicate-repository-[your model name]"
+repository: "s3://keepsake-repository-[your model name]"
 ```
 
 </TabPanel>
@@ -81,14 +81,13 @@ Now, when you run your training script, calling `experiment.checkpoint()` will u
 
 If you're following along from [the tutorial](/docs/tutorial), run `python train.py` again. This time it will save your experiments to cloud storage. (It takes a second to save each checkpoint, so press `Ctrl-C` after a few epochs if you don't want to wait.)
 
-Now, when you run `replicate ls`, it will list experiments from the bucket.
+Now, when you run `keepsake ls`, it will list experiments from the bucket.
 
 ## Migrate data
 
-If you switch from local file storage to remote cloud storage, you will not see your local experiments any longer. Unlike Git which stores data both locally and remotely, Replicate only stores data in one location.
+If you switch from local file storage to remote cloud storage, you will not see your local experiments any longer. Unlike Git which stores data both locally and remotely, Keepsake only stores data in one location.
 
-It is easy to migrate locations, if you ever need to, because Replicate just stores its data as plain files. To migrate from local file storage to the cloud, just copy the `.replicate` directory, or wherever you store your data, to your Amazon S3 or Google Cloud Storage bucket.
-
+It is easy to migrate locations, if you ever need to, because Keepsake just stores its data as plain files. To migrate from local file storage to the cloud, just copy the `.keepsake` directory, or wherever you store your data, to your Amazon S3 or Google Cloud Storage bucket.
 
 <StatefulTabs>
 <TabPanels>
@@ -100,21 +99,20 @@ It is easy to migrate locations, if you ever need to, because Replicate just sto
 You can store data in Google Cloud Storage directly from a [Colab](https://colab.research.google.com/) notebook.
 
 You first need to get your project ID, [which is explained in the Google Cloud documentation](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
-Then, run this in a cell in your Colab notebook, replacing the first two variables with your project ID and a name for your Replicate project:
+Then, run this in a cell in your Colab notebook, replacing the first two variables with your project ID and a name for your Keepsake project:
 
 ```python
 project_id = '[your Cloud Platform project ID]'
-bucket_name = 'replicate-[your repository name]'
+bucket_name = 'keepsake-[your repository name]'
 
 from google.colab import auth
 auth.authenticate_user()
 
 !gcloud config set project {project_id}
-!echo 'repository: "gs://{bucket_name}"' > replicate.yaml
+!echo 'repository: "gs://{bucket_name}"' > keepsake.yaml
 ```
 
 For a real example, <a href={process.env.ANALYSIS_COLAB_URL}>expand the "Setup" section in this notebook</a>.
-
 
 </TabPanel>
 </TabPanels>
@@ -125,8 +123,8 @@ For a real example, <a href={process.env.ANALYSIS_COLAB_URL}>expand the "Setup" 
 
 You might want to take a look at:
 
-- [How Replicate works under the hood](/docs/learn/how-it-works)
-- [The `replicate.yaml` reference](/docs/reference/yaml)
+- [How Keepsake works under the hood](/docs/learn/how-it-works)
+- [The `keepsake.yaml` reference](/docs/reference/yaml)
 
 </DocsLayout>
 </TabState>

@@ -5,45 +5,45 @@ import DocsLayout from "../../../layouts/docs";
 
 <DocsLayout title="CLI reference">
 
-This is the reference for the Replicate command-line interface. You can also see this in the terminal by running `replicate --help` or `replicate command --help`.
+This is the reference for the Keepsake command-line interface. You can also see this in the terminal by running `keepsake --help` or `keepsake command --help`.
 
 To install the command-line interface, [see the installation instructions](/docs).
 
 ## Commands
 
-* [`replicate analytics`](#replicate-analytics) – Enable or disable analytics
-* [`replicate checkout`](#replicate-checkout) – Copy files from an experiment or checkpoint into the project directory
-* [`replicate diff`](#replicate-diff) – Compare two experiments or checkpoints
-* [`replicate feedback`](#replicate-feedback) – Submit feedback to the team!
-* [`replicate ls`](#replicate-ls) – List experiments in this project
-* [`replicate ps`](#replicate-ps) – List running experiments in this project
-* [`replicate rm`](#replicate-rm) – Remove experiments or checkpoint
-* [`replicate show`](#replicate-show) – View information about an experiment or checkpoint
+* [`keepsake analytics`](#keepsake-analytics) – Enable or disable analytics
+* [`keepsake checkout`](#keepsake-checkout) – Copy files from an experiment or checkpoint into the project directory
+* [`keepsake diff`](#keepsake-diff) – Compare two experiments or checkpoints
+* [`keepsake feedback`](#keepsake-feedback) – Submit feedback to the team!
+* [`keepsake ls`](#keepsake-ls) – List experiments in this project
+* [`keepsake ps`](#keepsake-ps) – List running experiments in this project
+* [`keepsake rm`](#keepsake-rm) – Remove experiments or checkpoint
+* [`keepsake show`](#keepsake-show) – View information about an experiment or checkpoint
 
-## `replicate analytics`
+## `keepsake analytics`
 
-The Replicate CLI sends anonymous analytics about commands you run.
+The Keepsake CLI sends anonymous analytics about commands you run.
 
 The following data is sent on each command line invokation:
 - A random token for the machine (e.g. "9f3027bb-0eb8-917d-e5bf-c6c1bdb1fd0a")
 - The subcommand you ran, without any options or arguments
-  (e.g. "replicate run", not "replicate run python secretproject.py")
-- The Replicate version (e.g. "1.0.0")
+  (e.g. "keepsake run", not "keepsake run python secretproject.py")
+- The Keepsake version (e.g. "1.0.0")
 - Your CPU architecture (e.g. "amd64")
 - Your operating system (e.g. "linux")
 
-To learn more, please refer to https://replicate.ai/docs/learn/analytics
+To learn more, please refer to https://keepsake.ai/docs/learn/analytics
 
 These analytics really help us, and we'd really appreciate it if you left it on.
 But, if you want to opt out, you can run this command:
 
-replicate analytics off
+keepsake analytics off
 
 
 ### Usage
 
 ```
-replicate analytics <on|off> [flags]
+keepsake analytics <on|off> [flags]
 ```
 
 ### Flags
@@ -52,17 +52,17 @@ replicate analytics <on|off> [flags]
   -h, --help   help for analytics
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate checkout`
+## `keepsake checkout`
 
 Copy files from an experiment or checkpoint into the project directory
 
 ### Usage
 
 ```
-replicate checkout <experiment or checkpoint ID> [flags]
+keepsake checkout <experiment or checkpoint ID> [flags]
 ```
 
 ### Flags
@@ -70,44 +70,44 @@ replicate checkout <experiment or checkpoint ID> [flags]
 ```
   -f, --force                     Force checkout without prompt, even if the directory is not empty
   -h, --help                      help for checkout
-  -o, --output-directory string   Output directory (defaults to working directory or directory with replicate.yaml in it)
+  -o, --output-directory string   Output directory (defaults to working directory or directory with keepsake.yaml in it)
       --path string               A specific file or directory to checkout (defaults to all files or directory in checkpoint/experiment)
-  -R, --repository string         Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string         Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate diff`
+## `keepsake diff`
 
 Compare two experiments or checkpoints.
 
-If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in replicate.yaml, it will use the latest checkpoint.
+If an experiment ID is passed, it will pick the best checkpoint from that experiment. If a primary metric is not defined in keepsake.yaml, it will use the latest checkpoint.
 
 ### Usage
 
 ```
-replicate diff <ID> <ID> [flags]
+keepsake diff <ID> <ID> [flags]
 ```
 
 ### Flags
 
 ```
   -h, --help                help for diff
-  -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string   Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate feedback`
+## `keepsake feedback`
 
 Submit feedback to the team!
 
 ### Usage
 
 ```
-replicate feedback [flags]
+keepsake feedback [flags]
 ```
 
 ### Flags
@@ -116,34 +116,34 @@ replicate feedback [flags]
   -h, --help   help for feedback
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate ls`
+## `keepsake ls`
 
 List experiments in this project
 
 ### Usage
 
 ```
-replicate ls [flags]
+keepsake ls [flags]
 ```
 
 ### Examples
 
 ```
 List all experiments in the current project:
-$ replicate ls
+$ keepsake ls
 
 List experiments that have run for 50 steps or less:
-$ replicate ls --filter "step <= 50"
+$ keepsake ls --filter "step <= 50"
 
 List experiments where the parameter "optimizer" is "adam" and
 the best "accuracy" metric is greater than 0.8:
-$ replicate ls --filter "optimizer = adam" --filter "accuracy > 0.8"
+$ keepsake ls --filter "optimizer = adam" --filter "accuracy > 0.8"
 
 Sort all stopped experiments by the metric "val_loss":
-$ replicate ls --sort "val_loss" --filter "status = stopped"
+$ keepsake ls --sort "val_loss" --filter "status = stopped"
 
 ```
 
@@ -155,21 +155,21 @@ $ replicate ls --sort "val_loss" --filter "status = stopped"
   -h, --help                 help for ls
       --json                 Print output in JSON format
   -q, --quiet                Only print experiment IDs
-  -R, --repository string    Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string    Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=created-desc (default "created")
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate ps`
+## `keepsake ps`
 
 List running experiments in this project
 
 ### Usage
 
 ```
-replicate ps [flags]
+keepsake ps [flags]
 ```
 
 ### Flags
@@ -180,14 +180,14 @@ replicate ps [flags]
   -h, --help                 help for ps
       --json                 Print output in JSON format
   -q, --quiet                Only print experiment IDs
-  -R, --repository string    Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string    Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
   -s, --sort string          Sort key. Suffix with '-desc' for descending sort, e.g. --sort=created-desc (default "created")
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate rm`
+## `keepsake rm`
 
 Remove experiments or checkpoints.
 
@@ -197,7 +197,7 @@ To remove experiments or checkpoints, pass any number of IDs (or prefixes).
 ### Usage
 
 ```
-replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [flags]
+keepsake rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [flags]
 ```
 
 ### Examples
@@ -205,11 +205,11 @@ replicate rm <experiment or checkpoint ID> [experiment or checkpoint ID...] [fla
 ```
 Delete an experiment and its checkpoints
 (where a1b2c3d4 is an experiment ID):
-replicate rm a1b2c3d4
+keepsake rm a1b2c3d4
 
 Delete all experiments where the metric "val_accuracy" is less
 than 0.2 at the best checkpoints:
-replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
+keepsake rm $(keepsake ls -q --filter "val_accuracy < 0.2")
 
 ```
 
@@ -218,20 +218,20 @@ replicate rm $(replicate ls -q --filter "val_accuracy < 0.2")
 ```
   -f, --force               Force delete without interactive prompt
   -h, --help                help for rm
-  -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string   Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
-## `replicate show`
+## `keepsake show`
 
 View information about an experiment or checkpoint
 
 ### Usage
 
 ```
-replicate show <experiment or checkpoint ID> [flags]
+keepsake show <experiment or checkpoint ID> [flags]
 ```
 
 ### Flags
@@ -240,10 +240,10 @@ replicate show <experiment or checkpoint ID> [flags]
       --all                 Show all information
   -h, --help                help for show
       --json                Print output in JSON format
-  -R, --repository string   Repository URL (e.g. 's3://my-replicate-bucket' (if omitted, uses repository URL from replicate.yaml)
+  -R, --repository string   Repository URL (e.g. 's3://my-keepsake-bucket' (if omitted, uses repository URL from keepsake.yaml)
 
       --color                      Display color in output (default true)
-  -D, --project-directory string   Project directory. Default: nearest parent directory with replicate.yaml
+  -D, --project-directory string   Project directory. Default: nearest parent directory with keepsake.yaml
   -v, --verbose                    Verbose output
 ```
 </DocsLayout>

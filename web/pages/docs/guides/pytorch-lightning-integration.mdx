@@ -5,12 +5,12 @@ import DocsLayout from "../../../layouts/docs";
 
 _This is an experimental feature so the API may change in the future._
 
-Replicate works with any machine learning framework, but it includes a callback that makes it easier to use with [PyTorch Lightning](https://www.pytorchlightning.ai/).
+Keepsake works with any machine learning framework, but it includes a callback that makes it easier to use with [PyTorch Lightning](https://www.pytorchlightning.ai/).
 
-`ReplicateCallback` behaves like [PyTorch Lightning's `ModelCheckpoint` callback](https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html), but in addition to exporting a model at the end of each epoch, it also:
+`KeepsakeCallback` behaves like [PyTorch Lightning's `ModelCheckpoint` callback](https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html), but in addition to exporting a model at the end of each epoch, it also:
 
-1. Calls `replicate.init()` at the start of training to create an experiment, and
-2. Calls `experiment.checkpoint()` after saving the model at [`on_validation_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-validation-end). If no validation is defined, then the checkpoint is saved at [`on_epoch_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-epoch-end). All metrics that have been logged during training with [`self.log()`](https://pytorch-lightning.readthedocs.io/en/latest/logging.html#automatic-logging) are saved to the Replicate checkpoint.
+1. Calls `keepsake.init()` at the start of training to create an experiment, and
+2. Calls `experiment.checkpoint()` after saving the model at [`on_validation_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-validation-end). If no validation is defined, then the checkpoint is saved at [`on_epoch_end`](https://pytorch-lightning.readthedocs.io/en/stable/callbacks.html#on-epoch-end). All metrics that have been logged during training with [`self.log()`](https://pytorch-lightning.readthedocs.io/en/latest/logging.html#automatic-logging) are saved to the Keepsake checkpoint.
 
 Here is a simple example:
 
@@ -21,7 +21,7 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision.datasets import MNIST
 from torchvision import transforms
-from replicate.pl_callback import ReplicateCallback #highlight-line
+from keepsake.pl_callback import KeepsakeCallback #highlight-line
 
 class MyModel(pl.LightningModule):
     def __init__(self):
@@ -40,7 +40,7 @@ class MyModel(pl.LightningModule):
     def prepare_data(self):
         # download only
         MNIST(
-            "/tmp/replicate-test-mnist",
+            "/tmp/keepsake-test-mnist",
             train=True,
             download=True,
             transform=transforms.ToTensor(),
@@ -50,7 +50,7 @@ class MyModel(pl.LightningModule):
         # transform
         transform = transforms.Compose([transforms.ToTensor()])
         mnist_train = MNIST(
-            "/tmp/replicate-test-mnist", train=True, download=False, transform=transform
+            "/tmp/keepsake-test-mnist", train=True, download=False, transform=transform
         )
         mnist_train = Subset(mnist_train, range(100))
         # train/val split
@@ -80,7 +80,7 @@ trainer = pl.Trainer(
     checkpoint_callback=False,
     callbacks=[
         #highlight-start
-        ReplicateCallback(
+        KeepsakeCallback(
             params={"dense_size": dense_size, "learning_rate": learning_rate,},
             primary_metric=("train_loss", "minimize"),
             period=5,
@@ -92,7 +92,7 @@ trainer = pl.Trainer(
 trainer.fit(model)
 ```
 
-The `ReplicateCallback` class takes the following arguments, all optional:
+The `KeepsakeCallback` class takes the following arguments, all optional:
 
 - **`filepath`**: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch. If it is `None`, the model is not saved, and the callback just gathers code and metrics. Default: `model.hdf5`
 - **`params`**: A dictionary of hyperparameters that will be recorded to the experiment at the start of training.

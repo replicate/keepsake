@@ -5,11 +5,11 @@ import Note from "../../components/note";
 <DocsLayout title="Tutorial">
 
 
-This guide will help you learn how Replicate works by building a simple model.
+This guide will help you learn how Keepsake works by building a simple model.
 
 **If you prefer working in notebooks, <a href={process.env.TUTORIAL_COLAB_URL}>follow our notebook tutorial on Colab</a>.**
 
-We're going to make a model that classifies Iris plants, trained on the [Iris dataset](https://en.wikipedia.org/wiki/Iris_flower_data_set). It's an intentionally simple model that trains really fast, just so we can show you how Replicate works.
+We're going to make a model that classifies Iris plants, trained on the [Iris dataset](https://en.wikipedia.org/wiki/Iris_flower_data_set). It's an intentionally simple model that trains really fast, just so we can show you how Keepsake works.
 
 ## Install dependencies
 
@@ -20,12 +20,12 @@ mkdir iris-classifier
 cd iris-classifier
 ```
 
-Replicate is a Python package, and we need a few other Python packages to make the model run.
+Keepsake is a Python package, and we need a few other Python packages to make the model run.
 
 Create `requirements.txt` to define the Python packages to install:
 
 <CodeBlock language="txt" metastring='title="requirements.txt"'>
-  {`replicate==` +
+  {`keepsake==` +
     process.env.NEXT_PUBLIC_VERSION +
     `
 scikit-learn==0.23.1
@@ -49,27 +49,27 @@ Copy and paste this code into `train.py`:
   {require("!!raw-loader!../../../example/train.py").default}
 </CodeBlock>
 
-Notice there are two highlighted lines that call Replicate. They don't affect the behavior of the training – they just save data in Replicate to keep track of what is going on.
+Notice there are two highlighted lines that call Keepsake. They don't affect the behavior of the training – they just save data in Keepsake to keep track of what is going on.
 
-The first is `replicate.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of the given path to save your training code.
+The first is `keepsake.init()`. This creates an **experiment**, which represents a run of your training script. The experiment records the hyperparameters you pass to it and makes a copy of the given path to save your training code.
 
 The second is `experiment.checkpoint()`. This creates a **checkpoint** within the experiment. The checkpoint saves the metrics at that point, and makes a copy of the file or directory you pass to it, which could include weights and any other artifacts.
 
-**Each experiment contains multiple checkpoints.** You typically save your model periodically during training, because the best result isn't necessarily the most recent one. A checkpoint is created just after you save your model, so Replicate can keep track of versions of your saved model.
+**Each experiment contains multiple checkpoints.** You typically save your model periodically during training, because the best result isn't necessarily the most recent one. A checkpoint is created just after you save your model, so Keepsake can keep track of versions of your saved model.
 
 ## Define a repository
 
-We need to tell Replicate where to store your experiments. Create `replicate.yaml` with this content:
+We need to tell Keepsake where to store your experiments. Create `keepsake.yaml` with this content:
 
 ```yaml
-repository: "file://.replicate"
+repository: "file://.keepsake"
 ```
 
-This will store your experiments in the `.replicate` directory relative to this file. You can also store them on Amazon S3 or Google Cloud Storage if you want to store data in the cloud. [Learn more about this in our guide to usage cloud storage.](/docs/guides/cloud-storage)
+This will store your experiments in the `.keepsake` directory relative to this file. You can also store them on Amazon S3 or Google Cloud Storage if you want to store data in the cloud. [Learn more about this in our guide to usage cloud storage.](/docs/guides/cloud-storage)
 
 ## Train the model
 
-We're now going to train this model a couple of times with different parameters to see what we can do with Replicate.
+We're now going to train this model a couple of times with different parameters to see what we can do with Keepsake.
 
 First, train it with default parameters:
 
@@ -99,10 +99,10 @@ Epoch 99, train loss: 0.056, validation accuracy: 0.967
 
 ## Experiments and checkpoints
 
-The calls to the `replicate` Python library have saved your experiments locally. You can use `replicate ls` to list them:
+The calls to the `keepsake` Python library have saved your experiments locally. You can use `keepsake ls` to list them:
 
 ```shell-session
-$ replicate ls
+$ keepsake ls
 EXPERIMENT  STARTED         STATUS   PARAMS              BEST CHECKPOINT    LATEST CHECKPOINT
 b90ad56     12 seconds ago  stopped  learning_rate=0.01  4941495 (step 99)  4941495 (step 99)
                                                          loss=0.1176        loss=0.1176
@@ -114,7 +114,7 @@ b90ad56     12 seconds ago  stopped  learning_rate=0.01  4941495 (step 99)  4941
 The `--filter` flag allows you to narrow in on a subset of experiments:
 
 ```shell-session
-$ replicate ls --filter "learning_rate = 0.2"
+$ keepsake ls --filter "learning_rate = 0.2"
 EXPERIMENT  STARTED         STATUS   PARAMS              BEST CHECKPOINT    LATEST CHECKPOINT
 9cce006     3 seconds ago   stopped  learning_rate=0.2   a122e85 (step 99)  a122e85 (step 99)
                                                          loss=0.056486      loss=0.056486
@@ -124,10 +124,10 @@ As a reminder, this is a list of **experiments** which represents runs of the `t
 
 Within experiments are **checkpoints**, which are created every time you call `experiment.checkpoint()` in your training script. The checkpoint contains your weights, Tensorflow logs, and any other artifacts you want to save.
 
-To list the checkpoints within an experiment, you can use `replicate show`. Run this, replacing `b90ad56` with an experiment ID from your output of `replicate ls`:
+To list the checkpoints within an experiment, you can use `keepsake show`. Run this, replacing `b90ad56` with an experiment ID from your output of `keepsake ls`:
 
 ```shell-session
-$ replicate show b90ad56
+$ keepsake show b90ad56
 Experiment: b90ad56a755371548ae2ab98c9d40a85911fd6198254880e600cdf00f55a18ca
 
 Created:        Wed, 02 Sep 2020 20:44:51 PDT
@@ -156,10 +156,10 @@ e301a55  98    5 minutes ago  1         0.11915
 4941495  99    5 minutes ago  1         0.1176 (best)
 ```
 
-You can also use `replicate show` on a checkpoint to get all the information about it. Run this, replacing `494` with a checkpoint ID from the experiment:
+You can also use `keepsake show` on a checkpoint to get all the information about it. Run this, replacing `494` with a checkpoint ID from the experiment:
 
 ```shell-session
-$ replicate show 494
+$ keepsake show 494
 Checkpoint: 49414952394edfdf7923edd6bfb4aabe5558a6276a02a71a5965e1622ee7b9fd
 
 Created:            Wed, 02 Sep 2020 20:44:52 PDT
@@ -186,7 +186,7 @@ loss:               0.11759971082210541 (primary, minimize)
 <Note>
 
 
-Notice you can pass a prefix to `replicate show`, and it'll automatically find
+Notice you can pass a prefix to `keepsake show`, and it'll automatically find
 the experiment that starts with just those characters. Saves a few keystrokes.
 
 </Note>
@@ -194,10 +194,10 @@ the experiment that starts with just those characters. Saves a few keystrokes.
 
 ## Compare checkpoints
 
-Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `4941495` and `a122e85` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `replicate ls`:
+Let's compare the last checkpoints from the two experiments we ran. Run this, replacing `4941495` and `a122e85` with the two checkpoint IDs from the `LATEST CHECKPOINT` column in `keepsake ls`:
 
 ```shell-session
-$ replicate diff 4941495 a122e85
+$ keepsake diff 4941495 a122e85
 Experiment
 ID:                       b90ad56                        9cce006
 Command:                  train.py                       train.py --learning_rate=0.2
@@ -215,12 +215,12 @@ accuracy:                 1                              0.9666666388511658
 loss:                     0.11759971082210541            0.056485891342163086
 ```
 
-`replicate diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Replicate is aware of: params, metrics, dependencies, and so on.
+`keepsake diff` works a bit like `git diff`, except in addition to the code, it compares all of the metadata that Keepsake is aware of: params, metrics, dependencies, and so on.
 
 <Note>
 
 
-`replicate diff` compares **checkpoints**, because that is the thing that actually has all the results.
+`keepsake diff` compares **checkpoints**, because that is the thing that actually has all the results.
 
 You can also pass an experiment ID, and it will pick the best or latest checkpoint from that experiment.
 
@@ -231,10 +231,10 @@ You can also pass an experiment ID, and it will pick the best or latest checkpoi
 
 At some point you might want to get back to some point in the past. Maybe you've run a bunch of experiments in parallel, and you want to choose one that works best. Or, perhaps you've gone down a line of exploration and it's not working, so you want to get back to where you were a week ago.
 
-The `replicate checkout` command will copy the code and weights from a checkpoint into your working directory. Run this, replacing `4941495` with a checkpoint ID you passed to `replicate diff`:
+The `keepsake checkout` command will copy the code and weights from a checkpoint into your working directory. Run this, replacing `4941495` with a checkpoint ID you passed to `keepsake diff`:
 
 ```shell-session
-$ replicate checkout 4941495
+$ keepsake checkout 4941495
 ═══╡ The directory "/Users/ben/p/tmp/iris-classifier" is not empty.
 ═══╡ This checkout may overwrite existing files. Make sure you've committed everything to Git so it's safe!
 
@@ -250,24 +250,24 @@ $ ls -lh model.pth
 -rw-r--r--  1 ben  staff   8.3K Aug  7 16:42 model.pth
 ```
 
-This is useful for getting the trained model out of a checkpoint, but **it also copies all of the code from the experiment that checkpoint is part of**. If you made a change to the code and didn't commit to Git, `replicate checkout` will allow you get back the exact code from an experiment.
+This is useful for getting the trained model out of a checkpoint, but **it also copies all of the code from the experiment that checkpoint is part of**. If you made a change to the code and didn't commit to Git, `keepsake checkout` will allow you get back the exact code from an experiment.
 
-**This means you don't have to remember to commit to Git when you're running experiments.** Just try a bunch of things, then when you've found something that works, use Replicate to get back to the exact code that produced those results and formally commit it to Git.
+**This means you don't have to remember to commit to Git when you're running experiments.** Just try a bunch of things, then when you've found something that works, use Keepsake to get back to the exact code that produced those results and formally commit it to Git.
 
-Neat, huh? Replicate is keeping track of everything in the background so you don't have to.
+Neat, huh? Keepsake is keeping track of everything in the background so you don't have to.
 
 ## The workflow so far
 
 With these tools, let's recap what the workflow looks like:
 
-- Add `experiment = replicate.init()` and `experiment.checkpoint()` to your training code.
+- Add `experiment = keepsake.init()` and `experiment.checkpoint()` to your training code.
 - Run several experiments by running the training script as usual, with changes to the hyperparameters or code.
-- See the results of our experiments with `replicate ls` and `replicate show`.
-- Compare the differences between experiments with `replicate diff`.
-- Get the code from the best experiment with `replicate checkout`.
+- See the results of our experiments with `keepsake ls` and `keepsake show`.
+- Compare the differences between experiments with `keepsake diff`.
+- Get the code from the best experiment with `keepsake checkout`.
 - Commit that code cleanly to Git.
 
-You don't have to keep track of what you changed in your experiments, because Replicate does that automatically for you. You can also safely change things without committing to Git, because `replicate checkout` will always be able to get you back to the exact environment the experiment was run in.
+You don't have to keep track of what you changed in your experiments, because Keepsake does that automatically for you. You can also safely change things without committing to Git, because `keepsake checkout` will always be able to get you back to the exact environment the experiment was run in.
 
 ## What's next
 
