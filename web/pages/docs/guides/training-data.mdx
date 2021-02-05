@@ -8,17 +8,17 @@ A machine learning model is the combination of the code and the training data, s
 
 There are two ways to do this:
 
-1. **Store training data in Replicate.** This is recommended if your training data is small (<100MB).
+1. **Store training data in Keepsake.** This is recommended if your training data is small (<100MB).
 2. **Point at data in another system.** This is recommended if your training data is large or you already have somewhere to store it.
 
-## Store training data in Replicate
+## Store training data in Keepsake
 
-If your training data is small, then we recommend storing it with Replicate in each experiment.
+If your training data is small, then we recommend storing it with Keepsake in each experiment.
 
 For example, if your training data is in a directory `training-data/` alongside your training code, then you might write this in your code:
 
 ```python
-experiment = replicate.init(
+experiment = keepsake.init(
     path="training-data/",
     params={...}
 )
@@ -27,19 +27,19 @@ experiment = replicate.init(
 If you want to store both your training script and training data, you can just save everything:
 
 ```python
-experiment = replicate.init(
+experiment = keepsake.init(
     path=".",
     params={...}
 )
 ```
 
-Then, to copy this data back to the current directory, you use `replicate checkout`:
+Then, to copy this data back to the current directory, you use `keepsake checkout`:
 
 ```
-$ replicate checkout <experiment ID>
+$ keepsake checkout <experiment ID>
 ```
 
-The downside of this approach is that Replicate makes a complete copy of your training data on each experiment. So, **this approach only works if your training data is small**.
+The downside of this approach is that Keepsake makes a complete copy of your training data on each experiment. So, **this approach only works if your training data is small**.
 
 How small is "small" depends on your storage costs and bandwidth, but typically we'd recommend doing this if your data is less than 100MB.
 
@@ -51,7 +51,7 @@ For example, if your training data is on S3, you might put the URL to your train
 
 ```python
 training_data_url = "s3://hooli-training-data/hotdogs-2020-05-03.tar.gz"
-experiment = replicate.init(
+experiment = keepsake.init(
     path=".",
     params={
         "training_data_url": training_data_url
@@ -62,12 +62,12 @@ experiment = replicate.init(
 
 This assumes you are disciplined about versioning your data and the contents of that URL never change. If the data at this URL might change, then you might want to [calculate the shasum](https://gist.github.com/rji/b38c7238128edf53a181) and record this in `params`.
 
-Then, if the data changes, you will see a different shasum in `replicate diff`, and you will know an experiment was trained on different data.
+Then, if the data changes, you will see a different shasum in `keepsake diff`, and you will know an experiment was trained on different data.
 
 <Note>
 
 
-**Note:** This documentation is incomplete. We'd love to hear about ways that you are versioning data. See [this GitHub issue](https://github.com/replicate/replicate/issues/359) or [chat to us in Discord](https://discord.gg/QmzJApGjyE).
+**Note:** This documentation is incomplete. We'd love to hear about ways that you are versioning data. See [this GitHub issue](https://github.com/replicate/keepsake/issues/359) or [chat to us in Discord](https://discord.gg/QmzJApGjyE).
 
 </Note>
 

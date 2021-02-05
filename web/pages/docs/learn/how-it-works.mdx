@@ -3,7 +3,7 @@ import DocsLayout from "../../../layouts/docs";
 <DocsLayout title="How it works">
 
 
-Replicate versions machine learning experiments and models.
+Keepsake versions machine learning experiments and models.
 
 In your training script, you use a Python library to upload files (like code and model weights) and metadata (like hyperparameters and metrics) to Amazon S3 or Google Cloud Storage.
 
@@ -15,11 +15,11 @@ Experiments are recorded directly in your training script or notebook using the 
 
 ```python
 import torch
-import replicate
+import keepsake
 
 def train():
     #highlight-start
-    experiment = replicate.init(path=".", params={...})
+    experiment = keepsake.init(path=".", params={...})
     #highlight-end
     model = Model()
 
@@ -41,10 +41,10 @@ These two lines will record:
 - The model weights on each iteration
 - Metrics on each iteration
 
-All this information is put in a **repository**, which is defined in the file `replicate.yaml`. For example:
+All this information is put in a **repository**, which is defined in the file `keepsake.yaml`. For example:
 
 ```yaml
-repository: "s3://replicate-hooli-hotdog-detector"
+repository: "s3://keepsake-hooli-hotdog-detector"
 ```
 
 A repository can be stored on Amazon S3, Google Cloud Storage, or the local disk. [The format of the repository is explained below](#repositories).
@@ -54,12 +54,12 @@ A repository can be stored on Amazon S3, Google Cloud Storage, or the local disk
 The versioned information can be accessed with the **command-line interface**:
 
 ```shell-session
-$ replicate ls
+$ keepsake ls
 EXPERIMENT  STARTED         STATUS   USER  LEARNING_RATE  LATEST CHECKPOINT
 c9f380d     16 seconds ago  stopped  ben   0.01           d4fb0d3 (step 99)
 a7cd781     9 seconds ago   stopped  ben   0.2            1f0865c (step 99)
 
-$ replicate checkout d4fb0d3
+$ keepsake checkout d4fb0d3
 ═══╡ Copying the code and weights from d4fb0d3 into the current directory...
 ```
 
@@ -77,7 +77,7 @@ The Python library can also load saved models to run inferences:
 
 ### Experiments
 
-The core concept in Replicate is the **experiment**. It represents a run of your training script, and tracks the _inputs_ to the training process so you can figure out how a model was trained.
+The core concept in Keepsake is the **experiment**. It represents a run of your training script, and tracks the _inputs_ to the training process so you can figure out how a model was trained.
 
 It records:
 
@@ -100,17 +100,17 @@ It records:
 
 A **repository** is where your experiments and checkpoints are stored. You typically have one repository per model, so you can group experiments based on the model you're working on.
 
-It is tied to the directory that your model is in, similar to the idea of a repository in a version control system. You define what repository a directory uses by defining it in `replicate.yaml`:
+It is tied to the directory that your model is in, similar to the idea of a repository in a version control system. You define what repository a directory uses by defining it in `keepsake.yaml`:
 
 ```yaml
-repository: "s3://replicate-hooli-hotdog-detector"
+repository: "s3://keepsake-hooli-hotdog-detector"
 ```
 
-Repositories can be stored on Amazon S3, Google Cloud Storage, or the local disk. [Learn more about `replicate.yaml` in the reference.](/docs/reference/yaml#repository)
+Repositories can be stored on Amazon S3, Google Cloud Storage, or the local disk. [Learn more about `keepsake.yaml` in the reference.](/docs/reference/yaml#repository)
 
 Repositories are just plain files – there is nothing magical going on. This is the directory structure:
 
-- `repository.json` – A file that marks this directory as a Replicate repository, and records the version of the data format within it.
+- `repository.json` – A file that marks this directory as a Keepsake repository, and records the version of the data format within it.
 - `checkpoints/<checkpoint ID>.tar.gz` – A tarball of the files saved when you create a checkpoint.
 - `experiments/<experiment ID>.tar.gz` – A tarball of the files in your project's directory when an experiment was created.
 - `metadata/experiments/<experiment ID>.json` – A JSON file containing all the metadata about an experiment and its checkpoints.
@@ -120,7 +120,7 @@ Repositories are just plain files – there is nothing magical going on. This i
 
 Next, you might want to take a look at:
 
-- [The CLI tutorial](/docs/tutorial) or <a href={process.env.TUTORIAL_COLAB_URL} target="_blank">the notebook tutorial</a> to learn how to use Replicate by building a simple model.
+- [The CLI tutorial](/docs/tutorial) or <a href={process.env.TUTORIAL_COLAB_URL} target="_blank">the notebook tutorial</a> to learn how to use Keepsake by building a simple model.
 - [The Python library reference](/docs/reference/python).
 - [How to store data in the cloud](/docs/guides/cloud-storage)
 - [How to version training data](/docs/guides/training-data)

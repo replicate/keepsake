@@ -5,11 +5,11 @@ import DocsLayout from "../../../layouts/docs";
 
 _This is an experimental feature, and the API may change in the future._
 
-Replicate works with any machine learning framework, but it includes a callback that makes it easier to use with Keras.
+Keepsake works with any machine learning framework, but it includes a callback that makes it easier to use with Keras.
 
-`ReplicateCallback` behaves like [Tensorflow's `ModelCheckpoint` callback](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint), but in addition to exporting a model at the end of each epoch, it also:
+`KeepsakeCallback` behaves like [Tensorflow's `ModelCheckpoint` callback](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint), but in addition to exporting a model at the end of each epoch, it also:
 
-1. Calls `replicate.init()` at the start of training to create an experiment, and
+1. Calls `keepsake.init()` at the start of training to create an experiment, and
 2. Calls `experiment.checkpoint()` after saving the model at the end of the epoch. All metrics are saved, and also any data from the [`logs` dictionary passed to the callback's `on_epoch_end` method](https://www.tensorflow.org/guide/keras/custom_callback#a_basic_example).
 
 Here is a simple example:
@@ -17,7 +17,7 @@ Here is a simple example:
 ```python
 import tensorflow as tf
 from tensorflow import keras
-from replicate.keras_callback import ReplicateCallback #highlight-line
+from keepsake.keras_callback import KeepsakeCallback #highlight-line
 
 dense_size = 784
 learning_rate = 0.01
@@ -44,7 +44,7 @@ model.fit(
     validation_split=0.5,
     callbacks=[
         #highlight-start
-        ReplicateCallback(
+        KeepsakeCallback(
             params={"dense_size": dense_size, "learning_rate": learning_rate,},
             primary_metric=("mean_absolute_error", "minimize"),
         ),
@@ -53,7 +53,7 @@ model.fit(
 )
 ```
 
-The `ReplicateCallback` class takes the following arguments, all optional:
+The `KeepsakeCallback` class takes the following arguments, all optional:
 
 - **`filepath`**: The path where the exported model is saved. This path is also saved by `experiment.checkpoint()` at the end of each epoch. If it is `None`, the model is not saved, and the callback just gathers code and metrics. Default: `model.hdf5`
 - **`params`**: A dictionary of hyperparameters that will be recorded to the experiment at the start of training.
@@ -62,4 +62,3 @@ The `ReplicateCallback` class takes the following arguments, all optional:
 - **`save_weights_only`**: if `True`, then only the model's weights will be saved (`model.save_weights(filepath)`), otherwise the full model is saved (`model.save(filepath)`). Default: `False`
 
 </DocsLayout>
-
