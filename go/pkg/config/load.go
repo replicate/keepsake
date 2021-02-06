@@ -115,10 +115,10 @@ func Parse(text []byte, dir string) (conf *Config, err error) {
 
 	if conf.Storage != "" {
 		if conf.Repository != "" {
-			return nil, fmt.Errorf("'repository' and 'storage' (deprecated) cannot both be defined, please only use 'repository'")
+			return nil, fmt.Errorf("'repository' and 'storage' (deprecated) cannot both be defined in keepsake.yaml. Please only use 'repository'.")
 		}
 
-		console.Warn("'storage' is deprecated in keepsake.yaml, please use 'repository'")
+		console.Warn("The 'storage' key is deprecated in keepsake.yaml. Please rename it to 'repository'.")
 		conf.Repository = conf.Storage
 		conf.Storage = ""
 	}
@@ -169,7 +169,7 @@ func findConfigPathInDirectory(folder string) (configPath string, err error) {
 		}
 		if exists {
 			if slices.ContainsString(global.DeprecatedConfigFilenames, configFilename) {
-				console.Warn("%s is deprecated, please name your configuration file %s", configFilename, global.ConfigFilenames[0])
+				console.Warn("%s is deprecated. Please rename it to %s.", configFilename, global.ConfigFilenames[0])
 			}
 
 			return configPath, nil
