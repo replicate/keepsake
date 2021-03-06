@@ -1,8 +1,16 @@
 from copy import deepcopy
-from typing import Optional, Dict, Tuple, Any
+from typing import Any, Dict, Optional, Tuple
+
+from pytorch_lightning.callbacks.base import Callback
+
+# https://github.com/pytorch/vision/issues/1938#issuecomment-594623431
+from six.moves import urllib
 
 import keepsake
-from pytorch_lightning.callbacks.base import Callback
+
+opener = urllib.request.build_opener()
+opener.addheaders = [("User-agent", "Mozilla/5.0")]
+urllib.request.install_opener(opener)
 
 
 class KeepsakeCallback(Callback):
