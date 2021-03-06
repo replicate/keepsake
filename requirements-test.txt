@@ -10,3 +10,4 @@ boto3==1.12.32
 google-cloud-storage==1.32.0
 waiting==1.4.1
 python-dateutil==2.1
+matplotlib==3.3.4
