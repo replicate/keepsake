@@ -1,36 +1,33 @@
 try:
     # backport is incompatible with 3.7+, so we must use built-in
-    from dataclasses import dataclass, InitVar, field
     import dataclasses
+    from dataclasses import InitVar, dataclass, field
 except ImportError:
     from ._vendor.dataclasses import dataclass, InitVar, field
     from ._vendor import dataclasses  # type: ignore
-import getpass
-import os
-import math
-import html
+
 import datetime
+import getpass
+import html
 import json
+import math
+import os
 import shlex
 import sys
 from typing import (
-    Dict,
+    TYPE_CHECKING,
     Any,
+    Callable,
+    Dict,
+    List,
+    MutableSequence,
     Optional,
     Tuple,
-    List,
-    TYPE_CHECKING,
-    MutableSequence,
-    Callable,
 )
 
 from . import console
-from .checkpoint import (
-    Checkpoint,
-    PrimaryMetric,
-    CheckpointList,
-)
-from .metadata import rfc3339_datetime, parse_rfc3339
+from .checkpoint import Checkpoint, CheckpointList, PrimaryMetric
+from .metadata import parse_rfc3339, rfc3339_datetime
 from .packages import get_imported_packages
 from .system import get_python_version
 from .validate import check_path
@@ -443,18 +440,21 @@ class ExperimentList(list, MutableSequence[Experiment]):
         """
         import matplotlib.pyplot as plt  # type: ignore
 
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
         if metric is None:
             metric = self.primary_metric()
 
         for exp in self:
             exp.plot(metric, plot_only=True)
 
-        plt.legend(bbox_to_anchor=(1, 1))
-        plt.xlabel("step")
-        plt.ylabel(metric)
+        ax.legend(bbox_to_anchor=(1, 1))
+        ax.set_xlabel("step")
+        ax.set_ylabel(metric)
 
         if logy:
-            plt.yscale("log")
+            ax.set_yscale("log")
 
     def scatter(self, param: str, metric: Optional[str] = None, logx=False, logy=False):
         """
