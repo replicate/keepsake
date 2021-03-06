@@ -68,7 +68,7 @@ class Experiment:
     def short_id(self):
         return self.id[:7]
 
-    def validate(self) -> List[str]:
+    def _validate(self) -> List[str]:
         errors = []
 
         if self.params is not None:
@@ -140,10 +140,10 @@ class Experiment:
             quiet=quiet,
         )
         self.checkpoints.append(checkpoint)
-        self.save(quiet=quiet)
+        self._save(quiet=quiet)
         return checkpoint
 
-    def save(self, quiet: bool):
+    def _save(self, quiet: bool):
         """
         Save this experiment's metadata to repository.
         """

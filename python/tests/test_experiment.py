@@ -255,25 +255,27 @@ class TestExperiment:
         }
 
         experiment = Experiment(path=None, params="lol", **kwargs)
-        assert experiment.validate() == ["params must be a dictionary"]
+        assert experiment._validate() == ["params must be a dictionary"]
 
         experiment = Experiment(path=None, params={"foo": Blah()}, **kwargs)
-        assert "Failed to serialize the param 'foo' to JSON" in experiment.validate()[0]
+        assert (
+            "Failed to serialize the param 'foo' to JSON" in experiment._validate()[0]
+        )
 
         experiment = Experiment(path="..", **kwargs)
         assert (
             "The path passed to the experiment must not start with '..' or '/'."
-            in experiment.validate()[0]
+            in experiment._validate()[0]
         )
         experiment = Experiment(path="/", **kwargs)
         assert (
             "The path passed to the experiment must not start with '..' or '/'."
-            in experiment.validate()[0]
+            in experiment._validate()[0]
         )
         experiment = Experiment(path="blah", **kwargs)
         assert (
             "The path passed to the experiment does not exist: blah"
-            in experiment.validate()[0]
+            in experiment._validate()[0]
         )
 
     def test_checkpoints(self, temp_workdir):
