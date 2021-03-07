@@ -1,20 +1,20 @@
 import json
-from glob import glob
 import os
-import torch
-from torch.nn import functional as F
-from torch import nn
-from pytorch_lightning.core.lightning import LightningModule
-from pytorch_lightning import Trainer
-from torch.optim import Adam
-from torch.utils.data import DataLoader, random_split, Subset
-from torch.utils.data.dataset import Dataset
-from torchvision.datasets import MNIST
-from torchvision import transforms
-import pytest
 import urllib
+from glob import glob
 
+import pytest
+import torch
 from keepsake.pl_callback import KeepsakeCallback
+from pytorch_lightning import Trainer
+from pytorch_lightning.core.lightning import LightningModule
+from six.moves import urllib
+from torch import nn
+from torch.nn import functional as F
+from torch.optim import Adam
+from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data.dataset import Dataset
+from torchvision import transforms
 
 
 class ModelNoValidation(LightningModule):
@@ -34,6 +34,11 @@ class ModelNoValidation(LightningModule):
         x = self.layer_2(x)
         x = F.log_softmax(x, dim=1)
         return x
+
+    def set_header_for(self):
+        opener = urllib.request.build_opener()
+        opener.addheaders = [("User-agent", "Mozilla/5.0")]
+        urllib.request.install_opener(opener)
 
     def prepare_data(self):
         # HACK: https://github.com/pytorch/vision/issues/1938
