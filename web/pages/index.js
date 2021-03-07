@@ -113,20 +113,26 @@ export default function Home() {
           >{`import torch
 import keepsake
 
-def train():
+def train(learning_rate, num_epochs):
     #highlight-start
     # Save training code and hyperparameters
-    experiment = keepsake.init(path=".", params={...})
+    experiment = keepsake.init(
+      path=".",
+      params={"learning_rate": learning_rate, "num_epochs": num_epochs},
+    )
     #highlight-end
     model = Model()
 
     for epoch in range(num_epochs):
-        # ...
+        # ... train step ...
 
         torch.save(model, "model.pth")
         #highlight-start
         # Save model weights and metrics
-        experiment.checkpoint(path="model.pth", metrics={...})
+        experiment.checkpoint(
+          path="model.pth",
+          metrics={"loss": loss, "accuracy": accuracy}
+        })
         #highlight-end`}</CodeBlock>
           {/* Mobile */}
           <CodeBlock
