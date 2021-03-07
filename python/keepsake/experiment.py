@@ -440,21 +440,23 @@ class ExperimentList(list, MutableSequence[Experiment]):
         """
         import matplotlib.pyplot as plt  # type: ignore
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
         if metric is None:
             metric = self.primary_metric()
+
+        plotted_label = plt.axes().yaxis.get_label().get_text() or metric
+
+        if metric != plotted_label:
+            plt.figure()
 
         for exp in self:
             exp.plot(metric, plot_only=True)
 
-        ax.legend(bbox_to_anchor=(1, 1))
-        ax.set_xlabel("step")
-        ax.set_ylabel(metric)
+        plt.legend(bbox_to_anchor=(1, 1))
+        plt.xlabel("step")
+        plt.ylabel(metric)
 
         if logy:
-            ax.set_yscale("log")
+            plt.yscale("log")
 
     def scatter(self, param: str, metric: Optional[str] = None, logx=False, logy=False):
         """

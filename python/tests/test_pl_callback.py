@@ -8,7 +8,6 @@ import torch
 from keepsake.pl_callback import KeepsakeCallback
 from pytorch_lightning import Trainer
 from pytorch_lightning.core.lightning import LightningModule
-from six.moves import urllib
 from torch import nn
 from torch.nn import functional as F
 from torch.optim import Adam
@@ -35,18 +34,16 @@ class ModelNoValidation(LightningModule):
         x = F.log_softmax(x, dim=1)
         return x
 
-    def set_header_for(self):
-        opener = urllib.request.build_opener()
-        opener.addheaders = [("User-agent", "Mozilla/5.0")]
-        urllib.request.install_opener(opener)
-
     def prepare_data(self):
+<<<<<<< HEAD
         # HACK: https://github.com/pytorch/vision/issues/1938
         # But, we shouldn't have to do this: https://github.com/replicate/keepsake/issues/551
         opener = urllib.request.build_opener()
         opener.addheaders = [("User-agent", "Mozilla/5.0")]
         urllib.request.install_opener(opener)
 
+=======
+>>>>>>> reverted test fix and improved plotting logic
         # download only
         MNIST(
             "/tmp/keepsake-test-mnist",
