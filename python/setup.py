@@ -44,7 +44,7 @@ def plat_name_to_binary_path(plat_name):
     if plat_name in PLAT_NAME_TO_BINARY_PATH:
         return PLAT_NAME_TO_BINARY_PATH[plat_name]
     # We need to do clever stuff for OS X, because it could be any version number
-    if re.match(r"macosx_\d+_\d+_x86_64", plat_name):
+    if re.match(r"macosx_\d+(_\d+)?_x86_64", plat_name):
         return "darwin/amd64"
     raise Exception("unsupported plat_name: " + plat_name)
 
