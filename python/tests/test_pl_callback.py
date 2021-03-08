@@ -35,15 +35,12 @@ class ModelNoValidation(LightningModule):
         return x
 
     def prepare_data(self):
-<<<<<<< HEAD
         # HACK: https://github.com/pytorch/vision/issues/1938
         # But, we shouldn't have to do this: https://github.com/replicate/keepsake/issues/551
         opener = urllib.request.build_opener()
         opener.addheaders = [("User-agent", "Mozilla/5.0")]
         urllib.request.install_opener(opener)
 
-=======
->>>>>>> reverted test fix and improved plotting logic
         # download only
         MNIST(
             "/tmp/keepsake-test-mnist",
