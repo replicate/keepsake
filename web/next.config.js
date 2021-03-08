@@ -18,6 +18,11 @@ let config = {
         destination: "/docs/guides/inference",
         permanent: true,
       },
+      {
+        source: "/docs/notebook-tutorial",
+        destination: config.env.TUTORIAL_COLAB_URL,
+        permanent: false,
+      }
     ];
   },
 };
