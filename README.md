@@ -110,7 +110,7 @@ pip install -U keepsake
 
 If you prefer **training scripts and the CLI**, [follow the our tutorial to learn how Keepsake works](https://keepsake.ai/docs/tutorial).
 
-If you prefer **working in notebooks**, <a href="https://colab.research.google.com/drive/1vjZReg--45P-NZ4j8TXAJFWuepamXc7K" target="_blank">follow our notebook tutorial on Colab</a>.
+If you prefer **working in notebooks**, <a href="https://colab.research.google.com/drive/1zzcQHd5ZtIgLA_vQjdQ0PUcAfYwcc43H" target="_blank">follow our notebook tutorial on Colab</a>.
 
 If you like to **learn concepts first**, [read our guide about how Keepsake works](https://keepsake.ai/docs/learn/how-it-works).
 
