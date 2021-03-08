@@ -14,6 +14,7 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Subset, random_split
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
+from torchvision.datasets import MNIST
 
 
 class ModelNoValidation(LightningModule):
