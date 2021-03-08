@@ -12,6 +12,7 @@ from torch.utils.data.dataset import Dataset
 from torchvision.datasets import MNIST
 from torchvision import transforms
 import pytest
+import urllib
 
 from keepsake.pl_callback import KeepsakeCallback
 
@@ -35,6 +36,12 @@ class ModelNoValidation(LightningModule):
         return x
 
     def prepare_data(self):
+        # HACK: https://github.com/pytorch/vision/issues/1938
+        # But, we shouldn't have to do this: https://github.com/replicate/keepsake/issues/551
+        opener = urllib.request.build_opener()
+        opener.addheaders = [("User-agent", "Mozilla/5.0")]
+        urllib.request.install_opener(opener)
+
         # download only
         MNIST(
             "/tmp/keepsake-test-mnist",
