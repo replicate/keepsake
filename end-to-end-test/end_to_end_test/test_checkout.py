@@ -135,3 +135,95 @@ if __name__ == "__main__":
         "cicada.ogg",
     ]
     assert set(actual_paths) == set(expected_paths)
+
+
+def test_checkout_no_experiment_path(tmpdir, temp_bucket_factory, tmpdir_factory):
+    tmpdir = str(tmpdir)
+    repository = "file://" + str(tmpdir_factory.mktemp("repository"))
+
+    rand = str(random.randint(0, 100000))
+    os.mkdir(os.path.join(tmpdir, rand))
+    with open(os.path.join(tmpdir, rand, rand), "w") as f:
+        f.write(rand)
+
+    with open(os.path.join(tmpdir, "foo.txt"), "w") as f:
+        f.write("foo bar")
+
+    with open(os.path.join(tmpdir, "keepsake.yaml"), "w") as f:
+        f.write(
+            """
+repository: {repository}
+""".format(
+                repository=repository
+            )
+        )
+    with open(os.path.join(tmpdir, "train.py"), "w") as f:
+        f.write(
+            """
+import os
+import keepsake
+
+def main():
+    experiment = keepsake.init()
+    experiment.checkpoint(path="foo.txt")
+
+if __name__ == "__main__":
+    main()
+"""
+        )
+
+    env = get_env()
+    cmd = ["python", "train.py"]
+    subprocess.run(cmd, cwd=tmpdir, env=env, check=True)
+
+    experiments = json.loads(
+        subprocess.run(
+            ["keepsake", "ls", "--json"],
+            cwd=tmpdir,
+            env=env,
+            capture_output=True,
+            check=True,
+        ).stdout
+    )
+    assert len(experiments) == 1
+
+    exp = experiments[0]
+
+    # checking out experiment
+    output_dir = str(tmpdir_factory.mktemp("output"))
+    subprocess.run(
+        ["keepsake", "checkout", "-o", output_dir, exp["id"]],
+        cwd=tmpdir,
+        env=env,
+        check=True,
+    )
+
+    # Checkout out experiment checks out latest checkpoint
+    with open(os.path.join(output_dir, "foo.txt")) as f:
+        assert f.read() == "foo bar"
+
+    actual_paths = [
+        os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
+    ]
+    expected_paths = ["foo.txt"]
+    assert set(actual_paths) == set(expected_paths)
+
+    # checking out checkpoint
+    latest_id = exp["latest_checkpoint"]["id"]
+
+    output_dir = str(tmpdir_factory.mktemp("output"))
+    subprocess.run(
+        ["keepsake", "checkout", "-o", output_dir, latest_id],
+        cwd=tmpdir,
+        env=env,
+        check=True,
+    )
+
+    with open(os.path.join(output_dir, "foo.txt")) as f:
+        assert f.read() == "foo bar"
+
+    actual_paths = [
+        os.path.relpath(path, output_dir) for path in glob(output_dir + "/*")
+    ]
+    expected_paths = ["foo.txt"]
+    assert set(actual_paths) == set(expected_paths)

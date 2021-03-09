@@ -104,13 +104,36 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 	}
 
 	if exists {
-		isEmpty, err := files.DirIsEmpty(displayPath)
+		isDir, err := files.IsDir(displayPath)
 		if err != nil {
 			return err
 		}
-		if !isEmpty && !force {
-			console.Warn("The directory %q is not empty.", displayPath)
-			console.Warn("%s Make sure they're saved in Git or Keepsake so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
+		if isDir {
+			isEmpty, err := files.DirIsEmpty(displayPath)
+			if err != nil {
+				return err
+			}
+			if !isEmpty && !force {
+				console.Warn("The directory %q is not empty.", displayPath)
+				console.Warn("%s Make sure they're saved in Git or Keepsake so they're safe!", aurora.Bold("This checkout may overwrite existing files."))
+				fmt.Println()
+				// This is scary! See https://github.com/replicate/keepsake/issues/300
+				doOverwrite, err := console.InteractiveBool{
+					Prompt:  "Do you want to continue?",
+					Default: false,
+				}.Read()
+				if err != nil {
+					return err
+				}
+				if !doOverwrite {
+					console.Info("Aborting.")
+					return nil
+				}
+			}
+		} else if !force {
+			// it's a file
+			console.Warn("The file %q exists.", displayPath)
+			console.Warn("%s Make sure it's saved in Git or Keepsake so it's safe!", aurora.Bold("This checkout may overwrite existing files."))
 			fmt.Println()
 			// This is scary! See https://github.com/replicate/keepsake/issues/300
 			doOverwrite, err := console.InteractiveBool{
