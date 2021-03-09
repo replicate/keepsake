@@ -530,6 +530,9 @@ class TestExperimentCollection:
             with open("keepsake.yaml", "w") as f:
                 f.write("repository: file://.keepsake/")
 
+        with open("foo.txt", "w") as f:
+            f.write("hello world")
+
         project = Project(repository=repo, directory=directory)
 
         if exception:
