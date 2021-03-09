@@ -23,6 +23,7 @@ import (
 	"github.com/replicate/keepsake/go/pkg/console"
 	"github.com/replicate/keepsake/go/pkg/errors"
 	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/global"
 )
 
 type S3Repository struct {
@@ -449,7 +450,7 @@ func (s *S3Repository) listRecursive(results chan<- ListResult, dir string, filt
 func discoverBucketRegion(bucket string) (string, error) {
 	sess := session.Must(session.NewSession(&aws.Config{}))
 	ctx := context.Background()
-	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, "us-east-1")
+	region, err := s3manager.GetBucketRegion(ctx, sess, bucket, global.S3Region)
 	if err != nil {
 		return "", err
 	}
@@ -464,8 +465,7 @@ func getBucketRegionOrCreateBucket(bucket string) (string, error) {
 			// The real check for this is `aerr.Code() == s3.ErrCodeNoSuchBucket` but GetBucketRegion doesnt return right error
 			if strings.Contains(aerr.Error(), "NotFound") {
 				// TODO (bfirsh): report to use that this is being created, in a way that is compatible with shared library
-				region = "us-east-1"
-				if err := CreateS3Bucket(region, bucket); err != nil {
+				if err := CreateS3Bucket(global.S3Region, bucket); err != nil {
 					return "", fmt.Errorf("Error creating bucket: %v", err)
 				}
 				return region, nil

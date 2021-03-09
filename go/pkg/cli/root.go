@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/replicate/keepsake/go/pkg/analytics"
@@ -34,6 +36,7 @@ To learn how to get started, go to ` + global.WebURL + `/docs/tutorial`,
 		},
 	}
 	setPersistentFlags(&rootCmd)
+	handleEnvironmentVariables()
 
 	rootCmd.AddCommand(
 		newAnalyticsCommand(),
@@ -56,4 +59,10 @@ func setPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&global.ProjectDirectory, "project-directory", "D", "", "Project directory. Default: nearest parent directory with keepsake.yaml")
 	cmd.PersistentFlags().BoolVarP(&global.Verbose, "verbose", "v", false, "Verbose output")
 
+}
+
+func handleEnvironmentVariables() {
+	if s3Region := os.Getenv("AWS_DEFAULT_REGION"); s3Region != "" {
+		global.S3Region = s3Region
+	}
 }

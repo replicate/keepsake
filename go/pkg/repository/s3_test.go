@@ -16,6 +16,7 @@ import (
 
 	"github.com/replicate/keepsake/go/pkg/errors"
 	"github.com/replicate/keepsake/go/pkg/files"
+	"github.com/replicate/keepsake/go/pkg/global"
 	"github.com/replicate/keepsake/go/pkg/hash"
 )
 
@@ -116,18 +117,18 @@ func TestS3ListRecursive(t *testing.T) {
 
 func createS3Bucket(t *testing.T) (string, *s3.S3) {
 	bucketName := "keepsake-test-go-" + hash.Random()[0:10]
-	err := CreateS3Bucket("us-east-1", bucketName)
+	err := CreateS3Bucket(global.S3Region, bucketName)
 	require.NoError(t, err)
 
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"),
+		Region: aws.String(global.S3Region),
 	})
 	require.NoError(t, err)
 	return bucketName, s3.New(sess)
 }
 
 func deleteS3Bucket(t *testing.T, bucketName string) {
-	require.NoError(t, DeleteS3Bucket("us-east-1", bucketName))
+	require.NoError(t, DeleteS3Bucket(global.S3Region, bucketName))
 }
 
 func readS3Object(t *testing.T, svc *s3.S3, bucketName string, key string) []byte {
