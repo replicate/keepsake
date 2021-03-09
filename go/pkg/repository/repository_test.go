@@ -202,4 +202,8 @@ func TestCopyToTempDir(t *testing.T) {
 	contents, err = ioutil.ReadFile(path.Join(tempDir, "my/folder/bar"))
 	require.NoError(t, err)
 	require.Equal(t, "bar", string(contents))
+
+	// with missing file
+	_, err = CopyToTempDir(dir, "not-existing")
+	require.Error(t, err)
 }
