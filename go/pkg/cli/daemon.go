@@ -15,6 +15,7 @@ func NewDaemonCommand() *cobra.Command {
 		RunE: runDaemon,
 	}
 	setPersistentFlags(cmd)
+	handleEnvironmentVariables()
 	addRepositoryURLFlag(cmd)
 	return cmd
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/replicate/keepsake/go/pkg/concurrency"
+	"github.com/replicate/keepsake/go/pkg/global"
 	"github.com/replicate/keepsake/go/pkg/hash"
 	"github.com/replicate/keepsake/go/pkg/param"
 	"github.com/replicate/keepsake/go/pkg/project"
@@ -162,10 +163,10 @@ func BenchmarkKeepsakeS3(b *testing.B) {
 
 	// Create a bucket
 	bucketName := "keepsake-test-benchmark-" + hash.Random()[0:10]
-	err = repository.CreateS3Bucket("us-east-1", bucketName)
+	err = repository.CreateS3Bucket(global.S3Region, bucketName)
 	require.NoError(b, err)
 	defer func() {
-		require.NoError(b, repository.DeleteS3Bucket("us-east-1", bucketName))
+		require.NoError(b, repository.DeleteS3Bucket(global.S3Region, bucketName))
 	}()
 	// Even though CreateS3Bucket is supposed to wait until it exists, sometimes it doesn't
 	time.Sleep(1 * time.Second)

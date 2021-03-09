@@ -11,6 +11,7 @@ var Color = true
 var ProjectDirectory = ""
 var BugsEmail = "bugs@replicate.ai"
 var SegmentKey = "MKaYmSZ2hW6P8OegI9g0sufjZeUh28g7"
+var S3Region = "us-east-1"
 
 func init() {
 	if Environment == "development" {
