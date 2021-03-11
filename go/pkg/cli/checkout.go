@@ -119,15 +119,15 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 				fmt.Println()
 				// This is scary! See https://github.com/replicate/keepsake/issues/300
 				doOverwrite, err := console.InteractiveBool{
-					Prompt:  "Do you want to continue?",
-					Default: false,
+					Prompt:         "Do you want to continue?",
+					Default:        false,
+					NonDefaultFlag: "-f",
 				}.Read()
 				if err != nil {
 					return err
 				}
 				if !doOverwrite {
-					console.Info("Aborting.")
-					return nil
+					return fmt.Errorf("Aborting.")
 				}
 			}
 		} else if !force {
@@ -137,15 +137,15 @@ func overwriteDisplayPathPrompt(displayPath string, force bool) error {
 			fmt.Println()
 			// This is scary! See https://github.com/replicate/keepsake/issues/300
 			doOverwrite, err := console.InteractiveBool{
-				Prompt:  "Do you want to continue?",
-				Default: false,
+				Prompt:         "Do you want to continue?",
+				Default:        false,
+				NonDefaultFlag: "-f",
 			}.Read()
 			if err != nil {
 				return err
 			}
 			if !doOverwrite {
-				console.Info("Aborting.")
-				return nil
+				return fmt.Errorf("Aborting.")
 			}
 		}
 	}

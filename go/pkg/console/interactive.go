@@ -3,6 +3,7 @@ package console
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -76,6 +77,8 @@ func (i Interactive) Read() (string, error) {
 type InteractiveBool struct {
 	Prompt  string
 	Default bool
+	// NonDefaultFlag is the flag to suggest passing to do the thing which isn't default when running inside a script
+	NonDefaultFlag string
 }
 
 func (i InteractiveBool) Read() (bool, error) {
@@ -88,6 +91,9 @@ func (i InteractiveBool) Read() (bool, error) {
 		reader := bufio.NewReader(os.Stdin)
 		text, err := reader.ReadString('\n')
 		if err != nil {
+			if err == io.EOF {
+				return false, fmt.Errorf("stdin is closed. If you're running in a script, you need to pass the '%s' option.", i.NonDefaultFlag)
+			}
 			return false, err
 		}
 		text = strings.ToLower(strings.TrimSpace(text))
