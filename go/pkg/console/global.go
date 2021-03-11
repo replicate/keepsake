@@ -63,6 +63,7 @@ func DebugOutput(line string) {
 	ConsoleInstance.DebugOutput(line)
 }
 
-func IsTTY() bool {
-	return isatty.IsTerminal(os.Stdout.Fd())
+// IsTTY checks if a file is a TTY or not. E.g. IsTTY(os.Stdin)
+func IsTTY(f *os.File) bool {
+	return isatty.IsTerminal(f.Fd())
 }
