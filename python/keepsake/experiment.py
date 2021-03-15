@@ -442,8 +442,7 @@ class ExperimentList(list, MutableSequence[Experiment]):
 
         if metric is None:
             metric = self.primary_metric()
-
-        plotted_label = plt.axes().yaxis.get_label().get_text() or metric
+        plotted_label = plt.gca().get_ylabel() or metric
 
         if metric != plotted_label:
             plt.figure()
