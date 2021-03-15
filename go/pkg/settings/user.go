@@ -91,7 +91,7 @@ func UserSettingsDir() (string, error) {
 }
 
 func deprecatedUserSettingsDir() (string, error) {
-	return homedir.Expand("~/.config/keepsake")
+	return homedir.Expand("~/.config/replicate")
 }
 
 func userSettingsPath() (string, error) {

@@ -78,14 +78,15 @@ func removeExperimentOrCheckpoint(cmd *cobra.Command, prefixes []string) error {
 			}
 		}
 		continueDelete, err := console.InteractiveBool{
-			Prompt:  "\nDo you want to continue?",
-			Default: false,
+			Prompt:         "\nDo you want to continue?",
+			Default:        false,
+			NonDefaultFlag: "-f",
 		}.Read()
 		if err != nil {
 			return err
 		}
 		if !continueDelete {
-			return nil
+			return fmt.Errorf("Aborting.")
 		}
 	}
 

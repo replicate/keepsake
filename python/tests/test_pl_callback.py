@@ -91,6 +91,7 @@ class ModelWithValidation(ModelNoValidation):
         return loss
 
 
+@pytest.mark.skip("https://github.com/replicate/keepsake/issues/551")
 def test_pl_callback_no_validation(temp_workdir):
     with open("keepsake.yaml", "w") as f:
         f.write("repository: file://.keepsake/")
@@ -132,6 +133,7 @@ def test_pl_callback_no_validation(temp_workdir):
     assert os.path.exists(".keepsake/checkpoints/" + chkp_meta["id"] + ".tar.gz")
 
 
+@pytest.mark.skip("https://github.com/replicate/keepsake/issues/551")
 def test_pl_callback_with_validation(temp_workdir):
     with open("keepsake.yaml", "w") as f:
         f.write("repository: file://.keepsake/")

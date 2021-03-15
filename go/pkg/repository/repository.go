@@ -396,6 +396,9 @@ func CopyToTempDir(localPath string, includePath string) (tempDir string, err er
 	// then copy the ones that match the includePath.
 	// TODO(andreas): only scan files in the includePath
 	filesToCopy, err := getListOfFilesToPut(localPath, tempDir)
+	if err != nil {
+		return "", err
+	}
 	count := 0
 	for _, file := range filesToCopy {
 
@@ -422,6 +425,10 @@ func CopyToTempDir(localPath string, includePath string) (tempDir string, err er
 			return "", fmt.Errorf("Failed to copy %s to %s: %v", file.Source, file.Dest, err)
 		}
 		count += 1
+	}
+
+	if count == 0 {
+		return "", fmt.Errorf("No files matched '%s' in %s", includePath, localPath)
 	}
 
 	console.Debug("Copied %d files to temporary directory (took %.3f seconds)", count, time.Since(start).Seconds())

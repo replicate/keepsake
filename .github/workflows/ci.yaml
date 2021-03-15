@@ -44,7 +44,7 @@ jobs:
           aws-region: us-east-1
       - name: Setup GCP credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           version: "290.0.1"
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -101,7 +101,7 @@ jobs:
           aws-region: us-east-1
       - name: Setup GCP credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           version: "290.0.1"
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -193,7 +193,7 @@ jobs:
           aws-region: us-east-1
       - name: Setup GCP credentials
         if: ${{ env.SECRETS_ARE_AVAILABLE }}
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           version: "290.0.1"
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -229,7 +229,7 @@ jobs:
         with:
           python-version: 3.7
       - name: Setup GCP credentials
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0.2.1
         with:
           version: "290.0.1"
           project_id: ${{ secrets.GCP_PROJECT_ID }}

@@ -54,7 +54,7 @@ func ConfigNotFound(msg string) error {
 
 You must either create a keepsake.yaml configuration file, or explicitly pass the arguments 'repository' and 'directory' to keepsake.Project().
 
-For more information, see https://keepsake.ai/docs/reference/python"""
+For more information, see https://keepsake.ai/docs/reference/python
 `,
 	}
 }
