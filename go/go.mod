@@ -28,11 +28,11 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xeonx/timeago v1.0.0-rc4
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
-	golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/tools v0.1.0
-	google.golang.org/api v0.40.0
-	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705
+	google.golang.org/api v0.43.0
+	google.golang.org/genproto v0.0.0-20210319143718-93e7006c17a6
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
 	gotest.tools/gotestsum v0.6.0
