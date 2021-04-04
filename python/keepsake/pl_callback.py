@@ -30,6 +30,7 @@ class KeepsakeCallback(Callback):
     def __init__(
         self,
         filepath="model.pth",
+        experiment_path=".",
         params: Optional[Dict[str, Any]] = None,
         primary_metric: Optional[Tuple[str, str]] = None,
         period: Optional[int] = 1,
@@ -58,6 +59,7 @@ class KeepsakeCallback(Callback):
 
         super().__init__()
         self.filepath = Path(filepath).resolve()
+        self.experiment_path = Path(experiment_path).resolve()
         self.params = params
         self.primary_metric = primary_metric
         self.period = period
@@ -66,7 +68,7 @@ class KeepsakeCallback(Callback):
 
     def on_pretrain_routine_start(self, trainer, pl_module):
         self.experiment = keepsake.init(
-            path=str(self.filepath.parent),
+            path=str(self.experiment_path),
             params=self.params,
         )
 
