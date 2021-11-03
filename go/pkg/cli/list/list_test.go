@@ -110,6 +110,7 @@ func createTestData(t *testing.T, workingDir string, conf *config.Config) reposi
 			"param-3": param.String("hi"),
 			// test it works with None
 			"param-4": param.None(),
+			"param-5": param.String("__verylongparameterstring__"),
 		},
 		Host:   "10.1.1.2",
 		User:   "ben",
@@ -166,20 +167,56 @@ func TestListOutputTableWithPrimaryMetricAll(t *testing.T) {
 	})
 	require.NoError(t, err)
 	expected := `
-EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS         BEST CHECKPOINT    LATEST CHECKPOINT
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS                        BEST CHECKPOINT    LATEST CHECKPOINT
 3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      param-1=200
                                                             param-2=hello
                                                             param-3=hi
                                                             param-4=null
+                                                            param-5=__verylongparamet...
 
-2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                       4cccccc (step 5)
-                                                            param-2=hello                     metric-3=0.5
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                                      4cccccc (step 5)
+                                                            param-2=hello                                    metric-3=0.5
                                                             param-3=hi
 
-1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100    2cccccc (step 20)  3cccccc (step 20)
-                                                            param-2=hello  metric-1=0.01      metric-1=0.02
-                                                                           metric-2=2         metric-2=2
-                                                                                              metric-3=null
+1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100                   2cccccc (step 20)  3cccccc (step 20)
+                                                            param-2=hello                 metric-1=0.01      metric-1=0.02
+                                                                                          metric-2=2         metric-2=2
+                                                                                                             metric-3=null
+
+`
+	expected = expected[1:] // strip initial whitespace, added for readability
+	actual = testutil.TrimRightLines(actual)
+	require.Equal(t, expected, actual)
+}
+
+func TestListOutputFullTableWithPrimaryMetricAll(t *testing.T) {
+	workingDir, err := ioutil.TempDir("", "keepsake-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(workingDir)
+
+	conf := &config.Config{}
+	repo := createTestData(t, workingDir, conf)
+
+	actual := capturer.CaptureStdout(func() {
+		err = Experiments(repo, FormatFullTable, true, new(param.Filters), &param.Sorter{Key: "started"})
+	})
+	require.NoError(t, err)
+	expected := `
+EXPERIMENT  STARTED             STATUS   HOST      USER     PARAMS                               BEST CHECKPOINT    LATEST CHECKPOINT
+3eeeeee     2 minutes ago       stopped  10.1.1.2  ben      param-1=200
+                                                            param-2=hello
+                                                            param-3=hi
+                                                            param-4=null
+                                                            param-5=__verylongparameterstring__
+
+2eeeeee     about a minute ago  stopped  10.1.1.2  andreas  param-1=200                                             4cccccc (step 5)
+                                                            param-2=hello                                           metric-3=0.5
+                                                            param-3=hi
+
+1eeeeee     about a second ago  running  10.1.1.1  andreas  param-1=100                          2cccccc (step 20)  3cccccc (step 20)
+                                                            param-2=hello                        metric-1=0.01      metric-1=0.02
+                                                                                                 metric-2=2         metric-2=2
+                                                                                                                    metric-3=null
 
 `
 	expected = expected[1:] // strip initial whitespace, added for readability

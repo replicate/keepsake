@@ -25,6 +25,7 @@ const (
 	FormatJSON = iota
 	FormatTable
 	FormatQuiet
+	FormatFullTable
 )
 
 const valueMaxLength = 20
@@ -98,7 +99,9 @@ func Experiments(repo repository.Repository, format Format, all bool, filters *p
 	case FormatJSON:
 		return outputJSON(listExperiments)
 	case FormatTable:
-		return outputTable(listExperiments, all)
+		return outputTable(listExperiments, all, true)
+	case FormatFullTable:
+		return outputTable(listExperiments, all, false)
 	case FormatQuiet:
 		return outputQuiet(listExperiments)
 	}
@@ -118,7 +121,7 @@ func outputJSON(experiments []*ListExperiment) error {
 	return enc.Encode(experiments)
 }
 
-func outputTable(experiments []*ListExperiment, all bool) error {
+func outputTable(experiments []*ListExperiment, all bool, truncate bool) error {
 	if len(experiments) == 0 {
 		console.Info("No experiments found")
 		return nil
@@ -191,7 +194,11 @@ func outputTable(experiments []*ListExperiment, all bool) error {
 		params := []string{}
 		for _, key := range paramsToDisplay {
 			if val, ok := exp.Params[key]; ok {
-				params = append(params, key+"="+val.ShortString(valueMaxLength, valueTruncate))
+				if truncate {
+					params = append(params, key+"="+val.ShortString(valueMaxLength, valueTruncate))
+				} else {
+					params = append(params, key+"="+val.String())
+				}
 			}
 		}
 		columns = append(columns, strings.Join(params, "\n"))

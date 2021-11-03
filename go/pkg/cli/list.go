@@ -66,6 +66,7 @@ func listExperiments(cmd *cobra.Command, args []string) error {
 func addListFormatFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("json", false, "Print output in JSON format")
 	cmd.Flags().Bool("all", false, "Output all params and metrics. Default: only params/metrics that differ")
+	cmd.Flags().Bool("full", false, "Do not truncate parameter values.")
 	cmd.Flags().BoolP("quiet", "q", false, "Only print experiment IDs")
 }
 
@@ -81,12 +82,26 @@ func parseListFormatFlags(cmd *cobra.Command) (format list.Format, all bool, err
 		format = list.FormatTable
 	}
 
+	full, err := cmd.Flags().GetBool("full")
+	if err != nil {
+		return 0, false, err
+	}
+	if full && format == list.FormatJSON {
+		return 0, false, fmt.Errorf("Cannot use the --full flag in combination with --json")
+	}
+	if full {
+		format = list.FormatFullTable
+	}
+
 	quiet, err := cmd.Flags().GetBool("quiet")
 	if err != nil {
 		return 0, false, err
 	}
 	if quiet && format == list.FormatJSON {
 		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --json")
+	}
+	if quiet && full {
+		return 0, false, fmt.Errorf("Cannot use the --quiet flag in combination with --full")
 	}
 
 	all, err = cmd.Flags().GetBool("all")
