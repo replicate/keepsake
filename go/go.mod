@@ -35,5 +35,5 @@ require (
 	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
-	gotest.tools/gotestsum v0.6.0
+	gotest.tools/gotestsum v1.7.0
 )
