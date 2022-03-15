@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/kami-zh/go-capturer v0.0.0-20171211120116-e492ea43421d
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/mattn/go-isatty v0.0.12
+	github.com/mattn/go-isatty v0.0.14
 	github.com/mholt/archiver/v3 v3.3.3-0.20201013044347-a9434fffa1d1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/go-wordwrap v1.0.1
