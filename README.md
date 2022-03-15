@@ -1,3 +1,7 @@
+# 📣 This project is not actively maintained. If you'd like to help maintain it, please [let us know](https://github.com/replicate/keepsake/issues/873).
+
+---
+
 # Keepsake
 
 Version control for machine learning.
