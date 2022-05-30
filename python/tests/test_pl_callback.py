@@ -1,20 +1,20 @@
 import json
-from glob import glob
 import os
-import torch
-from torch.nn import functional as F
-from torch import nn
-from pytorch_lightning.core.lightning import LightningModule
-from pytorch_lightning import Trainer
-from torch.optim import Adam
-from torch.utils.data import DataLoader, random_split, Subset
-from torch.utils.data.dataset import Dataset
-from torchvision.datasets import MNIST
-from torchvision import transforms
-import pytest
 import urllib
+from glob import glob
 
+import pytest
+import torch
 from keepsake.pl_callback import KeepsakeCallback
+from pytorch_lightning import Trainer
+from pytorch_lightning.core.lightning import LightningModule
+from torch import nn
+from torch.nn import functional as F
+from torch.optim import Adam
+from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data.dataset import Dataset
+from torchvision import transforms
+from torchvision.datasets import MNIST
 
 
 class ModelNoValidation(LightningModule):

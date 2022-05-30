@@ -1,8 +1,9 @@
 from copy import deepcopy
-from typing import Optional, Dict, Tuple, Any
+from typing import Any, Dict, Optional, Tuple
+
+from pytorch_lightning.callbacks.base import Callback
 
 import keepsake
-from pytorch_lightning.callbacks.base import Callback
 
 
 class KeepsakeCallback(Callback):
