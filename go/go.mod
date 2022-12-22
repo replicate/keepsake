@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/storage v1.14.0
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1
-	github.com/aws/aws-sdk-go v1.37.26
+	github.com/aws/aws-sdk-go v1.44.166
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
@@ -29,8 +29,8 @@ require (
 	github.com/xeonx/timeago v1.0.0-rc4
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/tools v0.1.0
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/tools v0.1.12
 	google.golang.org/api v0.40.0
 	google.golang.org/genproto v0.0.0-20210226172003-ab064af71705
 	google.golang.org/grpc v1.36.0
