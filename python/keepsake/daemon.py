@@ -239,7 +239,7 @@ def start_wrapped_pipe(pipe, writer):
     def wrap_pipe(pipe, writer):
         with pipe:
             for line in iter(pipe.readline, b""):
-                writer.write(line)
+                writer.write(line.decode("utf-8"))
                 writer.flush()
 
     # if writer is normal sys.std{out,err}, it can't
