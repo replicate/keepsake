@@ -67,7 +67,26 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(experiment_tar_path) as tar:
-            tar.extractall(tmpdir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar, tmpdir)
 
         assert (
             open(os.path.join(tmpdir, experiment.id, "train.py")).read()
@@ -102,7 +121,26 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(checkpoint_tar_path) as tar:
-            tar.extractall(tmpdir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar, tmpdir)
 
         assert open(os.path.join(tmpdir, checkpoint.id, "weights")).read() == "1.2kg"
         assert not os.path.exists(os.path.join(tmpdir, checkpoint.id, "train.py"))
@@ -126,7 +164,26 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(checkpoint_tar_path) as tar:
-            tar.extractall(tmpdir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar, tmpdir)
 
         assert (
             open(os.path.join(tmpdir, checkpoint.id, "data/weights")).read() == "1.3kg"
@@ -161,7 +218,26 @@ def test_init_and_checkpoint(temp_workdir):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         with tarfile.open(experiment_tar_path) as tar:
-            tar.extractall(tmpdir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tar, tmpdir)
 
         assert (
             open(os.path.join(tmpdir, experiment.id, "train.py")).read()
