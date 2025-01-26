@@ -115,7 +115,10 @@ class Daemon:
         self.stderr_thread = start_wrapped_pipe(self.process.stderr, sys.stderr)
 
         atexit.register(self.cleanup)
-        self.channel = grpc.insecure_channel("unix://" + self.socket_path)
+        # set unlimited message received length, 
+        # options from https://github.com/grpc/grpc/blob/v1.44.x/include/grpc/impl/codegen/grpc_types.h
+        channel_options = [("grpc.max_receive_message_length", -1)]
+        self.channel = grpc.insecure_channel("unix://" + self.socket_path, options=channel_options)
         self.stub = DaemonStub(self.channel)
 
         TIMEOUT_SEC = 15
