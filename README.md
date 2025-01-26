@@ -1,4 +1,6 @@
 # 📣 This project is not actively maintained. If you'd like to help maintain it, please [let us know](https://github.com/replicate/keepsake/issues/873).
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Freplicate%2Fkeepsake.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Freplicate%2Fkeepsake?ref=badge_shield)
+
 
 ---
 
@@ -141,3 +143,7 @@ Here are some ways you can help out:
 ## Contributing & development environment
 
 [Take a look at our contributing instructions.](CONTRIBUTING.md)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Freplicate%2Fkeepsake.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Freplicate%2Fkeepsake?ref=badge_large)
